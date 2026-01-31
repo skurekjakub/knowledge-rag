@@ -1,0 +1,35 @@
+{
+  "name": "GraphRAG Monorepo",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11", "installTools": true },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "tamtamchik.neo4j-cypher-runner",
+        "humao.rest-client"
+      ]
+    }
+  },
+
+  // Updated to reflect new HOST ports
+  // 9474 = Neo4j Browser
+  // 9687 = Neo4j Bolt
+  // 11534 = Ollama
+  "forwardPorts": [3000, 8050, 9474, 9687, 11534],
+
+  "remoteUser": "vscode"
+}
