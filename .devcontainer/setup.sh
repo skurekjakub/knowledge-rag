@@ -14,3 +14,4 @@ curl -X POST http://ollama:11434/api/generate -d '{
 }'
 
 echo "Workspace Ready! (Ollama is downloading llama3 in the background)"
+
