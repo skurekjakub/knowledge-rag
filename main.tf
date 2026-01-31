@@ -20,6 +20,12 @@ resource "github_repository_ruleset" "main_protection" {
   target      = "branch"
   enforcement = "active"
 
+  bypass_actors {
+    actor_id    = 5                # "5" is the GitHub ID for the "Repository Admin" role
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
   conditions {
     ref_name {
       include = ["~DEFAULT_BRANCH"]

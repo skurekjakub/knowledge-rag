@@ -1,2 +1,15 @@
-.terraform/
-.terarform*
+# .gitignore
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+override.tf
+override.tf.json
+.terraformrc
+terraform.rc
