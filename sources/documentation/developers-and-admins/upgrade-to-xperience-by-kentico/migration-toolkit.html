@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Migration Toolkit</title>
+</head>
+<body>
+<p>Xperience by Kentico Migration Toolkit is a collection of tools developed and supported by Kentico. The aim of these tools is to simplify migration from other systems to Xperience by Kentico. All of the tools listed on this page are part of the Xperience by Kentico offering and are therefore subject to the <a href="https://www.kentico.com/platforms/kentico-xperience-13/roadmap/product-support-lifecycle" target="_blank">7-day bug-fix policy</a>. The tools are not included in the product installation, visit their respective repositories for installation instructions. If you need assistance with any of the tools, see the <em>Support</em> section of the <em>README.md</em> file for each tool.</p>
+<p>Xperience by Kentico Migration Toolkit consists of the following migration tools:</p>
+<ul>
+<li>
+<a href="#kentico-migration-tool">Kentico Migration Tool</a> - A customizable tool that migrates <strong>older Kentico solutions</strong> to the latest version of Xperience by Kentico.</li>
+<li>
+<a href="#sitecore-migration-tool">Sitecore Migration Tool</a> - A customizable tool that migrates <strong>Sitecore</strong> solutions to Xperience by Kentico.</li>
+<li>
+<a href="#sitefinity-migration-tool">Sitefinity Migration Tool</a> - A customizable tool that migrates <strong>Sitefinity</strong> solutions to Xperience by Kentico.</li>
+<li>
+<a href="#universal-migration-tool">Universal Migration Tool</a> - Underlying technology to enable content and data imports from <strong>any data source</strong> into Xperience by Kentico.</li>
+</ul>
+<p>You can also <a href="#customize-the-migration-tools">customize</a> the tools on top of their out-of-the-box functionality to make them fit your specific migration needs.</p>
+<p></p>
+<h2 id="kentico-migration-tool">Kentico Migration Tool</h2>
+<p>The <a href="https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool" target="_blank">Xperience by Kentico: Kentico Migration Tool</a> enables you to migrate database content and other data from older Kentico versions to Xperience by Kentico. Currently supported versions of the source instance are Kentico Xperience 13, Kentico 12, and Kentico 11.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Kentico Migration Tool versions</strong></p>
+<p>The <a href="https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool" target="_blank">Kentico Migration Tool</a> is versioned to correspond to Xperience by Kentico product versions. See the <a href="https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool?tab=readme-ov-file#library-version-matrix" target="_blank">version matrix</a> in the tool’s <em>README</em> file to select the correct version for your project.</p>
+</div>
+
+<p>Due to differences in the feature set of the products, the Kentico Migration Tool cannot transfer all data available in the older Kentico versions. Certain types of data are migrated to a suitable alternative or discarded.</p>
+<p>The Kentico Migration Tool migrates content and objects stored in the database along with related binary data on the file system, such as <a href="/documentation/business-users/media-libraries">media library</a> files.</p>
+<p>The following diagram showcases all available upgrade paths to get from older Kentico versions to Xperience by Kentico using <a href="https://devnet.kentico.com/download/upgrades" target="_blank">Kentico upgrade tools</a>, <a href="https://github.com/KenticoDevTrev/KX12To13Converter" target="_blank">community conversion tools</a> and the Kentico Migration Tool. You can read more about the community conversion tool in <a href="https://www.kentico.com/discover/blog/upgrading-from-kentico-12-to-kentico-xperience-13" target="_blank">our blog</a>.</p>
+<p></p>
+<ul>
+<li>
+<strong>Kentico 13</strong>:
+<ul>
+<li>Use <strong>Kentico Migration Tool</strong> to migrate structured content and Page Builder content to Xperience by Kentico.</li>
+</ul>
+</li>
+<li>
+<strong>Kentico 12 MVC</strong> offers two options:
+<ul>
+<li>Use <strong>Kentico Migration Tool</strong> to migrate structured content to Xperience by Kentico.</li>
+<li>Use the <a href="https://devnet.kentico.com/download/upgrades" target="_blank">Kentico upgrade tools</a> to upgrade to Kentico 13 and then use <strong>Kentico Migration Tool</strong> to migrate structured content and Page Builder content to Xperience by Kentico.</li>
+</ul>
+</li>
+<li>
+<strong>Kentico 12/11/10 Portal Engine</strong> offer two options:
+<ul>
+<li>Use <strong>Kentico Migration Tool</strong> to migrate structured content to Xperience by Kentico.</li>
+<li>Use the <a href="https://devnet.kentico.com/download/upgrades" target="_blank">Kentico upgrade tools</a> to upgrade to Kentico 12 Portal Engine if migrating from Kentico 11/10. Then use the <a href="https://github.com/KenticoDevTrev/KX12To13Converter" target="_blank">Kentico Xperience 12 Portal to Kentico Xperience 13 Converter</a> community tool to upgrade to Kentico 13. Finally, use <strong>Kentico Migration Tool</strong> to migrate structured content and Page Builder content to Xperience by Kentico.</li>
+</ul>
+</li>
+</ul>
+<p>Code, customizations, and any unsupported content need to be manually transferred to the target Xperience by Kentico solution and adjusted for Xperience by Kentico’s <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico#technical-comparison">architecture and API differences</a>.</p>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool" target="_blank">Xperience by Kentico: Kentico Migration Tool</a> GitHub repository.</p>
+<h2 id="sitecore-migration-tool">Sitecore Migration Tool</h2>
+<p>The <a href="https://github.com/Kentico/xperience-by-kentico-sitecore-migration-tool" target="_blank">Xperience by Kentico: Sitecore Migration Tool</a> enables you to automatically export data from Sitecore and import it to your Xperience by Kentico instance using a custom module in the administration interface.</p>
+<p></p>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-sitecore-migration-tool" target="_blank">Xperience by Kentico: Sitecore Migration Tool</a> GitHub repository.</p>
+<h2 id="sitefinity-migration-tool">Sitefinity Migration Tool</h2>
+<p>The <a href="https://github.com/Kentico/xperience-by-kentico-sitefinity-migration-tool" target="_blank">Xperience by Kentico: Sitefinity Migration Tool</a> enables you to automatically export data from Sitefinity and import it to your Xperience by Kentico instance using a custom module in the administration interface.</p>
+<p></p>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-sitefinity-migration-tool" target="_blank">Xperience by Kentico: Sitefinity Migration Tool</a> GitHub repository.</p>
+<h2 id="universal-migration-tool">Universal Migration Tool</h2>
+<p>The <a href="https://github.com/Kentico/xperience-by-kentico-universal-migration-tool" target="_blank">Xperience by Kentico: Universal Migration Tool</a> is a set of libraries, documentation, and samples that enable you to export data from external systems (legacy Kentico versions, other CMS systems) and automatically import it to your Xperience by Kentico instance.</p>
+<p>You can either create a JSON document according to <a href="https://github.com/Kentico/xperience-by-kentico-universal-migration-tool/blob/main/docs/Model/UMT.schema.json" target="_blank">our specifications</a> using a technology of your choice or use <a href="https://www.nuget.org/packages/Kentico.Xperience.UMT" target="_blank">our .NET library</a> to build your own C# models which represent the JSON structure. The integration also includes a custom module application for the Xperience administration, enabling users to upload the imported JSON files directly through the application’s user interface.</p>
+<p></p>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-universal-migration-tool" target="_blank">Xperience by Kentico: Universal Migration Tool</a> GitHub repository.</p>
+<h2 id="customize-the-migration-tools">Customize the migration tools</h2>
+<p>The migration tools are designed to cover the most common migration cases and help streamline the process of transferring a project to Xperience by Kentico. Since implementation details and content models vary from project to project, the migration tools may not always fully align with your requirements. The tools are open-source for this reason – you can customize them or even create your own tools based on the <a href="#universal-migration-tool">Universal Migration Tool</a>.</p>
+<p>If you are <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico">upgrading from Kentico Xperience</a>, you can extend the <a href="#kentico-migration-tool">Kentico Migration Tool</a> with the use of the <a href="https://github.com/Kentico/xperience-by-kentico-kentico-migration-tool/tree/master/Migration.Tool.Extensions" target="_blank">Migration.Tool.Extensions</a> module. The module enables you to remap and optimize the original content model to the new <a href="/guides/architecture/content-modeling/content-modeling-guide">content model</a> recommended for Xperience by Kentico, remodel widgets, migrate page types to reusable field schemas and more.</p>
+
+</body>
+</html>

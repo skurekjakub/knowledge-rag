@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Registration and authentication</title>
+</head>
+<body>
+<p>Registration and authentication are two critical components of web application security.</p>
+<p>Registration is the process by which a user creates an account on a web application. This process typically involves collecting information from the user, such as their name, email address, and a chosen password. The purpose of registration is to allow the web application to keep track of each user’s account and provide them with personalized services and content.</p>
+<p>Authentication, on the other hand, is the process of verifying a user’s identity when they sign in to the web application. This involves checking the user’s credentials, such as their username and password, against the information stored in the application’s database. The purpose of authentication is to ensure that only authorized users can access designated parts of the web application and its resources (for example, <a href="/documentation/business-users/website-content/secure-pages">secured pages</a> or <a href="/documentation/business-users/content-hub/content-items#secure-content-items">content items</a>).</p>
+<p>Together, registration and authentication provide several benefits for web application users and administrators. By registering, users can access personalized services and content, save preferences and settings, and track their activity in the application.</p>
+<h2 id="configure-registration-and-authentication">Configure registration and authentication</h2>
+<p>Xperience uses a customized implementation of <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity" target="_blank">ASP.NET Identity</a> (Identity) to manage registration and authentication. Identity is included as part of the .NET framework and can be added to the application and configured as part of the startup pipeline in <strong>Program.cs</strong>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - add Identity to the application</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Adds and configures ASP.NET Identity for the application
+builder.Services.AddIdentity&lt;ApplicationUser, NoOpApplicationRole&gt;(options =&gt;
+{
+    // Ensures that disabled member accounts cannot sign in
+    options.SignIn.RequireConfirmedAccount = true;
+    // Ensures unique emails for registered accounts
+    options.User.RequireUniqueEmail = true;
+})
+    .AddUserStore&lt;ApplicationUserStore&lt;ApplicationUser&gt;&gt;()
+    .AddRoleStore&lt;NoOpApplicationRoleStore&gt;()
+    .AddUserManager&lt;UserManager&lt;ApplicationUser&gt;&gt;()
+    .AddSignInManager&lt;SignInManager&lt;ApplicationUser&gt;&gt;();  
+
+// Adds authorization support to the app
+builder.Services.AddAuthorization();
+
+</code></pre>
+</div>
+
+<p>In the code snippet above, <code>ApplicationUser</code> is Xperience’s implementation of the Identity <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.identityuser" target="_blank">user object</a>. This object is then mapped to <code>MemberInfo</code> which is persisted in the Xperience database – registered visitors are referred to as members in the system. For more information about the data flow and behavior, see <a href="#xperience-asp.net-identity-architecture">Xperience ASP.NET Identity architecture</a>.</p>
+<p>If we break down the registration:</p>
+<ul>
+<li>
+<code>NoOpApplicationRole</code> and <code>NoOpApplicationRoleStore</code> – Xperience <strong>does not support</strong> roles and role management as part of the Identity integration. The objects are empty implementations required by the <code>AddIdentity</code> method that exist only to simplify the configuration process.</li>
+<li>
+<code>ApplicationUserStore</code> is the Xperience-specific implementation of the Identity <code>UserStore</code>. It persists data in the Xperience database and ensures conversion between <code>ApplicationUser</code> and <code>MemberInfo</code>.</li>
+<li>The <code>RequireConfirmedAccount</code> option works together with the <code>ApplicationUser.Enabled</code> property to ensure that only enabled accounts can sign in to the system. See <a href="#applicationuser.enabled">Remarks - ApplicationUser.Enabled</a> and <a href="#disabling-user-accounts">Remarks - Disabling user accounts</a> for more information.</li>
+<li>The <code>RequireUniqueEmail</code> option ensures members cannot register an additional account using an email already in the system, which is a requirement of Xperience’s Identity implementation.</li>
+</ul>
+<p>With Identity configured, add the required <code>UseAuthentication</code> and <code>UseAuthorization</code> middleware. <strong>Make sure to call the middleware in the provided order.</strong></p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - add required middleware</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var app = builder.Build();
+
+app.InitKentico();
+app.UseStaticFiles(); 
+
+// Make sure to call the middleware in the provided order
+app.UseCookiePolicy();
+app.UseAuthentication();
+app.UseKentico();  
+app.UseAuthorization();
+
+</code></pre>
+</div>
+
+<p>Identity is now configured for the application. Continue by implementing your desired registration and authentication flows.</p>
+<h2 id="registration-and-authentication-flows">Registration and authentication flows</h2>
+
+<div>
+<p><strong><a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication">Forms authentication</a></strong></p>
+<p>Forms authentication is a type of registration and authentication mechanism that uses HTML forms to collect user credentials (such as a username and password). When a visitor attempts to sign in, the collected data is matched againsted the database. This registration method enables a highly customized experience, as it allows for great flexibility when designing the authentication flow.</p>
+</div>
+
+
+<div>
+<p><strong><a href="/documentation/developers-and-admins/development/registration-and-authentication/external-authentication">External authentication</a></strong></p>
+<p>External authentication is a process of authenticating visitors to a web application using an external identity provider, such as Google, Facebook, or Twitter. Its purpose is to provide a more convenient and secure way for visitors to access the application, as it allows them to use their existing social media accounts to sign in. This flow also reduces the burden of managing user authentication and security for application developers, as they can rely on the security measures implemented by the external identity provider.</p>
+</div>
+
+<h2 id="management-and-customization">Management and customization</h2>
+
+<div>
+<p><strong><a href="/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects">Add fields to member objects</a></strong></p>
+<p>Xperience provides the option to extend <code>MemberInfo</code> objects (visitors who register an account in the system) with additional fields. The default object that represents members in Xperience is by default equipped with only the most essential fields required for authentication using ASP.NET Identity. Most projects will likely want to collect a broader set of member data, which is enabled by this extension mechanism.</p>
+</div>
+
+
+<div>
+<p><strong><a href="/documentation/business-users/members">Manage members in the system</a></strong></p>
+<p>The system provides a management interface for member objects via the <strong>Members</strong> application. Alternatively, to work with members using the API, use Xperience’s ORM framework as described on <a href="/documentation/developers-and-admins/api/database-table-api">Database table API</a>. Members are represented by the <code>MemberInfo</code> class.</p>
+</div>
+
+<h2 id="retrieve-the-currently-authenticated-member">Retrieve the currently authenticated member</h2>
+<p>When implementing restricted sections of the application, you might sometimes need to access the details of the currently authenticated member, such as their email. This data is stored in the <code>ApplicationUser</code> object and retrieved via the <code>UserManager</code> class.</p>
+<p>Identity by default requires the user’s name to be populated (ensured by <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.iuservalidator-1" target="_blank">IUserValidator&lt;TUser&gt;</a> called as part of the data validation process). To retrieve the current user, you can use <code>userManager.FindByNameAsync</code>. The name of the user associated with the current request is stored in <code>HttpContext.User.Identity.Name</code>.</p>
+<p>Alternatively, if you ensure that all registration flows in your application populate the member’s email, you can use <code>userManager.FindByEmailAsync</code>.</p>
+<p>As a second alternative, you can also use the member’s ID, which is guaranteed to exist as it gets assigned by the system when the member account is created.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve the current authenticated member using their ID</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Instances of required services obtained using, e.g., dependency injection
+private readonly IHttpContextAccessor httpContextAccessor;
+private readonly UserManager&lt;ApplicationUser&gt; userManager;
+
+public async Task MyMethod()
+{
+    // Gets the currently authenticated member account using their ID
+    var currentMember = await userManager.
+                    FindByIdAsync(httpContextAccessor.HttpContext.User.
+                        FindFirstValue(userManager.Options.ClaimsIdentity.UserIdClaimType));
+
+    // Custom logic...
+}
+
+</code></pre>
+</div>
+
+<h2 id="xperience-asp.net-identity-architecture">Xperience ASP.NET Identity architecture</h2>
+<p>Xperience applications implement authentication using <a href="https://learn.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity" target="_blank">ASP.NET Identity</a>. The implementation uses the <code>Kentico.Membership.ApplicationUser</code> type derived from <code>IdentityUser</code> to represent members – accounts registered in the system by site visitors. When saving member data to the database (<code>CreateAsync</code> or <code>UpdateAsync</code> methods on <code>UserManager</code>), Xperience maps data from <code>ApplicationUser</code> to <code>CMS.Membership.MemberInfo</code> objects. <code>MemberInfo</code> objects are connected to the system’s <a href="/documentation/developers-and-admins/api/database-table-api">ORM framework</a>, which is used to persist the data to the database.</p>
+<p>Conversely, when retrieving member data from the database (<code>UserManager.FindBy*</code> methods), the member is first retrieved as <code>MemberInfo</code> and then converted to <code>ApplicationUser</code>. The transfer of data between objects from both sides of the flow is handled by the <code>MapFromMemberInfo</code> and <code>MapToMemberInfo</code> methods on <code>ApplicationUser</code>. This mapping can be customized – see <a href="/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects">Add fields to member objects</a>.</p>
+<p>Accounts from <a href="/documentation/developers-and-admins/development/registration-and-authentication/external-authentication">external authentication providers</a> such as Google, Facebook, etc. are stored using <code>MemberExternalLoginInfo</code> objects in the <code>CMS_MemberExternalLogin</code> database table. Each member account can have up to <code>N</code> associated external credentials, where <code>N</code> corresponds to the number of external providers supported by your implementation. Accounts that rely exclusively on authentication via an external provider have their <code>MemberInfo.MemberIsExternal</code> property set to <code>1</code>.</p>
+<p>The following diagram summarizes the described behavior and data flow.</p>
+<p></p>
+<h2 id="remarks">Remarks</h2>
+<h3 id="applicationuser.enabled">ApplicationUser.Enabled</h3>
+<p>When creating member accounts in the system, you <strong>must</strong> set their <code>ApplicationUser.Enabled</code> property. The enabled status is also controlled via the <strong>Members</strong> application –&gt; <strong>Disable/Enable</strong> action, which toggles the state for the corresponding account.</p>
+<p>Based on this property, the system determines whether the account can sign in. To avoid introducing additional Xperience-specific implementations to the Identity logic, the check that prevents disabled accounts from signing in is combined with the <code>IdentityOptions.SignInOptions.RequireConfirmedAccount</code> Identity setting (which is typically used with <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication">account email confirmation</a> flows).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Identity configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddIdentity&lt;ApplicationUser, NoOpApplicationRole&gt;(options =&gt;
+{
+    ...
+    options.SignIn.RequireConfirmedAccount = true;
+})
+
+</code></pre>
+</div>
+
+<p>For this reason, enabling this option is <strong>required</strong> for the <em>Enabled</em> status to work correctly.</p>
+<p>When using <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication">forms authentication</a> together with email confirmation, <code>ApplicationUserStore</code> (the Xperience-specific implementation of the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.entityframeworkcore.userstore" target="_blank">UserStore</a> class) sets the <code>Enabled</code> property to <code>true</code> when the email verification step is successful (<code>ApplicationUserStore.SetEmailConfirmedAsync</code> called as part of <code>UserManager.ConfirmEmailAsync</code>). The property is not handled automatically at any other point.</p>
+<h3 id="disabling-user-accounts">Disabling user accounts</h3>
+<p>Every time the <code>ApplicationUser.Enabled</code> property changes, the system generates a new value for the account’s <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.identityuser-1.securitystamp" target="_blank">SecurityStamp</a>. The security stamp value is also stored in the client’s authentication cookie and compared against the value on the server. If a mismatch is detected (the <code>Enabled</code> status changed, a password change occurred, etc.), the client is forced to re-authenticate.</p>
+<p>The security stamp comparison is done by <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.isecuritystampvalidator" target="_blank">ISecurityStampValidator</a> at a set interval, 30 minutes by default. This means that accounts that were disabled can still sign in to the system until the next revalidation event. If you wish to immediately block access for disabled accounts, you can change the revalidation interval via <code>SecurityStampValidatorOptions</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Sets the validation interval to zero - the authentication cookie stored on the client is checked on every request
+// If the validation fails - the security stamp is different than the one stored on the client - 
+// the client's authentication cookie (e.g., AspNetCore.Identity.Application) is cleared, forcing reauthentication
+builder.Services.Configure&lt;SecurityStampValidatorOptions&gt;(options =&gt; options.ValidationInterval = TimeSpan.Zero);
+</code></pre>
+</div>
+
+<h3 id="registration-activity-logging">Registration activity logging</h3>
+<p>The system automatically logs the <em>Member registration</em> <a href="/documentation/business-users/digital-marketing/contact-activities">activity</a> whenever a member becomes active (enabled). This occurs when saving member data to the database in the following scenarios:</p>
+<ul>
+<li>When a new member is added via <code>UserManager.CreateAsync</code> with <code>ApplicationUser.Enabled</code> set to true.</li>
+<li>Whenever a member is updated to become active. For example, via <code>UserManager.ConfirmEmailAsync</code> when using <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication#email-confirmation">email confirmation</a> for new members, or manually via <code>UserManager.UpdateAsync</code>.</li>
+</ul>
+<p>Keep this in mind if you plan to set up <a href="/documentation/business-users/digital-marketing/automation">automation processes</a> with the <em>Registration</em> trigger. The process will only start once the member account is active, not necessarily when the registration form is submitted by the user. Additionally, such processes may also start when reactivating existing member accounts that were previously disabled. However, this only occurs if the reactivation is performed using the ASP.NET Identity API (<code>UserManager</code>), not if the member is enabled in the <a href="/documentation/business-users/members">administration UI</a>.</p>
+<h3 id="page-preview-mode">Page preview mode</h3>
+<p><a href="/documentation/business-users/website-content#preview">Preview mode</a> in Xperience enables editors to view the latest version of pages before they are published. Preview mode works automatically for all <a href="/documentation/developers-and-admins/development/content-types">content types</a> for pages that are included in routing.</p>
+<p>Preview URLs for pages are used in the following scenarios in website channel applications:</p>
+<ul>
+<li>When viewing pages in <strong>Preview</strong> mode in the administration.</li>
+<li>When editing pages via <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a>.</li>
+</ul>
+<p>The preview URLs the system generates for pages consist of virtual context, which is additional information, such as a hash for validating the URL against the client’s authentication cookie, context about the current <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>, view mode (e.g., Read-only), etc. The live site application validates and processes the preview URL and displays the page using the conventional <a href="/documentation/developers-and-admins/development/routing">routing process</a>.</p>
+<p>To share a preview of a page externally, users can create a <a href="/documentation/developers-and-admins/configuration/shareable-preview-urls">shareable preview URL</a>. This URL address is different from the one used for the internal preview. Shareable preview URLs are also handled through the regular <a href="/documentation/developers-and-admins/development/routing">routing process</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>IVirtualContextDecorationArbiter</strong></p>
+<p>You can implement the <code>IVirtualContextDecorationArbiter</code> interface to control whether links in previewed content should consist of virtual context. Note that you can’t change the actual preview URLs or use the interface to disable authentication of previewed content.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+[assembly: RegisterImplementation(typeof(IVirtualContextDecorationArbiter), typeof(CustomVirtualContextDecorationArbiter))]
+
+public class CustomVirtualContextDecorationArbiter : IVirtualContextDecorationArbiter
+{
+    private const string ARTICLES_PREFIX = "~/articles/";
+
+    public virtual bool PathRequiresDecoration(string path)
+    {
+
+        // Do not decorate scripts or article pages
+        return !(path.StartsWith(ARTICLES_PREFIX, StringComparison.OrdinalIgnoreCase));
+    }
+}
+</code></pre>
+</div>
+</div>
+</div>
+
+<h4 id="mvc-authorization-flows-and-preview-mode">MVC authorization flows and preview mode</h4>
+<p>The preview mode functionality runs on a dedicated internal authentication scheme. As a result, pages <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/simple" target="_blank">secured behind authorization</a> that checks for a specific authentication scheme are not previewable. This also applies to <a href="/documentation/developers-and-admins/configuration/shareable-preview-urls">shareable preview</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Not previewable authorization configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Pages served by this controller are not previewable due to the explicit authentication scheme requirement
+[Authorize("SomeAuthenticationScheme")]
+public class MyController : Controller
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

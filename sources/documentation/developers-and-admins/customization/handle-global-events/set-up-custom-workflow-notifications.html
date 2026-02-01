@@ -1,0 +1,508 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Set up custom workflow notifications</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>As of version <a href="/documentation/changelog#refresh-july-24-2025">30.8.0</a>, Xperience includes built-in <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow notifications</a>. You don’t have to create custom workflow notifications unless you need further customization.</p>
+</div>
+
+<p>This page provides a full example of <a href="/documentation/developers-and-admins/configuration/notifications#create-custom-notifications">custom notification</a> development, including the implementation of <a href="/documentation/developers-and-admins/customization/handle-global-events">event handlers</a>, their assignment to global events, and obtaining <a href="/documentation/developers-and-admins/configuration/users">user</a> IDs of the intended notification recipients.</p>
+<p>You can use this demonstration as a blueprint to implement your own custom notifications, or follow it more closely to set up custom <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a> notifications if the built-in <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow notifications</a> do not fit your needs. For example, this can be the case if you do not want to use email to deliver notifications, or if you need to send the notification to a different group of recipients.</p>
+<h2 id="workflow-notifications">Workflow notifications</h2>
+<p>When using <a href="/documentation/developers-and-admins/configuration/workflows">workflows</a> in your content editing process, users in various roles need to work with items at different stages of the content lifecycle. Notifications about workflow step transitions can help people keep track of their work. For example, users may wish to be notified when an item transitions to a step that requires their approval or review.</p>
+<p>Developers can set up notifications by handling <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">global events</a> that the system triggers when items transition between workflow steps:</p>
+<ul>
+<li>
+<code>MoveToStep</code> – triggered when a content item, page, or headless item is moved from one workflow step to another. Handled via the <em>ContentItemWorkflowEvents</em>, <em>WebPageWorkflowEvents</em> or <em>HeadlessItemWorkflowEvents</em> classes.</li>
+<li>
+<code>Publish</code> – triggered when a content item, page or headless item finishes its workflow cycle and is published. Handled via the <em>ContentItemEvents</em>, <em>WebPageEvents</em> or <em>HeadlessItemEvents</em> classes.</li>
+<li>
+<code>UpdateLanguageMetadata</code> – triggered when a reusable content item or page is scheduled to be published or unpublished, or when a scheduled publish action is canceled. Handled via the <em>ContentItemEvents</em> or <em>WebPageEvents</em> classes.</li>
+</ul>
+<p>The content of notification messages can either be based on <a href="/documentation/developers-and-admins/configuration/notifications#create-custom-notifications">custom notifications</a> and managed in the Xperience administration, or created directly in code.</p>
+<p>Limitations:</p>
+<ul>
+<li>The system currently does not provide events covering workflow transitions of <a href="/documentation/business-users/digital-marketing/emails">emails</a>. However, you can use built-in <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow notifications</a> for emails.</li>
+<li>Workflow events are not triggered when an item enters the system’s default <em>Draft</em> step for the first time in a workflow cycle, for example after creating a completely new item or a new version of a published or unpublished item. For newly added items, you can handle the <code>Create</code> event via the <em>ContentItemEvents</em>, <em>WebPageEvents</em> or <em>HeadlessItemEvents</em> classes.</li>
+</ul>
+<h2 id="example">Example</h2>
+<p>This example demonstrates how to set up email notifications informing about workflow step transitions. The example sends notifications when a <a href="/documentation/business-users/content-hub">reusable content item</a> or <a href="/documentation/business-users/website-content">website channel page</a> is moved to a different step in any workflow. The recipients of the emails depend on the step:</p>
+<ul>
+<li>
+<strong>Custom workflow steps</strong> – sent to users who are allowed to work with the item in the given step, i.e. all users belonging to the <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a> assigned to the step.</li>
+<li>
+<strong>Draft (system step)</strong> – <em>Draft</em> is the default first step in all workflows, and cannot have any roles assigned. The notification emails are instead sent to users with roles that have full control for the workflow, and to users with the <em>ContentEditor</em> role (as an example). Note that notifications are not sent when an item enters the <em>Draft</em> step for the first time in a workflow cycle, for example after creating a completely new item or a new version of a published or unpublished item.</li>
+</ul>
+<p>For the sake of simplicity, this example does <strong>not</strong> send notifications when pages or content items are published. However, you can set up publish notifications using a similar approach by handling the <code>ContentItemEvents.Publish</code> and <code>WebPageItemEvents.Publish</code> events.</p>
+<p>You can extend or simplify the implementation based on your project’s content types and workflow steps, as well as the requirements of your content editors. If you wish to use a different type of notifications than emails, replace the notification and email API calls in the example’s code (e.g., with an external messaging SDK).</p>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>To integrate the code of this example, prepare a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom Class Library project</a> in your solution.</p>
+<p>To allow the system to send out emails, you also need to set up and configure an email client (for example an SMTP server or SendGrid integration). For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a>.</p>
+<h3 id="register-notification-placeholders">Register notification placeholders</h3>
+<p>Add the following class to your custom Class Library project:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WorkflowNotificationPlaceholders.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class WorkflowNotificationPlaceholders : INotificationEmailPlaceholdersByCodeName
+{
+    // The code name of the workflow notification, which will be created in the Notifications application
+    public string NotificationEmailName =&gt; "custom_workflow";
+
+
+    [PlaceholderRequired]
+    [PlaceholderDescription("The name of the content item or page that was moved to a different workflow step.")]
+    public string ItemName { get; set; }
+
+    [PlaceholderRequired]
+    [PlaceholderDescription("The display name of the new workflow step.")]
+    public string CurrentStepDisplayName { get; set; }
+
+    [PlaceholderRequired]
+    [PlaceholderDescription("The display name of the previous workflow step from which the item was moved.")]
+    public string OriginalStepDisplayName { get; set; }
+
+    [PlaceholderDescription("The user name of the administration user who changed the item's workflow step.")]
+    public string StepChangedByUserName { get; set; } = "System";
+}
+</code></pre>
+</div>
+
+<p>This class defines placeholders, which serve as variables in the workflow notification content.</p>
+<p>Next, add a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module</a> into the project and register the placeholders in the module’s initialization code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Module class with notification placeholder registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+using CMS.Core;
+using CMS.DataEngine;
+using CMS.Notifications;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(Custom.CustomWorkflowModule))]
+
+namespace Custom
+{
+    public class CustomWorkflowModule : Module
+    {
+        // Module class constructor, the system registers the module under the name "CustomWorkflow"
+        public CustomWorkflowModule()
+            : base(nameof(CustomWorkflowModule))
+        {
+        }
+
+        // Contains initialization code that is executed when the application starts
+        protected override void OnInit(ModuleInitParameters parameters)
+        {
+            base.OnInit();
+
+            // Registers placeholders for the custom workflow notification
+            NotificationEmailPlaceholderConfigurationStore.Instance.TryAdd(new WorkflowNotificationPlaceholders());
+        }
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="create-the-notification">Create the notification</h3>
+<p>Add the <a href="/documentation/developers-and-admins/configuration/notifications#create-custom-notifications">notification</a> in Xperience:</p>
+<ol type="1">
+<li><p>Open the <strong>Notifications</strong> application in the Xperience administration.</p></li>
+<li><p>Select <strong>New notification</strong>.</p></li>
+<li>
+<p>Set the following values for the properties:</p>
+<ul>
+<li>
+<strong>Notification name</strong>: Workflow notification</li>
+<li>
+<strong>Identifiers → Code name</strong> (clear the <em>Pre-fill code name automatically</em> option): custom_workflow</li>
+<li>
+<strong>Notification template</strong>: General email template (or any other template)</li>
+<li>
+<strong>Sender email address</strong>: Any sender with your application’s <a href="/documentation/developers-and-admins/configuration/notifications#sending-domain">sending domain</a> for system emails</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+<li>
+<p>Enter the following content for the notification:</p>
+<ul>
+<li>
+<strong>Subject</strong>: Item ‘{{ItemName}}’ moved to step ‘{{CurrentStepDisplayName}}’</li>
+<li>
+<strong>Content</strong>: The ‘{{ItemName}}’ item was moved from step ‘{{OriginalStepDisplayName}}’ to ‘{{CurrentStepDisplayName}}’ by user ‘{{StepChangedByUserName}}’.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+<p></p>
+<p>The notification and its content are now ready</p>
+<h3 id="send-workflow-notifications">Send workflow notifications</h3>
+<p>Continue by extending the module with workflow event handlers that send the notifications.</p>
+
+<div>
+
+</div>
+<div>
+<p>To get the code of the module class, you can either download the <a href="/docsassets/documentation/set-up-custom-workflow-notifications/CustomWorkflowModule.cs" download>CustomWorkflowModule.cs</a> file, or view the code blocks below.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Module class and handler assignment</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+using CMS.DataEngine;
+using CMS.ContentWorkflowEngine;
+using CMS.Core;
+using CMS.EmailEngine;
+using CMS.Membership;
+using CMS.Notifications;
+using CMS.Websites;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(Custom.CustomWorkflowModule))]
+
+namespace Custom
+{
+    public class CustomWorkflowModule : Module
+    {
+        private IEmailService emailService;
+        private IInfoProvider&lt;ContentWorkflowStepInfo&gt; workflowStepProvider;
+        private IInfoProvider&lt;ContentWorkflowStepRoleInfo&gt; workflowStepRoleProvider;
+        private IInfoProvider&lt;ContentWorkflowRoleInfo&gt; workflowRoleProvider;
+        private IInfoProvider&lt;WebsiteChannelInfo&gt; websiteChannelInfoProvider;
+        private IRoleInfoProvider roleInfoProvider;
+        private IUserInfoProvider userInfoProvider;
+        private IUserRoleInfoProvider userRoleInfoProvider;
+        private INotificationEmailMessageProvider notificationEmailMessageProvider;
+        private IOptionsMonitor&lt;SystemEmailOptions&gt; systemEmailOptions;
+
+        // Module class constructor, the system registers the module under the name "CustomWorkflow"
+        public CustomWorkflowModule()
+            : base(nameof(CustomWorkflowModule))
+        {
+        }
+
+        // Contains initialization code that is executed when the application starts
+        protected override void OnInit(ModuleInitParameters parameters)
+        {
+            base.OnInit();
+
+            // Gets instances of required services
+            emailService = parameters.Services.GetRequiredService&lt;IEmailService&gt;();
+            workflowStepProvider = parameters.Services.GetRequiredService&lt;IInfoProvider&lt;ContentWorkflowStepInfo&gt;&gt;();
+            workflowStepRoleProvider = parameters.Services.GetRequiredService&lt;IInfoProvider&lt;ContentWorkflowStepRoleInfo&gt;&gt;();
+            workflowRoleProvider = parameters.Services.GetRequiredService&lt;IInfoProvider&lt;ContentWorkflowRoleInfo&gt;&gt;();
+            websiteChannelInfoProvider = parameters.Services.GetRequiredService&lt;IInfoProvider&lt;WebsiteChannelInfo&gt;&gt;();
+            roleInfoProvider = parameters.Services.GetRequiredService&lt;IRoleInfoProvider&gt;();
+            userInfoProvider = parameters.Services.GetRequiredService&lt;IUserInfoProvider&gt;();
+            userRoleInfoProvider = parameters.Services.GetRequiredService&lt;IUserRoleInfoProvider&gt;();
+            notificationEmailMessageProvider = parameters.Services.GetRequiredService&lt;INotificationEmailMessageProvider&gt;();
+            systemEmailOptions = parameters.Services.GetRequiredService&lt;IOptionsMonitor&lt;SystemEmailOptions&gt;&gt;();
+
+            // Registers placeholders for the custom workflow notification
+            NotificationEmailPlaceholderConfigurationStore.Instance.TryAdd(new WorkflowNotificationPlaceholders());
+
+            // Assigns a handler to the MoveToStep workflow event for reusable content items
+            ContentItemWorkflowEvents.MoveToStep.Execute += ContentItem_MoveToStepEventHandler;
+
+            // Assigns a handler to the MoveToStep workflow event for website channel pages
+            WebPageWorkflowEvents.MoveToStep.Execute += WebPage_MoveToStepEventHandler;
+        }
+
+        // Add the event handlers and other helper methods from the code blocks below
+        // ...
+    }
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Content item MoveToStep handler</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Handler for the MoveToStep event for content items
+// Sends an email notification to all users who can work with the item in the current step
+private void ContentItem_MoveToStepEventHandler(object sender, ContentItemWorkflowMoveToStepArguments e)
+{
+    ContentWorkflowStepInfo currentWorkflowStep = workflowStepProvider.Get(e.StepName);
+
+    IEnumerable&lt;int&gt; recipientIds;
+
+    // If the current step is the 'Draft' system step, gets the email addresses of all users
+    // belonging to specific roles, or roles that can work with all steps in the workflow.
+    if (currentWorkflowStep.ContentWorkflowStepType == ContentWorkflowStepType.SystemDraft)
+    {
+        recipientIds = GetUserIdsForEditors(currentWorkflowStep.ContentWorkflowStepWorkflowID);
+    }
+    // For custom workflow steps, gets the email addresses of all users belonging to roles
+    // who can work with the given workflow step.
+    else
+    {
+        recipientIds = GetUserIdsForWorkflowStep(currentWorkflowStep.ContentWorkflowStepID, currentWorkflowStep.ContentWorkflowStepWorkflowID);
+    }
+
+    // Prepares values for placeholders in the workflow notification
+    var placeholders = new WorkflowNotificationPlaceholders
+    {
+        ItemName = e.DisplayName,
+        CurrentStepDisplayName = currentWorkflowStep.ContentWorkflowStepDisplayName,
+        OriginalStepDisplayName = workflowStepProvider.Get(e.OriginalStepName).ContentWorkflowStepDisplayName,
+        StepChangedByUserName = userInfoProvider.Get(e.UserID).UserName
+    };
+
+    SendWorkflowNotificationEmail(placeholders, recipientIds);
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Page MoveToStep handler</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Handler for the MoveToStep event for website channel pages
+// Sends an email notification to all users who can work with the page in the current step
+private void WebPage_MoveToStepEventHandler(object sender, WebPageWorkflowMoveToStepArguments e)
+{
+    ContentWorkflowStepInfo currentWorkflowStep = workflowStepProvider.Get(e.StepName);
+
+    IEnumerable&lt;int&gt; recipientIds;
+
+    // If the current step is the 'Draft' system step, gets the email addresses of all users
+    // belonging to specific roles, or roles that can work with all steps in the workflow.
+    if (currentWorkflowStep.ContentWorkflowStepType == ContentWorkflowStepType.SystemDraft)
+    {
+        recipientIds = GetUserIdsForEditors(currentWorkflowStep.ContentWorkflowStepWorkflowID);
+    }
+    else
+    {
+        // For custom workflow steps, gets the email addresses of all users belonging to roles
+        // who can work with the given workflow step.
+        recipientIds = GetUserIdsForWorkflowStep(currentWorkflowStep.ContentWorkflowStepID, currentWorkflowStep.ContentWorkflowStepWorkflowID);
+    }
+
+    // Prepares values for placeholders in the workflow notification
+    var placeholders = new WorkflowNotificationPlaceholders
+    {
+        ItemName = e.DisplayName,
+        CurrentStepDisplayName = currentWorkflowStep.ContentWorkflowStepDisplayName,
+        OriginalStepDisplayName = workflowStepProvider.Get(e.OriginalStepName).ContentWorkflowStepDisplayName,
+        StepChangedByUserName = userInfoProvider.Get(e.UserID).UserName
+    };            
+
+    SendWorkflowNotificationEmail(placeholders, recipientIds);
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Helper methods</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Gets the IDs of all users belonging to a role that can work with a specified workflow and step
+private IEnumerable&lt;int&gt; GetUserIdsForWorkflowStep(int stepId, int workflowId)
+{
+    // Gets the IDs of roles assigned to the workflow step.
+    // IInfoProvider&lt;ContentWorkflowStepRoleInfo&gt; manages bindings between workflow steps and roles,
+    // and each binding indicates that the role is allowed to work with the step.
+    var stepRoleIds = workflowStepRoleProvider
+                    .Get()
+                    .WhereEquals(nameof(ContentWorkflowStepRoleInfo.ContentWorkflowStepRoleContentWorkflowStepID), stepId)
+                    .Column(nameof(ContentWorkflowStepRoleInfo.ContentWorkflowStepRoleRoleID))
+                    .GetListResult&lt;int&gt;();
+
+    // Adds the IDs of roles that are allowed to work with all steps in the workflow
+    var roleIds = stepRoleIds.Union(GetRoleIdsWithFullControlForWorkflow(workflowId));
+
+    // Gets the IDs of users belonging to the roles (without duplicates)
+    var userIds = new HashSet&lt;int&gt;();
+    foreach (int roleId in roleIds)
+    {
+        var userIdsForRole = userRoleInfoProvider
+                    .Get()
+                    .WhereEquals(nameof(UserRoleInfo.RoleID), roleId)
+                    .Column(nameof(UserRoleInfo.UserID))
+                    .GetListResult&lt;int&gt;();
+
+        userIds.UnionWith(userIdsForRole);
+    }
+
+    return userIds;
+}
+
+// Gets the IDs of all users belonging to the 'ContentEditor' or 'Administrator' roles,
+// or roles that are allowed to work with all steps in the workflow.
+private IEnumerable&lt;int&gt; GetUserIdsForEditors(int workflowId)
+{
+    var roleIds = new List&lt;int&gt;
+    {
+        // Adds the system 'administrator' role, which can automatically work with all applications
+        roleInfoProvider.Get(RoleName.ADMINISTRATOR).RoleID
+    };
+
+    // Adds the role with the 'ContentEditor' code name. You can adjust this implementation to load a list of any required roles.
+    RoleInfo contentEditorRole = roleInfoProvider.Get("ContentEditor");
+    if (contentEditorRole is not null)
+    {
+        roleIds.Add(contentEditorRole.RoleID);
+    }
+
+    // Adds the IDs of roles that are allowed to work with all steps in the workflow
+    roleIds = roleIds.Union(GetRoleIdsWithFullControlForWorkflow(workflowId)).ToList();
+
+    // Gets the IDs of users belonging to the roles (without duplicates)
+    var userIds = new HashSet&lt;int&gt;();
+    foreach (int roleId in roleIds)
+    {
+        var userIdsForRole = userRoleInfoProvider
+                    .Get()
+                    .WhereEquals(nameof(UserRoleInfo.RoleID), roleId)
+                    .Column(nameof(UserRoleInfo.UserID))
+                    .GetListResult&lt;int&gt;();
+
+        userIds.UnionWith(userIdsForRole);
+    }
+
+    return userIds;
+}
+
+// Gets the IDs of roles that are allowed to work with all steps in the specified workflow
+private IList&lt;int&gt; GetRoleIdsWithFullControlForWorkflow(int workflowId)
+{
+    // IInfoProvider&lt;ContentWorkflowRoleInfo&gt; manages bindings between workflows and roles,
+    // and each binding indicates that the role is allowed to work with all steps in the workflow.
+    return workflowRoleProvider
+                            .Get()
+                            .WhereEquals(nameof(ContentWorkflowRoleInfo.ContentWorkflowRoleContentWorkflowID), workflowId)
+                            .Column(nameof(ContentWorkflowRoleInfo.ContentWorkflowRoleRoleID))
+                            .GetListResult&lt;int&gt;();
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Notification sending logic</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+private void SendWorkflowNotificationEmail(WorkflowNotificationPlaceholders placeholders, IEnumerable&lt;int&gt; recipientIds)
+{
+    // Only sends notifications if the recipient list is not empty
+    if (recipientIds == null || !recipientIds.Any())
+    {
+        return;
+    }
+           
+    foreach (int recipientUserId in recipientIds)
+    {
+        // Creates an email message based on the custom workflow notification email
+        var emailMessage = notificationEmailMessageProvider.CreateEmailMessage(placeholders.NotificationEmailName,
+                                                                               recipientUserId,
+                                                                               placeholders
+                                                                              ).GetAwaiter().GetResult();
+
+        // Adds the email message to the email queue
+        // The email is then sent using a configured email client (e.g., an SMTP server or SendGrid)
+        emailService.SendEmail(emailMessage);
+    }
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

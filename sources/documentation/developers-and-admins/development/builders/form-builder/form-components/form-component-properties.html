@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form component properties</title>
+</head>
+<body>
+<p>Alongside their front-end logic, form components contain a set of properties that can be exposed to users via the <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">configuration dialog</a>. Using the provided interface, users can parameterize a component by providing a different label, tooltip, set a field’s required status, etc.</p>
+<p>The configuration dialog lists all editable properties belonging to the currently selected form component. The editing interface for each property is provided by <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a> (a different type of components usable exclusively in the Xperience administration UI) and is fully customizable. UI form components acting in this capacity are referred to as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> in the documentation.</p>
+<p></p>
+<h2 id="defining-properties-for-custom-form-components">Defining properties for custom form components</h2>
+<p>You can define custom properties for each component in its corresponding properties class. See <a href="#example---define-a-character-size-property">Example - Define a ‘Character size’ property</a>.</p>
+<p>To expose these properties for editing, use the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">editing component attribute</a>. For more information, refer to <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns the 'TextInputComponent' as the editing component of the 'CustomProperty' property
+[TextInputComponent(Label = "Enter text")]
+public string CustomProperty { get; set; }
+
+</code></pre>
+</div>
+
+<p>Properties without the an assigned editing component are not displayed in the properties dialog, but can be managed through the component’s code.</p>
+<h2 id="system-properties-of-components">System properties of components</h2>
+<p>Each form component inherits basic system properties from the <code>FormComponentProperties</code> base class:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Additional information</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p><strong>Label</strong></p>
+</td>
+<td colspan="1">
+<p>The label text displayed in the properties dialog.</p>
+</td>
+<td colspan="1">
+<p>Can be localized by setting the value to an expression in format <code>{$key$}</code>. Replace “key” with the key of a resource string.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>Required</strong></p>
+</td>
+<td colspan="1">
+<p>When true, the form can only be submitted if the field has a value specified.</p>
+</td>
+<td colspan="1">
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>SmartField</strong></p>
+</td>
+<td colspan="1">
+<p>Indicates whether the field behaves as a <a href="/documentation/business-users/digital-marketing/forms/use-smart-fields-in-forms">smart field</a>.</p>
+</td>
+<td colspan="1">
+<p>Fields marked as smart are displayed only on repeated views of a form, as a replacement for other fields that were already filled in by the given visitor.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>DefaultValue</strong></p>
+</td>
+<td colspan="1">
+<p>The default value of the property’s input field.</p>
+</td>
+<td colspan="1">
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>Name</strong></p>
+</td>
+<td colspan="1">
+<p>The unique identifier of fields within the given form. </p>
+</td>
+<td colspan="1">
+<p>If a user adds multiple fields based on the same component to a form, the system automatically appends a number to the default name.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>Size</strong></p>
+</td>
+<td colspan="1">
+<p>Sets the size of the underlying database column.</p>
+</td>
+<td colspan="1">
+<p>When configured, it overrides the size set in the form component’s properties class constructor.</p>
+<p>If configured for an editing component (e.g., in a widget configuration dialog), sets the maximum number of characters the property can contain.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>Precision</strong></p>
+</td>
+<td colspan="1">
+<p>The number of digits floating point numbers stored in the database can contain.</p>
+</td>
+<td colspan="1">
+<p>When configured, it overrides the precision set in the form component’s properties class constructor.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>ExplanationText</strong></p>
+</td>
+<td colspan="1">
+<p>A short message usually displayed under the input field.</p>
+</td>
+<td colspan="1">
+<p>Can be localized by setting the value to an expression in format <code>{$key$}</code>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>Tooltip</strong></p>
+</td>
+<td colspan="1">
+<p>The tooltip of the property displayed on hover.</p>
+</td>
+<td colspan="1">
+<p>Can be localized by setting the value to an expression in format <code>{$key$}</code>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><strong>Placeholder</strong></p>
+</td>
+<td colspan="1">
+<p>Sets a placeholder text for the input field of the component. </p>
+</td>
+<td colspan="1">
+</td>
+</tr>
+</table>
+
+<h3 id="overriding-the-editing-components-of-system-properties">Overriding the editing components of system properties</h3>
+<p>All system properties use system UI form components as their editing components. If you wish to assign a different editing component for these properties:</p>
+<ol type="1">
+<li>
+<em>Override</em> the system property in the properties class used by your form component.</li>
+<li>Designate a different editing component using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">UI form component’s attribute</a> (e.g., <code>NumberInputComponent</code> for integers).</li>
+</ol>
+<p>The following example <em>overrides</em> the base implementation of the <code>Tooltip</code> and <code>Label</code> properties, assigns them custom editing components, and configures some of their system properties using optional constructor parameters of the editing component attributes:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Overrides the Label property and sets its editing component to 'TextInputComponent'
+[TextInputComponent(Label = "Label")]
+public override string Label { get; set; }
+
+// Overrides the Tooltip property and sets its editing component to 'TextInputComponent'
+[TextInputComponent(Label = "Tooltip")]
+public override string Tooltip { get; set; }
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Hiding system properties</strong></p>
+<p>If you wish to hide a system property of a form component in the properties dialog, override the property and omit the editing component attribute. Users will no longer be able to configure the property in the Form Builder interface.</p>
+</div>
+
+<h2 id="example---define-a-character-size-property">Example - Define a ‘Character size’ property</h2>
+<p>The following example demonstrates how to declare and configure a property that sets a field’s width to exactly fit the specified number of characters:</p>
+<ol type="1">
+<li><p>Open your project in Visual Studio.</p></li>
+<li>
+<p>Declare a new property in a component properties class and assign an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> attribute:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Forms.Web.Mvc;
+
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ public class CharacterSizeProperties : FormComponentProperties&lt;string&gt;
+ {
+     // Gets or sets the default value of the form component and the underlying field
+     [TextInputComponent(Label = "Default value", Order = EditingComponentOrder.DEFAULT_VALUE)]
+     public override string DefaultValue
+     {
+         get;
+         set;
+     }
+
+     // Defines a custom property and its editing component
+     [NumberInputComponent(Label = "Size", Tooltip = "Enter the number of characters the field's width should be set to.", ExplanationText = "Sets the field's width to exactly fit the specified number of characters", Order = -95)]
+     public int CharacterSize { get; set; }
+
+     // Initializes a new instance of the properties class and configures the underlying database field
+     public CharacterSizeProperties()
+         : base(FieldDataType.Text, 500)
+     {
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>In the view templates of form components utilizing the extended properties class, set the <code>size</code> attribute of the <code>&lt;input&gt;</code> element to the value of the custom property.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>View template</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @using Kentico.Forms.Web.Mvc
+
+ @model LearningKit.FormBuilder.FormComponents.CustomPropertyComponent
+
+ @{
+     @* Gets a collection of system HTML attributes necessary for the correct functionality of the form component inputs *@
+     var htmlAttributes = ViewData.Kentico().GetEditorHtmlAttributes();
+
+     @* Specifies additional HTML attributes for the form component *@
+     htmlAttributes["size"] = Model.Properties.CharacterSize;
+ }
+
+ @* Renders the input element for the 'Value' property of the form component *@
+ @Html.TextBoxFor(m =&gt; m.Value, htmlAttributes)
+
+ </code></pre>
+</div>
+</li>
+<li><p>Save the changes and <strong>Build</strong> your project.</p></li>
+</ol>
+<p>The custom property can now be edited on the properties dialog of form components using the modified properties class. When editors configure the property, the width of the input field is set to exactly fit the specified number of characters.</p>
+
+</body>
+</html>

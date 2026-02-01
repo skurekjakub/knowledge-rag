@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Default Page Builder widgets</title>
+</head>
+<body>
+<p>The following page lists all <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a> available for the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> out-of-the-box. You may not see all of the default system widgets for some pages, depending on the <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable area limitations</a> in your project.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Component identifiers</strong></p>
+<p>The identifiers of system components are available in the <code>SystemComponentIdentifiers</code> class (in the <code>Kentico.Content.Web.Mvc</code> namespace). For example, use <code>SystemComponentIdentifiers.RICH_TEXT_WIDGET_IDENTIFIER</code> for the identifier of the <em>Rich text</em> widget.</p>
+<p>These identifiers are required when decorating existing widgets with custom functionality. See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/extend-widgets">Extend widgets</a>.</p>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Widget name</p>
+</td>
+<td colspan="1">
+<p>Properties</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Form</p>
+</td>
+<td colspan="1">
+<p><strong>FormWidgetProperties</strong></p>
+<ul>
+<li>
+<strong>SelectedForm</strong> – an <code>IEnumerable&lt;ObjectRelatedItem&gt;</code> collection containing the code name of the selected form.</li>
+<li>
+<strong>AfterSubmitMode</strong> – the action performed after a user submits the form. Set one of the options available in <code>FormAfterSubmitModeConstants</code>.</li>
+<li><strong>AfterSubmitDisplayText</strong></li>
+<li><strong>AfterSubmitRedirectToUrl</strong></li>
+<li><strong>AfterSubmitRedirectToWebPage</strong></li>
+</ul>
+</td>
+<td>
+<p>Allows users to <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">display a form</a> on the website.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Rich text</p>
+</td>
+<td colspan="1">
+<p><strong>RichTextWidgetProperties</strong></p>
+<ul>
+<li>
+<strong>Content</strong> – a string property that contains the formatted rich text.</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Allows users to input <a href="/documentation/business-users/rich-text-editor">rich text content</a> via a toolbar with standard word processor features. You can change the default set of toolbar options available to content editors via custom toolbar configurations.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

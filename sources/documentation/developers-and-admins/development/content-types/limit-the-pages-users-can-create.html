@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Limit the pages users can create</title>
+</head>
+<body>
+<p>Xperience allows you to limit the pages users can create, making it easier for editors to create new pages on your website. You can control which pages are created in certain sections of your <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a> and more universally under certain <a href="/documentation/developers-and-admins/development/content-types">content types</a>. There are two complementary ways how you can achieve this:</p>
+<ul>
+<li>
+<a href="#define-allowed-page-content-types">Allowed page content types</a> – define which content types users can place under a given content type. This is a universal setting that doesn’t take into account the path that users place the content types under. This setting can be defined in the <strong>Content types</strong> application.</li>
+<li>
+<a href="#define-content-type-scopes">Content type scopes</a> – define which of the allowed page content types users can use when creating new pages under specified pages or folders. You can use scopes to distinguish certain sections of a given website channel and restrict the pages that users can create in them. This setting can be defined in the <strong>Channel management</strong> application.</li>
+</ul>
+<p><a href="/documentation/developers-and-admins/configuration/website-channel-management#add-allowed-content-types">Allowed content types</a> need to be added for a given website channel beforehand, to allow configuration of a website channel’s root scope. Any other sections (pages, folders) use the allowed page content types configuration, which can be further limited using scopes. The final set of allowed page content types includes only those that are present in both scopes and the allowed page content types of a given page’s content type.</p>
+<p>The configuration of content types and scopes is only applied to new pages and when moving pages in the content tree.</p>
+<h2 id="define-allowed-page-content-types">Define allowed page content types</h2>
+<p>You can control which content types users can use to create pages. There are two ways of setting the allowed content types for a specific content type.</p>
+<ul>
+<li>Allowed child content types – Allows you to control which child content types are allowed under a page of a specific content type.</li>
+<li>Allowed parent content types – Allows you to control which parent content types are allowed for a page of a specific content type.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The configuration of allowed content types is independent of the tree path structure in a given <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</p>
+</div>
+
+<h3 id="add-allowed-child-content-types">Add allowed child content types</h3>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>Select the content type you want to configure.</li>
+<li>Go to the <strong>Allowed content types</strong> tab.</li>
+<li>On the <strong>Allowed children</strong> tab, select <strong>Add content types</strong>.</li>
+<li>Select the content types you want to allow as children.</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>You have successfully added allowed child content types.</p>
+
+<div>
+
+</div>
+<div>
+<p>When you add an <em>allowed child content type</em>, the system also automatically adds a visual representation of the same relationship from the other direction to the <strong>Allowed parents</strong> tab of the child content type that you are allowing.</p>
+</div>
+
+<h3 id="remove-allowed-child-content-types">Remove allowed child content types</h3>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>Select the content type you want to configure.</li>
+<li>On the <strong>Allowed children</strong> tab, <strong>Remove</strong> () your desired content type from allowed child content types.</li>
+</ol>
+<p>You have successfully removed a content type from the allowed child content types.</p>
+<h2 id="define-content-type-scopes">Define content type scopes</h2>
+<p>You can configure allowed content types for scopes to define which of the allowed child/parent content types can be used under specific pages or folders of a given website channel. This configuration adds an additional layer of control on top of the <a href="#define-allowed-page-content-types">allowed page content types</a> settings.</p>
+<h3 id="create-scopes-for-content-types">Create scopes for content types</h3>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application.</li>
+<li>Select your website channel.</li>
+<li>On the <strong>Scopes for content types</strong> tab, select <strong>New scope</strong>.</li>
+<li>Select existing pages for which to apply the scope.</li>
+<li>Select content types you want to allow in the scope.
+<ul>
+<li>You can allow content types directly in your scope or <a href="#allow-content-types-in-scopes">allow a content type in existing scopes</a>.<br>
+</li>
+</ul>
+</li>
+<li>Select or clear the <strong>Apply for all subitems</strong> checkbox.
+<ul>
+<li>This setting applies the given scope to all direct and non-direct subitems.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>You have successfully created a scope for your content types.</p>
+<h3 id="allow-content-types-in-scopes">Allow content types in scopes</h3>
+<p>Content types can be allowed in scopes in two ways, either directly in a given website channel’s <strong>Scopes for content types</strong> tab by allowing existing content types in a scope, or by allowing a content type in existing scopes. To allow a content type in scopes:</p>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>Select the content type you want to allow.</li>
+<li>On the <strong>Allowed in scopes</strong> tab, select <strong>Add scopes</strong>
+</li>
+<li>Select the scopes you want to allow the content type in.</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>You have successfully allowed a content type in your scopes.</p>
+<h3 id="delete-scopes-for-content-types">Delete scopes for content types</h3>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application.</li>
+<li>Select your website channel.</li>
+<li>Go to the <strong>Scopes for content types</strong> tab.</li>
+<li>
+<strong>Delete</strong> () your desired scope.<br>
+</li>
+</ol>
+<p>You have successfully deleted a scope from your website channel.</p>
+
+</body>
+</html>

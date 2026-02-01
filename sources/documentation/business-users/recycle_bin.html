@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Recycle bin</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>The recycle bin feature and restoration of deleted content are available in the current version of Xperience by Kentico. If you’re using a version older than 30.12.0, deleted content cannot be recovered.</p>
+</div>
+
+<p>The recycle bin allows you to recover content that you accidentally removed. When you delete a <a href="/documentation/business-users/website-content">page</a>, a <a href="/documentation/business-users/content-hub/content-items">content item</a>, an <a href="/documentation/business-users/digital-marketing/emails">email</a> or a <a href="/documentation/business-users/headless-content">headless item</a>, it is moved to the recycle bin instead of being permanently deleted.</p>
+<h2 id="restore-deleted-items">Restore deleted items</h2>
+<p>To restore an item from the recycle bin:</p>
+<ol type="1">
+<li>Navigate to the <strong>Recycle bin</strong> application.</li>
+<li>Select the item you want to restore.
+<ul>
+<li>The items in the recycle bin are <a href="#permanently-delete-items-from-recycle-bin">permanently deleted</a> after a period of time set by your administrator, so some items might no longer be available.</li>
+<li>You can only see the items deleted by you.</li>
+</ul>
+</li>
+<li>
+<strong>Restore</strong> () the item.
+<ul>
+<li>
+<a href="/documentation/business-users/digital-marketing/emails/track-email-statistics#contact-activities-for-emails">Contact activities</a> and <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">statistics</a> won’t be available for restored emails.</li>
+<li>When a restored page or content item was linked in other content, those references will also be restored. See <a href="#references-to-restored-items">References to restored items</a> for more information.</li>
+<li>References to restored headless items are not restored.</li>
+</ul>
+</li>
+<li>Confirm the dialog to <strong>Restore</strong> the item.</li>
+</ol>
+<p>The item is now restored to the initial <em>Draft</em> step in its original location. If a content item was originally in a <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">folder</a> that has since been deleted, you can find it under <strong>All content items</strong>.</p>
+<p>If you’re not able to restore the item, see the <a href="#restore-troubleshooting">Restore troubleshooting</a> section.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Restored items can be used in other content</strong></p>
+<p>Check where restored pages and content items are used before publishing them, for example, on the <em>Used in</em> tab (see <a href="/documentation/business-users/website-content/track-page-usages">Track page usages</a> and <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">Track usage of content items</a>). Not doing so can lead to the item appearing in unwanted places or to problems with publishing other content. See <a href="#references-to-restored-items">References to restored items</a> for more information.</p>
+</div>
+
+<h3 id="references-to-restored-items">References to restored items</h3>
+<p>A <a href="/documentation/business-users/website-content">page</a> or a <a href="/documentation/business-users/content-hub/content-items">content item</a> can be used in other content (pages, content items, emails, headless items) before it’s deleted. When the page or the content item is later restored, these references are restored as well. Once the restored item is published, other content can display the restored item.</p>
+<p>For example, a home page links to other pages to show a preview of promoted articles. One of these article pages is deleted and since then, its preview is no longer visible on the home page. Later, the deleted article is restored. When it’s published, it appears on the live home page again.</p>
+<p>This can create problems, for example if the article is outdated, or if the homepage is now configured to display fewer articles. For this reason, it’s necessary to <strong>check the usages of the restored item before publishing it</strong>. See <a href="/documentation/business-users/website-content/track-page-usages">Track page usages</a> and <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">Track usage of content items</a>.</p>
+<p>Hypertext links to items in the <a href="/documentation/business-users/rich-text-editor">rich text editor</a> are not restored if they were removed.</p>
+
+<div>
+
+</div>
+<div>
+<p>References to headless items are not restored.</p>
+</div>
+
+<h3 id="emails">Emails</h3>
+<p>Although <a href="/documentation/business-users/digital-marketing/emails">emails</a> cannot be used in other pieces of content, they can be selected to be automatically sent when certain actions happen, for example as an <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">autoresponder email</a> for <a href="/documentation/business-users/digital-marketing/forms">form submissions</a>. These selections are not automatically restored. To use the restored email again, you need to publish it and assign it again in the corresponding application.</p>
+<p>Note that <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">statistics</a> and <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics#contact-activities-for-emails">contact activities</a> are not available for restored emails.</p>
+<h2 id="permanently-delete-items-from-recycle-bin">Permanently delete items from recycle bin</h2>
+<p>If you are sure you no longer need an item in the recycle bin, you can delete it permanently. If you don’t do it yourself, the item will be permanently deleted by the system after a time period set by your administrator.</p>
+<p>To permanently delete an item from the recycle bin:</p>
+<ol type="1">
+<li>Navigate to the <strong>Recycle bin</strong> application.</li>
+<li>Select the item you want to permanently delete.</li>
+<li>
+<strong>Delete</strong> () the item.</li>
+<li>Confirm the dialog to <strong>Delete permanently</strong>.</li>
+</ol>
+<p>The item is now permanently deleted and cannot be restored.</p>
+<h2 id="restore-troubleshooting">Restore troubleshooting</h2>
+<p>If an item has been deleted for a long time, changes in other content might occur, which can sometimes prevent the item from being restored.</p>
+<p>The following table lists the causes and the options you can try to restore the item.</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="2">
+<p>Content items, headless items, pages</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Cause</strong></p>
+</td>
+<td>
+<p><strong>Solution</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Existing variant in the same language</p>
+</td>
+<td>
+<p>A new language variant in the same language was created since you deleted the item. The variant in the recycle bin can be restored when the existing one is deleted. Keep in mind that other users might be working on the currently used language variant.</p>
+</td>
+</tr>
+<thead>
+<tr>
+<td colspan="2">
+<p>Pages</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Cause</strong></p>
+</td>
+<td>
+<p><strong>Solution</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Missing parent page</p>
+</td>
+<td>
+<p>If the page was created under a parent page, it cannot be restored without the parent. If the parent page is available in the recycle bin, try restoring it first.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Missing <em>Create</em> permission</p>
+</td>
+<td>
+<p>Your permissions changed since you deleted the item. If you no longer have the <em>Create</em> permission for the page’s original location, you cannot restore the page. Contact your administrator to resolve the situation.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page scope change</p>
+</td>
+<td>
+<p>The <a href="/documentation/developers-and-admins/development/content-types/limit-the-pages-users-can-create">scopes</a> where pages of certain content types can be created have changed. Contact your administrator.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>URL collision</p>
+</td>
+<td>
+<p>An existing page is using the same <a href="/documentation/business-users/website-content/manage-page-urls">URL</a> as the one you are trying to restore. This issue can be resolved by changing the conflicting URL of the existing page. However, it is not currently possible to view the content of deleted items. Ask your administrator or a developer for assistance.</p>
+</td>
+</tr>
+</table>
+
+<p>In some cases, it is no longer possible to restore the item. Emails cannot be restored if their template (excluding <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates#save-emails-as-preset-email-templates">preset templates</a>), <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers#create-recipient-lists">recipient list</a>, or an associated <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> were deleted. Content items can no longer be restored when the <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a> they were removed from was deleted.</p>
+
+</body>
+</html>

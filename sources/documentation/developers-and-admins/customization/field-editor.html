@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Field editor</title>
+</head>
+<body>
+<p>The field editor allows users to define fields for objects managed by Xperience (<a href="/documentation/developers-and-admins/development/content-types">content types</a>, <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">system classes</a>, <a href="/documentation/developers-and-admins/customization/object-types">object types</a>). Each field matches a column in the database table belonging to the corresponding object. </p>
+<p>A field’s main attributes are its:</p>
+<ul>
+<li>name – a unique identifier.</li>
+<li>data type – the type of data stored by the field in the underlying database column (string, integer, binary, etc.).</li>
+<li>assigned value editor – the input interface used to edit the field. Dictated by the <a href="#ui-form-components">UI form component</a> selected to manage the field (a drop-down list, check box, etc.).</li>
+</ul>
+<p>Together, fields defined for an object comprise a form used to edit the corresponding field values. Forms created in this fashion appear in various places throughout the administration interface, depending on the object (e.g., in the <strong>Content</strong> of pages in a <a href="/documentation/business-users/website-content">website channel application</a> when creating new pages based on content types).</p>
+<p></p>
+<p>You can use the field editor to:</p>
+<ul>
+<li><a href="#create-new-fields">Create new fields</a></li>
+<li><a href="#move-fields">Move fields</a></li>
+<li><a href="#delete-fields">Delete fields</a></li>
+</ul>
+<h2 id="create-new-fields">Create new fields</h2>
+<p>Select <strong>New field</strong> to add new fields.</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="2">
+<p>General</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Field name</p>
+</td>
+<td>
+<p>Sets the name used for the database column (or XML field) that stores the values of the field. Also serves as the field’s unique identifier.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Data type</p>
+</td>
+<td>
+<p>Sets the <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> of the field’s value (also determines the data type used by the field’s representation in the database).</p>
+<p><strong>Note</strong>: You may encounter an error when attempting to change the data type for fields that already store values of the original type. Most types of values cannot automatically be converted to a different data type (for example text values to date and time). In these cases, you either need to write and run custom code that changes the field type and correctly converts all values, or delete the existing field (and discard all current values) and then create a new field of the required type.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Size</p>
+</td>
+<td>
+<p>Sets the maximum amount of characters that can be entered into the field. Only available if the <strong>Data type</strong> is set to <em>Text</em>.</p>
+<div>
+<div>
+
+</div>
+<div>
+<p>When using the field to store image descriptions and leveraging the <em>Automatically generate image description</em> <a href="/documentation/business-users/aira#automatically-generate-image-description">AIRA feature</a>, we recommend using a size of at least 100 characters.</p>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Required</p>
+</td>
+<td colspan="1">
+<p>If checked, the form can only be saved if this field has a value specified. Disable to make the field optional.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Default value</p>
+</td>
+<td>
+<p>Default value of the field pre-filled when the form is loaded.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Display field in the editing form</p>
+</td>
+<td>
+<p>Indicates if the given field should be shown in the form to users. This can be disabled for fields that store internal or system values.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>Field appearance</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Field caption</p>
+</td>
+<td>
+<p>Sets the text displayed next to the field in the form.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Tooltip text</p>
+</td>
+<td colspan="1">
+<p>Tooltip which is displayed if a user hovers over the field.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Text below the input</p>
+</td>
+<td colspan="1">
+<p>Text displayed directly below the field in the form.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Form component</p>
+</td>
+<td>
+<p>Selects the form control through which users interact with the field in the editing form.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>Form component configuration</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>The settings in this section provide a way to configure the parameters defined for the selected <a href="#ui-form-components">UI form component</a>. The available options depend on the parameters defined for the given form component.</p>
+<p>See the tooltips of individual parameters for more information.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>Validation</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Validation rules</p>
+</td>
+<td colspan="1">
+<p>Specifies the input which the user is allowed to submit in the field. To add a validation rule, select <strong>Add rule</strong>.</p>
+<p>You can add multiple validation rules for one field, but be careful not to create contradictory rules.</p>
+<p>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">UI form component validation rules</a> for more information about field validation rules.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>Visibility</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visibility conditions</p>
+</td>
+<td colspan="1">
+<p>Visibility conditions are only available for:</p>
+<ul>
+<li>Fields of <a href="/documentation/developers-and-admins/development/content-types">content types</a> and <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> (not in UI forms for module classes)</li>
+<li>Fields that are <strong>not</strong> set as <strong>Required</strong>
+</li>
+</ul>
+<p>The settings in this section allow you to dynamically display or hide the field based on a condition. Each field can only have <strong>one</strong> visibility condition.</p>
+<p>By default, the system provides a set of conditions that assess the value of another field.</p>
+<ol type="1">
+<li>Select <em>Depends on another field</em> as the <strong>Condition type</strong>.</li>
+<li>Choose a <strong>Target field</strong>.
+<ul>
+<li>
+<strong>Note</strong>: The target field must be placed <em>above</em> the currently edited field. The visibility condition will stop working if the target field is reordered under the conditioned field.</li>
+</ul>
+</li>
+<li>Select a <strong>Condition</strong> (<em>Equal to</em>, <em>Contains</em>, <em>Empty</em>, etc.). The available conditions depend on the data type of the target field.</li>
+<li>Specify parameters for the condition, such as the <em>Value</em> against which the target field will be evaluated.</li>
+<li>
+<strong>Save</strong> the field.</li>
+</ol>
+<p>Developers can create and register custom visibility conditions based on project requirements. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">UI form component visibility conditions</a> for more information.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="field-operations">Field operations</h2>
+<h3 id="move-fields">Move fields</h3>
+<p>You can change the position of a field using the drag handle (). </p>
+<p>Moving fields also changes their positions in the resulting form.</p>
+<h3 id="delete-fields">Delete fields</h3>
+<p>You can delete existing fields by selecting the <strong>Delete</strong> () icon. This operation is irreversible and you will lose all data stored under the field.</p>
+<h2 id="ui-form-components">UI form components</h2>
+<p><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">Form components</a> define the editing interface for fields that comprise editing forms in the Xperience administration interface. Each field is assigned a single form component that serves as its editing interface, such as a text box for user input, a group of radio buttons, or a drop-down selector.</p>
+<p>All editing forms in the Xperience administration are based on UI form components:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Content type</a> editing forms (<strong>Content</strong> view mode)</li>
+<li>Configuration dialogs of admin UI editing forms (Page Builder components, Form Builder components, other editing dialogs). See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>.</li>
+<li>Editing forms of <a href="/documentation/developers-and-admins/customization/object-types">object types</a> (UI forms)</li>
+</ul>
+<p>Form components are implemented as conventional C# objects with their interface provided by a React component. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a> for more information.</p>
+
+</body>
+</html>

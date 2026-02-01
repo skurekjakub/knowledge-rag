@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Product catalog</title>
+</head>
+<body>
+<p>When designing the content model for the product catalog, we recommend using content storage options provided by Xperience instead of developing custom classes or modules.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Content modeling guide</strong></p>
+<p>We recommend that you familiarize yourself with general content modeling recommendations and product features of Xperience by Kentico. Reading the <a href="/guides/architecture/content-modeling/content-modeling-guide">content modeling guide</a> will help you understand this page.</p>
+<p>For a practical implementation example, see <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog/example-product-catalog">Example product catalog</a> or browse the digital commerce implementation in the <a href="/documentation/developers-and-admins/installation#available-project-templates">DancingGoat sample project</a>.</p>
+</div>
+
+<p>There are two options when it comes to storing your product catalog. Either you can store products as <a href="/documentation/business-users/content-hub/content-items">reusable content items</a> in the <a href="/documentation/business-users/content-hub">content hub</a>, or you can store them as <a href="/documentation/business-users/website-content">pages</a> in a <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+</td>
+<td>
+<p>Content hub</p>
+</td>
+<td>
+<p>Website channel</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Content storage</p>
+</td>
+<td>
+<p>Products are stored in the <a href="/documentation/business-users/content-hub">content hub</a> as <a href="/documentation/business-users/content-hub/content-items">reusable content items</a>.</p>
+<p>This approach enables you to use all content hub features, but requires you to create a page for every product. Although, this process can be automated.</p>
+</td>
+<td>
+<p>Products are stored in a <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> as <a href="/documentation/business-users/website-content">pages</a>.</p>
+<p>This approach is best suited for scenarios when the store is tightly connected to the website channel.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Catalog organization</p>
+</td>
+<td>
+<p>All content hub features are available: <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspaces</a>, <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">folders</a>, <a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">smart folders</a>.</p>
+</td>
+<td>
+<p>You can use the content tree structure for organization of the product catalog.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Categorization</p>
+</td>
+<td colspan="2">
+<p>You can use <a href="/documentation/developers-and-admins/development/content-types">content types</a> (with <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>) and <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomies</a> (or their combination) for categorization of the product catalog. It is not recommended to use the content tree structure for categorization of products, except for when the number of products is very small.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="general-recommendations">General recommendations</h2>
+<p>The following recommendations are valid regardless of the selected catalog storage option:</p>
+<ul>
+<li>Use <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> for common product fields. The schema should contain all fields that are used when displaying products in a listing. For more information, see <a href="#product-fields">Product fields</a>.
+<ul>
+<li>
+<em>ProductFields</em> (reusable field schema)
+<ul>
+<li><em>ProductFieldsName</em></li>
+<li><em>ProductFieldsDescription</em></li>
+<li><em>ProductFieldsPrice</em></li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Create <a href="/documentation/developers-and-admins/development/content-types">content types</a> for individual product types depending on required product fields:
+<ul>
+<li>
+<em>Book</em> (product type)
+<ul>
+<li>
+<em>ProductFields</em> (reusable field schema)</li>
+<li><em>BookAuthor</em></li>
+<li><em>BookCoverType</em></li>
+<li><em>BookGenre</em></li>
+<li>…</li>
+</ul>
+</li>
+<li>
+<em>Reader</em> (product type)
+<ul>
+<li>
+<em>ProductFields</em> (reusable field schema)</li>
+<li><em>ReaderManufacturer</em></li>
+<li><em>ReaderStorageSize</em></li>
+<li>…</li>
+</ul>
+</li>
+<li>
+<em>Accessory</em> (general product without any extra fields)
+<ul>
+<li>
+<em>ProductFields</em> (reusable field schema)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>You can use <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> for sub-groups of product types. For example, all clothing has common properties in addition to the basic product fields:
+<ul>
+<li>
+<em>ClothingProductFields</em> (reusable field schema)
+<ul>
+<li><em>ClothingProductFieldsColor</em></li>
+<li><em>ClothingProductFieldsSize</em></li>
+<li><em>ClothingProductFieldsMaterial</em></li>
+<li><em>ClothingProductFieldsManufacturer</em></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>A field storing the product manufacturer can be separated into a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a>
+</li>
+</ul>
+<h2 id="product-variants">Product variants</h2>
+<p>It is recommended to model product variants as “child” items of a parent product, which holds all the shared information. Create a dedicated product content type for product variants and include only the fields that need to be overwritten from the parent. We recommend defining <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> that group the modified fields, so you can easily reuse them across different types of variants.</p>
+<p>A sample configuration can look like the following:</p>
+<ul>
+<li>
+<em>ProductSizeFields</em> (reusable field schema)
+<ul>
+<li><em>ProductSizeFieldsValue</em></li>
+</ul>
+</li>
+<li>
+<em>Shirt</em> (parent product type)
+<ul>
+<li>
+<em>ProductFields</em> (reusable field schema)</li>
+<li><em>ShirtMaterial</em></li>
+<li><em>ShirtColor</em></li>
+</ul>
+</li>
+<li>
+<em>ShirtSizeVariant</em> (variant product type)
+<ul>
+<li>
+<em>ProductSKU</em> (reusable field schema)</li>
+<li>
+<em>ProductStock</em> (reusable field schema)</li>
+<li>
+<em>ProductSizeFields</em> (reusable field schema)</li>
+</ul>
+</li>
+</ul>
+<p>Note that the parent product doesn’t need to store an <a href="#sku-field">SKU</a>, since you cannot buy a shirt without specifying the variant. On the other hand, the variant product doesn’t need to store product fields, since the shirts are identical except for their size.</p>
+<h3 id="variants-in-the-content-hub">Variants in the content hub</h3>
+<p>When storing products as <a href="/documentation/business-users/content-hub/content-items">reusable content items</a> in the <a href="/documentation/business-users/content-hub">content hub</a>, the parent product should include a <em>Variants</em> field configured as a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> restricted to the product variant content type. This allows you to clearly link variants to their parent. The parent product also you to create a page to provide a public URL.</p>
+<p>Product variants appear in the same flat list as the parent products. To organized products, use clear naming conventions. We recommend to name the variant using the parent product’s name followed by a distinguishing suffix, for example: “Striped grey T-shirt - M”. Since product variants typically don’t require their own public URLs, there’s no need to create a page for them.</p>
+<h3 id="variants-in-website-channels">Variants in website channels</h3>
+<p>When storing products as <a href="/documentation/business-users/website-content">pages</a> in a <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>, use the content tree to reflect the parent-child relationship between products and their variants by placing variants under the parent product. The parent product acts as the main product entry and should have its own URL.</p>
+<p>For product variant content types, you can disable the <em>Include in routing</em> setting, as they usually don’t need to be accessed through a separate URL. Follow the same naming recommendation: use the parent product name and add a variant-specific suffix: “Striped grey T-shirt - M”.</p>
+<h2 id="product-fields">Product fields</h2>
+<p>The base product <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> should contain all fields that are used when displaying products in a listing on your storefront. This enables you to easily work with the products programmatically and display all products in a universal way.</p>
+<p>Recommended product fields are:</p>
+<ul>
+<li>
+<em>ProductFields</em> (reusable field schema)
+<ul>
+<li><em>ProductFieldsName</em></li>
+<li><em>ProductFieldsDescription</em></li>
+<li><em>ProductFieldsPrice</em></li>
+<li><em>ProductFieldsImage</em></li>
+<li><em>ProductFieldsCategory</em></li>
+<li><em>ProductFieldsTags</em></li>
+</ul>
+</li>
+</ul>
+<h2 id="sku-field">SKU field</h2>
+<p>An SKU (Stock Keeping Unit) is a unique code used to identify and track a specific product or product variant in a store’s inventory.</p>
+<p>Create a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> with a SKU field:</p>
+<ul>
+<li>
+<em>ProductSKU</em> (reusable field schema)
+<ul>
+<li><em>ProductSKUCode</em></li>
+</ul>
+</li>
+</ul>
+<p>The SKU field can be included in the <em>Product fields</em> reusable field schema. However, when implementing <a href="#product-variants">product variants</a>, you may want to have a distinct SKU for each product variant, but only need <em>Product fields</em> for the parent product.</p>
+<h2 id="product-stock">Product stock</h2>
+<p>See <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog/model-product-stock">Model product stock</a> for details on implementing product stock management.</p>
+<h2 id="seo-fields">SEO fields</h2>
+<p>If you use content hub as the storage for your product catalog and you want to automatically generate pages for each product, it is recommended to store SEO fields (e.g., title, description, keywords) together with the product in the content hub, so that you can edit all properties of a product in one place.</p>
+
+</body>
+</html>

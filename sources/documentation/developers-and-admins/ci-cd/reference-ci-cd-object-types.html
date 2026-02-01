@@ -1,0 +1,1188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - CI/CD object types</title>
+</head>
+<body>
+<p>The <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> and <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> features support the following types of Xperience objects:</p>
+<ul>
+<li><a href="#general">General</a></li>
+<li><a href="#content-management">Content management</a></li>
+<li><a href="#digital-marketing">Digital marketing</a></li>
+<li><a href="#digital-commerce">Digital commerce</a></li>
+<li><a href="#binding-object-types">Binding object types</a></li>
+</ul>
+
+<p>Related pages</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a></li>
+<li><a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a></li>
+<li><a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure">CI/CD repository structure</a></li>
+<li><a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">Exclude objects from CI/CD</a></li>
+</ul>
+
+<h2 id="general">General</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Object type</p>
+</td>
+<td>
+<p>CI/CD folder name</p>
+</td>
+<td>
+<p>Notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/customization/object-types#define-editing-forms">Alternative forms</a></p>
+</td>
+<td>
+<p>cms.alternativeform</p>
+</td>
+<td>
+<p>Used by the Xperience administration. Contains definitions of UI forms used to provide editing interfaces for <a href="/documentation/developers-and-admins/customization/object-types">object types</a>.</p>
+<p>Child object type of <strong>Module class</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/website-channel-management">Channels</a></p>
+</td>
+<td>
+<p>cms.channel</p>
+</td>
+<td>
+<p>A medium for delivering content via a specific method (website, email, social networks).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/data-protection/consent-management">Consents</a></p>
+</td>
+<td>
+<p>cms.consent</p>
+</td>
+<td>
+<p>Includes consent definitions, with all consent texts. CI/CD does not include archived consents or consent agreements given by contacts.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/languages">Languages</a></p>
+</td>
+<td>
+<p>cms.contentlanguage</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Modules <span id="cms-resource"></span></p>
+</td>
+<td>
+<p>cms.resource</p>
+</td>
+<td>
+<p>Contains definitions for system and <a href="/documentation/developers-and-admins/customization/object-types#define-the-data-class">custom modules</a>. Direct parent of module class (cms.class) objects.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Module classes (cms.class)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Module classes</p>
+</td>
+<td>
+<p>cms.class</p>
+</td>
+<td>
+<p>Includes the definitions and settings of module classes (<a href="/documentation/developers-and-admins/customization/object-types">object types</a>). Used internally by the Xperience administration and data structure.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Alternative forms (cms.alternativeform)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Module classes - Customizable</p>
+</td>
+<td>
+<p>cms.systemtable</p>
+</td>
+<td>
+<p>Includes the definitions and settings of certain module classes (object types). Used internally by the Xperience administration and data structure.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Alternative forms (cms.alternativeform)</li>
+<li>Queries (cms.query)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/notifications">Notification emails</a></p>
+</td>
+<td>
+<p>cms.notificationemail</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/notifications#notification-email-templates">Notification email templates</a></p>
+</td>
+<td>
+<p>cms.notificationemailtemplate</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Queries</p>
+</td>
+<td>
+<p>cms.query</p>
+</td>
+<td>
+<p>Used internally by the system.</p>
+<p>Child object type of <strong>Module class</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/users/role-management">Roles</a></p>
+</td>
+<td>
+<p>cms.role</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/customization/scheduled-tasks">Scheduled task</a> configurations</p>
+</td>
+<td>
+<p>cms.scheduledtaskconfiguration</p>
+</td>
+<td>
+<p>Information about scheduled task execution intervals and other metadata.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Setting categories and groups</p>
+</td>
+<td>
+<p>cms.settingscategory</p>
+</td>
+<td>
+<p>The <em>cms.settingscategory</em> object type includes both setting categories and setting groups.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/settings">Settings</a></p>
+</td>
+<td>
+<p>cms.settingskey</p>
+</td>
+<td>
+<p>Settings are supported, but <strong><em>excluded by default</em></strong> in the <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">repository.config file</a>. Settings may contain sensitive data – only remove the exclusion if you agree to make setting values available within the file system used by your application and any connected source control systems. You can configure the <em>repository.config</em> file to include settings in general, but exclude individual setting keys that you consider sensitive.</p>
+<p><strong>Important:</strong> The <strong>License key</strong> (<em>Settings</em> -&gt; <em>System</em> -&gt; <em>Licenses</em>) setting that stores the <a href="/documentation/developers-and-admins/installation/licenses#license-keys">license key</a> used to activate the instance is excluded permanently regardless of your <em>repository.config</em> configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/users/user-management">Users</a></p>
+</td>
+<td>
+<p>cms.user</p>
+</td>
+<td>
+<p>User accounts for the administration interface.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">Workspaces</a></p>
+</td>
+<td>
+<p>cms.workspace</p>
+</td>
+<td>
+<p>When using CI/CD to add a new workspace, your <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">repository configuration</a> must also include the <em>cms.contentfolder</em> object type. Each workspace requires a root content folder to ensure that <a href="/documentation/business-users/content-hub">Content hub</a> works correctly.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="content-management">Content management</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Object type</p>
+</td>
+<td>
+<p>CI/CD folder name</p>
+</td>
+<td>
+<p>Notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><span id="cicd_contenttypes"></span><a href="/documentation/developers-and-admins/development/content-types">Content types</a></p>
+</td>
+<td>
+<p>cms.contenttype</p>
+</td>
+<td>
+<p>Stores content type definitions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><span id="cicd_contentitems"></span><a href="/documentation/business-users/content-hub">Content items</a></p>
+</td>
+<td>
+<p>contentitemdata.*<br>
+cms.contentitem<br>
+cms.contentitemcommondata<br>
+cms.contentitemlanguagemetadata</p>
+</td>
+<td>
+<p>The system uses multiple files to store content item data. See the <strong>Content items</strong> section of <a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure#content-items">CI/CD repository structure</a> for more information.</p>
+<p><strong>Important:</strong> To include or exclude content items from the repository, use the <code>IncludedContentItemsOfType</code> or <code>ExcludedContentItemsOfType</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-content-items">filters</a>. (<a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Available from Xperience 30.4.0</a>)</p>
+<hr>
+<p>CI/CD data does <strong>not include</strong> changes made to new versions of previously published content items. While an item is in the <em>Draft (New version)</em> status (or a custom <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a>), CI/CD stores the original published version, until the new changes are published. Consequently, the <strong>published</strong> version of content items is always restored by CI/CD – any changes made in <em>Draft (New version)</em> or custom workflow steps are <strong>lost</strong> when the item is restored.</p>
+<hr>
+<p><strong>Content item asset fields</strong></p>
+<p>Binary data managed by <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> of the <em>Content item asset</em> data type is serialized into the repository together with the source content item objects – on instances using CI/CD, the binary data exists in two copies: one in the <em>~/assets</em> folder and the second in the repository.</p>
+<p><strong>Note</strong>: Changing the data type of <em>Content item asset</em> fields or removing these fields entirely will result in abandoned binary files in the repository. To remove these unwanted files, serialize all objects again, which recreates the repository without the orphaned files.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">Content folders</a></p>
+</td>
+<td>
+<p>cms.contentfolder</p>
+</td>
+<td>
+<p>Stores folders used to organize items in the <em>Content hub</em> application. Required for all projects to ensure that the content hub works correctly.</p>
+<p>The CI/CD files storing content hub folder data are organized into file system subfolders named according to each content hub folder’s parent. The hierarchy starts from a “root” system folder.</p>
+<p><a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">Smart folders</a> are stored separately as <em>cms.smartfolder</em> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channel configuration</a></p>
+</td>
+<td>
+<p>cms.headlesschannel</p>
+</td>
+<td>
+<p>Child object type of <strong>Channel</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/headless-content">Headless items</a></p>
+</td>
+<td>
+<p>contentitemdata.*<br>
+cms.contentitem<br>
+cms.contentitemcommondata<br>
+cms.contentitemlanguagemetadata<br>
+cms.headlessitem</p>
+</td>
+<td>
+<p>The system uses multiple files to store headless item data. See the <strong>Headless items</strong> section of <a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure#headless-items">CI/CD repository structure</a> for more information.</p>
+<p><strong>Important:</strong> To include or exclude headless items from the repository, use the <code>IncludedContentItemsOfType</code> or <code>ExcludedContentItemsOfType</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-content-items">filters</a>. (<a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Available from Xperience 30.4.0</a>)</p>
+<hr>
+<p>CI/CD data does <strong>not include</strong> changes made to new versions of previously published headless items. While an item is in the <em>Draft (New version)</em> status (or a custom <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a>), CI/CD stores the original published version, until the new changes are published. Consequently, the <strong>published</strong> version of headless items is always restored by CI/CD – any changes made in <em>Draft (New version)</em> or custom workflow steps are <strong>lost</strong> when the item is restored.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/media-libraries/manage-media-files">Media library files</a></p>
+</td>
+<td>
+<p>media.file</p>
+</td>
+<td>
+<p>Child object type of <strong>Media library</strong> objects.</p>
+<p>Only includes media file definitions, not the binary data of individual media files. Binary data is stored on the file system in the media library folders.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/website-content">Pages</a></p>
+</td>
+<td>
+<p>contentitemdata.*<br>
+cms.contentitem<br>
+cms.contentitemcommondata<br>
+cms.contentitemlanguagemetadata<br>
+cms.webpageitem</p>
+</td>
+<td>
+<p>The system uses multiple files to store page data. See the <strong>Pages</strong> section of <a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure#pages">CI/CD repository structure</a> for more information.</p>
+<p><strong>Important:</strong> To include or exclude pages from the repository, use the <code>IncludedContentItemsOfType</code> or <code>ExcludedContentItemsOfType</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-content-items">filters</a>. (<a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Available from Xperience 30.4.0</a>)</p>
+<hr>
+<p>CI/CD data does <strong>not include</strong> changes made to new versions of previously published pages. While a page is in the <em>Draft (New version)</em> status (or a custom <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a>), CI/CD stores the original published version, until the new changes are published. Consequently, the <strong>published</strong> version of pages is always restored by CI/CD – any changes made in <em>Draft (New version)</em> or custom workflow steps are <strong>lost</strong> when the page is restored.</p>
+<p>CI/CD data also does <strong>not include</strong> changes made to <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a>. After performing the CD restore operation, the moved and newly created pages inherit permissions from their new parent page.</p>
+<hr>
+<p>Supported child objects:</p>
+<ul>
+<li>
+<a href="/documentation/business-users/website-content/manage-page-urls#former-urls">Page former URL paths</a> (cms.webpageformerurlpath)</li>
+<li>
+<a href="/documentation/business-users/website-content/manage-page-urls">Page URL paths</a> (cms.webpageurlpath)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls#former-urls">Page former URL paths</a></p>
+</td>
+<td>
+<p>cms.webpageformerurlpath</p>
+</td>
+<td>
+<p>Child object type of <strong>Page</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls">Page URL paths</a></p>
+</td>
+<td>
+<p>cms.webpageurlpath</p>
+</td>
+<td>
+<p>Child object type of <strong>Page</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Web page folders</p>
+</td>
+<td>
+<p>##WebPageFolders##</p>
+</td>
+<td>
+<p><strong>Important:</strong> Dedicated mechanism for including/excluding website channel folders was introduced starting with <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">v2 configuration files</a> available from version 30.4.0.</p>
+<p>Website channel folders that are used to group pages in the content tree. They are represented as regular content items but have no backing content type structure. To track these folders in CI/CD repositories, use the <em>##WebPageFolders##</em> placeholder instead of a regular content type inside the <code>&lt;IncludedContentItemsOfType&gt;</code> or <code>&lt;ExcludedContentItemsOfType&gt;</code> elements.</p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Track website channel folders</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;IncludedContentItemsOfType&gt;
+  &lt;ContentType&gt;
+    ##WebPageFolders##
+  &lt;/ContentType&gt;
+&lt;/IncludedContentItemsOfType&gt;
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">Preset page templates</a></p>
+</td>
+<td>
+<p>cms.pagetemplateconfiguration</p>
+</td>
+<td>
+<p>The Page Builder configuration of a saved preset page template created using a default page template.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">Reusable field schemas</a> <span id="rfs_tracking"></span></p>
+</td>
+<td>
+<p>cms.class</p>
+</td>
+<td>
+<p>Reusable field schema definitions and data are stored as part of the <em>cms.contentitemcommondata</em> object type.</p>
+<p>If your <a href="#cicd_contenttypes">content types</a> use reusable field schemas and you want to track changes to their structure and data, you must serialize <em>cms.contentitemcommondata</em> into your repository. This is particularly relevant for <a href="/documentation/developers-and-admins/saas">SaaS</a> projects that need to explicitly opt-in for each CI/CD object.</p>
+<p>Tracking reusable field schemas in CI/CD requires the following includes in <em>repository.config</em>.</p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Add reusable field schema definitions to CI/CD</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;IncludedObjectTypes&gt;
+    &lt;ObjectType&gt;cms.class&lt;/ObjectType&gt;
+&lt;/IncludedObjectTypes&gt;
+
+&lt;ObjectFilters&gt;
+    &lt;!-- Contains reusable field schema definitions --&gt;
+    &lt;IncludedCodeNames ObjectType="cms.class"&gt;
+        CMS.ContentItemCommonData
+    &lt;/IncludedCodeNames&gt;
+&lt;/ObjectFilters&gt;
+</code></pre>
+</div>
+</div>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>cms.resource filtering</strong></p>
+<p>The <a href="#cms-resource">cms.resource</a> object type is a direct parent of all <em>cms.class</em> object types.</p>
+<p>If your <em>repository.config</em> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">includes or excludes</a> a subset of <em>cms.resource</em> objects, you need to explicitly include the <strong>CMS.ContentEngine</strong> resource to enable <em>cms.contentitemcommondata</em> serialization.</p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>cms.resource allowlist</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;IncludedCodeNames ObjectType="cms.resource"&gt;
+    CMS.ContentEngine
+&lt;/IncludedCodeNames&gt;
+</code></pre>
+</div>
+</div>
+<p>After including the resource, run the store operation again to serialize it to your repository.</p>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">Smart folders</a></p>
+</td>
+<td>
+<p>cms.smartfolder</p>
+</td>
+<td>
+<p>Stores smart folders, which are used to dynamically categorize and filter items in the <em>Content hub</em> application.</p>
+<p>The <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folder</a> hierarchy in the <em>Content hub</em> application is stored separately using <em>cms.contentfolder</em> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/taxonomies">Taxonomies</a></p>
+</td>
+<td>
+<p>cms.taxonomy</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/taxonomies">Tags</a></p>
+</td>
+<td>
+<p>cms.tag</p>
+</td>
+<td>
+<p>Tags that belong under another tag in the taxonomy tree are stored as child objects in the CI/CD repository. CI/CD files representing child tags are placed under subfolders named according to the parent tag.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/content-types/limit-the-pages-users-can-create">Web page scope</a></p>
+</td>
+<td>
+<p>cms.webpagescope</p>
+</td>
+<td>
+<p>Child object type of <strong>Website channel configuration</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/website-channel-management">Website channel configuration</a></p>
+</td>
+<td>
+<p>cms.websitechannel</p>
+</td>
+<td>
+<p>Child object type of <strong>Channel</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/workflows">Workflows</a></p>
+</td>
+<td>
+<p>cms.contentworkflow</p>
+</td>
+<td>
+<p>Supported child objects:</p>
+<ul>
+<li>Workflow step (cms.contentworkflowstep)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workflow step</p>
+</td>
+<td>
+<p>cms.contentworkflowstep</p>
+</td>
+<td>
+<p>Child object type of <strong>Workflow</strong> (cms.contentworkflow) objects.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="digital-marketing">Digital marketing</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Object type</p>
+</td>
+<td>
+<p>CI/CD folder name</p>
+</td>
+<td>
+<p>Notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">Activity types</a></p>
+</td>
+<td>
+<p>om.activitytype</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/automation">Automation processes</a></p>
+</td>
+<td>
+<p>ma.automationprocess</p>
+</td>
+<td>
+<p>Stores automation processes. CI/CD data does <strong>not include</strong> information about contacts passing through automation processes, or the contact history and other statistics of automation steps.</p>
+<p>Also required to ensure the functionality of all types of <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form autoresponders</a>, which internally use automation.</p>
+<p>Note: If you delete or significantly restructure the steps in a process, and then CI/CD restore these changes on an instance where the process is already enabled or has contact history, you may break the process or cause inconsistencies. This scenario is <strong>not supported</strong>.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Automation steps (ma.automationstep)</li>
+<li>Automation triggers (cms.objectworkflowtrigger)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Automation actions</p>
+</td>
+<td>
+<p>ma.automationaction</p>
+</td>
+<td>
+<p>Stores data representing the step types that perform specific actions within automation processes (e.g., “Send email”).</p>
+<p>Also required to ensure the functionality of all types of <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form autoresponders</a>, which internally use automation.</p>
+<p>Required for all projects to ensure system functionality that internally uses automation processes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Automation steps</p>
+</td>
+<td>
+<p>ma.automationstep</p>
+</td>
+<td>
+<p>Stores steps within automation processes (Automation Builder). CI/CD data does <strong>not include</strong> information about contacts passing through automation processes, or the contact history and other statistics of automation steps.</p>
+<p>Also required to ensure the functionality of all types of <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form autoresponders</a>, which internally use automation.</p>
+<p>Note: If you delete or significantly restructure the steps in a process, and then CI/CD restore these changes on an instance where the process is already enabled or has contact history, you may break the process or cause inconsistencies. This scenario is <strong>not supported</strong>.</p>
+<p>Child object type of <strong>Automation process</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Automation triggers</p>
+</td>
+<td>
+<p>cms.objectworkflowtrigger</p>
+</td>
+<td>
+<p>Stores the triggers of automation processes.</p>
+<p>Also required to ensure the functionality of all types of <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form autoresponders</a>, which internally use automation.</p>
+<p>Child object type of <strong>Automation process</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/contact-groups">Contact groups</a></p>
+</td>
+<td>
+<p>om.contactgroup</p>
+</td>
+<td>
+<p>Only includes the definitions of contact groups, without information about the contacts assigned to the groups.</p>
+<p>Additionally, the CI/CD data does not contain information about scheduled rebuilds for contact groups. After restoring a new condition-based contact group from the repository folder, you need to manually rebuild the group in the <em>Contact groups</em> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Countries</p>
+</td>
+<td>
+<p>cms.country</p>
+</td>
+<td>
+<p>Supported child objects:</p>
+<ul>
+<li>States (cms.state)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/customer-journeys">Customer journeys</a></p>
+</td>
+<td>
+<p>om.customerjourney om.customerjourneyhistory</p>
+</td>
+<td>
+<p>Only includes the definitions of customer journeys, without statistics calculated for contacts.</p>
+<p>When restoring a customer journey from the repository folder, make sure to include module classes (<em>cms.class</em>). After the restoration, you need to manually <a href="/documentation/business-users/digital-marketing/customer-journeys#customer-journey-results">recalculate</a> the journey in the Customer journeys application.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Customer journey stages (om.customerjourneystage)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Customer journey stages</p>
+</td>
+<td>
+<p>om.customerjourneystage</p>
+</td>
+<td>
+<p>Child object type of <strong>Customer journey</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Email channel configuration</a></p>
+</td>
+<td>
+<p>emaillibrary.emailchannel</p>
+</td>
+<td>
+<p>Supported child objects:</p>
+<ul>
+<li>Email channel sender address (emaillibrary.emailchannelsender)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email channel sender addresses</p>
+</td>
+<td>
+<p>emaillibrary.emailchannelsender</p>
+</td>
+<td>
+<p>Child object type of <strong>Email channel configuration</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails">Emails</a></p>
+</td>
+<td>
+<p>contentitemdata.*<br>
+cms.contentitem<br>
+cms.contentitemcommondata<br>
+cms.contentitemlanguagemetadata<br>
+emaillibrary.emailconfiguration</p>
+</td>
+<td>
+<p>The system uses multiple files to store email data. See the <strong>Emails</strong> section of <a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure#emails">CI/CD repository structure</a> for more information.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Regular email sendout configuration (emaillibrary.sendconfiguration)</li>
+</ul>
+<p><strong>Important:</strong> To include or exclude emails from the repository, use the <code>IncludedContentItemsOfType</code> or <code>ExcludedContentItemsOfType</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-content-items">filters</a>. (<a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Available from Xperience 30.4.0</a>)</p>
+<hr>
+<p>CI/CD data does <strong>not include</strong> changes made to new versions of previously published emails. While an email is in the <em>Draft (New version)</em> status (or a custom <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a>), CI/CD stores the original published version, until the new changes are published. Consequently, the <strong>published</strong> version of emails is always restored by CI/CD – any changes made in <em>Draft (New version)</em> or custom workflow steps are <strong>lost</strong> when the email is restored.</p>
+<p>Does not include <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">statistics</a> tracked for emails.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails">Email templates</a></p>
+</td>
+<td>
+<p>emaillibrary.emailtemplate</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/forms">Forms</a></p>
+</td>
+<td>
+<p>cms.form<br>
+cms.formclass</p>
+</td>
+<td>
+<p>Only includes form definitions and settings, not the data records stored by individual forms.</p>
+<p>The system uses multiple object types to store the definitions and settings of forms. See the <strong>Forms</strong> section in <a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure">CI/CD repository structure</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Form featured fields</p>
+</td>
+<td>
+<p>cms.formfeaturedfield</p>
+</td>
+<td>
+<p>Stores the definitions of fields displayed in the <strong>Featured</strong> category when <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">adding fields to forms</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Macro rules</p>
+</td>
+<td>
+<p>cms.macrorule</p>
+</td>
+<td>
+<p>Used internally for the condition builder in <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> and <a href="/documentation/business-users/digital-marketing/automation">automation processes</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Macro rule categories</p>
+</td>
+<td>
+<p>cms.macrorulecategory</p>
+</td>
+<td>
+<p>Used internally for the condition builder in <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> and <a href="/documentation/business-users/digital-marketing/automation">automation processes</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates">Preset email templates</a></p>
+</td>
+<td>
+<p>emaillibrary.emailpresettemplate</p>
+</td>
+<td>
+<p>The Email Builder configuration of a saved preset email template created using a default email template.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Recipient lists</a></p>
+</td>
+<td>
+<p>om.recipientlist</p>
+</td>
+<td>
+<p>Stores recipients lists, which contain contacts who opt in to receive regular emails. Only includes the recipient list definition, without information about the contained recipients.</p>
+<p>Supported child objects:</p>
+<ul>
+<li>Recipient list settings (emaillibrary.recipientlistsettings)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Recipient list settings</p>
+</td>
+<td>
+<p>emaillibrary.recipientlistsettings</p>
+</td>
+<td>
+<p>Stores the approval and unsubscribe settings of recipient lists.</p>
+<p>Child object type of <strong>Recipient list</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Regular email sendout configuration</a></p>
+</td>
+<td>
+<p>emaillibrary.sendconfiguration</p>
+</td>
+<td>
+<p>Child object type of <strong>Email</strong> objects (emaillibrary.emailconfiguration).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>States</p>
+</td>
+<td>
+<p>cms.state</p>
+</td>
+<td>
+<p>Child object type of <strong>Country</strong> objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">Tracked websites</a></p>
+</td>
+<td>
+<p>om.trackedwebsite</p>
+</td>
+<td>
+<p>Websites registered for the <a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">Cross-site tracking</a> feature.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="digital-commerce">Digital commerce</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Object type</p>
+</td>
+<td>
+<p>CI/CD folder name</p>
+</td>
+<td>
+<p>Notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Order status</p>
+</td>
+<td>
+<p>commerce.orderstatus</p>
+</td>
+<td>
+<p>Represents <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses">statuses</a> in the lifecycle of orders created by customers (<em>New</em>, <em>Payment received</em>, <em>Shipped</em>, <em>Delivered</em>, etc.).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Shipping method</p>
+</td>
+<td>
+<p>commerce.shippingmethod</p>
+</td>
+<td>
+<p>Defines <a href="/documentation/developers-and-admins/digital-commerce-setup/shipping-and-payment-methods">shipping options</a> available to customers during checkout.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Payment method</p>
+</td>
+<td>
+<p>commerce.paymentmethod</p>
+</td>
+<td>
+<p>Defines <a href="/documentation/developers-and-admins/digital-commerce-setup/shipping-and-payment-methods">payment options</a> available to customers during checkout.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Promotion</p>
+</td>
+<td>
+<p>commerce.promotion</p>
+</td>
+<td>
+<p>Stores created <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions">promotions</a>.</p>
+</td>
+<td>
+<p>commerce.promotioncoupon</p>
+</td>
+<td>
+<p>Stores <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/coupon-codes">coupon codes</a> associated with created promotions.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="binding-object-types">Binding object types</h2>
+<p>In addition to standard object types, CI/CD also supports most related bindings (i.e. objects representing relationships between the supported objects and other objects).</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Binding</p>
+</td>
+<td>
+<p>CI folder name</p>
+</td>
+<td>
+<p>Main object type (parent)</p>
+</td>
+<td>
+<p>Related object type</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Allowed child content types</p>
+</td>
+<td>
+<p>cms.allowedchildcontenttype</p>
+</td>
+<td>
+<p>Content type</p>
+</td>
+<td>
+<p>Content type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Application permissions</p>
+</td>
+<td>
+<p>cms.applicationpermission</p>
+</td>
+<td>
+<p>Role</p>
+</td>
+<td>
+<p>No regular object type. The binding connects roles to application identifiers (defined in code when registering an admin UI application) and permission identifiers (defined in code when specifying the set of permissions available for an application).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Automation process step transitions</p>
+</td>
+<td>
+<p>cms.workflowtransition</p>
+</td>
+<td>
+<p>Automation step</p>
+</td>
+<td>
+<p>Automation step</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Allowed content types for channels</p>
+</td>
+<td>
+<p>cms.contenttypechannel</p>
+</td>
+<td>
+<p>Channel</p>
+</td>
+<td>
+<p>Content type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Allowed email templates for content types</p>
+</td>
+<td>
+<p>emaillibrary.emailtemplatecontenttype</p>
+</td>
+<td>
+<p>Content type</p>
+</td>
+<td>
+<p>Email template</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email sendout contact group configuration</p>
+</td>
+<td>
+<p>emaillibrary.sendconfigurationcontactgroup</p>
+</td>
+<td>
+<p>Regular email sendout configuration</p>
+</td>
+<td>
+<p>Contact group</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Macro rules assigned to categories</p>
+</td>
+<td>
+<p>cms.macrorulemacrorulecategory</p>
+</td>
+<td>
+<p>Macro rule category</p>
+</td>
+<td>
+<p>Macro rule</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Order status notification users</p>
+</td>
+<td>
+<p>commerce.orderstatusnotification</p>
+</td>
+<td>
+<p>Order status</p>
+</td>
+<td>
+<p>User</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Users in roles</p>
+</td>
+<td>
+<p>cms.userrole</p>
+</td>
+<td>
+<p>Role</p>
+</td>
+<td>
+<p>User</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Web page scope content type</p>
+</td>
+<td>
+<p>cms.webpagescopecontenttype</p>
+</td>
+<td>
+<p>Web page scope</p>
+</td>
+<td>
+<p>Content type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workflow content type</p>
+</td>
+<td>
+<p>cms.contentworkflowcontenttype</p>
+</td>
+<td>
+<p>Content workflow</p>
+</td>
+<td>
+<p>Content type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workflow roles with full control</p>
+</td>
+<td>
+<p>cms.contentworkflowrole</p>
+</td>
+<td>
+<p>Content workflow</p>
+</td>
+<td>
+<p>Role</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workflow step roles</p>
+</td>
+<td>
+<p>cms.contentworkflowsteprole</p>
+</td>
+<td>
+<p>Content workflow step</p>
+</td>
+<td>
+<p>Role</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workspace data permissions</p>
+</td>
+<td>
+<p>cms.workspacedatapermission</p>
+</td>
+<td>
+<p>Role</p>
+</td>
+<td>
+<p>No regular object type. This object type, for a given workspace, connects a role to application identifiers (which support being scoped under <strong>Workspaces</strong>) and workspace permission identifiers (defined in code when specifying the set of workspace permissions available for an application).</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

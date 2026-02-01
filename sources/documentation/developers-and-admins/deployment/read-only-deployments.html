@@ -1,0 +1,405 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Read-only deployments</title>
+</head>
+<body>
+<p>Xperience by Kentico applications can be deployed in <strong>read-only mode</strong>, which enables zero-downtime updates to your production database and file system. Switching traffic to a read-only deployment allows you to perform <a href="/documentation/developers-and-admins/installation/update-xperience-by-kentico-projects">Xperience updates</a> on your production application, while continuing to serve content from a frozen snapshot of the data using a cloned database.</p>
+<p>The read-only mode prevents all write operations to the database and Azure Blob storage, ensuring data consistency when applying updates. Once updates are complete, you can switch traffic back to the updated database without any service interruption.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before implementing support for read-only deployments, ensure your infrastructure meets the following requirements.</p>
+<h3 id="saas">SaaS</h3>
+<p>For <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS deployments</a>, Kentico’s deployment infrastructure automatically manages infrastructure requirements (deployment slots, database replication, blob versioning). However, you must still:</p>
+<ol type="1">
+<li>
+<strong>Configure your application code to support read-only mode</strong> - See <a href="#required-project-changes">Required project changes</a> for mandatory code changes</li>
+<li>
+<strong>Mark deployment packages as zero-downtime ready</strong> - Use the <code>-ZeroDowntimeSupportEnabled</code> parameter when creating deployment packages</li>
+</ol>
+<p>See <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#zero-downtime-deployments">Deploy to the SaaS environment</a> for complete SaaS deployment instructions.</p>
+<h3 id="private-cloud">Private cloud</h3>
+<p><a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">Private cloud</a> deployments require the following infrastructure components:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Component</p>
+</td>
+<td>
+<p>Requirements</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Database</strong></p>
+</td>
+<td>
+<ul>
+<li>
+<strong>Two databases</strong> – a production database and a clone database for performing updates</li>
+<li>Database replication or cloning capability to create synchronized copies</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Application hosting</strong></p>
+</td>
+<td>
+<ul>
+<li>
+<strong>Two deployment slots</strong> – for production and staging deployments.</li>
+<li>The read-only application instance must be an exact copy of the production application, differing only in the read-only mode configuration.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Blob storage</strong></p>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a> configured for your Xperience project.</li>
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/storage/blobs/versioning-overview" target="_blank">Blob versioning</a> must be configured on your Azure Storage account</li>
+</ul>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>Azure Blob Storage requirement</strong></p>
+<p>Read-only deployments currently support <strong>Azure Blob Storage only</strong>. Other cloud storage providers such as AWS S3 or Google Cloud Storage are <strong>not supported</strong> for read-only mode.</p>
+<p>Ensure your project uses the <a href="https://www.nuget.org/packages/Kentico.Xperience.AzureStorage" target="_blank">Kentico.Xperience.AzureStorage</a> package and has blob versioning enabled before implementing read-only deployments.</p>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h2 id="read-only-mode-behavior">Read-only mode behavior</h2>
+<p>When read-only mode is enabled, Xperience automatically restricts write operations across the entire application to prevent data modifications.</p>
+<p>This behavior applies to both <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS</a> <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#zero-downtime-deployments">zero-downtime deployments</a> and <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> read-only deployments.</p>
+<h3 id="disabled-functionality">Disabled functionality</h3>
+<p>The following Xperience features are disabled or restricted when read-only mode is enabled:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Category</p>
+</td>
+<td>
+<p>Disabled operations</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Database operations</strong></p>
+</td>
+<td>
+<p>All <a href="/documentation/developers-and-admins/api/database-table-api">data provider</a> write operations (insert, update, delete, bulk operations).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Background workers</strong></p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/customization/scheduled-tasks">Scheduled tasks</a> and all other background processes (Xperience-specific <code>BackgroundService</code> implementations, for example) that interact with the database are completely disabled in read-only mode.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Azure Blob Storage</strong></p>
+</td>
+<td>
+<p>File and directory write operations (create, delete, move, modify).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Digital marketing and related endpoints</strong></p>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">Activity tracking</a> (page visits, custom activities, headless activities)
+<ul>
+<li>Activity logging endpoints return HTTP 503</li>
+</ul>
+</li>
+<li>Contact creation and modification
+<ul>
+<li>Contact creation endpoints return HTTP 503</li>
+<li>Calling <code>GetCurrentContact(true)</code> returns <code>null</code> if the contact does not exist, instead of creating a new contact</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">Cross-site tracking</a> operations</li>
+<li>
+<a href="/documentation/developers-and-admins/data-protection/consent-development">Consent agreement</a> operations</li>
+<li>Email <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">statistic tracking</a> (opens, clicks)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Forms</strong></p>
+</td>
+<td>
+<p>In read-only mode, <a href="/documentation/business-users/digital-marketing/forms">forms</a> automatically become non-interactive on the live site – the submit button and all input fields have the <a href="https://www.w3schools.com/tags/att_disabled.asp" target="_blank">disabled attribute</a> applied.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Administration interface</strong></p>
+</td>
+<td>
+<p>The administration interface is fully disabled. Users attempting to access the UI are shown a splash screen indicating read-only state.</p>
+</td>
+</tr>
+</table>
+
+<h3 id="required-project-changes">Required project changes</h3>
+<p>While Xperience automatically prevents its own write operations, you must manually guard <strong>all custom code</strong> that performs database write operations. Failure to do so will result in <code>ReadOnlyModeException</code> errors or HTTP 503 statuses when your application runs in read-only mode.</p>
+
+<div>
+
+</div>
+<div>
+<p>These code changes are mandatory for both SaaS and private cloud deployments. Even though SaaS <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#zero-downtime-deployments">zero-downtime deployments</a> automate the infrastructure, your application code must properly handle read-only mode to avoid errors during deployments.</p>
+</div>
+
+<p>This requirement extends to the implementations of the following <strong>live site features</strong>:</p>
+<ul>
+<li>
+<a href="/documentation/business-users/digital-marketing/forms">Forms</a> – forms automatically become non-interactive in read-only mode (elements have the <a href="https://www.w3schools.com/tags/att_disabled.asp" target="_blank">disabled attribute</a> applied). However, you may need to adjust your form styling to provide an appropriate user experience. You can also modify your pages to serve alternative content to forms when read-only mode is enabled.</li>
+<li>
+<a href="/documentation/developers-and-admins/data-protection">Data protection</a> – consent management, cookie level changes.</li>
+<li>
+<a href="/documentation/business-users/members">Membership</a> – user registration, sign-in, profile modifications, password resets.</li>
+<li>
+<a href="/documentation/business-users/digital-marketing">Digital marketing</a> – activity tracking, contact management, cross-site tracking.
+<ul>
+<li>Email <a href="/documentation/developers-and-admins/digital-marketing-setup/enable-email-subscriptions">subscription and unsubscription</a> operations return HTTP 503 or redirect to a configured fallback page. See <a href="#email-marketing-fallback-pages">Email marketing fallback pages</a>.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup">Digital commerce</a> – shopping cart operations, order creation, payment processing, inventory updates, customer account modifications.</li>
+</ul>
+<p>Test your application thoroughly in a staging environment with read-only mode enabled to identify and guard all custom write operations.</p>
+<p>Inject and use the <code>IReadOnlyModeProvider</code> interface to check read-only status before performing write operations.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Check read-only status</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4"><code>
+// Provider instance obtained via dependency injection
+private readonly IReadOnlyModeProvider readOnlyProvider;
+
+if (readOnlyProvider.IsReadOnly)
+{
+    // Handle read-only scenarios
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Enforce read-only restrictions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="5"><code>
+// Provider instance obtained via dependency injection
+private readonly IReadOnlyModeProvider readOnlyProvider;
+
+// Throws ReadOnlyModeException if read-only mode is enabled
+readOnlyProvider.ThrowIfReadOnly();
+
+// Perform write operations after the read-only guard clause
+customInfo.Insert();
+</code></pre>
+</div>
+
+<h2 id="configure-read-only-mode-for-applications">Configure read-only mode for applications</h2>
+<p>Configure read-only mode through the <code>ReadOnlyModeOptions</code> class in your application settings. The class follows the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options pattern</a>.</p>
+<p>For example, you can configure the application via your <strong>appsettings.json</strong> file:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+  "ReadOnlyModeOptions": {
+    "ReadOnly": true,
+    "VersioningTimestamp": "2025-01-15T14:30:00.0000000Z"
+  }
+}
+</code></pre>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Option</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>ReadOnly</code></p>
+</td>
+<td>
+<p>Set to <code>true</code> to enable read-only mode, <code>false</code> to allow normal write operations.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>VersioningTimestamp</code></p>
+</td>
+<td>
+<p>The timestamp for blob version retrieval. When read-only mode is enabled, Azure Blob storage operations retrieve the newest blob version created before this timestamp.</p>
+<p>Set this value to indicate the latest point in time up to which the secondary (read-only) database matches the primary database exactly, and reflects the point at which the secondary database became frozen. The exact timing depends on your database replication method. For example, for <em>Point-in-time snapshots</em>, the timestamp is the time the snapshot was taken.</p>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>Update VersioningTimestamp for every deployment</strong></p>
+<p>The <code>VersioningTimestamp</code> must be set for every new read-only deployment. Some drift between the database state and blob versions is expected and acceptable – blob versioning ensures the read-only instance serves files that are consistent with or slightly older than the database snapshot.</p>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<p>Register the read-only mode options in your <strong>Program.cs</strong> file:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = WebApplication.CreateBuilder(args);
+
+// Register read-only mode configuration
+builder.Services.Configure&lt;ReadOnlyModeOptions&gt;(
+    builder.Configuration.GetSection("ReadOnlyModeOptions")
+);
+
+// ...
+</code></pre>
+</div>
+
+<h2 id="deployment-process-overview">Deployment process overview</h2>
+<p>The following diagram illustrates the high-level flow of a read-only deployment:</p>
+<p></p>
+<p>The deployment process follows these general steps:</p>
+<ol type="1">
+<li><p><strong>Clone the database</strong> – Create a copy of your production database using database replication, snapshotting, or similar features. The source database remains in read-write mode during this process. Record the exact timestamp when the snapshot is taken (this depends on you chosen cloning method) – you’ll need this value for the <code>VersioningTimestamp</code> configuration. After cloning completes, configure the clone database as read-only using your database management platform or SQL commands to prevent accidental modifications.</p></li>
+<li>
+<p><strong>Enable read-only mode on the clone</strong> – Deploy the same application build (binaries) to a separate deployment slot and configure it to run in read-only mode. Set the application’s connection string to point to the cloned database and <a href="#configure-read-only-mode-for-applications">configure</a> the <code>VersioningTimestamp</code> to the timestamp recorded in the previous step. This ensures blob operations retrieve versions that align with the frozen database state.</p>
+<ul>
+<li>We recommend using <a href="https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview" target="_blank">managed identities</a> for Azure Blob Storage authentication, granting the read-only application identity only read permissions to the blob storage.</li>
+</ul>
+</li>
+<li><p><strong>Switch traffic to read-only instance</strong> – Update your traffic management or deployment setup to direct all incoming requests to the read-only application instance. Your live site continues serving content without interruption, but write operations are blocked.</p></li>
+<li>
+<p><strong>Perform database updates</strong> – With traffic switched away, safely update the original production database.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Avoid file changes during updates</strong></p>
+<p>During the update:</p>
+<ul>
+<li>
+<strong>Do not delete</strong> any blob storage files used by the read-only instance.</li>
+<li>
+<strong>Do not replace</strong> or update any files managed by the system (content item assets, etc.) that are in use by the read-only instance.</li>
+</ul>
+Blob versioning cannot correctly deal with such changes. Deleting or replacing files during the update of the production instance may affect or break the content being served by the read-only instance. If possible, we recommend using <a href="/documentation/business-users/content-sync">content synchronization</a> to deploy file changes rather than performing full deployments.
+</div>
+</li>
+<li><p><strong>Switch traffic back</strong> – After updates are complete and verified, switch traffic back to the updated production database. The application resumes normal read-write operations.</p></li>
+<li><p><strong>Discard the clone</strong> – Remove the temporary clone database and associated resources. The read-only deployment is complete.</p></li>
+</ol>
+<h2 id="email-marketing-fallback-pages">Email marketing fallback pages</h2>
+<p>When read-only mode is enabled, email <a href="/documentation/developers-and-admins/digital-marketing-setup/enable-email-subscriptions">subscription and unsubscription</a> operations cannot modify the database. To provide a better user experience, configure a fallback page that visitors see when attempting to subscribe or unsubscribe during read-only mode.</p>
+<h3 id="configure-fallback-pages">Configure fallback pages</h3>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application in the Xperience administration.</li>
+<li>Select your <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> and navigate to the <strong>Channel settings</strong> tab.</li>
+<li>In the <strong>Email marketing</strong> section, locate the <strong>Fallback page for read-only mode</strong> setting.</li>
+<li>Select a page to display when visitors attempt subscription operations during read-only mode.</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>When a fallback page is configured, subscription and unsubscription requests redirect to this page instead of returning an error. The fallback page applies to <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers#create-recipient-lists">recipient lists</a> with a <em>Thank you</em> or <em>Goodbye</em> page from the given channel.</p>
+<p>If no fallback page is configured, the application returns HTTP 503 to indicate the operation cannot be completed.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Fallback page content</strong></p>
+<p>Create a dedicated fallback page that explains the temporary unavailability and provides alternative contact information or instructions for subscribing after the maintenance window.</p>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Installation</title>
+</head>
+<body>
+<p>Xperience by Kentico is a content and digital experience management system built on the <a href="https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet" target="_blank">.NET platform</a>. For an overview of the system and its features, read our <a href="https://www.kentico.com/platforms/xperience-by-kentico" target="_blank">product introduction</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Evaluate Xperience by Kentico in a local development environment for 30 days for free. See <a href="/documentation/developers-and-admins/installation/licenses#evaluate-xperience-by-kentico">Evaluate Xperience by Kentico</a>.</p>
+</div>
+
+<p>Xperience provides boilerplate .NET projects that are distributed as <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/custom-templates" target="_blank">.NET project templates</a> and installed via the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/" target="_blank">.NET command-line tool</a> (included with the .NET SDK).</p>
+<p>Install an Xperience project:</p>
+<ol type="1">
+<li>Familiarize yourself with the <a href="/documentation/developers-and-admins/installation/system-requirements">System requirements</a> – make sure the target machine meets the minimum hardware requirements, runs a supported operating system, and contains the software that Xperience needs for the installation.</li>
+<li>Install the <a href="#Installation-InstallTemplatesPackage">project templates package</a> that provides project templates you can use to build your website.</li>
+<li>Select a project to create from the <a href="#available-project-templates">available project templates</a>.</li>
+<li>
+<a href="#Installation-CreateProject">Create the project</a> and the <a href="#Installation-CreateProjectDatabase">project database</a>.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Install Xperience on macOS</strong></p>
+<p>For detailed steps for installing Xperience by Kentico on macOS, see <a href="https://community.kentico.com/blog/developing-with-xperience-by-kentico-on-macos" target="_blank">Developing with Xperience by Kentico on macOS</a>.</p>
+</div>
+
+<h2 id="install-project-templates-package">Install project templates package </h2>
+<p>Before creating new projects, you must install the Xperience by Kentico project templates package using the .NET CLI.</p>
+<p>Open the command line and run the following command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Install project templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet new install kentico.xperience.templates
+
+</code></pre>
+</div>
+
+<p>This installs the <strong>latest version</strong> of the project templates NuGet package. The package location depends on the operating system.</p>
+<p>You can now <a href="#Installation-CreateProject">create Xperience projects</a> based on the <a href="#available-project-templates">project templates</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>You can also install a specific version of the project templates. This can be useful if you need to work with an older version of Xperience by Kentico.</p>
+<p>For more information, see <a href="/guides/development/get-started/install-a-specific-version-of-xperience-by-kentico">Install a specific version of Xperience by Kentico</a>.</p>
+</div>
+
+<h3 id="available-project-templates">Available project templates</h3>
+<p>The following project types are available, each with a different use case:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Project type</p>
+</td>
+<td>
+<p>Template short name</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Boilerplate</p>
+</td>
+<td>
+<p>kentico-xperience-mvc</p>
+</td>
+<td>
+<p>Creates an empty ASP.NET Core application that you can use as a base for your project. The application comes with a basic configuration required to run and develop Xperience projects.  </p>
+<p>Recommended as a starting point for the development of new Xperience ASP.NET Core projects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Dancing Goat</p>
+</td>
+<td>
+<p>kentico-xperience-sample-mvc</p>
+</td>
+<td>
+<p>A sample project of a fictional coffee shop franchise. Demonstrates the content management and digital marketing features of the Xperience solution.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Admin UI customization boilerplate</p>
+</td>
+<td>
+<p>kentico-xperience-admin-sample</p>
+</td>
+<td>
+<p>A project for developers who wish to <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">extend the Xperience by Kentico administration interface</a>. Intended to be used together with another Xperience project (does not work as a standalone application).</p>
+<p>Helps bootstrap your environment when developing custom client components for the admin UI. For more information, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI customization model overview</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">Prepare your environment for admin development</a>.</p>
+</td>
+</tr>
+</table>
+
+<p>The template short name of each project type needs to be specified when <a href="#Installation-CreateProject">creating projects</a> using the <code>dotnet new</code> command.</p>
+<h2 id="create-a-project">Create a project</h2>
+<p>Once you have installed the project templates package, you can install projects using the .NET command-line interface. You need to know <a href="#available-project-templates">the template short name for the corresponding project type</a>.</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to the location where you want to create the project.</p></li>
+<li>
+<p>Run the following command:</p>
+<ul>
+<li>Replace <em>&lt;short_name&gt;</em> with the template short name of the project type you want to install. See <a href="#available-project-templates">Available project templates</a>.</li>
+<li>The <code>-n</code> parameter sets the name of the installed project. See the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-new" target="_blank">dotnet new</a> reference to learn more about the command options.
+<ul>
+<li>It is not recommended to use non-alphanumeric characters in the project name, except for dot ‘.’ or underscore ’_’ <strong>after the first character</strong>.</li>
+</ul>
+</li>
+<li>The <code>--cloud</code> parameter installs a project suitable for <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployment to the SaaS environment</a>. Skip this parameter if you plan to host your project in <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>. Projects installed with the parameter include:
+<ul>
+<li>
+<a href="https://www.nuget.org/packages/Kentico.Xperience.Cloud" target="_blank">Kentico.Xperience.Cloud</a> NuGet package that enables deployment to the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS environment</a>
+</li>
+<li>Configurations for <a href="/documentation/developers-and-admins/configuration/email-configuration#managed-sendgrid-integration">SendGrid</a> and <a href="/documentation/developers-and-admins/configuration/saas-configuration#DeploytotheSaaSenvironment-EnableAppInsights">Microsoft Application Insights</a>
+</li>
+<li>Default <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#generate-cd-configuration-files">CD configuration file</a>
+</li>
+<li>PowerShell script used for <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#create-a-deployment-package">generating the deployment package</a>
+</li>
+<li>
+<strong>StorageInitializationModule.cs</strong> file with a sample storage initialization module used for <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#azure-blob-storage-for-kenticos-saas">mapping files to Azure Blob storage</a>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Create a project from a template</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  dotnet new &lt;short_name&gt; --cloud -n AcmeWeb
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>Install database .NET tools (<code>kentico-xperience-dbmanager</code>) for the project:</p>
+<ol type="1">
+<li>You will be asked if you want to install the database tools during the installation of the .NET project (with the <code>dotnet tool restore</code> command).</li>
+<li>To install the database tools manually, run the <code>dotnet tool restore</code> command from the project’s root directory.</li>
+</ol>
+</li>
+</ol>
+<p>The command creates the project files and sets up the database tools for the project.</p>
+<p>Continue by <a href="#Installation-CreateProjectDatabase">creating the project database</a>.</p>
+<h2 id="create-the-project-database">Create the project database </h2>
+<p>Before you can run an Xperience project, create a database and register a license key for your application:</p>
+<ol type="1">
+<li>
+<p>Obtain a license key for your application and save it in a text file (e.g., <em>license.txt</em>):</p>
+<ul>
+<li>For <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployment to the SaaS environment</a>, you only need a license key for the local development environment. <a href="/documentation/developers-and-admins/installation/licenses#Licenses-SaaSLicenseGenerator">Generate a license key for local development in your Xperience Portal project</a>.</li>
+<li>For <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud environments</a>, see <a href="/documentation/developers-and-admins/installation/licenses#licensing-private-cloud-deployments">Licensing private cloud deployments</a>.</li>
+<li>See <a href="/documentation/developers-and-admins/installation/licenses#evaluate-xperience-by-kentico">Evaluate Xperience by Kentico</a> to learn how to get a 30 days free evaluation license key for local testing.</li>
+</ul>
+</li>
+<li>
+<p>Run the <code>dotnet kentico-xperience-dbmanager</code> command from the root directory of the project:</p>
+
+<div>
+
+</div>
+<div>
+<p>The <code>kentico-xperience-dbmanager</code> command is installed when <a href="#Installation-CreateProject">creating a project</a>. Run the <code>dotnet tool restore</code> command from the project’s root directory if the command is unavailable.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Create project database</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet kentico-xperience-dbmanager -- -s "&lt;sql_server_name&gt;" -d "&lt;database_name&gt;" -a "&lt;admin_password&gt;" --hash-string-salt "&lt;hash_string_salt&gt;" --license-file "&lt;license_file_path&gt;"
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<ul>
+<li>Add parameters after the <code>--</code> syntax separator to pass the parameters directly to the <code>kentico-xperience-dbmanager</code> command and to avoid conflicts with general <code>dotnet</code> parameters.</li>
+<li>Set the <code>-s</code> parameter to your database server name.</li>
+<li>Set the <code>-d</code> parameter to the name of the database.</li>
+<li>Set the <code>-u</code> parameter to the username for the database authentication.</li>
+<li>Set the <code>-p</code> parameter to the password for the database authentication.</li>
+<li>Set the <code>-a</code> parameter to the password you want to use for the default <em>administrator</em> account.</li>
+<li>Set the <code>--hash-string-salt</code> parameter to the <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">hash salt</a> value for the Xperience instance:
+<ul>
+<li>For <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployment to the SaaS environment</a>, <a href="/documentation/developers-and-admins/saas/xperience-portal#hash-string-salt-for-the-xperience-portal-project">get the hash salt value from the Xperience Portal Dashboard</a>.</li>
+<li>Skip this parameter if you plan to host your project in <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>.</li>
+</ul>
+</li>
+<li>Set the <code>--license-file</code> parameter to the path to a text file with the license key. This registers the license key in the Xperience administration.</li>
+<li>Use the <code>--help</code> parameter to list all available options</li>
+<li>If you encounter an error when creating the database, add the <code>--verbose</code> parameter to get more detailed information, including the error’s stack trace..</li>
+</ul>
+<p>The command installs and connects a database to your project via the <code>CMSConnectionString</code> application setting (located in the project’s <strong>appsettings.json</strong> file).</p>
+<p>This completes the installation process. Your Xperience project is now ready for <a href="/documentation/developers-and-admins/development">Development</a> and <a href="/documentation/developers-and-admins/deployment">Deployment</a></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Next steps</strong></p>
+<ul>
+<li>Read <a href="/documentation/developers-and-admins/development/website-development-basics">Website development basics</a> for an introduction to the general development process of Xperience websites. The document guides you through basic development and hosting environment setups and introduces important Xperience concepts and features.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/website-development-basics/set-up-local-hosting">Set up local hosting</a> for your site so that you can get started with development.</li>
+<li>Access the Xperience administration by appending <strong>/admin</strong> to your site’s URL. Sign in using the default <strong>administrator</strong> account and the password you specified when installing the project database.</li>
+</ul>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Get more information</strong></p>
+<ul>
+<li>Take a look at our and learn how to develop a basic website using Xperience.</li>
+<li>You can also visit our <a href="https://community.kentico.com/" target="_blank">Community Portal</a>, where you can join the Kentico community, find blog posts, Q&amp;A discussions, and other resources for Xperience by Kentico.</li>
+<li>If you’re stuck with a particular problem, <a href="https://www.kentico.com/services/support" target="_blank">contact our support</a>. Our team operates non-stop and will be happy to assist you.</li>
+</ul>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Xperience by Kentico NuGet packages</title>
+</head>
+<body>
+<p>Xperience by Kentico is distributed as a set of NuGet packages. See <a href="/documentation/developers-and-admins/development/website-development-basics">Website development basics</a> to learn more about the system’s architecture.</p>
+<p>The following diagram illustrates the most important NuGet packages and their roles:</p>
+<p></p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Package</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.Templates/" target="_blank">Kentico.Xperience.Templates</a></p>
+</td>
+<td>
+<p>Provides a set of .NET project templates used to bootstrap new Xperience projects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.DbManager/" target="_blank">Kentico.Xperience.DbManager</a></p>
+</td>
+<td>
+<p>Provides tooling to install and maintain project databases.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.Admin" target="_blank">Kentico.Xperience.Admin</a></p>
+</td>
+<td>
+<p>Contains the administration interface used to manage Xperience applications. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.WebApp" target="_blank">Kentico.Xperience.WebApp</a></p>
+</td>
+<td>
+<p>Required to run Xperience in ASP.NET Core applications. The package also contains Xperience features and API intended for use within web applications:</p>
+<ul>
+<li>Preview mode support</li>
+<li>Page Builder feature</li>
+<li>Form Builder feature</li>
+<li>Support for content retrieval (pages, reusable content, content item assets)</li>
+<li>Integration with Xperience users</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.Core" target="_blank">Kentico.Xperience.Core</a></p>
+</td>
+<td>
+<p>Contains general Xperience API usable in any application or external system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.Core.Tests" target="_blank">Kentico.Xperience.Core.Tests</a></p>
+</td>
+<td>
+<p>Provides a framework for creating automated tests for the Xperience API. Contains base classes for tests and additional supporting API.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.ImageProcessing" target="_blank">Kentico.Xperience.ImageProcessing</a></p>
+</td>
+<td>
+<p>An implementation of Xperience’s <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-from-media-libraries">image processing functionality</a> using the <a href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp graphics library</a>.</p>
+<p>This package is required to upload, process, and correctly display images in Xperience as <a href="/documentation/business-users/media-libraries/manage-media-files">media library files</a>. Do not remove the package if you use media libraries unless you provide a custom implementation of <code>IImageProcessingService</code>.</p>
+<p>The package doesn’t guarantee compatibility with niche distributions and platforms. If you run into issues with image processing on the hosting platform of your choice, you will need your own <code>IImageProcessingService</code> implementation.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="extension-packages">Extension packages</h2>
+<p>In addition to the main Xperience NuGet packages, you can install optional extension packages that introduce specific functionality to Xperience and its API:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Package</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.Cloud" target="_blank">Kentico.Xperience.Cloud</a></p>
+</td>
+<td>
+<p>Contains:</p>
+<ul>
+<li>Logic that enables Xperience deployment to the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS environment</a>.</li>
+<li>Extension methods and environment names for deployment environment identification. See <a href="/documentation/developers-and-admins/configuration/saas-configuration#environment-identification-extension-methods">Environment identification extension methods</a>.</li>
+<li>
+<a href="https://www.nuget.org/packages/Kentico.Xperience.SendGrid/" target="_blank">Kentico.Xperience.SendGrid</a> integration for mail delivery with a managed SendGrid account. See <a href="/documentation/developers-and-admins/configuration/email-configuration#Emailconfiguration-EnableManagedSendGrid">Enable managed SendGrid integration</a>.</li>
+<li>
+<a href="https://www.nuget.org/packages/Microsoft.ApplicationInsights.AspNetCore" target="_blank">Microsoft.ApplicationInsights.AspNetCore</a> integration. See <a href="/documentation/developers-and-admins/configuration/saas-configuration#DeploytotheSaaSenvironment-EnableAppInsights">Microsoft Application Insights integration</a>.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.SendGrid/" target="_blank">Kentico.Xperience.SendGrid</a></p>
+</td>
+<td>
+<p>Integration for sending mail from Xperience using the <a href="https://sendgrid.com/" target="_blank">Twilio SendGrid</a> email platform.</p>
+<p>For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration#sendgrid-integration">SendGrid integration</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.AzureStorage" target="_blank">Kentico.Xperience.AzureStorage</a></p>
+</td>
+<td>
+<p>Contains <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">file system providers</a> used to map parts of the file system to Azure Blob storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.AmazonStorage" target="_blank">Kentico.Xperience.AmazonStorage</a></p>
+</td>
+<td>
+<p>Contains file system providers used to map parts of the file system to Amazon S3.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.Mjml" target="_blank">Kentico.Xperience.Mjml</a></p>
+</td>
+<td>
+<p>Provides support for developing and using <a href="/documentation/developers-and-admins/development/builders/email-builder">Email Builder</a> components with markup based on the <a href="https://documentation.mjml.io/#mjml-guides" target="_blank">MJML markup language</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="https://www.nuget.org/packages/Kentico.Xperience.ManagementApi" target="_blank">Kentico.Xperience.ManagementApi</a></p>
+</td>
+<td>
+<p>Currently, the management API functionality is in preview mode and <em>Kentico.Xperience.ManagementApi</em> is a <strong>prerelease</strong> package.</p>
+<p>Provides endpoints that allow retrieval and management of objects within Xperience. At this time, the API allows management of <a href="/documentation/developers-and-admins/development/content-types">content types</a> and <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>. The management API is intended to be used via AI tools together with a corresponding <a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank">Model Context Protocol (MCP)</a> server.</p>
+<p>See <a href="/documentation/developers-and-admins/development/content-types/management-api">Content type management API</a> for more information and instructions.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

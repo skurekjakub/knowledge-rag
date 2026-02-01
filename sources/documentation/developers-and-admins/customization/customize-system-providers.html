@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Customize system providers</title>
+</head>
+<body>
+<p>Providers in the Xperience API are classes that allow the system to manipulate objects and perform various actions. The following list presents the providers that the system uses and their purpose:</p>
+<ul>
+<li>
+<p><strong>Info providers</strong> – contain methods for working with specific types of objects stored in the database, such as users, contacts, and <a href="/documentation/developers-and-admins/customization/object-types">custom entities</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Xperience uses two distinct types of info provider classes.</p>
+<p><strong>Dedicated providers</strong><br>
+This type of provider consists of a dedicated class and interface implementation and is solely responsible for a single database entity – <code>UserInfoProvider</code> (with the <code>IUserInfoProvider</code> interface) responsible for <code>UserInfo</code> objects (from the <em>CMS_User</em> database table), for example. These providers are being actively phased out, to be replaced by <em>generic providers</em>.</p>
+<p><strong>Generic providers</strong><br>
+Generic providers are instances of <code>IInfoProvider&lt;TInfo&gt;</code>, where <em>TInfo</em> is the managed *Info class. We recommend using the generic provider pattern for all custom object types added to the system.</p>
+<p>The info provider customization pattern differs depending on provider type. See <a href="#providers-based-on-iinfoprovider-interfaces">Providers based on I*InfoProvider interfaces</a> for dedicated providers and <a href="#providers-based-on-iinfoprovidertinfo">Providers based on IInfoProvider&lt;TInfo&gt;</a> for generic providers. For general overview of both types of providers, see <a href="/documentation/developers-and-admins/api/database-table-api">Database table API</a>.</p>
+</div>
+</li>
+<li><p><strong>File system providers</strong> – allow you to access various file systems. For more information, see <a href="/documentation/developers-and-admins/api/files-api-and-cms-io">Files API and CMS.IO</a>.</p></li>
+<li><p><strong>BizFormItemProvider</strong> – allows you to <a href="/documentation/developers-and-admins/development/content-retrieval#retrieve-form-data">retrieve</a> data submitted through <a href="/documentation/business-users/digital-marketing/forms">forms</a> and contains methods for basic management of form data. <code>BizFormItemProvider</code> is <em>not</em> compatible with the Info provider customization approaches described on this page. For example, you may wish to adjust or extend how form data submitted by visitors is saved. For these scenarios, we recommend implementing handlers for <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-form-events">BizFormItemEvents events</a>.</p></li>
+</ul>
+<p>By developing custom providers and using them instead of the standard ones, you can modify the behavior of the application (or a specific feature) according to your requirements.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Customization best practices</strong></p>
+<p>When developing custom functionality, we recommend placing your code files into a <strong>separate Class Library project</strong> (assembly), which is referenced by the main application. See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for details.</p>
+</div>
+
+<h2 id="info-provider-customization">Info provider customization</h2>
+<h3 id="providers-based-on-iinfoprovidertinfo">Providers based on IInfoProvider&lt;TInfo&gt;</h3>
+<p>Generic providers must be customized via inheritance from <code>InfoProviderDecorator&lt;TInfo&gt;</code>. The class offers a set of virtual methods open to modification.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Generic provider customization example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4,6-7,15,22"><code>
+using CMS.DataEngine;
+
+// Decorates a generic provider for objects of the 'MyInfo' type
+public class MyInfoProviderDecorator : InfoProviderDecorator&lt;MyInfo&gt;
+{
+    public MyInfoProviderDecorator(IInfoProvider&lt;MyInfo&gt; decoratedProvider)
+        : base(decoratedProvider)
+    {
+    }
+
+    public override void Set(MyInfo info)
+    {
+        // Execute custom logic then set using the underlying implementation
+
+        base.Set(info);
+    }
+
+    public override Task SetAsync(MyInfo info, CancellationToken? cancellationToken = null)
+    {
+        // Execute custom logic then set using the underlying implementation
+
+        return base.SetAsync(info, cancellationToken);
+    }
+
+    public override void Delete(MyInfo info)
+    {
+        // Execute custom logic then delete using the underlying implementation
+
+        base.Delete(info);
+    }
+
+    public override Task DeleteAsync(MyInfo info, CancellationToken? cancellationToken = null)
+    {
+        // Execute custom logic then delete using the underlying implementation
+
+        return base.DeleteAsync(info, cancellationToken);
+    }
+}
+</code></pre>
+</div>
+
+<p>With the custom logic in place, register the decorator class using the <code>RegisterCustomProvider</code> assembly attribute to replace it as the default for objects of the specified <em>Info</em> class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register generic provider decorators</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="1,5"><code>
+[assembly: RegisterCustomProvider(typeof(MyInfoProviderDecorator))]
+
+namespace Sample
+{
+    public class MyInfoProviderDecorator : InfoProviderDecorator&lt;MyInfo&gt;
+    {
+        // ...
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="providers-based-on-iinfoprovider-interfaces">Providers based on I*InfoProvider interfaces</h3>
+<p>While using <a href="#providers-based-on-iinfoprovidertinfo">providers based on IInfoProvider&lt;TInfo&gt;</a> is strongly recommended for all custom providers, not all system providers currently support this customization pattern. Use the approach described in this section to customize such providers.</p>
+<h4 id="write-the-custom-code">Write the custom code</h4>
+<p>Custom provider classes must <strong>inherit from the original implementation</strong>.</p>
+<h4 id="register-custom-providers">Register custom providers</h4>
+<p>Registering the customized provider replaces its default system implementation. To register custom providers, use the <code>RegisterCustomProvider</code> assembly attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Custom provider registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="1"><code>
+[assembly: RegisterCustomProvider(typeof(UserInfoProviderDecorator))]
+namespace Sample
+{
+    public class UserInfoProviderDecorator : UserInfoProvider
+    {
+        // Decoration logic...
+    }
+}
+</code></pre>
+</div>
+
+<p>After the custom provider is registered, its implementation is automatically used when resolving the corresponding provider interface (<code>IUserInfoProvider</code> in the case of the example) via <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a>.</p>
+<h2 id="info-object-validation">Info object validation</h2>
+<p>When saving info objects to the database, the system validates object code name format and uniqueness. You can extend this validation by implementing info-specific rules via <code>IInfoValidator&lt;TInfo&gt;</code>.</p>
+<ol type="1">
+<li>Create a new class that implements <code>IInfoValidator&lt;TInfo&gt;</code>. Substitute <code>TInfo</code> for the info object you want to validate.</li>
+<li>Implement the <code>Validate</code> method. The method must return <code>InfoValidationResult</code>. We recommend storing error resource strings in <a href="/documentation/developers-and-admins/customization/integrate-custom-code#store-application-resources-in-resource-files">resource files</a>.</li>
+<li>Register the validator into the service container as a singleton using the <code>RegisterImplementation</code> assembly attribute.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom validation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+using CMS.Core;
+using CMS.DataEngine;
+
+// Registers the validator implementation to the service container
+[assembly: RegisterImplementation(typeof(IInfoValidator&lt;MyInfo&gt;), typeof(MyInfoValidator), Lifestyle = Lifestyle.Singleton)]
+
+public class MyInfoValidator : IInfoValidator&lt;MyInfo&gt;
+{
+    public InfoValidationResult Validate(MyInfo info)
+    {
+        // Perform domain-specific validation and return a corresponding error
+        if (!IsValid(info))
+        {
+            return new InfoValidationResult(nameof(MyInfo.MyField), "resource.key");
+        };
+
+        // Indicates successful validation
+        return InfoValidationResult.Success;
+    }
+
+    private bool IsValid(MyInfo info)
+    {
+        // Validation logic...
+    }
+}
+</code></pre>
+</div>
+
+<h2 id="additional-customization-options">Additional customization options</h2>
+<p>In addition to providers, you can also customize the following helper classes:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Helper class name</p>
+</td>
+<td>
+<p>Namespace</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>DirectoryHelper</p>
+</td>
+<td>
+<p>CMS.IO</p>
+</td>
+<td>
+<p>Manages directories in the file system.</p>
+</td>
+</tr>
+</table>
+
+<p>You can also use <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">global event handlers</a> to customize the behavior of the system. Handlers allow you to execute custom code whenever a specific event occurs in the system, such as page or object changes.</p>
+<h2 id="code-analyzer-support">Code analyzer support</h2>
+<p>The <em>Kentico.Xperience.Core</em> <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">NuGet package</a> contains analyzers that advocates best practices when customizing system providers. For info provider customization, the analyzer warns about the need to override the asynchronous counterpart of a synchronous method (or vice versa) if their custom type overrides one of the <code>InfoProviderDecorator&lt;TInfo&gt;</code> or <code>AbstractInfoBase&lt;TInfo&gt;</code> methods related to data modification. All Kentico-specific analyzer rules begin with the <em>KXA</em> prefix.</p>
+
+</body>
+</html>

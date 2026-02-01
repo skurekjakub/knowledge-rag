@@ -1,0 +1,788 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Macro syntax</title>
+</head>
+<body>
+<p><a href="/documentation/developers-and-admins/configuration/macro-expressions">Macro expressions</a> need to be enclosed in curly brackets and the percentage symbol: {% &lt;expression&gt; %}</p>
+<p>Xperience provides an object-oriented language named <strong>K#</strong>, which defines the available macro expression syntax. The language is very similar to the C# programming language. This page provides an overview of the features available in K# and describes its differences from C#.</p>
+<p>The syntax is <strong>case-insensitive</strong> – the system does not differentiate between upper and lower case letters in commands. However, letter case may have an effect when inputting constants and variables (for the purposes of comparisons and similar).</p>
+<h2 id="macro-return-values">Macro return values</h2>
+<p>When the system resolves a macro expression, the result is an object (value). Macros support the following types of objects:</p>
+<ul>
+<li><p>Standard scalar C# types (int, double, string, DateTime, etc.).</p></li>
+<li><p>Collections based on the <code>IEnumerable</code> interface.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/api/database-table-api">Object types</a> (<code>UserInfo</code>, <code>MemberInfo</code>, etc.) – available for macros in the default values of object type editing forms</p>
+<ul>
+<li>When the result of an expression is an object type, you can continue accessing its properties using conventional dot notation. For example: <code>UserInfo.UserName</code>
+</li>
+</ul>
+</li>
+</ul>
+<p>In most cases, the final result of a macro expression is automatically converted to a text (string) representation.</p>
+<h2 id="literals">Literals</h2>
+<p>To work with fixed values (literals) in macro expressions:</p>
+<ul>
+<li>
+<strong>numbers</strong> – type numbers directly. You can use integers or doubles.</li>
+<li>
+<strong>text</strong> – enclose text (string) values into quotes, for example: <code>"administrator"</code>
+</li>
+<li>
+<strong>booleans</strong> – use the <code>true</code>and <code>false</code> keywords.</li>
+<li>
+<strong>date and time</strong> – enclose date and time values into quotes. The date format depends on the application culture. For example: <code>"1/1/2020"</code>, <code>"9/3/2020 9:20:00 AM"</code>
+</li>
+</ul>
+<h2 id="fields"> Fields</h2>
+<p>Macro fields are equivalent to conventional get-only C# properties. They take no arguments and when resolved within a macro expression execute their specified getter logic. </p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Use macro fields</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Returns the current date and time in UTC
+{% UtcNow %}
+
+</code></pre>
+</div>
+
+<p>Xperience provides a set of macro fields that you can use in macro expressions, depending on the current location. See <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Email templates</a> and <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-resolvers">Macro resolvers</a> for more information.</p>
+<p>You can also <a href="/documentation/developers-and-admins/configuration/macro-expressions/define-macro-fields">register custom macro fields</a> for specific administration UI pages.</p>
+<h2 id="methods">Methods </h2>
+<p>Macro methods perform specific tasks (run code) inside macro expressions. The recommended syntax for method calls is <strong>infix</strong> notation for the first argument. Prefix notation is also supported.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Use macro methods</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Infix notation
+// Checks for emptiness
+{% "string".IsNullOrEmpty() %}
+
+// Returns "Today is &lt;current date and time&gt;" 
+{% "Today is {0}".FormatString(UtcNow) %}
+
+// Prefix notation
+{% IsNullOrEmpty("string") %}
+{% FormatString("Today is {0}", UtcNow) %}
+
+</code></pre>
+</div>
+
+<p>Xperience provides a set of default methods that you can use in macro expressions. See:  <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Email templates</a> and <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-resolvers">Macro resolvers</a></p>
+<h2 id="operators">Operators</h2>
+<p>Macro syntax uses the same basic operators as C#.</p>
+<p>The following table summarizes the differences in operator behavior that you need to keep in mind when writing macros.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Operator</p>
+</td>
+<td>
+<p>Examples</p>
+</td>
+<td colspan="1">
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>x.y</p>
+</td>
+<td colspan="1">
+<p>“mystring”.IsNullOrEmpty()</p>
+</td>
+<td colspan="1">
+<p>Accesses the members (methods, properties) of macro objects or namespaces.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>+</p>
+</td>
+<td>
+<p>10+5</p>
+</td>
+<td colspan="1">
+<p>Adds two operands together. Adding is supported for numbers, and the following types:</p>
+<ul>
+<li>
+<strong>String + String</strong>: Returns the concatenation as a <em>String</em>
+</li>
+<li>
+<strong>DateTime + TimeSpan</strong>: Adds the <em>TimeSpan</em> to the <em>DateTime</em> and returns the result as <em>DateTime</em>
+</li>
+<li>
+<strong>TimeSpan + TimeSpan</strong>: Returns the sum as a <em>TimeSpan</em>
+</li>
+</ul>
+<p>String concatenation is the default option if none of the combinations above are detected – the operator returns the concatenation of the operands’ <em>String</em> representations.</p>
+<p>For example, <em>{% “string” + 5 %}</em> returns <strong>string5</strong>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>-</p>
+</td>
+<td>
+<p>-10<br>
+10-5</p>
+</td>
+<td colspan="1">
+<p>Unary - returns the numeric negation of a number.<br>
+Binary - subtracts the second operand from the first.</p>
+<p>In addition to numeric types, you can subtract objects of the following types:</p>
+<ul>
+<li>
+<strong>DateTime - TimeSpan</strong>: Subtracts the <em>TimeSpan</em> from the <em>DateTime</em> and returns the result as <em>DateTime</em>
+</li>
+<li>
+<strong>DateTime - DateTime</strong>: Subtracts the second <em>DateTime</em> from the first, and returns the difference as a <em>TimeSpan</em>
+</li>
+<li>
+<strong>TimeSpan - TimeSpan</strong>: Returns the difference as a <em>TimeSpan</em>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>==<br>
+!=</p>
+</td>
+<td colspan="1">
+<p>50 == 5*10</p>
+</td>
+<td colspan="1">
+<p>Operators that check for equality or inequality of the operands. Return a boolean value.</p>
+<p>Equality checks support all available object types, with the following special rules:</p>
+<ul>
+<li>Empty strings are equal to <em>null</em>
+</li>
+<li>Simple data types are equal to their string representation</li>
+<li>
+<em>Info</em> objects are equal to string constants that match the object’s display name or code name</li>
+<li>Two <em>Info</em> objects are equal when they have the same object type and ID</li>
+<li>GUID values are equal to the string representation of the GUID (always case insensitive)</li>
+<li>Enumeration values are equal to constants of the enum’s underlying type (integer or string)</li>
+</ul>
+<p><strong>Tip</strong>: Use <a href="#macro-parameters">macro parameters</a> to specify case sensitivity and the culture context in equality checks.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>&lt;<br>
+&lt;=<br>
+&gt;<br>
+&gt;=</p>
+</td>
+<td>
+<p>10 &lt; 5</p>
+</td>
+<td colspan="1">
+<p>Comparison operators that return boolean values:</p>
+<p><code>&lt;</code>    – (true if the left operand is lesser than the right)<br>
+<code>&lt;=</code>  – (true if the left operand is lesser than or equal to the right)<br>
+<code>&gt;</code>    – (true if the left operand is greater than the right)<br>
+<code>&gt;=</code>  – (true if the left operand is greater than or equal to the right)</p>
+<p>You can compare objects of the following types:</p>
+<ul>
+<li>numeric (Int, Double)</li>
+<li>string (comparison based on lexicographical order)</li>
+<li>DateTime</li>
+<li>TimeSpan</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>mod</p>
+</td>
+<td colspan="1">
+<p>5 mod 2</p>
+</td>
+<td colspan="1">
+<p>Performs the <a href="http://en.wikipedia.org/wiki/Modulo_operation" target="_blank">modulo operation</a> – computes the remainder after division of two integer operands.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>%</p>
+</td>
+<td colspan="1">
+<p>30%</p>
+</td>
+<td colspan="1">
+<p>In K#, the % character represents percentage values. You <strong>cannot</strong> use the % operator for the modulo operation.</p>
+<p>Adding the percentage sign converts the preceding number to a double equivalent (multiplies the number by 0.01).</p>
+<p>For example, <em>{% 30% %}</em> returns <strong>0.3</strong>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>??</p>
+</td>
+<td colspan="1">
+</td>
+<td colspan="1">
+<p>Null-coalescing operator. Returns the left operand if the operand is not <em>null</em>, otherwise returns the right operand.</p>
+<p><strong>Note</strong>: Empty strings are not considered as null values by the operator.</p>
+</td>
+</tr>
+</table>
+
+<p>See <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/index" target="_blank">Reference of C# operators</a> and look up a specific operator for more information.</p>
+<h2 id="compound-expressions-and-declaring-variables">Compound expressions and declaring variables</h2>
+<p>The syntax allows you to write compound expressions containing any number of simple macro expressions. All but the last expression in a compound statement must end with a semicolon. The overall result of the compound expression is the result of the last expression.</p>
+<p>Variables allow you to store and manipulate values inside macro expressions. You don’t need to declare variable types explicitly.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Declare variables</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "12"
+{% x = 5; x + 7 %}
+
+// returns "10"
+{% x = 5; y = 3; x += 2; x + y %}
+
+</code></pre>
+</div>
+
+<p>Variables are scoped to the inputs where they are declared (for example a text field or the entire code editor of an email template), and are accessible from separate macro expressions within the input.</p>
+<h2 id="conditional-statements">Conditional statements</h2>
+<p>Use the <code>if</code> statement to create <code>if (&lt;condition&gt;) {&lt;expression&gt;}</code> expressions. The condition returns the value of <em>&lt;expressions&gt;</em> if the condition is <em>true</em>, and <code>null</code> if <em>false</em>.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Simple conditional statements</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "z is less than 3"
+{% z = 1; if (z&lt;3) {"z is less than 3"} %}
+
+</code></pre>
+</div>
+
+<p>To create conditions with a result for the false branch, use: <code>if (&lt;condition&gt;) {&lt;expression&gt;} else {&lt;expression&gt;}</code></p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Branching conditional statements</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "z is greater than or equal to 3"
+{% z = 5; if (z&lt;3) {"z is less than 3"} else {"z is greater than or equal to 3"} %}
+
+</code></pre>
+</div>
+
+<p>The <strong>ternary operator</strong> enables the same behavior using a more concise notation: <code>&lt;condition&gt; ? &lt;expression&gt; : &lt;expression&gt;</code></p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Ternary operator</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "The second parameter is greater"
+{% x=1; y=2; x &gt; y ? "The first parameter is greater" : "The second parameter is greater" %}
+
+</code></pre>
+</div>
+
+<h2 id="iteration-loops">Iteration (loops)</h2>
+<p>K# provides several types of loop commands:</p>
+<ul>
+<li><code>while (&lt;condition&gt;) {&lt;executed expressions&gt;}</code></li>
+<li><code>for (&lt;init expression&gt;; &lt;condition&gt;; &lt;increment expression&gt;) {&lt;executed expressions&gt;}</code></li>
+<li><code>foreach (&lt;variable&gt; in &lt;enumerable object&gt;) {&lt;executed expressions&gt;}</code></li>
+</ul>
+<p>If a loop command is the last expression in a macro, the return value is a concatenated list containing the results of the sub-expressions executed by all iterations of the loop.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>While loop example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "10"
+{% z = 1; while (z&lt;10) {++z}; z %}
+
+// returns "2 3 4 5 6 7 8 9 10"
+{% z = 1; while (z&lt;10) {++z} %}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>For loop example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "5"
+{% z = 0; for (i = 0; i &lt; 5; i++) { z += 1 }; z %}
+
+// returns "1 2 3 4 5"
+{% z = 0; for (i = 0; i &lt; 5; i++) { z += 1 } %}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Foreach example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "HELLO"
+{% z = ""; foreach (x in "hello") {z += x.toupper()}; z %}
+
+// returns "H HE HEL HELL HELLO"
+{% z = ""; foreach (x in "hello") {z += x.toupper()}%}
+
+</code></pre>
+</div>
+
+<p>Use the <code>break</code> command to terminate loops. For nested loops, the command closes the innermost loop.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "1 2 3 4 5"
+{% z = 0; while (z &lt; 10) {if (z &gt; 4) {break}; ++z} %}
+
+</code></pre>
+</div>
+
+<p>The <code>continue</code> command skips to the next iteration of the current loop.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "0 1 2 4 5"
+{% for (i=0; i&lt;=5 ; i++) {if (i == 3) {continue}; i} %}
+
+</code></pre>
+</div>
+
+<h3 id="advanced-loops">Advanced loops</h3>
+<p>Do not use the automatic return value for loops that are nested inside compound expressions or another loop. Instead, choose one of the following approaches:</p>
+<ul>
+<li>Use the <code>print</code> method to directly output the results of individual loop iterations</li>
+<li>Concatenate the iteration results into a variable that you return at the end of the expression</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example - Nested loop with console output</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Example in an email template displaying a content type with an 'ArticleAuthors' field,
+// linking to Article content items with an 'AuthorName' field.
+// Returns an HTML list of linked author names.
+{%
+    print("&lt;ul&gt;");
+    foreach (author in ArticleAuthors) {
+        print("&lt;li&gt;" + author.Data.AuthorName + "&lt;/li&gt;")
+    };
+    print("&lt;/ul&gt;"); 
+%}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example - Nested loop with concatenation into a variable</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Example in an email template displaying a content type with an 'ArticleAuthors' field,
+// linking to Article content items with an 'AuthorName' field.
+// Returns an HTML list of linked author names. 
+{%
+    result = "&lt;ul&gt;";
+    foreach (author in ArticleAuthors) {
+        result += "&lt;li&gt;" + author.Data.AuthorName + "&lt;/li&gt;"
+    };
+    return result + "&lt;/ul&gt;";
+%}
+
+</code></pre>
+</div>
+
+<h2 id="open-conditions-and-loops">Open conditions and loops</h2>
+<p>When defining conditions or loops, you can leave the body of the loop/condition open and close it later in another macro expression. This allows you to apply the command to text content or HTML code placed between the macro expressions. Open commands can be particularly useful in <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Email templates</a>.</p>
+<p>You can also nest additional macro expressions inside open loops or conditions.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Example in an email template displaying a content type with a 'SocialPlatforms' field,
+// linking to social platform content items with additional fields.
+// Returns a list of HTML image links.
+{% foreach (link in SocialPlatforms) { %}
+    &lt;a href="{% link.Data.SocialLinkUrl %}" target="_blank"&gt;
+        &lt;img src="{% link.Data.SocialLinkIcon[0].Data.ImageFile.Url %}" alt="{% link.Data.SocialLinkTitle %}" title="{% link.Data.SocialLinkTitle %}"&gt;
+    &lt;/a&gt;
+{% } %}
+
+</code></pre>
+</div>
+
+<h2 id="return-command">Return command</h2>
+<p>Use the <code>return</code> command to terminate the processing of a macro, and set the attached expression as the macro’s final result. You can use the return command inside loops, or anywhere in compound macro expressions.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns green
+{% "red"; "yellow"; return "green"; "blue" %}
+
+// returns "ignore the loop"
+{% z = ""; foreach (x in "hello") {return "ignore the loop"; z += x } %}
+
+</code></pre>
+</div>
+
+<h2 id="indexing">Indexing</h2>
+<p>K# supports indexing for collections and objects that serve as containers for other data:</p>
+<ul>
+<li>
+<strong>String</strong> (returns the character at the specified index)</li>
+<li>
+<strong>IEnumerable</strong> collections, e.g., when retrieving linked content items in the fields of email content types in <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Email templates</a> (returns the object at the specified index in the collection)</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// returns "e"
+{% "hello"[1] %}
+
+// Gets the first content item linked in the 'LinkedImages' field,
+// and then the URL of the file stored in the content item's 'ImageFile'
+{% LinkedImages[0].Data.ImageFile.Url %}
+
+</code></pre>
+</div>
+
+<h2 id="comments">Comments</h2>
+<p>To add explanatory text inside macro expressions, use one-line, multi-line or inline comments.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{%
+// This is a one-line comment. Initiated by two forward slashes, spans across one full line.
+
+/* 
+This is a multi-line comment.
+Opened by a forward slash-asterisk sequence and closed with the asterisk-forward slash sequence.
+Can span across any number of lines.
+*/
+
+x = 5; y = 3; /* This is an inline comment nested in the middle of an expression. */ x+= 2; x + y
+%}
+
+</code></pre>
+</div>
+
+<h2 id="macro-parameters">Macro parameters</h2>
+<p>Macro parameters allow you to modify how the system resolves individual expressions. To append parameters to macro expressions, use the following syntax:</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{% &lt;expression&gt;|(&lt;parameter&gt;)&lt;value&gt; %}
+
+</code></pre>
+</div>
+
+<p><strong>Note</strong>: The | separator must be placed directly between the macro expression and the parameter <strong>without any whitespace characters</strong>.</p>
+<p>You can add multiple parameters to a single expression. Use backslashes to escape the <code>|</code> separator in parameter values if necessary. The following macro parameters are available:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Parameter</p>
+</td>
+<td>
+<p>Example</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>default</p>
+</td>
+<td>
+<p>{% <expression>|(default)N|A %}</expression></p>
+</td>
+<td>
+<p>Sets a default value that the macro returns if the result of the expression is an empty value.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>culture</p>
+</td>
+<td>
+<p>{% <expression>|(culture)en-us %}</expression></p>
+</td>
+<td>
+<p>Sets the culture code used when formatting numbers and dates in the macro result.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>casesensitive</p>
+</td>
+<td>
+<p>{% <expression>|(casesensitive)true %}</expression></p>
+</td>
+<td>
+<p>Determines whether string comparisons and other operations inside the macro expression are case sensitive. <em>False</em> by default.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>encode</p>
+</td>
+<td>
+<p>{% <expression>|(encode)true %}</expression></p>
+</td>
+<td>
+<p>Enables <a href="https://www.w3schools.com/html/html_charset.asp" target="_blank">HTML encoding</a> for the result of the macro – converts reserved HTML characters to equivalent character entities.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

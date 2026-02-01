@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Manage page URLs</title>
+</head>
+<body>
+<p>Xperience allows you to modify URLs of web pages on the <strong>URLs</strong> tab when editing a page in a website channel application. The system can also track changes of URLs and store old URLs for redirection purposes. These <a href="#former-urls">former URLs</a> can be managed in the <strong>URLs</strong> application.</p>
+<p>The following types of URLs are available for pages:</p>
+<ul>
+<li>
+<a href="#edit-url-slugs-of-pages">System URL</a> – Default URL <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">generated from the page’s position in the content tree</a> using the page’s URL slug and URL slugs of the page’s ancestors. The ‘slug’ is the part that comes at the very end of a URL, and refers to a specific page or post. For example, for the URL <em>example.com/Articles/News/Tea-Blends/</em>, the URL slug is <em>’Tea-Blends</em>’. For more information about how page URLs are generated, see <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing#page-url-generation">Page URL generation</a>.</li>
+<li>
+<a href="#edit-vanity-urls-of-pages">Vanity URL</a> – Alternative URL that can be configured and customized by marketers. One page can have multiple vanity URLs. All configured vanity URLs across all pages are displayed in the <strong>URLs</strong> application. Vanity URLs can serve multiple purposes:
+<ul>
+<li>Marketing and branding – You can create URLs that promote branding of your products and include recognizable words to improve your marketing reach.</li>
+<li>Sharing – You can create a URL that is short and can be copied and shared easily, for example, on social media.</li>
+<li>SEO – You can improve the SEO of the page by including SEO keywords in the URL of the page.</li>
+</ul>
+</li>
+<li>
+<a href="#select-the-canonical-url-of-pages">Canonical URL</a> – Preferred URL of a page, i.e., the URL that is displayed to the user in the browser URL bar and is intended to be indexed by search engines. All URLs representing a page redirect to the canonical URL of the page via a “301 Moved Permanently” redirect. By default, the system URL is the canonical URL for each page. You can decide to <a href="#select-the-canonical-url-of-pages">set a vanity URL as the canonical URL</a> of a page.</li>
+</ul>
+<p>You can also create a temporary <a href="/documentation/business-users/website-content#shareable-preview-urls">shareable preview URL</a> and send it to reviewers who can’t access the administration. This URL is not intended for regular live site visitors.</p>
+<p></p>
+<h2 id="edit-url-slugs-of-pages">Edit URL slugs of pages</h2>
+
+<div>
+
+</div>
+<div>
+<p>You may not be able to edit URL settings of every page. This depends on the configuration of the page’s underlying content type. If you are not sure, consult with your site’s administrator.</p>
+</div>
+
+<p>When you create a new page, the slug is automatically generated from the page’s title. Past this point, any changes to the page title do not get reflected in the slug. You need to change it manually if required:</p>
+<ol type="1">
+<li><p>Open a website channel application.</p></li>
+<li><p>In the content tree, select the page you want to edit.</p></li>
+<li>
+<p>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.</p>
+<ul>
+<li>When a page is <em>Published</em> or <em>Unpublished</em>, you need to select <strong>Edit page</strong> or <strong>Create new version</strong> in the <strong>Content</strong> view mode. This transitions the page to the <em>Draft</em> step and enables editing and publishing of the page.</li>
+</ul>
+</li>
+<li><p>On the <strong>URLs</strong> tab, edit () the <strong>System URL</strong>.</p></li>
+<li>
+<p>Edit the <strong>URL slug</strong> in the dialog window and <strong>Save</strong> it.</p>
+<ul>
+<li>
+<strong>Note</strong>: Changing URL slug of a page may also affect URLs of all of the page’s descendants.</li>
+<li>Some characters may be forbidden from use in URLs (e.g., ‘#’, ‘/’, ‘$’, ‘&amp;’), depending on the settings of your site. Administrators can adjust these settings in <strong>Settings → URLs and SEO → URL format</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Save</strong> the change.</p>
+<p></p>
+</li>
+</ol>
+<p>You have now successfully changed the URL slug of the page. Note that the page is now a <em>Draft</em>. The page needs to be <a href="/documentation/business-users/website-content/edit-and-publish-pages">published</a> in order to be accessible under the new system URL.</p>
+<h2 id="manage-vanity-urls-of-pages">Manage vanity URLs of pages</h2>
+
+<div>
+
+</div>
+<div>
+<p>You may not be able to edit URL settings of every page. This depends on the configuration of the page’s underlying content type. If you are not sure, consult with your site’s administrator.</p>
+</div>
+
+<p>Vanity URLs are optional for pages and can be set at any time after a page is created. Once created, a vanity URL can be set as the <a href="#select-the-canonical-url-of-pages">canonical URL</a> of the page. A page can have multiple vanity URLs. You can see all vanity URLs used across the system in the <strong>URLs</strong> application.</p>
+<h3 id="add-vanity-urls-to-pages">Add vanity URLs to pages</h3>
+<ol type="1">
+<li><p>Open a website channel application.</p></li>
+<li><p>In the content tree, select the page you want to edit.</p></li>
+<li>
+<p>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.</p>
+<ul>
+<li>When a page is <em>Published</em> or <em>Unpublished</em>, you need to select <strong>Edit page</strong> or <strong>Create new version</strong> in the <strong>Content</strong> view mode. This transitions the page to the <em>Draft</em> step and enables editing and publishing of the page.</li>
+</ul>
+</li>
+<li><p>Select <strong>Add vanity URL</strong> in the <strong>Current URLs</strong> section.</p></li>
+<li>
+<p>Enter the <strong>Vanity URL path</strong> and confirm with <strong>Add</strong>.</p>
+<ul>
+<li>Some characters may be forbidden from use in URLs (e.g., ‘#’, ‘/’, ‘$’, ‘&amp;’), depending on the settings of your site. Administrators can adjust these settings in <strong>Settings → URLs and SEO → URL format</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Save</strong> the change.</p>
+<p></p>
+</li>
+</ol>
+<p>You have now successfully added the new vanity URL of the page. Note that the page is now a <em>Draft</em>. The page needs to be <a href="/documentation/business-users/website-content/edit-and-publish-pages">published</a> in order to be accessible under the new URL.</p>
+<h3 id="edit-vanity-urls-of-pages">Edit vanity URLs of pages</h3>
+<p>To edit a vanity URL of a page:</p>
+<ol type="1">
+<li>
+<p>Navigate to the page whose vanity URL you want to edit. You can do so by:</p>
+<ol type="a">
+<li>Opening the corresponding website channel application and selecting the page in the content tree.</li>
+<li>Going to the <strong>Vanity URLs</strong> tab in the <strong>URLs</strong> application and opening () the page corresponding to the chosen vanity URL.</li>
+</ol>
+</li>
+<li>
+<p>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.</p>
+<ul>
+<li>When a page is <em>Published</em> or <em>Unpublished</em>, you need to select <strong>Edit page</strong> or <strong>Create new version</strong> in the <strong>Content</strong> view mode. This transitions the page to the <em>Draft</em> step and enables editing and publishing of the page.</li>
+</ul>
+</li>
+<li><p>On the <strong>URLs</strong> tab, edit () the <strong>Vanity URL</strong> you want to change.</p></li>
+<li>
+<p>Edit the <strong>Vanity URL path</strong> in the dialog window and <strong>Save</strong> it.</p>
+<ul>
+<li>Some characters may be forbidden from use in URLs (e.g., ‘#’, ‘/’, ‘$’, ‘&amp;’), depending on the settings of your site. Administrators can adjust these settings in <strong>Settings → URLs and SEO → URL format</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Save</strong> the change.</p>
+<p></p>
+</li>
+</ol>
+<p>You have now successfully changed the vanity URL of the page. Note that the page is now a <em>Draft</em>. The page needs to be <a href="/documentation/business-users/website-content/edit-and-publish-pages">published</a> in order to be accessible under the new URL.</p>
+<h3 id="delete-vanity-urls-of-pages">Delete vanity URLs of pages</h3>
+<ol type="1">
+<li><p>Open a website channel application.</p></li>
+<li><p>In the content tree, select the page that you want to edit.</p></li>
+<li>
+<p>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.</p>
+<ul>
+<li>When a page is <em>Published</em> or <em>Unpublished</em>, you need to select <strong>Edit page</strong> or <strong>Create new version</strong> in the <strong>Content</strong> view mode. This transitions the page to the <em>Draft</em> step and enables editing and publishing of the page.</li>
+</ul>
+</li>
+<li><p>On the <strong>URLs</strong> tab, delete () the desired <strong>Vanity URL</strong> and confirm the deletion.</p></li>
+<li>
+<p><strong>Save</strong> the change.</p>
+<p></p>
+</li>
+</ol>
+<p>You have now successfully deleted the vanity URL of the page. Note that the page is now a <em>Draft</em>. The page needs to be <a href="/documentation/business-users/website-content/edit-and-publish-pages">published</a> to make it inaccessible under the deleted vanity URL.</p>
+<h2 id="select-the-canonical-url-of-pages">Select the canonical URL of pages</h2>
+
+<div>
+
+</div>
+<div>
+<p>You may not be able to edit URL settings of every page. This depends on the configuration of the page’s underlying content type. If you are not sure, consult with your site’s administrator.</p>
+</div>
+
+<p>Canonical URL is the preferred URL of a page, i.e., the URL that is displayed to the user in the browser URL bar and is intended to be indexed by search engines.</p>
+<ul>
+<li>All URLs representing a page redirect to the canonical URL of the page via a “301 Moved Permanently” redirect.</li>
+<li>All system features (e.g., <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#url-selector">URL selector</a>, <a href="/documentation/business-users/rich-text-editor#format-text">rich text editor</a>, <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">page URL retriever</a>, <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates#content-type-field-macros">email template macros</a>) use and return the canonical URLs of pages.</li>
+<li>By default, the system URL is the canonical URL for each page.</li>
+</ul>
+<p>To set a URL as the canonical URL:</p>
+<ol type="1">
+<li><p>Open a website channel application.</p></li>
+<li><p>In the content tree, select the page that you want to edit.</p></li>
+<li>
+<p>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.</p>
+<ul>
+<li>When a page is <em>Published</em> or <em>Unpublished</em>, you need to select <strong>Edit page</strong> or <strong>Create new version</strong> in the <strong>Content</strong> view mode. This transitions the page to the <em>Draft</em> step and enables editing and publishing of the page.</li>
+</ul>
+</li>
+<li><p>On the <strong>URLs</strong> tab, select the <strong>Canonical</strong> option for the URL you want to make canonical. You can select from the page’s <a href="#manage-vanity-urls-of-pages">vanity</a> URLs and its system URL.</p></li>
+<li>
+<p><strong>Save</strong> the change.</p>
+<p></p>
+</li>
+</ol>
+<p>The selected URL is now configured as the canonical URL of the page. Note that the page is now a <em>Draft</em>. The page needs to be <a href="/documentation/business-users/website-content/edit-and-publish-pages">published</a> to apply the change.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Canonical URL of the home page</strong></p>
+<p>The canonical URL of the <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/enable-content-tree-based-routing#optional-routing-configuration">home page</a> of your website channel is, regardless of what URL is selected as canonical by the user, always the root URL of your website (i.e., <em>https://example.com/</em>) for the primary <a href="/documentation/developers-and-admins/configuration/languages">language</a> and <em>https://example.com/&lt;language_name&gt;/</em> for other languages.</p>
+</div>
+
+<h2 id="manage-redirects-from-unpublished-pages">Manage redirects from unpublished pages</h2>
+<p>You can edit active and scheduled redirects from <a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublish-pages">unpublished pages</a> on the <strong>URLs</strong> tab of the corresponding page. Active redirects can also be edited in the <strong>URLs</strong> application on the <strong>Former URLs</strong> tab. The advantage of the <em>URLs</em> application is that you can see and edit all redirects in one place. If no redirect was created when the page was unpublished, you can add it only on the <em>URLs</em> tab of the corresponding unpublished page.</p>
+<h3 id="add-redirects-from-unpublished-pages">Add redirects from unpublished pages</h3>
+<p>To add a redirect from an unpublished page with no redirect:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the unpublished page you want to edit.</li>
+<li>On the <strong>URLs</strong> tab, select <strong>Add redirect</strong> in the <strong>Redirect</strong> section.</li>
+<li>In the sidebar, use <strong>Select existing page</strong> to choose the target page of the redirect.</li>
+<li>Confirm the target with the <strong>Select</strong> button.</li>
+<li>
+<strong>Save</strong> the redirect.</li>
+</ol>
+<p>You have now successfully added the redirect. When visitors try to reach the unpublished page, they are redirected to the page you selected.</p>
+<h3 id="edit-redirects-from-unpublished-pages">Edit redirects from unpublished pages</h3>
+<p>To edit an existing redirect on the <strong>URLs</strong> tab:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the unpublished page you want to edit.</li>
+<li>On the <strong>URLs</strong> tab, select <strong>Edit</strong> in the <strong>Redirect</strong> section.</li>
+<li>In the sidebar, use <strong>Select existing page</strong> to change the target of the redirect to another page.</li>
+<li>Confirm the target with the <strong>Select</strong> button.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>Alternatively, you can edit existing redirects in the <strong>URLs</strong> application:</p>
+<ol type="1">
+<li>Open the <strong>URLs</strong> application.</li>
+<li>Go to the <strong>Former URLs</strong> tab.</li>
+<li>Select the former URL representing the redirect you want to edit.</li>
+<li>Use <strong>Select existing page</strong> to select the new target of the redirect.</li>
+<li>Confirm the target with the <strong>Select</strong> button.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>You have now successfully edited the redirect. When visitors try to reach the unpublished page, they are redirected to the page you selected.</p>
+<h3 id="delete-redirects-from-unpublished-pages">Delete redirects from unpublished pages</h3>
+<p>If you want to delete a redirect from an unpublished page, you need to publish the page and unpublish it again without selecting a page to redirect to.</p>
+<h2 id="manage-redirects-from-deleted-pages">Manage redirects from deleted pages</h2>
+<p>As deleted pages are no longer available in the system, redirects from deleted pages can be edited and deleted only in the <strong>URLs</strong> application. If no redirect was created when the page was deleted, a redirect from such a page can be added only via <a href="/documentation/developers-and-admins/development/routing/custom-redirects">code</a>.</p>
+<h3 id="edit-redirects-from-deleted-pages">Edit redirects from deleted pages</h3>
+<p>To edit a redirect from a deleted page:</p>
+<ol type="1">
+<li>Open the <strong>URLs</strong> application.</li>
+<li>Go to the <strong>Former URLs</strong> tab.</li>
+<li>Select the former URL you want to edit.</li>
+<li>Use <strong>Select existing page</strong> to select the new target of the redirect.</li>
+<li>Confirm the changes with the <strong>Select</strong> button.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>You have now successfully edited the redirect. When visitors try to reach the unpublished page, they are redirected to the page you selected.</p>
+<h3 id="delete-redirects-from-deleted-pages">Delete redirects from deleted pages</h3>
+
+<div>
+
+</div>
+<div>
+<p>Once a redirect from a deleted page has been deleted, it cannot be added again in the UI. Such redirects can be added only via <a href="/documentation/developers-and-admins/development/routing/custom-redirects">code</a>, for example, by developers.</p>
+</div>
+
+<p>To remove a redirect from a deleted page:</p>
+<ol type="1">
+<li>Open the <strong>URLs</strong> application.</li>
+<li>Go to the <strong>Former URLs</strong> tab.</li>
+<li>Remove () the former URL representing the redirect you want to delete.</li>
+</ol>
+<p>The redirect is now permanently removed.</p>
+<h2 id="url-collision-prevention">URL collision prevention</h2>
+<p>A site cannot have two pages with identical URLs. Depending on the situation, the system handles collisions in two ways:</p>
+<ol type="1">
+<li>By appending the page’s GUID at the end of the URL slug of the page. For example: <em>https://example.com/Articles/Tea-Blends-<strong>ae64db90387143b1a4562e06b67d1970</strong></em>. This occurs when:
+<ul>
+<li>You move a page and the destination already contains a page with a matching URL slug.<br>
+</li>
+</ul>
+</li>
+<li>By preventing the URL from changing and displaying an error message. This occurs when:
+<ul>
+<li>You attempt to change the URL slug or a vanity URL of a page and the resulting URL matches one already in the system.<br>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="former-urls">Former URLs</h2>
+<p>The system can automatically keep track of page URL changes by storing old URLs and handling redirects to the current URLs. You can see and manage these redirects in the <strong>URLs</strong> application on the <strong>Former URLs</strong> tab. Redirects created by unpublishing or deleting pages are stored and handled by default. You can additionally configure the system to create former URLs when a URL is edited and to redirect to the current URLs.</p>
+<p>When a redirect target of a former URL is changed, all redirects that target the corresponding page are also automatically adjusted.</p>
+<h3 id="automatically-store-edited-urls-as-former-urls">Automatically store edited URLs as former URLs</h3>
+<p>To configure the system to automatically store edited URLs as former URLs:</p>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application.</li>
+<li>Select the website channel for which you want to configure Former URLs to store and handle edited URLs.</li>
+<li>Open <strong>Channel settings</strong>.</li>
+<li>Select the <strong>Store edited URLs as former URLs</strong> setting.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>Former URLs are now created when URLs are edited in the given website channel. Every time a former URL is requested, the system returns a “301 Moved Permanently” response and redirects to the new URL of the page.</p>
+<p>If the setting is disabled later, former URLs created up to that point will continue redirecting visitors to current URLs unless the former URLs are <a href="#remove-former-urls-created-by-editing-urls">removed</a>.</p>
+<p>To access a list of all stored old URLs for the website, together with the current URL paths to which they are redirected, open the <strong>Former URLs</strong> tab in the <strong>URLs</strong> application.</p>
+<p></p>
+<h3 id="former-urls-scenarios">Former URLs scenarios</h3>
+<p>Former URLs are created when you unpublish or delete a page and also create a redirect from the page. Additionally, you can configure the system to create former URLs when modifying page URLs.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Former URLs are always created when:</p>
+</td>
+<td>
+<p>If <a href="#automatically-store-edited-urls-as-former-urls">configured</a> to store edited URLs, former URLs are created when:</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<ul>
+<li>Unpublishing a page and creating a redirect to another page.
+<ul>
+<li>If a page is scheduled to be unpublished, the former URL is created when the unpublishing occurs.</li>
+</ul>
+</li>
+<li>Deleting a page and creating a redirect to another page.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>Changing a page’s URL by:
+<ul>
+<li>Editing the URL slug for the given page or one of its parent pages.
+<ul>
+<li>The former URL is created only after you publish the page with the new URL.</li>
+</ul>
+</li>
+<li>Moving the page across the content tree.
+<ul>
+<li>In this case the former URL is created immediately.</li>
+</ul>
+</li>
+<li>Editing or deleting a page’s vanity URL.
+<ul>
+<li>The former URL is created only after you publish the page with the new URL.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</table>
+
+<p>Former URLs are <strong>NOT</strong> created when:</p>
+<ul>
+<li>Deleting a page without creating a redirect.
+<ul>
+<li>
+<a href="/documentation/business-users/website-content/delete-pages">Deleting a page</a> without creating a redirect <strong>permanently destroys</strong> <strong>and removes</strong> all former URLs pointing to that page.</li>
+</ul>
+</li>
+<li>Unpublishing a page and choosing to serve content in the fallback language.</li>
+<li>Unpublishing a page without creating a redirect.</li>
+<li>Administrators perform certain global changes, for example changing the domain of a website channel.</li>
+<li>Changing a <a href="/documentation/developers-and-admins/configuration/languages">language</a> code name.</li>
+<li>Changing the <em>Primary language</em> setting for a website channel.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Changing the language code name or the primary language setting breaks all former URLs for the corresponding language variants of pages.</p>
+</div>
+
+<h3 id="remove-former-urls-created-by-editing-urls">Remove former URLs created by editing URLs</h3>
+<p>This action is available only for former URLs <a href="#former-urls-scenarios">created</a> by editing a page’s URL or by deleting a page. Their remove button is active (). Former URLs that are created by unpublishing pages have a disabled delete button () and can’t be deleted.</p>
+<p>To remove a former URL:</p>
+<ol type="1">
+<li>Open the <strong>URLs</strong> application.</li>
+<li>Go to the <strong>Former URLs</strong> tab.</li>
+<li>Remove () the specific former URL.</li>
+</ol>
+<p>The former URL is now permanently removed.</p>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>System overview</title>
+</head>
+<body>
+<p>Xperience provides information about the application and environment running the website and its administration.</p>
+<p>To view system information, open the <strong>System</strong> application in Xperience and select <strong>Overview</strong>.</p>
+<p></p>
+
+<table>
+<thead>
+<tr>
+<td colspan="2">
+<p>System information</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Machine name</p>
+</td>
+<td>
+<p>The name of the server machine on which the system is running.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Uptime</p>
+</td>
+<td>
+<p>The time for which the application has been running and available, since the last restart.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Server time</p>
+</td>
+<td>
+<p>The current time on the server machine.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>Database information</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Database name</p>
+</td>
+<td colspan="1">
+<p>The name of the system database.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Server version</p>
+</td>
+<td colspan="1">
+<p>The SQL Server version installed on the database server.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Database size</p>
+</td>
+<td colspan="1">
+<p>The current size of the database, including the current data (the .mdf file) and the database log (the .ldf file).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Server name</p>
+</td>
+<td colspan="1">
+<p>The name of the database server on which the system’s database is running.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p>Memory statistics</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Allocated memory</p>
+</td>
+<td colspan="1">
+<p>The size of the memory allocated for the system.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Process physical memory</p>
+</td>
+<td colspan="1">
+<p>Physical memory used by the application’s process.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Process virtual memory</p>
+</td>
+<td colspan="1">
+<p>Memory allocated by the process in the virtual memory space.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="restart-the-application">Restart the application</h2>
+<p>You can restart the application by selecting the buttons in the <strong>System information</strong> section:</p>
+<ul>
+<li>
+<strong>Restart application</strong> – sends a request to restart the Xperience application. The application shuts down and starts up again <em>if the hosting environment supports automatic application start</em>. If not, the application remains stopped and inaccessible until it is manually launched.</li>
+<li>
+<strong>Restart all web farm servers</strong> – sends a restart request to all available applications in <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">multi-instance environments</a>.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Restart applications in the SaaS environment</strong></p>
+<p>You can also <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#restart-deployed-applications">restart applications</a> deployed to <a href="/documentation/developers-and-admins/saas">Xperience by Kentico SaaS</a> from the Xperience Portal.</p>
+</div>
+
+<h2 id="clear-the-application-cache">Clear the application cache</h2>
+<p>Select <strong>Clear cache</strong> in the <strong>Memory statistics</strong> section to remove all <a href="/documentation/developers-and-admins/development/caching">cached content</a> from the application’s memory (server-side cache).</p>
+<h2 id="optimize-database-size">Optimize database size</h2>
+<p>Select <strong>Optimize database size</strong> to reclaim space from dropped variable-length (e.g., varchar(max)) database columns. Equivalent to running <a href="https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-cleantable-transact-sql" target="_blank">DBCC CLEANTABLE</a> over the Xperience database. This can be a long-running operation depending on database size. You will be notified upon completion.</p>
+<p>By default, Xperience by Kentico optimizes the database only during <a href="/documentation/developers-and-admins/ci-cd">CI/CD restore operations</a>. Use this action to run the operation when required. For example, after dropping variable-length columns with a larger number of records. Useful primarily in development enviroments.</p>
+
+</body>
+</html>

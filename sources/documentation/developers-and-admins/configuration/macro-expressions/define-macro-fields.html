@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Define macro fields</title>
+</head>
+<body>
+<p>Macro fields need to be defined per <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-resolvers">macro resolver</a>. Resolvers are system components that ensure the processing of macros. By adding fields into specific resolvers, you make them available for the functionality handled by that particular resolver.</p>
+<p>You can register macro fields into resolvers:</p>
+<ul>
+<li>
+<a href="#Definemacrofields-global">globally</a> – makes the fields available everywhere the particular resolver is used (see the <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-resolvers">resolver reference</a> for details)</li>
+<li>
+<a href="#Definemacrofields-perpage">per administration UI page</a> – makes the fields resolve only within specific <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">administration UI pages</a>.</li>
+</ul>
+<h3 id="global-registration">Global registration </h3>
+<p>Global registration makes the macro field available everywhere the particular resolver is used.</p>
+<p>Register global fields during application startup:</p>
+<ol type="1">
+<li>Create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module class</a>.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for best practices related to adding custom code to Xperience.</li>
+</ul>
+</li>
+<li>Override the module’s <code>OnInit</code> method.</li>
+<li>Obtain an instance of the register that corresponds to the macro resolver you want to extend (e.g., <code>UIFormMacroSourceRegister</code> for the resolver responsible for the UI forms of <a href="/documentation/developers-and-admins/customization/object-types">object types</a>).
+<ul>
+<li>See the <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-resolvers">macro resolvers reference</a> to see which registration classes belong to specific resolvers.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class MacroFieldsRegistrationModule : Module
+{
+    ...
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Gets an instance of UIFormMacroSourceRegister
+        var macroRegister = UIFormMacroSourceRegister.Instance;
+    }
+}
+
+</code></pre>
+</div>
+
+<ol start="4" type="1">
+<li>Call <code>RegisterMacroField</code> on the macro register instance. The method takes a <code>MacroField</code> object which requires the following parameters:
+<ul>
+<li>
+<strong>name</strong> – used to access the field from within macro expressions. For example: <code>{% MyMacroField %}</code>
+</li>
+<li>
+<strong>valueEvaluator</strong> – a lambda expression with the logic to execute when the field is evaluated. Must return a value supported by macro expressions (scalars, <a href="/documentation/developers-and-admins/customization/object-types">object types</a>, collections based on <code>IEnumerable</code>).</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+protected override void OnInit()
+{
+    base.OnInit();
+
+    // Gets an instance of UIFormMacroSourceRegister
+    var macroRegister = UIFormMacroSourceRegister.Instance;
+
+    // Registers a new "DefaultAdministrator" macro field that returns a UserInfo object that corresponds to the default 'administrator' account
+    macroRegister.RegisterMacroField(new MacroField("DefaultAdministrator", () =&gt; UserInfo.Provider.Get("administrator")));
+}
+
+</code></pre>
+</div>
+
+<p>The macro field is now registered and available everywhere the extended resolver is used.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{% DefaultAdministrator.FirstName %}
+
+</code></pre>
+</div>
+
+<h3 id="ui-page-registration">UI page registration </h3>
+<p>UI page-specific field registration makes macro fields available only for specific pages in the administration interface.</p>
+<p>The registration is done using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extenders</a> and the dedicated <code>RegisterMacroField</code> method.</p>
+<ol type="1">
+<li>Create a new page extender and override the <code>ConfigurePage</code> method.</li>
+<li>Within the override, call <code>RegisterMacroField</code>. The method takes a <code>MacroField</code> object which requires the following parameters:
+<ul>
+<li>
+<strong>name</strong> – used to access the field from within macro expressions. For example: <code>{% MyMacroField %}</code>
+</li>
+<li>
+<strong>valueEvaluator</strong> – a lambda expression with the logic to execute when the field is evaluated. Must return a value supported by macro expressions (scalars, <a href="/documentation/developers-and-admins/customization/object-types">object types</a>, collections based on <code>IEnumerable</code>).</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override Task ConfigurePage()
+{
+    // Registers a new 'DefaultAdministrator' field that is only resolvable on the extended page
+    Page.RegisterMacroField(new CMS.MacroEngine.MacroField("DefaultAdministrator", () =&gt; UserInfo.Provider.Get("administrator")));
+
+    return base.ConfigurePage();
+}
+ 
+</code></pre>
+</div>
+
+<p>The macro field is now registered and available for fields on the given page in the administration.</p>
+
+<div>
+<div>
+<div>
+<span>K#</span>
+</div>
+<strong>Example usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{% DefaultAdministrator.FirstName %}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

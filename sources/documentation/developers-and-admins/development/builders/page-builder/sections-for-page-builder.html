@@ -1,0 +1,617 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Sections for Page Builder</title>
+</head>
+<body>
+<p>Sections are components that define the layout of widget zones within editable areas. You can define any number of different sections and allow content editors to <a href="/documentation/business-users/website-content/widgets-and-page-builder">choose them</a> in the <em>Pages</em> application.</p>
+<p>The system provides a built-in <strong>Default</strong> section containing a single widget zone. If you wish to use more advanced layouts in Page Builder, you need to develop and register your own sections.</p>
+<h2 id="develop-sections">Develop sections</h2>
+<p>On a basic level, Page Builder sections are pieces of HTML output code containing widget zones. You can develop two types of sections:</p>
+<ul>
+<li>
+<a href="#basic-sections">Basic sections</a> – define their layout in a single partial view.</li>
+<li>
+<a href="#sections-based-on-a-view-component">Sections based on a view component</a> – define their logic in an ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component</a> . Recommended for more complex sections that require non-trivial interactions with the application’s business layer.</li>
+</ul>
+<p>In both cases you can develop sections with properties, which allow content editors to adjust the section appearance or behavior directly in the administration interface. For sections with configurable properties, you need to create an additional model class that represents the section properties. For information about this more advanced scenario, see <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">Section properties</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Areas</strong></p>
+<p>Sections are designed to be used in the global scope and their code files must be placed in the application root of your Core project (not in an <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Area</a>). Creating sections in Areas may lead to unexpected behavior.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Example of section development</strong></p>
+<p>To see a scenario with full code samples which will guide you through the process of developing a simple section, visit <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties#example---develop-a-section-with-a-configurable-property">Example - Develop a section with a configurable property</a>.</p>
+</div>
+
+<h2 id="basic-sections">Basic sections</h2>
+<p>Use the following process to develop a section:</p>
+<ol type="1">
+<li>Create a partial view with code that defines the required layout.
+<ul>
+<li>Use the <code>WidgetZoneAsync</code> extension method (or the method’s <code>&lt;widget-zone /&gt;</code> <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a> ) to identify locations where widgets can be placed. Every section must contain at least one widget zone – sections without widget zones are not supported.</li>
+<li>We recommend storing section views in the <em>~/Components/Sections/&lt;SectionName&gt;</em> folder, and using a view name that matches the <strong>identifier</strong> assigned to the section <a href="#register-sections">upon its registration</a> prefixed with the underscore (<em>‘_’</em>) character.</li>
+<li>Alternatively, you can use any required view location or name, and then specify it when registering the section.</li>
+</ul>
+</li>
+<li>Register the section into the system. See <a href="#register-sections">Register sections</a>.</li>
+</ol>
+<p>With this approach, the section’s view is automatically displayed using logic provided by the Xperience API.</p>
+<p>The values of any <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">properties</a> defined for the section can be accessed by using the <code>ComponentViewModel&lt;TPropertyModel&gt;</code> class as the model.</p>
+<p>You can also use the <code>Page</code> property of <code>ComponentViewModel</code> to access the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the page where the section is displayed.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Web.Mvc
+@using Kentico.PageBuilder.Web.Mvc
+
+@model ComponentViewModel&lt;CustomSectionProperties&gt;
+
+@{
+    int customNumber = Model.Properties.Number;
+
+    int webPageId = Model.Page.WebPageItemID;
+    int languageId = Model.Page.LanguageID
+    string languageName = Model.Page.LanguageName;
+    int contentTypeId = Model.Page.ContentTypeID;
+    string contentTypeName = Model.Page.ContentTypeName;
+    int channelId = Model.Page.WebsiteChannelID;
+    string channelName = Model.Page.WebsiteChannelName;
+}
+
+&lt;div&gt;
+    @await Html.Kentico().WidgetZoneAsync()
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h2 id="sections-based-on-a-view-component">Sections based on a view component</h2>
+<p>The basic implementation of a section consists of only a partial view (and possibly a <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">properties</a> class). You may need additional logic, for example if you need to:</p>
+<ul>
+<li>react to the configuration of the section’s properties</li>
+<li>perform interactions based on the page where the section is rendered</li>
+<li>execute general business logic not suitable for views (e.g., database operations)</li>
+</ul>
+<p>For this purpose, you can develop sections based on ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view components</a>. Such sections consist of a view component class and the corresponding partial view it renders.</p>
+<p>Implementing a section based on a view component follows this general process:</p>
+<ol type="1">
+<li>
+<p>Create a view component class for the section.</p>
+<ul>
+<li>We recommend storing section view components in the <em>~/Components/Sections/&lt;SectionName&gt;</em> folder together with other files required by the section.</li>
+</ul>
+</li>
+<li>
+<p>Implement the component’s <em>Invoke</em> or <em>InvokeAsync</em> method (the synchronous and asynchronous approaches are both supported, this choice depends solely on your requirements).</p>
+<ul>
+<li>
+<p>The system invokes the view component when the section is inserted via Page Builder. During the invocation, the system passes the section’s <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">properties</a> (the <code>ComponentViewModel</code> class) into the component’s <em>Invoke</em> method. For this reason, the method’s signature <strong>needs to</strong> declare the <code>ComponentViewModel</code>  parameter. For sections with custom properties, you need to specify the properties class as the generic parameter.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // The signature of a view component's InvokeAsync method for sections without custom properties
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel sectionProperties)
+
+  // The signature of a view component's InvokeAsync method for sections with custom properties
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;TSectionPropertiesClass&gt; sectionProperties)
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>To the return statement of the component’s <code>Invoke</code>  method, add the full relative path to the component’s partial view. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ return View("~/Components/Sections/MySection/_MySection.cshtml", model);
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Create any required view model classes used to pass data from the section view component to the partial view.</p>
+<ul>
+<li>We recommend storing section models in the <em>~/Components/Sections/&lt;SectionName&gt;</em> folder together with other files required by the section.</li>
+</ul>
+</li>
+<li>
+<p>Prepare a <strong>partial view</strong> that defines the layout of the section.</p>
+<ul>
+<li>Use the <code>WidgetZoneAsync</code> extension method (or the method’s <code>&lt;widget-zone /&gt;</code> <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a>)  to mark locations within the layout where widgets can be placed. Every section must contain at least one widget zone – sections without widget zones are not supported.</li>
+<li>We recommend storing section views in the <em>~/Components/Sections/&lt;SectionName&gt;</em> folder together with other files required by the section.</li>
+</ul>
+</li>
+<li><p>Register the section into the system. See <a href="#register-sections">Register sections</a>.</p></li>
+</ol>
+<p>When the section is inserted using Page Builder, the system invokes the corresponding view component and renders its partial view. Using this approach, you can decouple business and view-layer code, maintaining separation of concerns.</p>
+<h3 id="access-the-data-of-the-current-page">Access the data of the current page</h3>
+<p>If you need to access fields of the page where the section is currently rendered, use the <code>Page</code> property of the <code>ComponentViewModel</code> class (from the component’s <code>Invoke</code> method). The property exposes further properties containing the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the page. You can use this data to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page</a> and access its content fields.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves the language of the page on which the section is currently rendered
+string language = widgetProperties.Page.LanguageName;
+
+</code></pre>
+</div>
+
+<h3 id="handle-post-actions">Handle POST actions</h3>
+<p>If your section needs to communicate with the server using POST actions, create a custom controller class containing the required action methods and logic. We recommend storing the class in the <em>~/Components/Sections/&lt;SectionName&gt;</em> folder together with other files required by the section.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Endpoint security</strong></p>
+<p>Consider whether the endpoints you design should only be accessible from the admin UI (edit mode of the <strong>Pages</strong> application). See <a href="/documentation/developers-and-admins/customization/secure-custom-endpoints">Secure custom endpoints</a> for more information.</p>
+</div>
+
+<p>Fields of the page the section is rendered on are by default not accessible in controller actions that handle POST requests. Such requests do not contain sufficient information to identify the page from which they originate. To access page data in POST actions, you need to include information about the current page into the data submitted by the corresponding form in the section’s output – call the <code>Html.Kentico().PageData</code> extension method (or the method’s <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a>) within the given form tag in your section view.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Web.Mvc
+@using Kentico.PageBuilder.Web.Mvc
+
+&lt;form asp-controller="SectionPostActionsController" asp-action="HandlePost" id="form"&gt;
+
+    ...
+
+    @Html.Kentico().PageData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden form field that persists information about the current page. The page data can be retrieved via the <code>IWebPageDataContextRetriever</code> service in the corresponding controller action. </p>
+<p>Obtain an instance of the <code>IWebPageDataContextRetriever</code> service (using dependency injection) and call its <code>Retrieve</code> method. The returned object’s <code>WebPage</code> property contains basic information about the current page, which you can use to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page object</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// An instance of IWebPageDataContextRetriever (e.g., obtained via dependency injection)
+private readonly IWebPageDataContextRetriever retriever;
+
+// Access the current page data
+var page = retriever.Retrieve().WebPage;
+
+// Access the properties of the page 
+int webPageId = page.WebPageItemID;
+int languageId = page.LanguageID
+string languageName = page.LanguageName;
+int contentTypeId = page.ContentTypeID;
+string contentTypeName = page.ContentTypeName;
+int channelId = page.WebsiteChannelID;
+string channelName = page.WebsiteChannelName;
+
+</code></pre>
+</div>
+
+<h2 id="register-sections">Register sections</h2>
+<p>For sections to become available in the Page Builder interface, they need to be registered into the system. Register sections using the <code>RegisterSection</code> assembly attribute (available in the <code>Kentico.PageBuilder.Web.Mvc</code>  namespace).</p>
+<p>To register <a href="#basic-sections">basic sections</a> (without a view component class), we recommend adding the assembly attributes to a dedicated code file. For example, you can create a file named <strong>ComponentRegister.cs</strong> in your project’s <em>~/Components</em> folder and use it to register your Page Builder components. For basic sections, specify the following attribute parameters:</p>
+<ul>
+<li><p><code>Identifier</code> – the unique identifier of the section. We recommend using a unique prefix in your section identifiers to prevent conflicts when deploying sections to other projects, for example matching your company’s name.</p></li>
+<li><p><code>Name</code> – the name used to identify the section when displayed in the administration interface.</p></li>
+<li><p>(Optional)<code>PropertiesType</code> – only required for <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">sections with properties</a>. Specifies the <code>System.Type</code> of the section’s property model class.</p></li>
+<li>
+<p><code>CustomViewName</code> – specifies the name and location of the view that defines the section’s output. If not set, the system searches for a corresponding  <em>_&lt;Identifier&gt;.cshtml</em>  view in the <em>~/Views/Shared/Sections</em> folder (any period characters ‘.’ in the identifier are replaced by underscores ‘_’).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic section registration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  [assembly: RegisterSection("CompanyName.DefaultSection", "Default section", typeof(CustomSectionProperties), "~/Components/Sections/_MySection.cshtml")]
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>For <a href="#sections-based-on-a-view-component">sections based on a view component</a>, you can add the assembly attribute directly into the view component code file. In this case, specify the following attribute parameters:</p>
+<ul>
+<li><p><code>Identifier</code> – the unique identifier of the section. We recommend using a unique prefix in your section identifiers to prevent conflicts when deploying sections to other projects, for example matching your company’s name.</p></li>
+<li><p><code>ViewComponentType</code> – the <code>System.Type</code> of the section’s view component class.</p></li>
+<li>
+<p><code>Name</code> – the name used to identify the section when displayed in the administration interface.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>View component section registration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  [assembly: RegisterSection("CompanyName.DefaultSection", typeof(DefaultSectionViewComponent), "Default section")]
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>When registering any type of section, you can also set the following optional attribute properties:</p>
+<ul>
+<li>
+<code>Description</code> – the description of the section displayed as a tooltip.</li>
+<li>
+<code>IconClass</code> – the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">font icon class</a> displayed when viewing the sections in the section list.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[assembly: RegisterSection("CompanyName.DefaultSection", typeof(DefaultSectionViewComponent), "Default section", Description = "A default section with one widget zone.", IconClass="icon-box")]
+
+</code></pre>
+</div>
+
+<h2 id="assign-a-default-section">Assign a default section</h2>
+<p>Editable areas in Page Builder have a default section, which is automatically added when the area is empty. This includes new areas where content editors have not yet placed any other section, and scenarios where an editor removes the last section from an area.</p>
+<p>By default, the system’s built-in <em>Default</em> section is used for this purpose. For most websites, we recommend replacing the default section with your own to ensure that the Page Builder output code exactly matches the requirements of your website’s styling and design.</p>
+<p>To specify a global default section, extend the code that <a href="/documentation/developers-and-admins/development/builders/page-builder">registers the Page Builder feature</a> in your project:</p>
+<ol type="1">
+<li><p>Set the <code>DefaultSectionIdentifier</code> property of <code>PageBuilderOptions</code> to the <code>identifier</code> of the appropriate section.</p></li>
+<li>
+<p>To disable the system’s built-in <em>Default</em> section, also set the <code>RegisterDefaultSection</code> property to <code>false</code> .</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Warning</strong>: If your site already has existing pages that use Page Builder, replace all occurrences of the <em>Default</em> section in page content before you disable it. Otherwise, accessing the pages will result in an error.</p>
+</div>
+</li>
+<li>
+<p>Pass the <code>PageBuilderOptions</code> object as the parameter of the <code>UsePageBuilder</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     features.UsePageBuilder(new PageBuilderOptions
+     {
+         DefaultSectionIdentifier = "CompanyName.DefaultSection",
+         // Disables the system's built-in 'Default' section
+         RegisterDefaultSection = false,
+         ContentTypeNames = new[]
+         {
+             LandingPage.CONTENT_TYPE_NAME
+         }
+     });
+     ...
+ });
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Empty editable areas now use the new default section. The change does NOT modify the sections within existing Page Builder content.</p>
+<p>You can also override the global default section for individual <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable areas</a>:</p>
+<ol type="1">
+<li>Prepare an <code>EditableAreaOptions</code> object.</li>
+<li>Set the object’s <code>DefaultSectionIdentifier</code> property to match the <code>identifier</code> of the section which you want to use as default.</li>
+<li>Assign the object as a parameter of <code>EditableAreaAsync</code> extension method (or the method’s <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a>) in your views.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;div&gt;
+    @{
+        var optionsDefaultSection = new EditableAreaOptions
+        {
+            DefaultSectionIdentifier = "LearningKit.Sections.Col5050"
+        };
+    }
+    @await Html.Kentico().EditableAreaAsync("areaWithSection", optionsDefaultSection)
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h2 id="limit-widgets-allowed-in-zones">Limit widgets allowed in zones</h2>
+<p>You can define widget restrictions for individual zones defined within sections. To limit which widgets can be added to a specific zone:</p>
+<ol type="1">
+<li>Edit the partial view of the section where the widget zone is defined.</li>
+<li>Create a list of strings containing the identifiers of widgets you want to allow in the zone. See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a> to learn more about widget identifiers. For identifiers of the default system widgets, check <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">the system widget reference</a>.</li>
+<li>Assign the list of identifiers to the <code>allowedWidgets</code>  named parameter of the widget zone extension method.</li>
+</ol>
+<p>In the widgets parameter, you list widgets that you want to allow in the zone, and all others are automatically excluded. When the allowed widgets parameter is not specified, all registered widgets can be added to the zone.</p>
+<p>The widget limiting feature is intended as a way to set guidelines for content editors, not as a security measure. When you limit a zone, existing instances of widgets placed in the zone are not validated or removed.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Editable area restrictions</strong></p>
+<p>Widget zone restrictions are combined with any widget restrictions set for the <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Page Builder editable area</a> containing the section. Both sets of restrictions apply to create the final list of allowed widgets for the zone.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - Limiting widgets in a zone</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;div&gt;
+    @{
+        var widgetsAllowlist = new[] { Kentico.Content.Web.Mvc.SystemComponentIdentifiers.FORM_WIDGET_IDENTIFIER,
+                                       "LearningKit.Widgets.NumberWidget",
+                                       "LearningKit.Widgets.SomeOtherWidget" };
+    }
+    @await Html.Kentico().WidgetZoneAsync(allowedWidgets: widgetsAllowlist)
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h2 id="ensure-correct-transfer-of-widgets-between-section-types">Ensure correct transfer of widgets between section types</h2>
+<p>When a user changes the section type in the Page Builder interface, widgets are moved to the new section’s widget zones automatically based on the order in which the zones are specified in the section code. This may require additional work from content editors to get the desired page layout.</p>
+<p>To ensure that widgets are moved to correct zones when the section type is changed:</p>
+<ol type="1">
+<li>Add an identifier to each zone, which creates so-called named widget zones.</li>
+<li>Use the same identifier for corresponding zones within all of your widget sections.</li>
+</ol>
+<p>When a section type is changed, the system moves widgets to matching named zones.</p>
+<p></p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - Named widget zone</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;div&gt;
+    @await Html.Kentico().WidgetZoneAsync("main")
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h2 id="add-scripts-and-styles-for-sections">Add scripts and styles for sections</h2>
+<p>To add JavaScript and CSS styles required by your sections, we recommend placing script and stylesheet files into sub-folders under:</p>
+<ul>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Public/Sections/&lt;SectionName&gt;</em></strong> – scripts and styles intended for the live site.</li>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Admin/Sections/&lt;SectionName&gt;</em></strong> – scripts and styles intended for the administration interface (when working with the section in the Page Builder editing interface).</li>
+</ul>
+<p>You can use sub-folders that match the identifiers of individual sections, or a <em>Shared</em> sub-folder for assets used by multiple sections. Note that this recommendation only applies when using the default configuration of the bundling support provided by Xperience and may be different for your project. See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>CSS notes</strong>- Only use the specified directories to add <strong>basic styles</strong> that are required for the section to render correctly. Any <strong>site-specific styles</strong> that finalize the live site design of the section should be handled separately within the given site’s main stylesheet. - To avoid potential conflicts between styles from other third-party components, we recommend adding a unique prefix to your CSS classes and identifiers (for example <code>#CompanyName-mid-column</code>), or employ similar measures to ensure their uniqueness.</p>
+</div>
+
+<h3 id="initialize-section-scripts">Initialize section scripts</h3>
+<p>If you need to initialize scripts (for example call a function on page load or register an event listener), you can add script tags directly into the view code of your Page Builder sections. However, you need to keep the following in mind:</p>
+<ul>
+<li><p>Do not rely on the order of execution of multiple script tags within one section. The order of their execution may be different in the Page Builder interface than on the live site.</p></li>
+<li><p>If you declare variables within section script tags, the variables are defined in the global namespace. To prevent conflicts on pages containing multiple instances of the same section, wrap the scripts into a self-executing anonymous function.</p></li>
+<li>
+<p>If you use assets stored in the <em>~/Content/Sections</em> folder within the section views, the related bundles are added at the end of the HTML document’s <code>body</code> tag. Such assets are not available in the section code during the page load process. A solution is to run the initialization script during the <a href="https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded" target="_blank">DOMContentLoaded</a> event. However, sections in the Page Builder interface may be added dynamically after the page is loaded. In this case, the <code>DOMContentLoaded</code>  event has already occurred and will not fire again. For example, the following script demonstrates how to reliably call a custom function on page load:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @using Kentico.PageBuilder.Web.Mvc
+  @using Kentico.Web.Mvc
+
+  &lt;div&gt;
+      @await Html.Kentico().WidgetZoneAsync()
+  &lt;/div&gt;
+  &lt;script type="text/javascript"&gt;
+  (function () {
+      if (document.readyState === "loading") {
+          // Calls the function during the 'DOMContentLoaded' event, after the HTML document has been completely loaded
+          document.addEventListener("DOMContentLoaded", function () {
+              customFunction();
+          });
+      } else {
+          // Calls the function directly in cases where the section is rendered dynamically after 'DOMContentLoaded'
+          customFunction();
+      }
+  })();
+  &lt;/script&gt;
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>Apart from initialization code, avoid linking or executing scripts directly within section views. This could lead to duplicated scripts on pages that contain multiple instances of the same section.</p>
+
+</body>
+</html>

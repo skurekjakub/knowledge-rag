@@ -1,0 +1,732 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Rich text editor plugins</title>
+</head>
+<body>
+<p>The <a href="/documentation/business-users/rich-text-editor">Froala rich text editor</a> available in the admin UI allows you to integrate custom functionality in the form of plugins. </p>
+<p>In Xperience’s implementation of Froala, plugins are stored in <strong>React components</strong> that are loaded as requested based on the <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">configuration</a> of the instantiated editor.</p>
+<p>To customize the editor you can:</p>
+<ul>
+<li><a href="#default-xperience-plugins">Use the default Xperience plugins</a></li>
+<li><a href="#add-existing-community-plugins">Add existing community plugins</a></li>
+<li><a href="#implement-custom-plugins">Write completely custom plugins</a></li>
+</ul>
+<h2 id="default-xperience-plugins">Default Xperience plugins</h2>
+<p>These plugins are available when the rich text editor is used within certain parts of the administration, for example when editing content items in the <em>Content hub</em> application or pages under a website channel.</p>
+<p>You can also use the default plugins when creating your own <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">editor configurations</a>.</p>
+<h3 id="asset-plugin">Asset plugin</h3>
+<p>Allows editors to select image files stored as <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a>, and insert them into the rich text content.</p>
+<p></p>
+<ul>
+<li>
+<strong>Toolbar button command name</strong>: <code>insertAsset</code>
+</li>
+<li>
+<strong>Plugin name</strong>: <code>@kentico/xperience-admin-base/Asset</code>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>EditorConfiguration.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{   
+  "toolbarButtons": [
+    ...
+    "insertAsset"
+  ],
+  ...
+  "customPlugins": [
+    {
+      "pluginName": "@kentico/xperience-admin-base/Asset"
+    }, 
+    ...
+  ]
+}
+
+</code></pre>
+</div>
+
+<h3 id="link-plugin">Link plugin</h3>
+<p>Allows editors to insert various types of links into the rich text content.</p>
+<p></p>
+<ul>
+<li>
+<strong>Toolbar button command name</strong>: <code>insertLinkDropDown</code>
+</li>
+<li>
+<strong>Plugin name</strong>: <code>@kentico/xperience-admin-base/Link</code>
+</li>
+</ul>
+<p>You can configure which types of links are offered when the <em>Insert link</em> button is selected in the editor. Add <code>pluginOptions</code> configuration with one or more of the options shown below.</p>
+<ul>
+<li>
+<code>asset</code> – links to files stored as <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a>.</li>
+<li>
+<code>external</code> – links to any manually entered URL.</li>
+<li>
+<code>webpage</code> – links to <a href="/documentation/business-users/website-content">pages</a> created under a web channel.</li>
+</ul>
+<p>If the <code>pluginOptions</code> is ommited, the link plugin uses all of the available options.</p>
+<p>You can also make use of other Froala’s <a href="https://froala.com/wysiwyg-editor/docs/options/#link" target="_blank">Link options</a> when <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">configuring</a> the plugin.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>EditorConfiguration.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "linkStyles": {
+    "button-link": "Button",
+    "acme-link": "ACME style"
+  },
+  "linkEditButtons": [ "linkOpen", "linkStyle", "linkEdit", "linkRemove" ],
+  "toolbarButtons": [
+    ...
+    "insertLinkDropDown"
+  ],
+  ...
+  "customPlugins": [
+    {
+      "pluginName": "@kentico/xperience-admin-base/Link",
+      "pluginOptions": {
+        "dropdownOptions": [
+          {
+            "linkOption": "asset",
+            "componentName": "@kentico/xperience-admin-base/AssetPanel"
+          },
+          {
+            "linkOption": "external"
+          },
+          {
+            "linkOption": "webpage",
+            "componentName": "@kentico/xperience-admin-websites/PageLink"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+</code></pre>
+</div>
+
+<h2 id="add-existing-community-plugins">Add existing community plugins</h2>
+<p>Xperience bundles most of the plugins available in <a href="https://froala.com/wysiwyg-editor/docs/plugins/" target="_blank">Froala’s plugin gallery</a>. To use such plugins, enable them in the <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">editor’s configuration</a>. As each plugin has its own set of <a href="https://froala.com/wysiwyg-editor/docs/options/" target="_blank">options</a>, we recommend first trying the plugin out in a separate environment (like <a href="https://jsfiddle.net/" target="_blank">JSFiddle</a>) and getting acquainted with its configuration before configuring it in Xperience.</p>
+<p>However, some plugins in the gallery are marked as ‘third-party’. These plugins are not bundled with Xperience in order to speed up the loading time of the editor, as the plugins can be quite large in size and are not used often. For example:</p>
+<ul>
+<li><a href="https://froala.com/embedly-plugin/" target="_blank">Embedly</a></li>
+<li><a href="https://froala.com/font-awesome-plugin/" target="_blank">Font Awesome</a></li>
+<li><a href="https://froala.com/image-tui-plugin/" target="_blank">Image Tui</a></li>
+<li><a href="https://froala.com/spell-checker-plugin/" target="_blank">Spell Checker</a></li>
+</ul>
+<p>To distinguish whether a plugin is bundled or not, e.g., check the format of the plugin’s JavaScript URL on the plugin’s site:</p>
+<ul>
+<li>…/js/<strong>plugins</strong>/&lt;plugin_name&gt;.min.js – a bundled plugin</li>
+<li>…/js/<strong>third_party</strong>/&lt;plugin_name&gt;.min.js – a third-party plugin</li>
+</ul>
+<p>To add a third-party plugin:</p>
+<ul>
+<li><a href="#download-and-modify-the-plugin-files">Download and modify the plugin files</a></li>
+<li><a href="#create-a-react-component-to-load-the-plugin">Create a React component to load the plugin</a></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Bundled plugins need only to be enabled in the <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">editor’s configuration</a>. Adding them as third-party plugins may result in unexpected JavaScript errors.</p>
+</div>
+
+<h3 id="download-and-modify-the-plugin-files">Download and modify the plugin files</h3>
+<ol type="1">
+<li><p>Download the plugin resource files (typically a JavaScript file and a CSS file).</p></li>
+<li>
+<p>Open the plugin’s JavaScript file and make the following modifications:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ /* All Froala plugins begin with the following call that attempts to find a Froala instance inside linked JS files and attach the plugin to it (variable names can differ per file based on minification). This approach is not supported for the Xperience administration. */
+ !function(e,c){"object"==typeof exports&amp;&amp;"undefined"!=typeof module?c(require("froala-editor")):"function"==typeof define&amp;&amp;define.amd?define(["froala-editor"],c):c(e.FroalaEditor)}(this,function(S){...
+
+ // To make the plugin load correctly, replace
+ "object"==typeof exports&amp;&amp;"undefined"!=typeof module?c(require("froala-editor")):"function"==typeof define&amp;&amp;define.amd?define(["froala-editor"],c):c(e.FroalaEditor)
+
+ // With
+ c(e.FroalaEditor)
+ // Where FroalaEditor is the Froala editor instance exposed by the admin application 
+
+ // Modified output
+ !function(e, c){c(e.FroalaEditor)}(this, function(S){...
+
+ </code></pre>
+</div>
+</li>
+<li><p><a href="#create-a-react-component-to-load-the-plugin">Load the modified plugin using a React component</a>.</p></li>
+</ol>
+<h3 id="create-a-react-component-to-load-the-plugin">Create a React component to load the plugin</h3>
+<ol type="1">
+<li>
+<p>Create a custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">JavaScript module for the admin UI</a>.</p>
+<ul>
+<li>Use the provided boilerplate project to simplify the set up. Make sure the project has the <strong>Kentico.Xperience.Admin</strong> NuGet package installed so it can access admin UI-related APIs.</li>
+</ul>
+</li>
+<li>
+<p>Create a new React plugin component to load the plugin resource files.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ import React from 'react';
+ import { RichTextEditorPluginProps } from '@kentico/xperience-admin-components';
+
+ // Imports the plugin into the component as a dependency
+ // This example loads the resources of the Embedly integration downloadable from the Froala plugin gallery
+ import './embedly.min.js';
+ import './embedly.min.css';
+
+ // The component must be named 'PluginName' + 'RichTextEditorPlugin'
+ // Xperience uses this convention to load requested plugins  
+ export const EmbedlyWrapperRichTextEditorPlugin = ({} : RichTextEditorPluginProps) =&gt; {
+     return [];
+ };
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Export the component from the module.</p>
+
+<div>
+<div>
+<div>
+<span>TSX</span>
+</div>
+<strong>entry.tsx</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ export * from './path/to/EmbedlyWrapperRichTextEditorPlugin';
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Add the plugin component to an <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">editor configuration</a>. Specify the component name without the <strong>RichTextEditorPlugin</strong> suffix.</p>
+
+<div>
+
+</div>
+<div>
+<p>The example extends an editor configuration to load the <em>EmbedlyWrapperRichTextEditorPlugin</em> component.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>EditorConfiguration.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ {   
+    "toolbarButtons": [
+     "bold",
+     "italic",
+     "underline"
+    ],
+
+     ...
+
+     "customPlugins": [ { "pluginName": "@orgName/projectName/EmbedlyWrapper" } ]
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The plugin is now available for use within editors that use the given configuration.</p>
+<h2 id="implement-custom-plugins">Implement custom plugins</h2>
+<p>The following general process outlines custom plugin development for the Xperience Froala implementation:</p>
+
+<div>
+
+</div>
+<div>
+<p>See the <a href="#example---create-a-custom-button">example at the bottom of this page</a> for a step-by-step process that demonstrates how to implement a simple plugin and add it to an editor configuration.</p>
+</div>
+
+<ol type="1">
+<li>Create a custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">JavaScript module for the admin UI</a>.
+<ul>
+<li>Use the provided boilerplate project to simplify the set up. Make sure the project has the <strong>Kentico.Xperience.Admin</strong> NuGet package installed so it can access admin UI-related APIs.</li>
+</ul>
+</li>
+<li>Within the module, create a new file for the plugin code.</li>
+<li>Create a React component stub and a corresponding properties interface.
+<ul>
+<li>
+<p>Plugin components must use a properties interface derived from <code>RichTextEditorPluginProps</code> .</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Plugin component skeleton</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  import React, { useEffect } from 'react';
+  import { RichTextEditorPluginProps } from '@kentico/xperience-admin-components';
+
+  export interface CustomRichTextEditorPluginProps extends RichTextEditorPluginProps {
+  }
+
+  // The component must be named 'PluginName' + 'RichTextEditorPlugin'
+  // Xperience uses this convention when loading requested plugins
+  export const CustomRichTextEditorPlugin = ( {froalaEditorConfigurator} : CustomRichTextEditorPluginProps) =&gt; {
+      useEffect(() =&gt; {
+          // Call froalaEditorConfigurator methods within a 'useEffect' React Hook
+          // to ensure correct behavior with multiple rich text editor instances on the same page
+      }, [froalaEditorConfigurator]);
+      return (
+          &lt;&gt;&lt;/&gt;
+      );
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<code>RichTextEditorPluginProps</code> provides properties that allow you to register plugins and use the API of the underlying Froala editor instance.
+<ul>
+<li>
+<p><code>froalaEditorConfigurator</code> – contains global FroalaEditor API for plugin registration and other functionality as demonstrated in the <a href="https://froala.com/wysiwyg-editor/docs/concepts/custom/button/" target="_blank">Froala documentation</a>.<br>
+The object provides the following methods:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>
+Method
+</p>
+</td>
+<td>
+<p>
+Description
+</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>
+<code>registerCommand</code>
+</p>
+</td>
+<td>
+<p>
+Defines a new command for the editor (button, drop-down list, etc.). For more information and available options, see, for example, <a href="https://froala.com/wysiwyg-editor/docs/concepts/custom/button/" target="_blank">Custom Button</a>. 
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+<code>defineIcon</code>
+</p>
+</td>
+<td>
+<p>
+Defines a new icon. Supports the <strong>text</strong>, <strong>image</strong>, and <strong>svg</strong> icon templates defined in the editor by default. See <a href="https://froala.com/wysiwyg-editor/docs/concepts/custom/icon/" target="_blank">Custom Icons</a>.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+<code>enableButton</code>
+</p>
+</td>
+<td>
+<p>
+Enables a button with the given name.
+</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>
+<code>disableButton</code>
+</p>
+</td>
+<td colspan="1">
+<p>
+Disables a button with the given name.
+</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>
+<code>configureOptions</code>
+</p>
+</td>
+<td colspan="1">
+<p>
+Allows you to dynamically adjust the <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">editor configuration</a> (JSON represented by <a href="https://froala.com/wysiwyg-editor/docs/options/" target="_blank">FroalaOptions</a>). This method provides a way to dynamically add a handler for the editor’s <a href="https://froala.com/wysiwyg-editor/docs/events/#initialized" target="_blank">initialized</a> event before the event actually runs.
+</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p>To ensure correct behavior of custom plugins on pages with multiple rich text editor instance, call the <code>froalaEditorConfigurator</code> methods within a React <a href="https://www.w3schools.com/react/react_useeffect.asp" target="_blank">useEffect Hook</a>.</p>
+</div>
+</li>
+<li><p><code>froalaEditorRef</code> – points to the instance of the underlying Froala editor object. Get the current editor instance using <code>froalaEditorRef.current.editor</code> . For example, <code>froalaEditorRef?.current?.editor?.html.get()</code> selects all markup in the editor. For a reference of the available API, see <a href="https://froala.com/wysiwyg-editor/docs/methods/" target="_blank">Methods</a> and <a href="https://froala.com/wysiwyg-editor/docs/events/" target="_blank">Events</a>.</p></li>
+<li><p><code>inputRef</code> – points to an Xperience wrapper of the Froala editor that provides customized methods for inserting images and links and for executing <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components#component-commands">UI form component commands</a> from within the plugin.</p></li>
+</ul>
+</li>
+</ol>
+<p>The following snippet shows the basic structure of Froala plugins in Xperience:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Froala plugin structure in Xperience</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React, { useEffect } from 'react';
+import { RichTextEditorPluginProps } from '@kentico/xperience-admin-components';
+
+// Any required properties must extend 'RichTextEditorPluginProps'
+export interface CustomRichTextEditorPluginProps extends RichTextEditorPluginProps {
+}
+
+// The component must be named 'PluginName' + 'RichTextEditorPlugin'
+// Xperience uses this convention when loading requested plugins 
+export const CustomRichTextEditorPlugin = ({
+
+    // Exposes registration API for plugins
+    froalaEditorConfigurator,
+
+    // Contains a reference to the underlying Froala editor object
+    froalaEditorRef,
+
+    // A reference to an Xperience wrapper for the Froala editor
+    // contains customized support for inserting images and links (ensures correct URL format) 
+    // and for executing UI form component commands from within the plugin
+    inputRef
+} : CustomRichTextEditorPluginProps) =&gt; {
+    // Call froalaEditorConfigurator methods within a 'useEffect' React Hook
+    // to ensure correct behavior with multiple rich text editor instances on the same page
+    useEffect(() =&gt; {
+        // The name of a custom icon
+        const iconName = 'customIcon'
+
+        // The name of a command/action 
+        // Used to reference the command/action from editor configurations
+        const commandName = 'customButton';    
+
+        const buttonName = 'Click me!';
+
+        // Defines an icon     
+        froalaEditorConfigurator?.defineIcon(iconName, {NAME: 'star'});
+
+        // Defines a custom action     
+        froalaEditorConfigurator?.registerCommand(commandName, {
+            title: buttonName,
+    persona: admin, developer
+            icon: iconName,
+            // Runs when the button representing the plugin is selected
+            callback: async () =&gt; {
+                window.alert("It works!");
+                // Command code to execute
+            }
+        });
+    }, [froalaEditorConfigurator]);
+
+    return (
+        // Markup inserted to the page by the plugin (e.g., an input dialog that opens when a button is selected)
+        &lt;&gt;
+        &lt;/&gt;
+    );
+};
+
+</code></pre>
+</div>
+
+<h3 id="add-custom-plugins-to-rich-text-editor-configurations">Add custom plugins to rich text editor configurations</h3>
+<p>To make custom plugins available within editor instances, you need to load them inside <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">editor configurations</a>:</p>
+<ul>
+<li>To add a toolbar button for the plugin, reference the plugin via the registered <code>commandName</code> under the <code>toolbarButtons</code> array (<code>customButton</code> in the example below).</li>
+<li>Load the plugin via the <code>customPlugins</code> array.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+   "toolbarButtons": [
+    "bold",
+    "italic",
+    "underline",
+    "customButton"
+   ],
+
+    ...
+
+    "customPlugins": [ { "pluginName": "@orgName/projectName/Custom" }, { "pluginName": "@orgName/projectName/&lt;PluginName&gt;" } ]
+}
+
+</code></pre>
+</div>
+
+<h2 id="example---create-a-custom-button">Example - Create a custom button</h2>
+<p>The following example shows how to create a simple plugin that replaces occurrences of the pronoun ‘<em>you</em>’ with ‘<em>thou</em>.’</p>
+<ol type="1">
+<li>
+<p>Create a custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">JavaScript module for the admin UI</a>.</p>
+<ul>
+<li>Make sure the project has the <strong>Kentico.Xperience.Admin</strong> NuGet package installed so it can access admin UI-related APIs.</li>
+</ul>
+</li>
+<li><p>In a suitable location within the module, create a new file: <strong>ArchaicPronounsRichTextEditorPlugin.tsx</strong></p></li>
+<li>
+<p>Copy and paste the following code into the file:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ import React, { useEffect } from 'react';
+ import { RichTextEditorPluginProps } from '@kentico/xperience-admin-components';
+
+ export interface ArchaicPronounsRichTextEditorPluginProps extends RichTextEditorPluginProps {
+ }
+
+ export const ArchaicPronounsRichTextEditorPlugin = ({froalaEditorConfigurator, froalaEditorRef} : ArchaicPronounsRichTextEditorPluginProps) =&gt; {
+     useEffect(() =&gt; {
+         const pluginIconName = 'archaicPronounsIcon';
+         const buttonName = 'Archaify!';
+         const commandName = 'archaicPronouns';
+
+         froalaEditorConfigurator?.defineIcon(pluginIconName, { SVG_KEY: 'smile' });    
+         froalaEditorConfigurator?.registerCommand(commandName, {
+             title: buttonName,
+ persona: admin, developer
+             icon: pluginIconName,
+             undo: false,
+             focus: true,
+             showOnMobile: true,
+             refreshAfterCallback: true,
+             callback: async () =&gt; {
+                 var htmlContent = froalaEditorRef?.current?.editor?.html.get();
+                 htmlContent = htmlContent.replace(/you/gi, 'thou');
+                 froalaEditorRef?.current?.editor?.html.set(htmlContent);
+             }
+         });
+     }, [froalaEditorConfigurator, froalaEditorRef]);
+
+     return (
+         // No markup to return, the plugin requires only existing content
+         &lt;&gt;
+         &lt;/&gt;
+     );
+ };
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Export the component from the module:</p>
+
+<div>
+<div>
+<div>
+<span>TSX</span>
+</div>
+<strong>entry.tsx</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ export * from './path/to/ArchaicPronounsRichTextEditorPlugin';
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>The plugin is now ready to be loaded by the Xperience administration. You can include it in a chosen editor configuration using the <code>customPlugins</code> array:</p>
+
+<div>
+
+</div>
+<div>
+In the <code>customPlugins</code> configuration, replace <code>orgName</code> and <code>projectName</code> with your own values. By default, the boilerplate project uses <code>acme</code> and <code>web-admin</code> respectively.
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Editor configuration JSON</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ {
+    "toolbarButtons": [
+     "bold",
+     "italic",
+     "underline",
+     "archaicPronouns"
+    ],
+
+     ...
+
+     "customPlugins": [ { "pluginName": "@orgName/projectName/ArchaicPronouns" } ]
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The plugin is now available under the registered custom button within editors using the modified <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">configuration</a>.</p>
+
+</body>
+</html>

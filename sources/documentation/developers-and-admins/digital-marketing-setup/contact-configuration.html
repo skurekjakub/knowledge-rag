@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Contact configuration</title>
+</head>
+<body>
+<p><a href="/documentation/business-users/digital-marketing/contact-management">Contacts</a> in Xperience by Kentico represent people who view and interact with content through channels, e.g., visitors of a website. Each contact stores the visitor’s personal data and other marketing-related information.</p>
+<p><strong>On websites</strong>, contacts cover both anonymous visitors (identified by an HTTP cookie, depending on the <a href="/documentation/developers-and-admins/data-protection/cookies">Default cookie level</a>) and users who identify themselves by submitting their name, email address and other data. The system automatically <a href="/documentation/business-users/digital-marketing/contact-activities">tracks the activities</a> that contacts perform on the website and gathers data about contacts based on the actions and input of the associated visitors.</p>
+<p>The collected <a href="/documentation/business-users/digital-marketing/contact-management">contact data</a> allows marketers to analyze client behavior, optimize content, identify potential buyers, and perform other marketing‑related actions.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contacts and channels</strong></p>
+<p>Contacts are global and shared across all content <a href="/documentation/developers-and-admins/configuration/website-channel-management">channels</a>. For example, if you use your Xperience application to run two websites, send messages through an email channel, and deliver content to an external application through a headless channel, visitors and email recipients from all channels will belong to the same pool of contacts.</p>
+</div>
+
+<h2 id="contact-tracking-requirements">Contact tracking requirements</h2>
+<p>The contact tracking functionality in Xperience is <strong>enabled by default</strong>. However, due to <a href="/documentation/developers-and-admins/data-protection">personal data protection</a> policies, contacts are only tracked for website channels with the <strong>Default cookie level</strong> set to <em>Visitor</em> or <em>All</em>, or if visitors give tracking consent and increase their cookie level. For more information, see <a href="/documentation/developers-and-admins/data-protection/consent-development">Consent development</a>.</p>
+<h2 id="get-the-current-contact">Get the current contact</h2>
+<p>The system uses the <strong>CurrentContact</strong> browser cookie as persistent storage for the current contact. By default, the storage is empty. However, once you ask for the current contact, the system sets the contact’s GUID (unique identifier) to every response cookie.</p>
+<p>To get the current contact in the your application’s code, call the <code>ContactManagementContext.GetCurrentContact</code> method. The context class and method are available in the <code>CMS.ContactManagementont</code> namespace.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.ContactManagement;
+
+...
+
+// Gets the current contact
+ContactInfo currentContact = ContactManagementContext.GetCurrentContact();
+
+</code></pre>
+</div>
+
+<p>If there is no contact related to the currently processed request, the <code>GetCurrentContact</code> method automatically creates and returns a new anonymous contact by default. You can disable the automatic creation of new contacts by calling the method with a <code>false</code> bool parameter.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contact management services and dependency injection</strong></p>
+<p>If you wish to use the <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> design pattern, you can create a custom service to provide the required contact management functionality. Call the methods of the <code>ContactManagementContext</code> class within the service’s implementation.</p>
+</div>
+
+<h2 id="configure-contact-tracking">Configure contact tracking</h2>
+<p>Depending on the project requirements, developers and administrators can adjust how the system recognizes contacts or processes contact data. This enables marketers to work with contacts more efficiently.</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/delete-inactive-contacts">Set up deletion of inactive contacts</a> (to reduce the required storage size and mitigate performance issues)</li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/contact-recognition-logic">Create custom contact recognition logic</a></li>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities#activity-and-contact-update-processing">Change the logging interval for contact data updates</a> (contact updates are batch processed and logged at an interval together with activities)</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/map-custom-member-fields-to-contacts">Map custom member fields to contacts</a> (if your project allows visitors to <a href="/documentation/developers-and-admins/development/registration-and-authentication">register as members</a> and you use <a href="/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects">custom member fields</a>)</li>
+</ul>
+<h2 id="add-custom-fields-to-contacts">Add custom fields to contacts</h2>
+<p>Custom fields can help you store and organize additional data about your contacts, for example, if you wish to integrate Xperience by Kentico with a third-party CRM.</p>
+<p>To add custom contact fields, <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">extend</a> the <strong>Modules → Contact management → Classes → Contact management - Contact</strong> system class.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Include custom fields in contact field selectors</strong></p>
+<p>When configuring the <em>Contact has value in field</em> or <em>Contact field value is empty</em> condition in <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> or <a href="/documentation/business-users/digital-marketing/automation#conditions">automation</a> or setting <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#map-form-submission-to-contact-attributes">mappings of form fields to contact attributes</a>, the system provides selectors of contact fields.</p>
+<p>To include your custom contact fields in these selectors, you need to <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types#Extendsystemobjecttypes-UIForms">add the fields</a> to the <strong>Contact edit</strong> UI form of the <em>Contact management - Contact</em> class. Contact field selectors display custom fields with the text entered as the <strong>Field caption</strong> of the corresponding UI form field.</p>
+<p>Note: Fields with the <em>Date</em> or <em>Date and time</em> data type are not supported in contact field selectors.</p>
+</div>
+
+<p>If your custom contact fields use a <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management#register-custom-data-types">custom data type</a>, you need to ensure the empty value for this data type is configured when using a <em>Contact field value is empty</em> <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> or <a href="/documentation/business-users/digital-marketing/automation#conditions">automation</a> condition. You can <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/configure-custom-contact-field-empty-values">configure the empty value</a> by extending the <code>IContactFieldEmptyValueProvider</code> service using the <a href="/documentation/developers-and-admins/customization/decorate-system-services">decorator pattern</a>. Additionally, you can change the empty values provided by the system for the default field data types.</p>
+
+</body>
+</html>

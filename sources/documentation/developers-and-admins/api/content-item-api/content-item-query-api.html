@@ -1,0 +1,474 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content item query API</title>
+</head>
+<body>
+<p>Content item query is the default system API for content item retrieval. It allows you to retrieve content items based on their <a href="/documentation/developers-and-admins/development/content-types">content type</a>. Each query can be modified using SQL-like fluent API.</p>
+<p>Using content query consists of the following steps:</p>
+<ol type="1">
+<li>Building the query using <code>ContentItemQueryBuilder</code>.</li>
+<li>Running the query using <code>IContentQueryExecutor</code> and mapping the result to a model class for further use.</li>
+</ol>
+<h2 id="build-queries">Build queries</h2>
+<p>To build content item queries, use <code>ContentItemQueryBuilder</code>. The class provides fluent API that allows you to tailor each query to your requirements.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Build a query</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4-7"><code>
+using CMS.ContentEngine;
+// ...
+
+// The builder class must be directly instantiated
+var builder = new ContentItemQueryBuilder();
+// Selects all items of the 'Acme.Article' content type
+builder.ForContentType("Acme.Article");
+</code></pre>
+</div>
+
+<p>Each <code>ForContentType</code> call begins a subquery where you can further adjust the retrieval parameters for the corresponding content type. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Parameterize a subquery</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4-6"><code>
+// Selects an article called 'Security'
+builder.ForContentType("Acme.Article", subqueryConfiguration =&gt; 
+{
+    subqueryConfiguration
+        .TopN(1)
+        .Where(where =&gt; where.WhereEquals("ContentItemName", "Security"));
+});
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>For all available parameterization options, see <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query">Reference - Content item query</a>.</p>
+</div>
+
+<p>Finally, the entire query can be modified.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Parameterize the entire query</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="6"><code>
+builder.ForContentTypes(parameters =&gt;
+        {
+            parameters.OfContentType("Acme.Article", "Acme.NewsRelease")
+        })
+        // Sorts all records according to the 'ContentItemName' column
+       .Parameters(globalParams =&gt; globalParams.OrderBy("ContentItemName"));
+</code></pre>
+</div>
+
+<p>The following diagram illustrates the general structure of content queries:</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Loading other objects</strong></p>
+<p>To learn how to retrieve other types of data from the Xperience database, see <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery API</a>.</p>
+</div>
+
+<h2 id="run-queries-and-map-the-result">Run queries and map the result</h2>
+<p>Queries are executed using <code>IContentQueryExecutor</code>, which retrieves data according to the passed <code>ContentItemQueryBuilder</code> instance. When retrieved, the query result is a collection of database rows. To transform the data into a typed format suitable for C#, part of query execution is a process known as <em>model binding</em>.</p>
+<p>Model binding maps the data from each row to a C# object, assigning each column an appropriate C# type in the process. The resulting object instance is called a <em>strongly-typed representation</em> of the database data. Xperience provides <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">code generators</a> that enable developers to generate model classes (C# objects) directly mirroring each content type’s database representation. These classes are directly used in the model binding process.</p>
+<p><code>IContentQueryExecutor</code> provides two approaches to facilitate model binding:</p>
+<ul>
+<li>
+<a href="#using-getmappedresult-methods">GetMappedResult&lt;TModel&gt;</a> (<code>GetMappedWebPageResult&lt;TModel&gt;</code> for page content types). These methods fully abstract the model binding process, directly returning strongly-typed models.</li>
+<li>
+<a href="#using-getresult-methods">GetResult&lt;TModel&gt;</a> (<code>GetWebPageResult&lt;TModel&gt;</code> for page content types). These methods expose the model binding logic that gives you direct access to each row of the database data, allowing you to customize the mapping process.</li>
+</ul>
+<h3 id="using-getmappedresult-methods">Using GetMappedResult methods</h3>
+<p>Using <code>GetMappedResult&lt;TModel&gt;</code>, the system runs the query and binds the result to a collection of <em>TModel</em> classes automatically in the background. This approach is recommended for the majority of scenarios.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Run a query using GetMappedResult&lt;TModel&gt;</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="12-13"><code>
+using CMS.ContentEngine;
+
+// Contains an instance of 'IContentQueryExecutor'
+// obtained using dependency injection
+private readonly IContentQueryExecutor contentQueryExecutor;
+
+var builder = new ContentItemQueryBuilder();
+builder.ForContentType(Article.CONTENT_TYPE_NAME);
+
+// The 'Article' class is generated by the code generator
+// for a corresponding 'Article' content type
+IEnumerable&lt;Article&gt; articles = 
+    await contentQueryExecutor.GetMappedWebPageResult&lt;Article&gt;(builder);
+</code></pre>
+</div>
+
+<p>The model binding logic matches database column names to the model’s properties, with certain exceptions made for system data.</p>
+<p>When retrieving data that consists of multiple content types, you must, using the <em>TModel</em> generic, cast the result to a type shared by all model classes. Depending on the contents of the result, you have the following options:</p>
+<ul>
+<li>
+<p>Use <code>IContentItemFieldsSource</code>. This interface is by default implemented by all <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated model classes</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Getting items of multiple content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="16"><code>
+  using CMS.ContentEngine;
+
+  // Contains an instance of 'IContentQueryExecutor'
+  // obtained using dependency injection
+  private readonly IContentQueryExecutor contentQueryExecutor;
+
+  var builder = new ContentItemQueryBuilder();
+  builder.ForContentTypes(query =&gt;
+  {
+      query.OfContentType(Article.CONTENT_TYPE_NAME, Blog.CONTENT_TYPE_NAME);
+      query.WithContentTypeFields();
+  });
+
+  // Gets a mixed collection of articles and blogs
+  IEnumerable&lt;IContentItemFieldsSource&gt; result = 
+      await executor.GetMappedResult&lt;IContentItemFieldsSource&gt;(builder);
+
+  // Gets all articles 
+  List&lt;Article&gt; articles = result.OfType&lt;Article&gt;().ToList();
+  // Gets all blogs
+  List&lt;Blog&gt; blogs = result.OfType&lt;Blog&gt;().ToList();
+  </code></pre>
+</div>
+</li>
+<li>
+<p>When retrieving items that share a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a>, reference the schema interface in <em>TModel</em>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Getting items that share a reusable field schema</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="15"><code>
+  using CMS.ContentEngine;
+
+  // Contains an instance of 'IContentQueryExecutor'
+  // obtained using dependency injection
+  private readonly IContentQueryExecutor contentQueryExecutor;
+
+  var builder = new ContentItemQueryBuilder();
+  builder.ForContentTypes(query =&gt;
+  {
+      query.OfReusableSchema("PageMetadata");
+  });
+
+  // Gets a collection of items with the 'PageMetadata' schema
+  IEnumerable&lt;IPageMetadata&gt; result = 
+      await executor.GetMappedWebPageResult&lt;IPageMetadata&gt;(builder);
+  </code></pre>
+</div>
+</li>
+<li><p>Use <code>System.Object</code> in case the data shares no common ancestor type.</p></li>
+</ul>
+<p>The <code>GetMappedResult</code> methods also provide overloads that allow you to manipulate the model after its data was bound.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Modify bound data</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="2"><code>
+IEnumerable&lt;Article&gt; articles =
+    await executor.GetMappedWebPageResult&lt;Article&gt;(builder, null, OverrideMapping);
+
+// Called after each item is bound
+// 'IContentQueryDataContainer' contains the current row data
+// 'Article' is the instance of the bound model class
+private Article OverrideMapping(IContentQueryDataContainer container, Article article)
+{
+    // Custom logic to modify/extend the default mapping...
+
+    return article;
+}
+</code></pre>
+</div>
+
+<h3 id="using-getresult-methods">Using GetResult methods</h3>
+<p>Using <code>GetResult&lt;TModel&gt;</code> allows you to take over the entire model binding process.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Run a query and map the data using GetResult&lt;TModel&gt;</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="10"><code>
+using CMS.ContentEngine;
+
+// Contains an instance of 'IContentQueryExecutor'
+// obtained using dependency injection
+private readonly IContentQueryExecutor contentQueryExecutor;
+
+// Executes the query specified within 'contentItemQueryBuilder'
+// and binds it using the logic in the 'ModelBinder' delegate
+var result = 
+    await contentQueryExecutor.GetResult(contentItemQueryBuilder, ModelBinder);
+</code></pre>
+</div>
+
+<p>Where <code>ModelBinder</code> is a delegate function used to map the retrieved data to the result (can be asynchronous) that gives you direct access to each retrieved data row. You can use <code>IContentQueryModelTypeMapper.Map</code>, or provide custom binding logic to map the data.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IContentQueryModelTypeMapper usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="14"><code>
+using CMS.ContentEngine;
+
+// Contains an instance of 'IContentQueryModelTypeMapper' (e.g., obtained using dependency injection)
+private readonly IContentQueryModelTypeMapper mapper;
+
+// Maps the result to 'MyModelClass'
+private MyModelClass ModelBinder(IContentQueryDataContainer container)
+{
+    // Maps the data from the container (representing 
+    // one content item) to the model class
+    // The mapper performs case-insensitive mapping from the type's 
+    // database columns to the class's properties, with a few exceptions 
+    // (see the method's API documentation)
+    return mapper.Map&lt;MyModelClass&gt;(container);
+}
+</code></pre>
+</div>
+
+<p>Models can be either</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated classes</a> – generated classes directly mirror content type fields as defined via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a> and work seamlessly with the mapper API.</li>
+<li>(advanced use case) custom classes – using custom classes enables you to map only desired columns. Before using custom classes, familiarize yourself with the mapper API or prepare custom mapping logic. Note that some Xperience APIs that work with content items expect certain system fields to be present in the model and will not work as expected otherwise.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Retrieve and bind to a generated model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Collections.Generic;
+
+using CMS.ContentEngine;
+
+// Contains instances obtained using constructor dependency injection
+private readonly IContentQueryExecutor contentQueryExecutor;
+private readonly IContentQueryModelTypeMapper mapper;
+
+var contentItemQueryBuilder = new ContentItemQueryBuilder();
+
+// Selects all objects of the 'VacationSpot' content type
+contentItemQueryBuilder.ForContentType(VacationSpot.CONTENT_TYPE_NAME);
+
+// Executes the query specified within 'contentItemQueryBuilder' and binds it to the 'VacationSpot' class generated for the 'VacationSpot' content type
+IEnumerable&lt;VacationSpot&gt; result =
+        await contentQueryExecutor
+                .GetResult(contentItemQueryBuilder,
+                           container =&gt; mapper.Map&lt;VacationSpot&gt;(container));
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>See the <strong>Content items</strong> section in the <a href="/api/">API Examples</a> for more examples.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Retrieve and bind to a custom model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Collections.Generic;
+
+using CMS.ContentEngine;
+
+// Contains instances obtained using constructor dependency injection
+private readonly IContentQueryExecutor contentQueryExecutor;
+private readonly IContentQueryModelTypeMapper mapper;
+
+// Executes the query specified within 'contentItemQueryBuilder' and binds it using the logic in 'DtoBinder'
+IEnumerable&lt;Dto&gt; result = contentQueryExecutor.GetResult(contentItemQueryBuilder, DtoBinder);
+
+// A function delegate that binds the returned records to a custom model.
+// The content type of the item being bound is stored in 'IContentQueryDataContainer.ContentTypeName'
+private Dto DtoBinder(IContentQueryDataContainer container)
+{
+    // 'IContentQueryModelTypeMapper' maps column data to corresponding 
+    // properties based on matching names. For the example 'Dto' object,
+    // only columns named 'Title' and 'Content' get mapped in addition to 'SystemFields'.
+    // All other fields of the content type are ignored.
+    return mapper.Map&lt;Dto&gt;(container);
+}
+
+// A data transfer object used as a container for the retrieved data
+// The structure of these objects is completely under your control
+public class Dto
+{
+    // Maps Xperience-specific fields
+    // When mapping pages, use the 'CMS.Websites.WebPageFields' type instead
+    public ContentItemFields SystemFields { get; set; }
+    // Maps the 'Title' column from the database
+    public string Title { get; set; }
+    // Maps the 'Content' column from the database
+    public string Content { get; set; }
+}
+</code></pre>
+</div>
+
+<h3 id="query-execution-options">Query execution options</h3>
+<p>The <code>ContentQueryExecutionOptions</code> class allows you to optionally configure querying behavior. See <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#icontentqueryexecutor-configuration">Reference - Content item query</a> for a list of available configuration options.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Configure query execution</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="6"><code>
+// Ensures the latest version of the selected content items, 
+// regardless of workflow state (e.g., returns items in 'Draft')
+contentQueryExecutor.GetResult(contentItemQueryBuilder,
+                               ModelBinder,
+                               new ContentQueryExecutionOptions()
+                                    { ForPreview = true });
+</code></pre>
+</div>
+
+
+</body>
+</html>

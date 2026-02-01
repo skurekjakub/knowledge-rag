@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Automation</title>
+</head>
+<body>
+<p>Automation allows you to set up processes that dynamically interact with your audience (<a href="/documentation/business-users/digital-marketing/contact-management">contacts</a>). Each process consists of steps that perform a specific marketing action, such as sending an <a href="/documentation/business-users/digital-marketing/emails">email</a>. You design the steps within each process using a visual Automation Builder interface.</p>
+<p>Once enabled, automation processes run for individual contacts who meet the trigger conditions. These contacts then move through the steps in the process.</p>
+<p>In the current version, you can use automation to set up advanced email follow-ups when a <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form is submitted</a> or when a visitor registers as a <a href="/documentation/business-users/members">member</a>. With automation, you can send a series of multiple emails, add waiting intervals, or send different emails based on conditions.</p>
+<h2 id="create-an-automation-process">Create an automation process</h2>
+<ol type="1">
+<li><p>Open the <strong>Automation</strong> application in Xperience.</p></li>
+<li><p>Select <strong>New process</strong>.</p></li>
+<li>
+<p>Fill in the following properties:</p>
+<ul>
+<li>
+<strong>Process name</strong> – the name of the process displayed in Xperience.</li>
+<li>
+<strong>Process recurrence</strong> – determines if the process is allowed to run repeatedly for the same contact. See <a href="#automation-process-recurrence">Automation process recurrence</a> to learn about the available options.</li>
+</ul>
+</li>
+<li>
+<p><strong>Save</strong> the process. You will be redirected to the Automation Builder.</p>
+<p></p>
+</li>
+<li><p>Within the builder, you can edit the <a href="#steps">steps</a> of the automation process.</p></li>
+</ol>
+<p>Once you finish designing the process, select <strong>Enable</strong>. This allows the process to trigger and run for contacts who meet the trigger conditions.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Creating processes from forms</strong></p>
+<p>You can also create automation processes directly from the <em>Forms</em> application. This automatically sets the given form as the trigger for the process. See <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#automation-processes">Automation processes</a> in the forms documentation.</p>
+</div>
+
+<h3 id="automation-process-recurrence">Automation process recurrence</h3>
+<p>Automation processes can run repeatedly in the following ways:</p>
+<ul>
+<li>
+<strong>Always</strong> – Runs whenever a contact meets the trigger conditions, even if the process is already running for the same contact. Use with caution, as this may result in unwanted actions, such as contacts receiving the same email multiple times.</li>
+<li>
+<strong>Only once</strong> – Runs once when a contact meets the trigger conditions, and never repeats for the same contact.</li>
+<li>
+<strong>If not already running</strong> – Runs whenever a contact meets the trigger conditions, but only if the process isn’t currently running for the same contact. Runs repeatedly if a contact meets the trigger conditions again after completing the process. For this type of recurrence to occur, the contact must be in the <strong>Finish</strong> step.</li>
+</ul>
+<h3 id="triggers">Triggers</h3>
+<p>Triggers determine when the process runs for contacts. In the current version, the following types of triggers are available:</p>
+<ul>
+<li>
+<strong>Form</strong> – Starts the process when a <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form is submitted</a>.</li>
+<li>
+<strong>Registration</strong> – Starts the process after a visitor registers as a <a href="/documentation/business-users/members">member</a>. The trigger occurs only after the member becomes active (enabled), for example after confirming the registration when using double opt-in via <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication#email-confirmation">email confirmation</a>. See <a href="#member-registration-automation-scenarios">Member registration automation scenarios</a> for detailed information. This trigger type cannot be selected if the process already contains an <em>Email</em> step configured to send an email with the <em>Form autoresponder</em> purpose (such processes require a <em>Form</em> trigger).</li>
+<li>
+<strong>Custom activity</strong> – Starts the process after the selected <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activity</a> is logged.</li>
+</ul>
+<h3 id="steps">Steps</h3>
+<p>An automation process can contain the following types of steps:</p>
+<ul>
+<li><p><strong>Trigger</strong> – Fixed first step that determines when the process runs. A process can only have one trigger. See <a href="#triggers">Triggers</a>.</p></li>
+<li>
+<p><strong>Send email</strong> – Sends an email from an email channel. The following <a href="/documentation/business-users/digital-marketing/emails#email-purposes">email purposes</a> are supported:</p>
+<ul>
+<li>
+<em>Form autoresponder</em> – for scenarios where the process is triggered by an <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">email subscription form</a>. Use a form autoresponder email to send the double opt-in link used to confirm the subscription. Typically, this is the first email sent by the automation process.</li>
+<li>
+<em>Automation</em> – for all other emails sent as part of the automation process.</li>
+</ul>
+</li>
+<li><p><strong>Wait</strong> – Contacts remain in this step for a selected time interval or until a specific date, before continuing to the next step.</p></li>
+<li><p><strong>Log custom activity</strong> – Logs the selected <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activity</a>. Another automation process can be set up to trigger based on the logged activity.</p></li>
+<li>
+<p><strong>Set contact field value</strong> – Allows you to change the value of the selected field for the processed contact. Currently, you can set a single fixed value for all contacts who pass through the step. For example, you can use this together with <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration#add-custom-fields-to-contacts">custom fields</a> to set a status flag for contacts.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Customize the field selection</strong></p>
+<p>The fields available for the step are taken from the <em>Set contact field value step</em> <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">UI form</a> located under the <em>Contact management - Contact</em> system class. If you want to set the values of <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration#add-custom-fields-to-contacts">custom contact fields</a> using this step, you need to add them to the UI form.</p>
+<p><a href="/documentation/developers-and-admins/customization/field-editor">Field editor</a> field settings are applied to the field value input shown in the step’s configuration, with these exceptions:</p>
+<ul>
+<li>The default fields cannot be deleted from this UI form.</li>
+<li>Marking fields as required or disabled is not supported and does not manifest in the automation step’s selector.</li>
+<li>The order of the fields will not reflect in the step’s selector. The order is alphabetical by default.</li>
+<li>AI features are not supported in this UI form.</li>
+<li>Fields without a database column are not supported in this UI form.</li>
+</ul>
+</div>
+
+<ul>
+<li>
+<strong>Condition</strong> – Splits the process into true and false branches based on a <a href="#conditions">specified condition</a>.<br>
+</li>
+<li>
+<strong>Finish</strong> – Represents the end of the process (either successful or not). A process may contain multiple <em>Finish</em> steps. For processes with <strong>If not already running</strong> <a href="#automation-process-recurrence">recurrence</a>, contacts must be in this step for the process to start again.</li>
+</ul>
+</li>
+</ul>
+<h3 id="conditions">Conditions</h3>
+<p>When building the condition for <strong>Condition</strong> steps within an automation process:</p>
+<ul>
+<li>Use the search or select categories to find the appropriate condition.</li>
+<li>Conditions are organized together within condition groups.</li>
+<li>Select <strong>Add condition group</strong> to create multiple groups. A selector appears above the groups where you can choose if <strong>Any</strong> or <strong>All</strong> of the condition groups need to be fulfilled.</li>
+<li>To add individual conditions to a group, select <strong>Add another condition</strong>.</li>
+<li>For each group, you can select if <strong>Any</strong> or <strong>All</strong> of the conditions need to be fulfilled.<br>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>When adding the <em>Contact field value is empty</em> condition for a custom field which uses a custom data type, make sure your project’s developers have <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/configure-custom-contact-field-empty-values">set up the empty value for custom fields</a>.</p>
+</div>
+
+<h2 id="automation-process-analytics">Automation process analytics</h2>
+<p>On the <strong>Statistics</strong> view of individual automation processes, you can view contact statistics for individual steps:</p>
+<ul>
+<li> – how many contacts have passed through the step.</li>
+<li> – how many contacts are currently waiting in the step. Only available for <strong>Wait</strong> steps.</li>
+</ul>
+<p>The statistics are updated every 30 minutes. You can manually refresh the statistics on demand using the <strong>Refresh</strong> button.</p>
+<p></p>
+<p>You can also view a list of contacts who triggered the process on the <strong>Contacts</strong> view. For each contact, the list provides additional information, such as the contact’s current step. A single contact may appear in the list multiple times if repeated runs are allowed by the <a href="#automation-process-recurrence">recurrence setting</a> of the process.</p>
+<h2 id="email-scenarios-for-forms">Email scenarios for forms</h2>
+<p>A common scenario involves setting up a more complex email follow-up sequence after a <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#actions-after-form-submission">form submission</a>, beyond a simple email response. For simple email scenarios, the standard form autoresponder can be used without designing a process in the Automation Builder.</p>
+<p>With automation, you can send multiple emails as a follow-up to form submission, but the entire sequence must be predefined from the beginning, with each email sent by a separate step. You can also include wait steps or conditions between the email steps.</p>
+<p>To comply with personal data protection regulations, you may need to implement conditions that check for some form of opt-in from the contact, such as a <a href="/documentation/developers-and-admins/data-protection/consent-management">consent</a> or whether the contact is subscribed to a <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers#create-recipient-lists">recipient list</a>.</p>
+<ul>
+<li>
+<strong>Consent</strong> – Can be obtained directly through the submitted form by including a <em>Consent agreement</em> field, or more broadly (e.g., through a tracking/cookie consent banner implemented across a website).</li>
+<li>
+<strong>Recipient list</strong> – The first email set by the process must use the <em>Form autoresponder</em> <a href="/documentation/business-users/digital-marketing/emails#email-purposes">purpose</a> and include a double opt-in link for the recipient list. A wait step should follow to give recipients time to complete the double opt-in process, after which conditions related to the recipient list can be used to control how the process sends further emails.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Regular newsletter scenarios</strong></p>
+<p>Automation is <strong>not intended</strong> for long-term newsletter distribution or regular email sending to a recipient list. In these cases, it’s difficult to predict how many email issues will be sent in the future. Currently, if an automation process is triggered by a subscription form submission for a recipient list, it can only contain a fixed number of email steps. Once a subscribed contact reaches the end of the process, there is no way to extend the process or add additional email issues.</p>
+<p>You can <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">send regular emails to subscribers</a> manually.</p>
+</div>
+
+<h3 id="multilingual-emails">Multilingual emails</h3>
+<p>If you wish to send emails in multiple <a href="/documentation/developers-and-admins/configuration/languages">languages</a> from an automation process, you need to prepare a separate form for each of the language variants. Each form requires its own automation process, which then sends emails from the corresponding language-specific <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>.</p>
+<h2 id="member-registration-automation-scenarios">Member registration automation scenarios</h2>
+<p>Processes with a <em>Registration</em> trigger run when the <em>Member registration</em> <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities#activity-type-overview">activity</a> is logged for a contact. This activity is logged only when the member becomes active (enabled), for example after confirming the registration when using double opt-in via <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication#email-confirmation">email confirmation</a>.</p>
+<h3 id="member-to-contact-mapping">Member to contact mapping</h3>
+<p>Automation processes always run for a <a href="/documentation/business-users/digital-marketing/contact-management">contact</a>, not directly for the <a href="/documentation/business-users/members">member</a> created during registration. The system maps the member to a contact based on the email address submitted during registration.</p>
+<p><strong>Scenario</strong>: A visitor registers after giving consent to be tracked as a contact</p>
+<ul>
+<li>If the registration email matches the current contact’s email, the process is triggered for the current contact.</li>
+<li>If the current contact does not have a known email address, the contact’s email is automatically updated to match the member registration email. The process is triggered for the current contact.</li>
+<li>If the current contact has a known email address that doesn’t match the registration email, the process is triggered for:
+<ul>
+<li>Another contact, if one exists with a matching email address.</li>
+<li>A new untracked contact, which is automatically created with the member email if a matching contact doesn’t exist (based on <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities#activity-logging-based-on-legitimate-interest">legitimate interest</a>).</li>
+</ul>
+</li>
+</ul>
+<p>In the last case, the process runs for a different contact than the current contact. This means that any subsequent activities by the given visitor, such as page visits or clicks, are not logged for the contact in the automation process. Keep this in mind if the process uses <a href="#conditions">conditions</a> that evaluate such activities.</p>
+<p><strong>Scenario</strong>: A visitor registers without giving consent to be tracked, so the current contact is unknown</p>
+<ul>
+<li>If the registration email matches the email address of an existing contact, the process is triggered for this contact.</li>
+<li>If a matching contact doesn’t exist, a new untracked contact with the registration email is automatically created (based on <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities#activity-logging-based-on-legitimate-interest">legitimate interest</a>). The process is triggered for this new contact.</li>
+</ul>
+<p>In this scenario, the contact in the automation process is untracked, and not directly linked to the visitor. Subsequent activities by the visitor, such as page visits or clicks, are not logged at all. Keep this in mind if the process uses <a href="#conditions">conditions</a> that evaluate such activities.</p>
+<h3 id="contact-is-member-conditions">Contact is member conditions</h3>
+<p>The <em>Contact is member</em> <a href="#conditions">condition</a> is only fulfilled for new members who have the <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities#activity-type-overview">member registration activity</a> logged. This activity cannot be logged retroactively. Pre-existing members who have no registration activity logged will not satisfy the condition.</p>
+<p>If you have existing members who may have registered before the <em>Member registration</em> activity became available, the condition will only work reliably in processes with the <em>Registration</em> trigger.</p>
+<p>Additionally, the condition requires members to exist and be active (enabled) at the time of the evaluation. If a member’s account was deleted or disabled after the member registration activity was logged, the condition is evaluated as false.</p>
+<h2 id="custom-activity-scenarios">Custom activity scenarios</h2>
+<p>You can set up an automation process to log a <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activity</a>, which can then trigger another automation process using the logged activity as the trigger.</p>
+<p>For example, when a user registers for an event, you can log a custom “Event registration” activity through various channels. Then, an automation process is triggered by the activity, which sends out event-related communications or feedback requests after the event ends.</p>
+<p>The initial automation process can include a repeated condition, such as submitting a form or visiting a page, to check if the user progresses further in their registration process. If the user fails to progress in a timely manner, the process can end with a step which logs a custom activity such as “Ignored all reminders after registration and got stuck”. This would trigger a secondary process, which can initiate a re-engagement campaign.</p>
+<p>Additionally, custom activities logged by automation processes can be used in <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> conditions, which enhances <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization">personalization</a> opportunities.</p>
+<h2 id="disable-an-automation-process">Disable an automation process</h2>
+<p>To disable a process:</p>
+<ol type="1">
+<li>Open the <strong>Automation</strong> application.</li>
+<li>Select the process you wish to disable from the list.</li>
+<li>On the <strong>Automation Builder</strong> view, select <strong>Disable new triggers</strong>.</li>
+</ol>
+<p>The process will no longer trigger for new contacts. However, contacts already within the process will continue moving through steps until the process completes. This includes contacts in <em>Wait</em> steps, so a process may perform actions (e.g., send emails) hours or even days after being disabled.</p>
+<h2 id="modify-an-automation-process-with-active-contacts">Modify an automation process with active contacts</h2>
+<p>Versioning is currently not available for automation processes. If any steps are edited while contacts are actively progressing through the process, the contacts will follow the updated sequence of steps.</p>
+<p>You cannot delete steps if the process is currently enabled, or has been enabled in the past and has logged contact statistics. At this point, there may be contacts progressing through the process, and deleting steps could result in unexpected behavior.</p>
+<p>If you delete the entire automation process, the contact history is fully cleared, and no further steps will be performed for any contacts currently within the process.</p>
+
+<div>
+
+</div>
+<div>
+<p>If a contact reaches the last step in a process branch, which is not connected to another step (whether it is a <strong>Finish</strong> step or not), the process “finishes” and the contact becomes “stuck” in the given step. Even if you add another step to an enabled process later, the contact will <strong>not continue</strong>.</p>
+</div>
+
+
+</body>
+</html>

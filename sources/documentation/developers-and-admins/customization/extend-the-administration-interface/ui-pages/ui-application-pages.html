@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI application pages</title>
+</head>
+<body>
+<p>UI application pages are <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> that encapsulate a UI page hierarchy with specific functionality under an <strong>application</strong>.</p>
+<p>Every application in the admin UI is contained within an application page that serves as the app’s entry point and the root for its UI page subtree.</p>
+<p>Application pages:</p>
+<ul>
+<li>must inherit from the <a href="#create-ui-application-pages">ApplicationPage base class</a>
+</li>
+<li>be assigned to a <a href="#ui-application-categories">category</a>
+</li>
+<li>be <a href="#register-ui-application-pages">registered</a> using the <code>UIApplication</code> attribute</li>
+<li>have their <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks">permissions defined</a>
+</li>
+</ul>
+<h2 id="create-ui-application-pages">Create UI application pages</h2>
+<p>UI application pages must inherit from the <code>ApplicationPage</code> base class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create new UI application pages</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+public class CustomApplication : ApplicationPage
+{
+    // Unique identifier of the application
+    public const string IDENTIFIER = "Acme.CustomApplication";
+}
+
+</code></pre>
+</div>
+
+<p>Application pages don’t need to display any content or visuals. The <code>ApplicationPage</code> base class ensures all requests targeting the page get redirected to their first registered child page. </p>
+<h2 id="ui-application-categories">UI application categories</h2>
+<p>Each application page must be assigned to an application category during registration. Moreover, the categories themselves need to be registered.</p>
+<p>Register new categories via the <code>UIApplication</code> assembly attribute:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Registering a custom application category</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+[assembly: UICategory(
+    codeName: "category.code.name",
+    name: "Category name", 
+    icon: Icons.Cogwheel, 
+    order: 100)]
+
+</code></pre>
+</div>
+
+<p>When registering new application pages, you can assign them to one of the predefined system categories – visible in the left-hand vertical menu in the admin UI – or create a custom category. Application pages are assigned to categories via the <strong>category code name</strong>.</p>
+<h3 id="predefined-categories">Predefined categories</h3>
+<p>The code names of default system categories are stored as constants in:</p>
+<ul>
+<li>Kentico.Xperience.Admin.Base.UIPages.BaseApplicationCategories</li>
+<li>Kentico.Xperience.Admin.DigitalMarketing.UIPages.DigitalMarketingApplicationCategories</li>
+<li>Kentico.Xperience.Admin.Content.UIPages.ContentApplicationCategories</li>
+</ul>
+<h2 id="register-ui-application-pages">Register UI application pages</h2>
+<p>To register application pages into the system, use the <code>UIApplication</code> assembly attribute. Supply the following parameters:</p>
+<ul>
+<li>
+<code>identifier</code> – a unique identifier string for the application. Used in the data stored when assigning permission sets for the application to <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a>.</li>
+<li>
+<code>type</code> – the type implementing the page (inheriting from <code>ApplicationPage</code>).</li>
+<li>
+<code>slug</code> – the URL segment under which the application is available. Applications are always accessible directly under the admin UI’s root: <em>&lt;domain&gt;/admin/&lt;UIApplicationSlug&gt;</em>
+</li>
+<li>
+<code>name</code> – the name of the application page.</li>
+<li>
+<code>category</code> – the category to which the application is assigned.</li>
+<li>
+<code>icon</code> – the icon displayed for the application in the administration application menu and dashboard.</li>
+<li>
+<code>templateName</code> – the name of the client template used by the page. Application pages <strong>should</strong> use the <code>SECTION_LAYOUT</code> <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/side-navigation-ui-page-template">client template</a> to display a navigation menu for their child pages.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>UI application page registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;  
+
+[assembly: UIApplication(
+    identifier: CustomApplication.IDENTIFIER, 
+    type: typeof(CustomApplication), 
+    slug: "my-application",
+    name: "Custom admin UI app", 
+    category: BaseApplicationCategories.DEVELOPMENT,
+    icon: Icons.Cogwheel, 
+    templateName: TemplateNames.SECTION_LAYOUT)]
+
+</code></pre>
+</div>
+
+<h2 id="assign-permissions-to-ui-application-pages">Assign permissions to UI application pages</h2>
+<p>To define the set of <a href="/documentation/developers-and-admins/configuration/users/role-management">UI permissions</a> available to and evaluated by the given application, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks">UI page permission checks</a>.</p>
+
+</body>
+</html>

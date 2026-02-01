@@ -1,0 +1,697 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Generate code files for system objects</title>
+</head>
+<body>
+<p>Certain types of objects in the system, such as content types, can contain custom fields used to model and structure the content stored within them (e.g., a content type object with fields for a title, article summary, and article text). These custom fields are typically assigned via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a> or the <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> editing interfaces and correspond to individual database columns.</p>
+<p>Since each object type can have a different set of custom fields, providing strongly-typed access to these fields through a shared, general class is difficult. Consequently, accessing custom field data directly often requires additional code and can be unwieldy. Developers might need to:</p>
+<ul>
+<li>Specify database column names explicitly when retrieving or manipulating data for particular fields.</li>
+<li>Manually perform value type conversions (e.g., from <code>object</code> or <code>string</code>) and validation on the data as it comes from the database.</li>
+</ul>
+<p>To simplify working with such objects, especially when retrieving data using the <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">ContentRetriever API</a> or the <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">content item query API</a>, the system allows you to generate object-specific code files, often referred to as model classes.</p>
+<p>A generated code file contains C# properties that directly correspond to the custom fields defined for the source object (e.g., <strong>Title</strong>, <strong>ArticleSummary</strong>, <strong>ArticleText</strong> properties for an article <a href="/documentation/developers-and-admins/development/content-types">content type</a>). Each property is generated with an appropriate C# data type and getter/setter logic suitable for manipulating the data of the underlying field. This provides strongly-typed access, IntelliSense support, and eliminates the need for manual type casting or validation in many cases.</p>
+<p>Additionally, using these generated model classes greatly simplifies content retrieval. When the result type specified in a retrieval method matches the generated class for the content being retrieved, the system’s default mapping logic can often automatically populate the properties of the generated class instance directly from the query results. This reduces the need to write custom mapping logic or manually extract values from the raw database data (<code>IContentQueryDataContainer</code> objects).</p>
+<p>Code generation is available for the following objects:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Reusable content types</a> – generates a class with the reusable content type’s fields as properties. See <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">ContentRetriever API</a> and <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">Content item API</a> to learn about available API that can be used with generated content type classes.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Page content types</a> – generates a class with the page content type’s fields as properties. See <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">ContentRetriever API</a> <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">Content item API</a> to learn about available API that can be used with generated page classes.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Email content types</a> – generates a class with the email content type’s fields as properties. Xperience currently does not provide a general API for retrieving and working with emails. Classes generated for email content types are used when <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#email-fields">retrieving the values</a> of an email’s fields within <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a>.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">Reusable field schemas</a> – generates an interface that defines the corresponding schema’s fields as its properties.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/builders/form-builder">Forms</a> – generates a class with the form’s fields as properties. See <a href="/documentation/developers-and-admins/development/content-retrieval">Content retrieval</a> to learn about available API that can be used with generated form classes.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/object-types">Object types</a> – generates classes that facilitate working with object types. See <a href="/documentation/developers-and-admins/api/database-table-api">Database table API</a> to learn about the architecture and available API of such objects.
+<ul>
+<li>Code generation for object types can be further configured in the administration, see <a href="/documentation/developers-and-admins/customization/object-types#Generatecodefilesforsystemobjects-otcodegenconfig">Configure code generation for data classes</a>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="generate-code-files">Generate code files</h2>
+<p>The code generator is command line-based. Code files are generated via the <code>dotnet run --kxp-codegen</code> <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/" target="_blank">.NET CLI</a> command. You can run the generator from a command line interface of your choice (cmd, PowerShell, Bash).</p>
+<p>Run the command from the root directory of your Xperience project:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+cd my/Xperience/app/root
+dotnet run --no-build -- --kxp-codegen --type "ReusableContentTypes"
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Command parameters</strong></p>
+<p>Add the <code>--no-build</code> parameter to the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> command if you don’t wish to rebuild the project before the classes are generated.</p>
+<p>Add the <code>--</code> syntax separator before any command parameters that you wish to pass directly to the Xperience application (<code>--kxp-codegen</code>). This prevents conflicts with general .NET CLI parameters, for example when using the <code>--help</code> option.</p>
+</div>
+
+<p>The code generator supports the following parameters. You can also view the supported parameters by running the generator with the <code>--help</code> option:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Parameter </p>
+</td>
+<td>
+<p>Required</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>--type</p>
+</td>
+<td>
+<p>Yes</p>
+</td>
+<td>
+<p>Sets the type of objects for which the code files are generated. Available types: </p>
+<ul>
+<li>
+<strong>Forms</strong> – generates code files for forms.</li>
+<li>
+<strong>ReusableContentTypes</strong> – generates code files for reusable content.</li>
+<li>
+<strong>PageContentTypes</strong> – generates code files for pages.</li>
+<li>
+<strong>EmailContentTypes</strong> – generates code files for emails.</li>
+<li>
+<strong>ReusableFieldSchemas</strong> – generates code files for reusable field schemas.
+<ul>
+<li>You must set the <code>--namespace</code> parameter when using this option.</li>
+<li>Use together with the <em>ReusableContentTypes</em> or <em>PageContentTypes</em> option which generate classes that already implement all assigned reusable schema interfaces.</li>
+<li>Make sure to generate schema interfaces into the same namespace as your content type classes. The generator outputs uncompilable code otherwise.</li>
+<li>For more information, see <a href="#reusable-field-schema-interfaces">Reusable field schema interfaces</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Classes</strong> – generates code files for object types. Code generation for object types can be further configured in the administration, see <a href="/documentation/developers-and-admins/customization/object-types#Generatecodefilesforsystemobjects-otcodegenconfig">Configure code generation for data classes</a>.
+<ul>
+<li>Use together with the <a href="#withProviderClass">–with-provider-class</a> parameter to generate the corresponding <em>*Provider</em> class and interface.</li>
+</ul>
+</li>
+</ul>
+<p>The switches are case-sensitive.</p>
+<div>
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+cd my/Xperience/app/root
+dotnet run -- --kxp-codegen --type "ReusableContentTypes"
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>--skip-confirmation</p>
+</td>
+<td>
+<p>No</p>
+</td>
+<td>
+<p>Skips the confirmation message displayed before the code files are generated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>--include</p>
+</td>
+<td>
+<p>No</p>
+</td>
+<td>
+<p>Pattern to limit the included objects. Use ‘;’ to separate multiple object names. Use the ‘*’ wildcard character to match all objects with the same prefix. Reusable field schemas don’t use a namespace prefix, but you can use a shared code name prefix to allow bulk include. </p>
+<p>For example:</p>
+<div>
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+dotnet run -- --kxp-codegen --type "ReusableContentTypes" --include "MyProject.Article;Acme.*"
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>--exclude</p>
+</td>
+<td>
+<p>No</p>
+</td>
+<td>
+<p>Pattern to define the excluded objects. Use ‘;’ to separate multiple object names. Use the ‘*’ wildcard character to match all objects with the same prefix.  Reusable field schemas don’t use a namespace prefix, but you can use a shared code name prefix to allow bulk exclude.</p>
+<p>For example:</p>
+<div>
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+dotnet run -- --kxp-codegen --type "ReusableContentTypes" --exclude "MyProject.Article;Acme.*"
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>--location</p>
+</td>
+<td>
+<p>No</p>
+</td>
+<td>
+<p>The absolute or relative path of the target folder where the code files are generated. Path values support the following macros: </p>
+<ul>
+<li>
+<strong>{type}</strong> – replaced by a string representing the object type (e.g. <em>ReusableContentTypes</em>).</li>
+<li>
+<strong>{dataClassNamespace}</strong> – replaced by the namespace from the object name (e.g. <em>Acme</em> for <em>Acme.Article</em>). Resolves to an empty string when generating <em>ReusableFieldSchemas</em>.</li>
+<li>
+<strong>{name}</strong> – replaced by the object name without the namespace.</li>
+</ul>
+<p>If the location is not provided, the code file target is the <em>/{type}/{dataClassNamespace}/{name}/</em> folder hierarchy in the application directory.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>--namespace</p>
+</td>
+<td>
+<p>No</p>
+</td>
+<td>
+<p>The custom namespace added to the code of the generated classes. If not provided, a default system namespace is used based on the generated object type. The default values for the namespace of each type are the following:</p>
+<ul>
+<li>
+<strong>Forms</strong> – <em>namespace CMS.OnlineForms.Types</em>
+</li>
+<li>
+<strong>ReusableContentTypes</strong> – <em>namespace {dataClassNamespace}</em>
+</li>
+<li>
+<strong>PageContentTypes</strong> – <em>namespace {dataClassNamespace}</em>
+</li>
+<li>
+<strong>EmailContentTypes</strong> – <em>namespace {dataClassNamespace}</em>
+</li>
+<li>
+<strong>ReusableFieldSchemas</strong> – no default namespace. Must be specified using the <code>--namespace</code> parameter.</li>
+<li>
+<strong>Classes</strong> – <em>namespace {objectTypeName}</em>
+</li>
+</ul>
+<p>When setting a custom namespace, you can use the following macros in the parameter value:</p>
+<ul>
+<li>
+<strong>{type}</strong> – replaced by a string representing the object type (e.g. <em>ReusableContentTypes</em>).</li>
+<li>
+<strong>{dataClassNamespace}</strong> – replaced by the namespace from the object name (e.g. <em>Acme</em> for <em>Acme.Article</em>). Resolves to an empty string when generating <em>ReusableFieldSchemas</em>.</li>
+<li>
+<strong>{name}</strong> – replaced by the object name without the namespace.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>--with-provider-class <span id="withProviderClass"></span></p>
+</td>
+<td>
+<p>No</p>
+<p>Supported values:<br>
+<code>True</code>/<code>False</code></p>
+</td>
+<td>
+<p>Applies only when generating object type classes (<code>--type Classes</code>). Controls whether a corresponding provider class <code>*Provider</code> and interface <code>I*Provider</code> is generated for the selected object types.</p>
+<p>Defaults to <strong>False</strong>. You must explicitly call <code>--with-provider-class True</code> to enable this behavior.</p>
+<p>We don’t recommend generating dedicated provider classes per object type. Instead, use the generic <code>IInfoProvider&lt;TInfo&gt;</code> API to inject Info managers in your code. See <a href="/documentation/developers-and-admins/api/database-table-api#info-class-managers">Database table API</a> for more information.</p>
+<div>
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+# # Generates *Info classes only by default
+dotnet run -- --kxp-codegen --type "Classes"
+# Generates *Info classes along with provider classes and interfaces
+dotnet run -- --kxp-codegen --type "Classes" --with-provider-class True
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<p>The system generates the code files in the specified location and folder structure.</p>
+<h3 id="store-generated-model-classes">Store generated model classes</h3>
+<p>For smaller projects, you can store generated model classes directly within the main Xperience project.</p>
+<p>If your project consists of multiple projects or <a href="https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class" target="_blank">RCLs</a>, we recommend that you create a separate <em>Class library</em> project for storing all generated model classes, and then reference this project from your other projects. This allows you to keep the models together (model classes often reference each other via linking properties), and ensures that the models are accessible in your entire code base.</p>
+<p>When using the generated code files in a separate library or external application, you need to allow the system to detect the classes. Make sure class discovery is enabled for the project using the <code>AssemblyDiscoverable</code> attribute – see <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Don’t directly add generated code files into external projects that compile into a different output type than a DLL assembly (for example console applications). The system cannot discover the code in these cases.</p>
+</div>
+
+<h2 id="reusable-field-schema-interfaces">Reusable field schema interfaces</h2>
+<p>Code files generated via <strong>ReusableContentTypes</strong> or <strong>PageContentTypes</strong> for content types that use at least one <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> implement <code>I&lt;SchemaName&gt;</code> interfaces. Each such interface corresponds to a schema assigned to the given content type. You must generate these interfaces separately using the <strong>ReusableFieldSchemas</strong> <code>--type</code> parameter. Make sure to place them under the same namespace as the content type classes that use them. The generator outputs uncompilable code otherwise.</p>
+<p>For example, assume an <em>Article</em> page content type that uses the <em>PageMetadata</em> and <em>SEO</em> reusable field schemas.</p>
+<p>To generate the page content type, run:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Generate page content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet run -- --kxp-codegen --type "PageContentTypes" --namespace "My.Project"
+
+</code></pre>
+</div>
+
+<p>Which outputs:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example generated class and its contents</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+namespace My.Project;
+
+public partial class Article : IPageMetadata, ISEO, IWebPageFieldsSource
+{
+    // Properties that represent the 'PageMetadata' and 'SEO' reusable schema fields
+
+    // The SystemFields property
+
+    // Properties that represent 'Article' content type fields
+}
+
+</code></pre>
+</div>
+
+<p>To generate the corresponding reusable schema interfaces, run:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet run -- --kxp-codegen --type "ReusableFieldSchemas" --namespace "My.Project"
+
+</code></pre>
+</div>
+
+<p>Which outputs:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IPageMetadata reusable schema interface</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+namespace My.Project
+{
+    public interface IPageMetadata
+    {
+        public const string REUSABLE_FIELD_SCHEMA_NAME = "PageMetadata";
+
+        // Properties that represent 'PageMetadata' reusable schema fields
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ISEO reusable schema interface</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+namespace My.Project
+{
+    public interface ISEO
+    {
+        public const string REUSABLE_FIELD_SCHEMA_NAME = "SEO";
+
+        // Properties that represent 'SEO' reusable schema fields
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="configure-model-mapping-for-properties-storing-content-item-references-to-reusable-field-schemas">Configure model mapping for properties storing content item references to reusable field schemas</h3>
+<p>Content types can store references to other content items via fields of the <em>Pages and reusable content</em> <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> and the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> component.</p>
+<p>In content type model classes output by the code generator, these fields are represented as an <code>IEnumerable</code> collection of model classes that correspond to the content type which the field references. For example, assume the following content types:</p>
+<ul>
+<li>Book – contains information about various books (ISIN, title, etc.).</li>
+<li>Author – contains information about authors (name, bio, etc.) and a <em>Books</em> field that references content items of the <em>Book</em> content type (the books a given author has written).</li>
+</ul>
+<p>Then the <strong>Books</strong> field, a reference from the <em>Author</em> content type to the <em>Book</em> content type, is in the generated model class represented as a property of the <code>IEnumerable&lt;Book&gt;</code> type.</p>
+<p>If the target of the reference is <strong>not</strong> a specific content type but a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> that can be used by multiple content types, the property representing the reference is a collection of <a href="#reusable-field-schema-interfaces">reusable field schema interface</a> objects.</p>
+<p>As an example, imagine a <code>PageMetadata</code> reusable field schema that declares fields shared by all page content types in the system. References to this schema are in generated model classes defined using the <code>IEnumerable&lt;IPageMetadata&gt;</code> type.</p>
+<p>When retrieving content either via the <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api">ContentRetriever</a> or <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api#run-queries-and-map-the-result">content item query</a> API and mapping the results to model classes that contain properties representing references to reusable field schemas, the system by default instantiates the referenced content items using the target reusable field schema interface type (<code>IPageMetadata</code>, for example).</p>
+<p>You can override this default behavior and directly set which model class the system should use via the <code>MapContentTypeReferenceTo</code> and <code>MapReferenceTo</code> property-level attributes.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Specify model classes for automatic mapping</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Maps content items of the 'Blog.BLOG_CLASS_NAME' content type from the collection
+// of items referenced by the 'IPageMetadata' schema to the 'Blog' model class.
+[MapContentTypeReferenceTo(Blog.BLOG_CLASS_NAME, typeof(Blog))]
+
+// Maps content items of the 'Article.ARTICLE_CLASS_NAME' content type from the
+// collection of items referenced by the 'IPageMetadata' schema to the 'Article' model class.
+[MapContentTypeReferenceTo(Article.ARTICLE_CLASS_NAME, typeof(Article))]
+
+// Map all other content items to the 'PageMetadata' model class
+[MapReferenceTo(typeof(PageMetadata))]
+
+// Property representing reusable field schema references
+public IEnumerable&lt;IPageMetadata&gt; Pages { get; set; }
+
+// A custom implementation of the 'IPageMetadata' interface containing 
+// a subset of the schema's properties.
+public class PageMetadata : IPageMetadata
+{
+    public string PageMetadataTitle { get; set; }
+}
+</code></pre>
+</div>
+
+<p>If neither of these attributes is used, the system defaults first to the type of the property representing the reusable schema reference (<code>IPageMetadata</code> in the example above) and finally to the type registered via the <a href="#registercontenttypemapping-attribute">RegisterContentTypeMapping attribute</a>. This fallback chain is identical for both the ContentRetriever and content item query APIs.</p>
+<h2 id="registercontenttypemapping-attribute">RegisterContentTypeMapping attribute</h2>
+<p>All generated model classes come annotated with the <code>RegisterContentTypeMapping</code> class-level attribute. The attribute controls which model classes get prioritized when the system maps content item database data to models.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>RegisterContentTypeMapping example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Directs the system to use the annotated model class when model binding 
+// content items of the 'DancingGoat.Coffee' content type
+[RegisterContentTypeMapping("DancingGoat.Coffee")]
+</code></pre>
+</div>
+
+<h2 id="icontentitemfieldssource-interfaces">IContentItemFieldsSource interfaces</h2>
+<p>Classes generated for content types implement the following interfaces:</p>
+<ul>
+<li>reusable content types – <code>IContentItemFieldsSource</code>
+</li>
+<li>page content types – <code>IWebPageFieldsSource</code> (inherits from <code>IContentItemFieldsSource</code>)</li>
+<li>email content types – <code>IEmailFieldsSource</code> (inherits from <code>IContentItemFieldsSource</code>)</li>
+</ul>
+<p>These interfaces are useful when accessing system properties across multiple content types, or when defining extension methods across all generated classes.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - access system fields across multiple content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Instance of the IContentRetriever service obtained via dependency injection
+private readonly IContentRetriever contentRetriever;
+
+public async Task&lt;IEnumerable&lt;IContentItemFieldsSource&gt;&gt; FetchMultipleContentTypes()
+{
+    // Gets multiple content types in a single query using IContentRetriever
+    var contentTypes = new[] { Coffee.CONTENT_TYPE_NAME, Event.CONTENT_TYPE_NAME };
+
+    // Uses 'IContentItemFieldsSource' as the shared type
+    return await contentRetriever.RetrieveContentOfContentTypes&lt;IContentItemFieldsSource&gt;(contentTypes);
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - extension method on IWebPageFieldsSource</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public static class WebPageFieldsSourceExtensionMethods
+{
+    public static object GetSystemProperties(this IWebPageFieldsSource source)
+    {
+        return new {
+                       Guid = source.SystemFields.ContentItemGUID, 
+                       Id   = source.SystemFields.ContentItemID
+                   };
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="customize-generated-classes"> Customize generated classes</h2>
+<p>In most scenarios, we do <strong>not recommend directly modifying the generated classes</strong>.</p>
+<p>The classes as generated as <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/partial-classes-and-methods" target="_blank">partial classes</a>. This means that you can extend them in a separate code file. Using this approach, you avoid the need to merge custom changes made to the generated code every time the class is generated again after the object’s properties are changed.</p>
+<h3 id="example">Example</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Store.generated.cs - generated class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+namespace DancingGoat
+{
+    // Partial class generated by the code generator for content type 'DancingGoat.Store'
+    public partial class Store : IWebPageFieldsSource
+    {
+        // ...
+
+        /// &lt;summary&gt;
+        /// Store name.
+        /// &lt;/summary&gt;
+        public string StoreName { get; set; }
+
+         /// &lt;summary&gt;
+        /// Store location.
+        /// &lt;/summary&gt;
+        public string StoreLocation { get; set; }
+
+        // ...
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Store.cs - extending the generated class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+namespace DancingGoat
+{
+    // Partial class extending the generated 'Store' class
+    public partial class Store
+    {
+        public string StoreFullName { get =&gt; $"{StoreName}-{StoreLocation}" }
+    }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

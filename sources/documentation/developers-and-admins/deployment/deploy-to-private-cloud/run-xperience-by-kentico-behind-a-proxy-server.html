@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Run Xperience by Kentico behind a proxy server</title>
+</head>
+<body>
+<p>If you wish to host Xperience behind a proxy server or another service that takes over the application’s public domain (e.g., <a href="https://azure.microsoft.com/en-in/services/application-gateway/">Azure Application Gateway</a>), you need to ensure request URLs from all parts of the application are generated correctly (targeting the proxy domain). Otherwise, you may encounter issues with <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">Cross-Origin Resource Sharing (CORS)</a> policies when performing certain actions.</p>
+<p></p>
+<p>To correctly configure Xperience running behind a proxy service, you need to:</p>
+<ol type="1">
+<li>
+<a href="#setting-up-forwarded-headers-middleware">Set up Forwarded Headers Middleware</a> for your Xperience application.</li>
+<li>
+<a href="#domain-aliases-in-proxy-scenarios">Consider domain alias requirements</a>.</li>
+</ol>
+<h2 id="setting-up-forwarded-headers-middleware">Setting up Forwarded Headers Middleware</h2>
+<p>See the <a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer">Configure ASP.NET Core to work with proxy servers and load balancers</a> article to learn about Forwarded Headers Middleware.</p>
+<p>The following example shows basic forwarded headers configuration in a .NET application’s <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/startup" target="_blank">startup class</a> (<em>Program.cs</em>).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+// Configures the Forwarded Headers Middleware options
+services.Configure&lt;ForwardedHeadersOptions&gt;(options =&gt;
+{
+    // Enables processing of all 'X-Forwarded' headers (-For, -Host, -Proto and -Prefix)
+    // The 'X-Forwarded-Host' header is required, other headers can be enabled or disabled as required by your proxy environment
+    options.ForwardedHeaders = ForwardedHeaders.All;
+});
+
+...
+
+// Enables the Forwarded Headers Middleware
+app.UseForwardedHeaders();
+
+...
+
+app.UseStaticFiles();
+app.UseKentico();
+
+...
+
+</code></pre>
+</div>
+
+<p>Adjust the configuration based on the requirements of your proxy environment.</p>
+<h2 id="domain-aliases-in-proxy-scenarios">Domain aliases in proxy scenarios</h2>
+<p>If you need to access the Xperience application through a different domain than the proxy server’s public domain (for example a back end server domain in a local development or testing environment), you also need to add <a href="/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains">Domain aliases</a> for your website channel.</p>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Side navigation UI page template</title>
+</head>
+<body>
+<p>This template enables navigation within a single application via a navigation menu.</p>
+<p></p>
+<p>The navigation menu:</p>
+<ul>
+<li>is included by specifying the <code>SECTION_LAYOUT</code> client template for a page.</li>
+<li>lists only the <strong>direct descendants</strong> of the page that uses the <code>SECTION_LAYOUT</code> client template.</li>
+<li>can nest pages further down the hierarchy via pages that also use the <code>SECTION_LAYOUT</code> template on each level.</li>
+<li>orders pages according to the <code>order</code> property of the <code>UIPage</code> <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">registration attribute</a>.</li>
+<li>is not displayed for a specific level if there is only one page on that level.</li>
+</ul>
+<p>When a page that uses the <code>SECTION_LAYOUT</code> template is accessed, it automatically displays its first child page (according to the order specified during registration).</p>
+
+<div>
+
+</div>
+<div>
+<p>You can prevent pages from being displayed in the navigation via the <code>UINavigation</code> attribute. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> for details. </p>
+</div>
+
+<p>The system provides two base classes that can be used to introduce the navigation element into an application:</p>
+<ol type="1">
+<li><a href="#admin-ui-application">ApplicationPage</a></li>
+<li><a href="#custom-page">SecondaryMenuSectionPage</a></li>
+</ol>
+<h3 id="admin-ui-application">Admin UI application</h3>
+<p>A common use case for this template is as an entry point into an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-application-pages">admin UI application</a>.</p>
+<ol type="1">
+<li>Create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">new UI page</a> that inherits from the <code>ApplicationPage</code> base class.</li>
+<li>Register the new application using the <code>UIApplication</code> assembly attribute.</li>
+<li>Set the client-side page template to <code>TemplateNames.SECTION_LAYOUT</code>.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add navigation to a new admin UI application</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+[assembly: UIApplication(
+    identifier: IDENTIFIER, 
+    type: typeof(CustomApplication), 
+    slug: "customapp", 
+    name: "Custom application", 
+    category: "MyCategory", 
+    icon: Icons.Apple, 
+    templateName: TemplateNames.SECTION_LAYOUT)]
+
+// The root page of a custom admin UI application
+public class CustomApplication : ApplicationPage
+{
+    // Unique identifier of the application
+    public const string IDENTIFIER = "Acme.CustomApplication";
+}
+
+</code></pre>
+</div>
+
+<p>All UI pages registered as <strong>immediate</strong> descendants of this page are now listed within a navigation menu on the left-hand side. If the parent page only has a single child (meaning the menu would only contain one item), the navigation is not displayed.</p>
+<p>If you wish to include pages deeper within the application in the navigation menu (i.e., children of children) as well or include navigation for only a specific subsection of pages, see <a href="#custom-page">Custom page</a>.</p>
+<h3 id="custom-page">Custom page</h3>
+<p>If you need to provide navigation for pages deeper within the hierarchy, create a UI page that inherits from <code>SecondaryMenuSectionPage</code> and uses the <code>TemplateNames.SECTION_LAYOUT</code> template.</p>
+<p>You can use such pages in one of two ways:</p>
+<ol type="1">
+<li>
+<p>Set the page’s parent as one of the pages already listed in the application’s navigation menu (included either by an <code>ApplicationPage</code> or another <code>SecondaryMenuSectionPage</code> higher in the hierarchy).<br>
+The template adds another level to the side navigation menu. You can repeat this approach to nest the navigation to an arbitrary depth.</p>
+<p>For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add navigation to a specific page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base;
+
+ // Registers CustomPage as a child of UserList and assigns the SECTION_LAYOUT client-side template to the page.
+ // All pages registered as children of CustomPage now appear in the navigation menu as 'children' of UserList 
+ [assembly: UIPage(
+     parentType: typeof(UserList), 
+     slug: "custompage", 
+     uiPageType: typeof(CustomPage), 
+     name: "Custom menu", 
+     templateName: TemplateNames.SECTION_LAYOUT, 
+     order: UIPageOrder.NoOrder)]
+
+ // The root page of a custom admin UI section
+ public class CustomPage : SecondaryMenuSectionPage
+ {
+ }
+
+ </code></pre>
+</div>
+
+<p>Note that if the parent page only has a single child (meaning the menu would only contain one item), the navigation is not displayed.</p>
+<p>Using this approach, you achieve a hierarchical menu similar to the one that can be found in, for example, the <em>Contact management</em> application.</p>
+<p></p>
+</li>
+<li><p>If the application doesn’t have top-level navigation and you wish to include navigation for specific subpages, set the page’s parent to the desired application page. Direct children of the navigation page then show up in a new navigation menu displayed only for the chosen section of the application.</p></li>
+</ol>
+
+</body>
+</html>

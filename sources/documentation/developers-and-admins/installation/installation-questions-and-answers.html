@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Installation questions and answers</title>
+</head>
+<body>
+<p>This page answers common questions and issues encountered when installing Xperience projects.</p>
+<ul>
+<li><a href="#what-.net-version-do-the-created-project-templates-target">What .NET version do the created project templates target?</a></li>
+<li><a href="#can-i-change-the-target-framework-version-of-installed-projects">Can I change the target framework version of installed projects?</a></li>
+<li><a href="#what-if-i-do-not-install-the-database-with-my-web-project">What if I do not install the database with my web project?</a></li>
+<li><a href="#how-can-i-access-my-localdb-database-through-microsoft-sql-server-management-studio">How can I access my LocalDB database through Microsoft SQL Server Management Studio?</a></li>
+<li><a href="#which-starter-project-should-i-install">Which starter project should I install?</a></li>
+<li><a href="#where-can-i-find-the-installation-log">Where can I find the installation log?</a></li>
+<li><a href="#where-can-i-get-more-information">Where can I get more information?</a></li>
+</ul>
+<h3 id="what-.net-version-do-the-created-project-templates-target">What .NET version do the created project templates target?</h3>
+<p>Projects created by the <a href="/documentation/developers-and-admins/installation">installation process</a> target <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0" target="_blank">.NET 10</a>. Your machine must have the required version installed. </p>
+<h3 id="can-i-change-the-target-framework-version-of-installed-projects">Can I change the target framework version of installed projects?</h3>
+<p>Yes. You can increase the Target framework of installed Xperience projects to a higher .NET version.</p>
+<ol type="1">
+<li>Open the project in Visual Studio.</li>
+<li>Manually <a href="https://docs.microsoft.com/en-us/visualstudio/ide/visual-studio-multi-targeting-overview" target="_blank">change the Target framework version</a>.</li>
+</ol>
+<p>If you update the Target framework version for a project, we also recommend consolidating all installed NuGet packages to target the same version:</p>
+<ol type="1">
+<li><p>In Visual Studio, open the <strong>Package Manager Console</strong> (under <strong>Tools &gt; NuGet Package Manager</strong>).</p></li>
+<li>
+<p>Run the following command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ Update-Package -reinstall;
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The <a href="https://docs.microsoft.com/en-us/nuget/tools/ps-ref-update-package" target="_blank">Update-Package</a> command reinstalls all NuGet packages with the appropriate target framework version for your project.</p>
+<h3 id="what-if-i-do-not-install-the-database-with-my-web-project">What if I do not install the database with my web project?</h3>
+<p>Without a database, your web project cannot function at all. You need to have an SQL server available before you begin the installation process. See the <a href="/documentation/developers-and-admins/installation/system-requirements">System requirements</a> for a list of supported servers.</p>
+<h3 id="how-can-i-access-my-localdb-database-through-microsoft-sql-server-management-studio">How can I access my LocalDB database through Microsoft SQL Server Management Studio?</h3>
+<p>Use the <strong>(localdb)\Kentico</strong> server name. The database files (<em>xperience.mdf</em>, <em>xperience_log.ldf</em>) are physically stored in your user’s profile (e.g., C:\Users\Andy\).</p>
+<h3 id="which-starter-project-should-i-install">Which starter project should I install?</h3>
+<p>If you wish to develop a new website, use the <strong>Boilerplate</strong> ( <em>kentico-xperience-mvc</em> ) project template. If you wish to evaluate the system or examine a sample implementation of an Xperience site, install the <strong>Dancing Goat</strong> ( <em>kentico-xperience-sample-mvc</em> ) sample site.</p>
+<h3 id="where-can-i-find-the-installation-log">Where can I find the installation log?</h3>
+<p>Xperience sites are installed as new project templates using the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet" target="_blank">.NET command-line utility</a>. The tool doesn’t provide logging support. However, any irrecoverable errors that occur during installation terminate the installation process and the terminal displays a message detailing the issue.</p>
+<p>For logging, e.g., inside deployment scripts or similar places where manual supervision is unlikely, you can pipe command output to a physical file. For example, using PowerShell’s <a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file" target="_blank">Out-File</a> cmdlet. </p>
+<h3 id="where-can-i-get-more-information">Where can I get more information?</h3>
+<p>You can contact our support department, who will be happy to assist, at <a href="mailto:support@kentico.com">support@kentico.com</a>.</p>
+
+</body>
+</html>

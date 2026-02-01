@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Editing components</title>
+</head>
+<body>
+<p><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a>, and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components can expose customizable properties that allow users to adjust their functionality, appearance, behavior, or other attributes. The editing interface for such properties is provided by <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a>.</p>
+<p>The documentation refers to UI form components used in this fashion as <strong>editing components</strong>.</p>
+<p>Editing components can be used in:</p>
+<ul>
+<li>
+<p>Admin UI component configuration dialogs of</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">Form components</a></li>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">UI form component validation rules</a></li>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">UI form component visibility conditions</a></li>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">Model-based edit pages</a></li>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template">Listing UI page filters</a></li>
+</ul>
+</li>
+<li>
+<p>Page Builder component configuration dialogs of</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">Widgets</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">Sections</a></li>
+<li><a href="/documentation/business-users/digital-marketing/widget-personalization">Personalization condition types</a></li>
+</ul>
+</li>
+<li>
+<p>Form Builder component configuration dialogs of</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">Form components</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">Form sections</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="assign-and-configure-editing-components">Assign and configure editing components</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Editing component namespaces</strong></p>
+<p>Unless specified otherwise, all classes and members mentioned in this section can be found in the following namespaces:</p>
+<ul>
+<li><code>Kentico.Xperience.Admin.Base.Forms</code></li>
+<li><code>Kentico.Xperience.Admin.Base.FormAnnotations</code></li>
+</ul>
+<p>Do <strong>not</strong> use API from the <em>Kentico.Forms.Web.Mvc</em> namespace, which contains some classes with matching names (e.g., <code>FormComponentAttribute</code>).</p>
+</div>
+
+<p>Editing components are assigned using <strong>C# attributes</strong> specific to each UI form component. Annotating a configuration property of one of the supported components with a form component attribute sets that component as the editor of the property’s input.</p>
+<p>For example, to assign the text input form component as an editing component, use the <code>TextInputComponent</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+...
+
+// Assigns 'TextInputComponent' as the editing component of 'MyProperty'
+[TextInputComponent(Label = "My property")]
+public string MyProperty { get; set; }
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The data type of the assigned editing component must match the data type of the property being annotated.</p>
+</div>
+
+<p>The property is now editable via the component’s configuration dialog.</p>
+<h3 id="form-component-attributes">Form component attributes</h3>
+<p>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Reference - Admin UI form components</a> for an overview of form components and corresponding component attributes provided by default Xperience installations.</p>
+<p>If the provided set of components isn’t sufficient, you can develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form components</a> suitable for your scenarios.</p>
+<h3 id="configure-editing-component-properties">Configure editing component properties</h3>
+<p>All component attributes allow you to configure a set of default properties, which you can use to adjust the resulting configuration interface. These properties are set using optional constructor parameters available within each attribute.</p>
+<ul>
+<li>
+<strong>Label</strong> – the label text displayed in the property’s configuration interface.</li>
+<li>
+<strong>Tooltip</strong> – text displayed for the property on mouse hover.</li>
+<li>
+<strong>ExplanationText</strong> – a short message displayed under the property’s input field.</li>
+<li>
+<strong>Order</strong> – the order in which the properties appear in the configuration interface.</li>
+</ul>
+<p>Form components can also have their own properties, which differ based on the component used. See the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">individual attributes and their constructors</a> for details.</p>
+<h3 id="configure-components-dynamically">Configure components dynamically</h3>
+<p>You can use the API to dynamically configure the state of editing components. Such configuration is intended for advanced scenarios where statically configuring editing component properties, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility conditions</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validations rules</a> via attribute notation is not sufficient. A typical use case is creating dynamic data sources for selector components.</p>
+<p>For more information, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components/configure-editing-component-state">Configure editing component state</a>.</p>
+<h3 id="group-components-into-categories">Group components into categories</h3>
+<p>Editing components within individual configuration dialogs can be grouped into categories using the <code>FormCategory</code> attribute. The attribute must be applied to the model class. There is no limit on the number of categories that can be created per dialog.</p>
+<p>The position of each category relative to other editing components and categories is determined by the <code>Order</code> property, which is shared with the order of other items in the form.</p>
+<p>The attribute also allows you to set various metadata for each category including its label, tooltip, and whether it is collapsible. See the following code snippet for an example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - grouping components into categories</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+using Kentico.PageBuilder.Web.Mvc;
+
+[FormCategory(Label = "Main", Order = 1)]
+[FormCategory(Label = "Optional", Order = 4, Collapsible = true, IsCollapsed = true)]
+public class WidgetModelClass : IWidgetProperties
+{
+    [TextInputComponent(Label = "Title", Order = 2)]
+    [RequiredValidationRule]
+    public string Title { get; set; }
+
+    [TextInputComponent(Label = "Main body", Order = 3)]
+    [RequiredValidationRule]
+    public string Text { get; set; }
+
+    [TextInputComponent(Label = "Additional notes", Order = 5)]
+    public string Notes { get; set; }
+}
+
+</code></pre>
+</div>
+
+<h2 id="create-editing-component-attributes-for-custom-form-components">Create editing component attributes for custom form components</h2>
+<p>Custom form components also need their corresponding attributes if you wish to use them as editing components.</p>
+<p>Component attributes must inherit from the <code>FormComponentAttribute</code> class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class MyComponentAttribute : FormComponentAttribute
+{
+}
+
+</code></pre>
+</div>
+
+<p>If you don’t require more than the <a href="#configure-editing-component-properties">base set of configuration properties</a>, the above definition is sufficient.</p>
+<p>However, if your form component relies on additional configuration properties, mirror those in the attribute class (provided you want them configurable). The mirrored properties:</p>
+<ul>
+<li>
+<strong>must be named identically</strong> to the properties you wish to configure.</li>
+<li>
+<strong>must be of the same type</strong> as the corresponding form component property.</li>
+</ul>
+<p>Properties that are required for the form component to function can be made mandatory via the attribute’s constructor.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class MyComponentAttribute : FormComponentAttribute
+{
+    public string ConfigProp1 { get; set; }
+
+    public string ConfigProp2 { get; set; }
+
+    // Attribute constructor
+    // Editing component is not assignable without providing 'configProp1'
+    public MyComponentAttribute(string configProp1)
+    {
+        ConfigProp1 = configProp1;
+    }
+}
+
+</code></pre>
+</div>
+
+<p>To indicate the relation between the attribute class and the corresponding form component, decorate the main form component class with <code>ComponentAttribute</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+[ComponentAttribute(typeof(MyComponentAttribute))]
+public class MyComponent : FormComponent&lt;TProperties, TClientProperties, TType&gt;
+
+</code></pre>
+</div>
+
+<p>For the example above, all properties decorated with <code>MyComponentAttribute</code> use <code>MyComponent</code> as their editing component.</p>
+
+</body>
+</html>

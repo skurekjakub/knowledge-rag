@@ -1,0 +1,1659 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - ContentRetriever API</title>
+</head>
+<body>
+<h2 id="page-queries">Page queries</h2>
+<h3 id="retrieve-the-current-page">Retrieve the current page</h3>
+<p><strong>Method:</strong> <code>RetrieveCurrentPage&lt;TResult&gt;(...)</code></p>
+<p>Retrieves the page requested by the current HTTP request. The method maps the retrieved data to the specified <code>TResult</code> model.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'ArticlePage' is a generated model class
+// For instance, assume the request is handled by 'ArticlesController'
+// so 'TResult' always matches the retrieved schema and is mapped correctly.
+ArticlePage currentPage =
+  await contentRetriever.RetrieveCurrentPage&lt;ArticlePage&gt;();
+
+// If the current page can be of multiple types, you can use 'IWebPageFieldsSource'
+// or different suitable base class together with pattern matching.
+// Suitable model classes are paired with content types using
+// 'RegisterContentTypeMappingAttribute' (automatically added to generated classes)
+//
+// Gets the current page using a shared interface
+var currentPageData =
+  await contentRetriever.RetrieveCurrentPage&lt;IWebPageFieldsSource&gt;();
+
+// Uses pattern matching to handle the specific type
+switch (currentPageData)
+{
+  case ArticlePage article:
+    // Handles specific logic for ArticlePage
+    Console.WriteLine($"Displaying Article: {article.Title}");
+    // Renders article view...
+    break;
+
+  case LandingPage landing:
+    // Handles specific logic for LandingPage
+    Console.WriteLine($"Displaying Landing Page: {landing.Headline}");
+    // Renders landing page view...
+    break;
+
+  case null:
+    // Handles case where the page is not found or not retrievable
+    Console.WriteLine("Current page not found.");
+    // Renders 404 view...
+    break;
+
+  default:
+    // Handles any other unexpected page types
+    // Renders a default view...
+    break;
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Overrides method defaults with custom parameters
+var parameters = new RetrieveCurrentPageParameters
+{
+    // Forces a language variant
+    LanguageName = "spanish",
+    // Includes directly linked items
+    LinkedItemsMaxLevel = 1,
+    // Forces preview mode data
+    IsForPreview = true
+};
+
+ArticlePage page = await contentRetriever.RetrieveCurrentPage&lt;ArticlePage&gt;(parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+ArticlePage page = await contentRetriever.RetrieveCurrentPage&lt;ArticlePage&gt;(
+    // Uses the default retrieval params
+    new RetrieveCurrentPageParameters(),
+    // Only gets the ArticleTitle property
+    query =&gt; query.Columns(nameof(ArticlePage.ArticleTitle)),
+    cacheSettings,
+    // Explicitly uses default mapping
+    configureModel: null 
+);
+
+</code></pre>
+</div>
+
+<p>Some overloads of <code>RetrieveCurrentPage</code> require an instance of <code>RetrieveCurrentPageParameters</code>. This object allows you to fine-tune how the current page is retrieved. For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<h3 id="retrieve-pages-sharing-reusable-field-schema">Retrieve pages sharing reusable field schema</h3>
+<p>Method: <code>RetrievePagesOfReusableSchemas&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of pages whose content types use one or more of the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>, mapping them to the <code>TResult</code> model. Allows filtering by path, language, and other criteria using the parameters described in the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'IPageMetadata' is an interface implemented by types using these schemas
+var schemaNames = new[] { IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME, ISeoFields.REUSABLE_FIELD_SCHEMA_NAME };
+
+// Gets all pages using the specified schemas with default settings
+IEnumerable&lt;IPageMetadata&gt; pagesWithSchemas =
+  await contentRetriever.RetrievePagesOfReusableSchemas&lt;IPageMetadata&gt;(schemaNames);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var schemaNames = new[] { IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME };
+
+// Gets pages using the 'Metadata' schema under the /products path
+var parameters = new RetrievePagesOfReusableSchemasParameters
+{
+    PathMatch = PathMatch.Children("/products")
+};
+
+IEnumerable&lt;IPageMetadata&gt; productPages =
+  await contentRetriever.RetrievePagesOfReusableSchemas&lt;IPageMetadata&gt;(schemaNames, parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var schemaNames = new[] { IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME, ISeoFields.REUSABLE_FIELD_SCHEMA_NAME };
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// Gets the top 20 pages using the schemas
+IEnumerable&lt;IPageMetadata&gt; pageInfo =
+  await contentRetriever.RetrievePagesOfReusableSchemas&lt;IPageMetadata&gt;(
+    schemaNames,
+    new RetrievePagesOfReusableSchemasParameters(),
+    query =&gt; query
+                // Gets the top 20 results
+                .TopN(20),
+    cacheSettings,
+    // Uses default mapping (columnName &lt;=&gt; propertyName)
+    configureModel: null
+);
+
+</code></pre>
+</div>
+
+<p>For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<h3 id="retrieve-pages-of-a-single-content-type">Retrieve pages of a single content type</h3>
+<p>Method: <code>RetrievePages&lt;TSource, TResult&gt;(...)</code></p>
+<p>Retrieves a collection of pages of a specific content type, represented by the <code>TResult</code> generic. Allows filtering by path, language, and other criteria using the parameters described in the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<p>The provided <code>TSource</code> type determines the content type to retrieve. It must be a model class registered using <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#registercontenttypemapping-attribute">RegisterContentTypeMapping</a> (applied to <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated system classes</a> by default). For this method, <code>TSource</code> also serves as the intermediate mapped result provided to the <code>configureModel</code> delegate.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'NewsArticle' is a generated model class for your news pages
+// Gets all news articles using default settings (language, preview context, etc.)
+IEnumerable&lt;NewsArticle&gt; newsArticles =
+  await contentRetriever.RetrievePages&lt;NewsArticle&gt;();
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets news articles under the /news path, including one level of linked items
+var parameters = new RetrievePagesParameters
+{
+    // Gets only children under the specified path
+    PathMatch = PathMatch.Children("/news"),
+    // Includes directly linked items
+    LinkedItemsMaxLevel = 1
+};
+
+IEnumerable&lt;NewsArticle&gt; newsArticles =
+  await contentRetriever.RetrievePages&lt;NewsArticle&gt;(parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming NewsArticleSummary is a simpler model
+public class NewsArticleSummary
+{
+    public string Title { get; set; }
+    public string Summary { get; set; }
+}
+
+// Gets the top 5 latest news articles under /news, only getting specific columns
+var parameters = new RetrievePagesParameters
+{
+    PathMatch = PathMatch.Children("/news")
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// NewsArticle is `TSource`, available in configureModel
+// NewsArticleSummary is `TResult`, the final type returned by the call
+IEnumerable&lt;NewsArticle&gt; latestNews =
+  await contentRetriever.RetrievePages&lt;NewsArticle, NewsArticleSummary&gt;(
+    parameters,
+    query =&gt; query
+                // Selects specific columns
+                .Columns("Headline", "PublicationDate", "Summary")
+                // Orders by date
+                .OrderByDescending("PublicationDate")
+                // Gets the top 5
+                .TopN(5),
+    cacheSettings,
+    configureModel: async (container, source) =&gt; new NewsArticleSummary
+    {
+        // Source is 'NewsArticle'
+        Title = $"{source.Headline} - #{source.PublicationDate.ToString("en-US")}",
+        Summary = source.Summary
+    }
+);
+
+</code></pre>
+</div>
+
+<p>For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<h3 id="retrieve-pages-of-multiple-content-types">Retrieve pages of multiple content types</h3>
+<p>Method: <code>RetrievePagesOfContentTypes&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of web pages belonging to one of the specified content type code names, mapping them to the <code>TResult</code> model. Allows filtering by path, language, and other criteria using the parameters described in the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<p>When retrieving pages of multiple content types, you can use either <code>IWebPageFieldsSource</code> for maximum flexibility or create a custom base class that implements <code>IWebPageFieldsSource</code> and includes common properties shared across your content types.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage with IWebPageFieldsSource</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var contentTypes = new[] { ArticlePage.CONTENT_TYPE_NAME, BlogPage.CONTENT_TYPE_NAME };
+
+// Gets all articles and blogs using IWebPageFieldsSource
+IEnumerable&lt;IWebPageFieldsSource&gt; pages =
+  await contentRetriever.RetrievePagesOfContentTypes&lt;IWebPageFieldsSource&gt;(contentTypes);
+
+// Uses pattern matching to handle the specific type
+switch (pages.FirstOrDefault())
+{
+  case ArticlePage article:
+    // Specific logic for ArticlePage
+    Console.WriteLine($"Displaying Article: {article.ArticleTitle}");
+    // Render article view...
+    break;
+
+  case BlogPage blog:
+    // Specific logic for BlogPage
+    Console.WriteLine($"Displaying Blog Page: {blog.BlogTitle}");
+    // Render blog page view...
+    break;
+
+  default:
+    // Handle any other unexpected page types
+    // Render a default view...
+    break;
+}
+
+</code></pre>
+</div>
+
+<p>For more complex scenarios involving multiple content types that share common properties, you can create a custom base class. This approach provides strongly-typed access to common properties while maintaining the ability to use pattern matching for handling specific content types.</p>
+<p>For pattern matching to work with a custom base class, you must extend the generated model classes to inherit from your base class using the partial class mechanism (since <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#customize-generated-classes">generated classes are partial</a>).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Advanced usage with custom base class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Example of a custom base class for bulk page retrieval.
+// This is a sample implementation that users can create based on their specific requirements when retrieving pages of multiple content types that share common properties.
+public class BaseViewModel : IWebPageFieldsSource
+{
+    // Common custom fields that exist across different page content types
+    public string Title { get; set; }
+    public DateTime PublishedDate { get; set; }
+}
+
+// Since generated model classes are partial, you can extend them to inherit from BaseViewModel.
+// This enables pattern matching to work properly with the custom base class.
+public partial class ArticlePage : BaseViewModel
+{
+}
+
+public partial class BlogPage : BaseViewModel
+{
+}
+
+var contentTypes = new[] { ArticlePage.CONTENT_TYPE_NAME, BlogPage.CONTENT_TYPE_NAME };
+
+// Gets all articles and blogs using the custom base class
+// This provides strongly-typed access to common properties while maintaining pattern matching
+IEnumerable&lt;BaseViewModel&gt; pages =
+  await contentRetriever.RetrievePagesOfContentTypes&lt;BaseViewModel&gt;(contentTypes);
+
+// Uses pattern matching to handle the specific type
+// This works because ArticlePage and BlogPage both inherit from BaseViewModel
+switch (pages.FirstOrDefault())
+{
+  case ArticlePage article:
+    // Access both common properties from BaseViewModel and specific ArticlePage properties
+    Console.WriteLine($"Displaying Article: {article.Title} - Published: {article.PublishedDate}");
+    // Render article view...
+    break;
+
+  case BlogPage blog:
+    // Access both common properties from BaseViewModel and specific BlogPage properties  
+    Console.WriteLine($"Displaying Blog: {blog.Title} - Published: {blog.PublishedDate}");
+    // Render blog page view...
+    break;
+
+  default:
+    // Handle any other unexpected page types
+    // Render a default view...
+    break;
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var contentTypes = new[] { Article.CONTENT_TYPE_NAME, Blog.CONTENT_TYPE_NAME };
+
+// Gets articles and blogs under the /archive path
+var parameters = new RetrievePagesOfContentTypesParameters
+{
+    PathMatch = PathMatch.Children("/archive")
+};
+
+IEnumerable&lt;BaseViewModel&gt; archivePages =
+  await contentRetriever.RetrievePagesOfContentTypes&lt;BaseViewModel&gt;(contentTypes, parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var contentTypes = new[] { Article.CONTENT_TYPE_NAME, Blog.CONTENT_TYPE_NAME };
+
+// Gets the first 10 articles or blogs under /archive, ordered by name
+var parameters = new RetrievePagesOfContentTypesParameters
+{
+    PathMatch = PathMatch.Children("/archive")
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// Assuming BaseViewModel is a suitable base class
+IEnumerable&lt;BaseViewModel&gt; links = await contentRetriever.RetrievePagesOfContentTypes&lt;BaseViewModel&gt;(
+    contentTypes,
+    parameters,
+    query =&gt; query
+                // Orders by name
+                .OrderBy("DocumentName")
+                // Gets the top 10
+                .TopN(10),
+    cacheSettings,
+    // Uses default mapping
+    configureModel: null
+);
+
+</code></pre>
+</div>
+
+<p>For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<h3 id="retrieve-pages-by-guids">Retrieve pages by GUIDs</h3>
+<p><strong>Method:</strong> <code>RetrievePagesByGuids&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of specific pages identified by their <code>WebPageItemGUID</code> values. The method maps the retrieved data to the specified <code>TResult</code> model.</p>
+<p>This method is useful when you have a list of specific page identifiers, for example obtained using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#page-selector">page selector</a>, and need to fetch their data efficiently.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Combined content selector usage limitations</strong></p>
+<p>The GUIDs returned by <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> cannot be used with this method because they are incompatible with the page GUIDs this method expects. The combined content selector returns <code>ContentItemGUID</code> values inside its <code>ContentItemReference</code> return type, while this method expects <code>WebPageItemGUID</code> values.</p>
+<p>Passing collections of GUIDs from the combined content selector returns an empty result. Use <a href="#retrieve-content-items-by-guids">RetrieveContentByGuids</a> to work with combined selector data.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'ArticlePage' is a generated model class
+var specificPageGuids = new[] {
+    // Guid values...
+};
+
+// Gets the specified pages using default settings
+IEnumerable&lt;ArticlePage&gt; specificPages =
+  await contentRetriever.RetrievePagesByGuids&lt;ArticlePage&gt;(specificPageGuids);
+
+</code></pre>
+</div>
+
+<p>The rest of the usage is identical to <a href="#retrieve-pages-of-a-single-content-type">Retrieve pages of a single content type</a>.</p>
+<p>The <code>RetrievePagesByGuids</code> method utilizes the <code>RetrievePagesParameters</code> object, which is also used by the <a href="#retrieve-pages-of-a-single-content-type">Retrieve pages of a single content type</a> method. This object allows you to fine-tune how the pages are retrieved. For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<p><strong>Note:</strong> When caching is enabled via <code>RetrievalCacheSettings</code>, appropriate <a href="/documentation/developers-and-admins/development/caching/cache-dependencies#by-idguidcodename">cache dependencies</a> based on the provided <code>SystemFields.WebPageItemGuid</code> values are automatically included.</p>
+<h3 id="retrieve-all-pages">Retrieve all pages</h3>
+<p>Method: <code>RetrieveAllPages&lt;TSource, TResult&gt;(...)</code></p>
+<p>Retrieves all pages (by default from the current channel), mapping them to the specified <code>TResult</code> model. Allows filtering by path, language, and other criteria using the parameters described in the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'BasePageViewModel' is a suitable base class for all pages
+// Gets all pages using default settings
+IEnumerable&lt;BasePageViewModel&gt; allPages =
+  await contentRetriever.RetrieveAllPages&lt;BasePageViewModel&gt;();
+
+// Uses pattern matching to handle the specific type
+switch (allPages.FirstOrDefault())
+{
+  case ArticlePage article:
+    // Specific logic for ArticlePage
+    Console.WriteLine($"Displaying Article: {article.Title}");
+    // Render article view...
+    break;
+
+  case LandingPage landing:
+    // Specific logic for LandingPage
+    Console.WriteLine($"Displaying Landing Page: {landing.Headline}");
+    // Render landing page view...
+    break;
+
+  case null:
+    // Handle case where the page is not found or not retrievable
+    Console.WriteLine("Current page not found.");
+    // Render 404 view...
+    break;
+
+  default:
+    // Handle any other unexpected page types
+    // Render a default view...
+    break;
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var parameters = new RetrieveAllPagesParameters() {
+  ChannelName = "FrenchCuisine"
+};
+
+IEnumerable&lt;BasePageViewModel&gt; allLivePages =
+  await contentRetriever.RetrieveAllPages&lt;BasePageViewModel&gt;(parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets all pages under '/Articles', getting only specific columns
+var parameters = new RetrieveAllPagesParameters
+{
+  PathMatch = PathMatch.Section("/Articles")
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// Assuming Article is a generated model class
+IEnumerable&lt;PageTitleModel&gt; pageLinks =
+  await contentRetriever.RetrieveAllPages&lt;BasePageViewModel&gt;(
+    parameters,
+    query =&gt; query
+                .Columns("PageTitle")
+    cacheSettings,
+    configureModel: async (container, baseModel) =&gt; {
+      // Gets only the title and maps to specific model
+      return new PageTitleModel() {
+        PageTitle = baseModel.PageTitle ?? "Untitled page"
+      }
+    } 
+);
+
+</code></pre>
+</div>
+
+<p>Some overloads of <code>RetrieveAllPages</code> require an instance of <code>RetrieveAllPagesParameters</code>. This object allows you to fine-tune how the pages are retrieved. For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<h3 id="retrieve-all-pages-by-guids">Retrieve all pages by GUIDs</h3>
+<p><strong>Method:</strong> <code>RetrieveAllPagesByGuids&lt;TResult&gt;(...)</code></p>
+<p>Retrieves all pages (of any content type) identified by their <code>WebPageItemGUID</code> values. The method maps the retrieved data to the specified <code>TResult</code> model.</p>
+<p>This method is useful when you need to fetch pages of multiple content types by specific identifiers, for example obtained using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#page-selector">page selector</a>, without restricting to a single content type.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Combined content selector usage limitations</strong></p>
+<p>The GUIDs returned by <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> cannot be used with this method because they are incompatible with the page GUIDs this method expects. The combined content selector returns <code>ContentItemGUID</code> values inside its <code>ContentItemReference</code> return type, while this method expects <code>WebPageItemGUID</code> values.</p>
+<p>Passing collections of GUIDs from the combined content selector returns an empty result. Use <a href="#retrieve-content-items-by-guids">RetrieveContentByGuids</a> to work with combined selector data.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming you have a collection of page GUIDs from a page selector
+var webPageItemGuids = new[] {
+    // Guid values...
+};
+
+// Gets pages of any content type using default settings
+IEnumerable&lt;IWebPageFieldsSource&gt; specificPages =
+  await contentRetriever.RetrieveAllPagesByGuids&lt;IWebPageFieldsSource&gt;(webPageItemGuids);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var webPageItemGuids = new[] {
+    // Guid values...
+};
+
+var parameters = new RetrieveAllPagesParameters
+{
+    PathMatch = PathMatch.Children("/products")
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+IEnumerable&lt;IWebPageFieldsSource&gt; pageData =
+  await contentRetriever.RetrieveAllPagesByGuids&lt;IWebPageFieldsSource&gt;(
+    webPageItemGuids,
+    parameters,
+    query =&gt; query
+        // Orders by name
+        .OrderBy("DocumentName")
+        // Gets the top 10 results
+        .TopN(10),
+    cacheSettings,
+    // Uses default mapping
+    configureModel: null
+);
+
+</code></pre>
+</div>
+
+<p>The <code>RetrieveAllPagesByGuids</code> method utilizes the <code>RetrieveAllPagesParameters</code> object, which is also used by the <a href="#retrieve-all-pages">Retrieve all pages</a> method. This object allows you to fine-tune how the pages are retrieved. For available parameters, see the <a href="#page-query-parameters">Page query parameters</a> table.</p>
+<p><strong>Note:</strong> When caching is enabled via <code>RetrievalCacheSettings</code>, appropriate <a href="/documentation/developers-and-admins/development/caching/cache-dependencies#by-idguidcodename">cache dependencies</a> based on the provided <code>SystemFields.WebPageItemGuid</code> values are automatically included.</p>
+<h3 id="page-query-parameters">Page query parameters</h3>
+<p>The following table contains all parameters available for page query methods. Each parameter row specifies which methods support that parameter.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Default value</p>
+</td>
+<td>
+<p>Applicable methods</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>ChannelName</p>
+</td>
+<td>
+<p><code>null</code></p>
+</td>
+<td>
+<p><code>RetrievePagesOfReusableSchemas</code>, <code>RetrievePages</code>, <code>RetrievePagesOfContentTypes</code>, <code>RetrievePagesByGuids</code>, <code>RetrieveAllPages</code></p>
+</td>
+<td>
+<p>Name of the website channel to fetch the pages from. If <code>null</code>, the channel from the current request context is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>PathMatch</p>
+</td>
+<td>
+<p><code>null</code></p>
+</td>
+<td>
+<p><code>RetrievePagesOfReusableSchemas</code>, <code>RetrievePages</code>, <code>RetrievePagesOfContentTypes</code>, <code>RetrievePagesByGuids</code>, <code>RetrieveAllPages</code></p>
+</td>
+<td>
+<p>Limits results based on the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#filter-pages-based-on-content-tree-structure">content tree path</a> (e.g., children of a path, specific path). If <code>null</code>, no path filtering is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IncludeUrlPath</p>
+</td>
+<td>
+<p><code>true</code></p>
+</td>
+<td>
+<p>All page query methods</p>
+</td>
+<td>
+<p>Specifies if page URL data should be included in the results. This data is necessary when <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">resolving page URLs</a> and saves a database roundtrip if included.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LinkedItemsMaxLevel</p>
+</td>
+<td>
+<p><code>0</code></p>
+</td>
+<td>
+<p>All page query methods</p>
+</td>
+<td>
+<p>Controls the depth of <a href="/documentation/business-users/content-hub/content-items#link-content-items">linked content items</a> to retrieve recursively along with the main page. A value of <code>0</code> means no linked items are retrieved.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LanguageName</p>
+</td>
+<td>
+<p><code>null</code></p>
+</td>
+<td>
+<p>All page query methods</p>
+</td>
+<td>
+<p>Allows you to override the default content <a href="/documentation/developers-and-admins/configuration/languages">language</a> determined by the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#access-current-preferred-language">current context</a>. If left <code>null</code>, the language retrieved from the current HTTP request is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UseLanguageFallbacks</p>
+</td>
+<td>
+<p><code>true</code></p>
+</td>
+<td>
+<p>All page query methods</p>
+</td>
+<td>
+<p>Determines if the system should attempt to retrieve content in <a href="/documentation/developers-and-admins/configuration/languages#language-fallbacks">fallback languages</a> if the content is not available in the primary specified language.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IncludeSecuredItems</p>
+</td>
+<td>
+<p><code>false</code></p>
+</td>
+<td>
+<p>All page query methods</p>
+</td>
+<td>
+<p>Specifies whether content items requiring special permissions (e.g., <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#page-security-configuration">secured sections</a>) should be included in the results.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IsForPreview</p>
+</td>
+<td>
+<p><code>null</code></p>
+</td>
+<td>
+<p>All page query methods</p>
+</td>
+<td>
+<p>Allows overriding the preview mode context. If left <code>null</code>, the retrieval respects the current website context (whether the request is in preview mode or live). Set to <code>true</code> to force preview data or <code>false</code> to force live data.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="content-item-queries">Content item queries</h2>
+<h3 id="retrieve-content-items-sharing-reusable-field-schema">Retrieve content items sharing reusable field schema</h3>
+<p>Method: <code>RetrieveContentOfReusableSchemas&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of reusable content items whose content types use one or more of the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>, mapping them to the <code>TResult</code> model. Allows filtering by workspace, language, and other criteria using the parameters described in the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'IContactDetails' is an interface implemented by types using the 'ContactSchema'
+var schemaNames = new[] { IContactSchema.REUSABLE_FIELD_SCHEMA_NAME };
+
+// Gets all content items using the 'IContactSchema' generated schema interface
+IEnumerable&lt;IContactSchema&gt; contacts =
+  await contentRetriever.RetrieveContentOfReusableSchemas&lt;IContactSchema&gt;(schemaNames);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var schemaNames = new[] { IAddressSchema.REUSABLE_FIELD_SCHEMA_NAME,
+                          ILocationSchema.REUSABLE_FIELD_SCHEMA_NAME };
+
+// Gets items using Address or Location schemas from the 'Locations' workspace
+var parameters = new RetrieveContentOfReusableSchemasParameters
+{
+    WorkspaceNames = new[] { "Locations" }
+};
+
+// Uses 'IContentItemFieldsSource' as the shared type
+IEnumerable&lt;IContentItemFieldsSource&gt; locationData =
+  await contentRetriever
+    .RetrieveContentOfReusableSchemas&lt;IContentItemFieldsSource&gt;(schemaNames, parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var schemaNames = new[] { IMetadataSchema.REUSABLE_FIELD_SCHEMA_NAME };
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// Assuming IMetadata is an inteface generated for 'MetadataSchema'
+IEnumerable&lt;IMetadata&gt; oldestMetadataItems =
+  await contentRetriever.RetrieveContentOfReusableSchemas&lt;IMetadata&gt;(
+    schemaNames,
+    parameters,
+    query =&gt; query
+                // Gets the first 5
+                .TopN(5),
+    cacheSettings,
+    // Uses default mapping
+    configureModel: null
+);
+
+</code></pre>
+</div>
+
+<p>For available parameters, see the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<h3 id="retrieve-content-items-of-reusable-schemas-by-guids">Retrieve content items of reusable schemas by GUIDs</h3>
+<p><strong>Method:</strong> <code>RetrieveContentOfReusableSchemasByGuids&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of specific reusable content items whose content types use one or more of the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>, identified by their <code>ContentItemGUID</code> values. The method maps the retrieved data to the specified <code>TResult</code> model.</p>
+<p>This method is useful when you have a list of specific content item identifiers that share common reusable schemas and need to fetch their data efficiently.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'IMetadata' is an interface implemented by types using the schema
+var schemaNames = new[] { IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME };
+var contentItemGuids = new[] {
+    // Guid values...
+};
+
+// Gets the specified content items using default settings
+IEnumerable&lt;IMetadataFields&gt; specificItems =
+  await contentRetriever.RetrieveContentOfReusableSchemasByGuids&lt;IMetadataFields&gt;(
+    schemaNames,
+    contentItemGuids);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var schemaNames = new[] { IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME };
+var contentItemGuids = new[] {
+    // Guid values...
+};
+
+// Gets specific content items with custom configuration
+var parameters = new RetrieveContentOfReusableSchemasParameters
+{
+    WorkspaceNames = new[] { "MainContent" }
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+IEnumerable&lt;IMetadataFields&gt; contentData =
+  await contentRetriever
+    .RetrieveContentOfReusableSchemasByGuids&lt;IMetadataFields&gt;(
+        schemaNames,
+        contentItemGuids,
+        parameters,
+        query =&gt; query
+            // Selects specific columns
+            .Columns("DisplayName", "ContentItemModifiedWhen")
+            // Orders by modified date
+            .OrderByDescending("ContentItemModifiedWhen"),
+        cacheSettings,
+        // Uses default mapping
+        configureModel: null
+);
+
+</code></pre>
+</div>
+
+<p>The <code>RetrieveContentOfReusableSchemasByGuids</code> method uses the <code>RetrieveContentOfReusableSchemasParameters</code> object. This object allows you to fine-tune how the content items are retrieved. For available parameters, see the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<p><strong>Note:</strong> When caching is enabled via <code>RetrievalCacheSettings</code>, appropriate cache dependencies based on the provided <code>contentItemGuids</code> are automatically included.</p>
+<h3 id="retrieve-content-items-of-a-single-content-type">Retrieve content items of a single content type</h3>
+<p>Method: <code>RetrieveContent&lt;TSource, TResult&gt;(...)</code></p>
+<p>Retrieves a collection of content items of a specific <a href="/documentation/developers-and-admins/development/content-types">content type</a>, mapped to the <code>TResult</code> model. Allows filtering by workspace, language, and other criteria using the parameters described in the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<p>The provided <code>TSource</code> type determines the content type to retrieve. It must be a model class registered using <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#registercontenttypemapping-attribute">RegisterContentTypeMapping</a> (applied to <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated system classes</a> by default). For this method, <code>TSource</code> also serves as the intermediate mapped result provided to the <code>configureModel</code> delegate.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'Author' is a generated model class for your author content items
+// Gets all authors using default settings (language, preview context, etc.)
+IEnumerable&lt;Author&gt; authors =
+  await contentRetriever.RetrieveContent&lt;Author&gt;();
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets authors from a specific workspace
+var parameters = new RetrieveContentParameters
+{
+    // Specifies relevant workspace
+    WorkspaceNames = new[] { "BlogContent" },
+};
+
+IEnumerable&lt;Author&gt; blogAuthors =
+  await contentRetriever.RetrieveContent&lt;Author&gt;(parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets the top 5 authors with the most articles from the 'BlogContent' workspace
+var parameters = new RetrieveContentParameters
+{
+     WorkspaceNames = new[] { "BlogContent" }
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// Assuming AuthorSummary is a simpler model with FullName and ArticleCount
+public class AuthorSummary
+{
+    public string FullName { get; set; }
+    public int ArticleCount { get; set; }
+}
+
+// 'TSource' set to generated model class 'Author'
+// Final result `TResult` transformed and mapped to 'AuthorSummary'
+IEnumerable&lt;AuthorSummary&gt; topAuthors = await contentRetriever.RetrieveContent&lt;Author, AuthorSummary&gt;(
+    parameters,
+    query =&gt; query
+                // Selects specific columns
+                .Columns("FirstName", "LastName", "ArticleCount")
+                // Orders by count
+                .OrderBy(new OrderByColumn("ArticleCount", OrderDirection.Descending))
+                // Gets the top 5
+                .TopN(5),
+    cacheSettings,
+    // Example of custom mapping
+    async (container, source) =&gt; new AuthorSummary
+    {
+        // Source is 'Author'
+        FullName = $"{source.FirstName} {source.LastName}",
+        ArticleCount = source.ArticleCount
+    }
+);
+
+</code></pre>
+</div>
+
+<p>For available parameters, see the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<h3 id="retrieve-content-items-of-multiple-content-types">Retrieve content items of multiple content types</h3>
+<p>Method: <code>RetrieveContentOfContentTypes&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of reusable content items belonging to the specified content types, mapping them to the <code>TResult</code> model. Allows filtering by workspace, language, and other criteria using the parameters described in the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<p>When retrieving items of multiple content types, you can use either <code>IContentItemFieldsSource</code> for maximum flexibility or create a custom base class that implements <code>IContentItemFieldsSource</code> and includes common properties shared across your content types.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom base class for content type models</strong></p>
+<p>A custom base class implementing <code>IContentItemFieldsSource</code> is suitable for more complex scenarios involving multiple content types that share common properties. This approach provides strongly-typed access to common properties while maintaining the ability to use pattern matching for handling specific content types.</p>
+<p>For pattern matching to work with a custom base class, you must extend the generated model classes to inherit from your base class using the partial class mechanism (since <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#customize-generated-classes">generated classes are partial</a>).</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage with IContentItemFieldsSource</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var contentTypes = new[] { Author.CONTENT_TYPE_NAME, Article.CONTENT_TYPE_NAME };
+
+// Gets all authors and articles using default settings
+// Uses 'IContentItemFieldsSource' as the shared type.
+// Suitable model classes are paired with content types using
+// 'RegisterContentTypeMappingAttribute' (automatically added to generated classes)
+IEnumerable&lt;IContentItemFieldsSource&gt; blogItems =
+  await contentRetriever
+    .RetrieveContentOfContentTypes&lt;IContentItemFieldsSource&gt;(contentTypes);
+
+foreach (var item in blogItems)
+{
+  switch (item)
+  {
+    case Author author:
+      // Handles Author specific logic
+      Console.WriteLine($"- Found Author: {author.DisplayName}");
+      // e.g., DisplayAuthorBio(author);
+      break;
+
+    case Article article:
+      // Handles Article specific logic
+      Console.WriteLine($"- Found Article: {article.DisplayName}");
+      // e.g., DisplayArticleSummary(article);
+      break;
+
+    default:
+      break;
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>With parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var contentTypes = new[] { Author.CONTENT_TYPE_NAME, BookReview.CONTENT_TYPE_NAME };
+
+// Gets authors and book reviews from the 'Reviews' workspace
+var parameters = new RetrieveContentOfContentTypesParameters
+{
+    WorkspaceNames = new[] { "Reviews" }
+};
+
+IEnumerable&lt;IContentItemFieldsSource&gt; reviewContent =
+  // Can use 'IContentItemFieldsSource' if no common base type
+  await contentRetriever
+    .RetrieveContentOfContentTypes&lt;IContentItemFieldsSource&gt;(contentTypes, parameters);
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var contentTypes = new[] { Author.CONTENT_TYPE_NAME,
+                           Article.CONTENT_TYPE_NAME,
+                           Book.CONTENT_TYPE_NAME };
+
+// Gets the 10 most recently modified authors, articles, or books
+var parameters = new RetrieveContentOfContentTypesParameters
+{
+     // Retrieves content from multiple workspaces
+     WorkspaceNames = new[] { "MainContent", "BlogContent" }
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+// Assuming IContentInfo is an interface with Name and LastModified properties
+IEnumerable&lt;IContentInfo&gt; recentContent =
+  await contentRetriever.RetrieveContentOfContentTypes&lt;IContentInfo&gt;(
+    contentTypes,
+    parameters,
+    query =&gt; query
+                // Selects specific columns
+                .Columns("DisplayName", "ContentItemModifiedWhen")
+                // Gets the top 10 results
+                .TopN(10),
+    cacheSettings,
+    // Uses default mapping
+    configureModel: null
+);
+
+</code></pre>
+</div>
+
+<p>For available parameters, see the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<h3 id="retrieve-content-items-of-multiple-content-types-by-guids">Retrieve content items of multiple content types by GUIDs</h3>
+<p><strong>Method:</strong> <code>RetrieveContentOfContentTypesByGuids&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of specific reusable content items of multiple content types identified by their <code>ContentItemGUID</code> values. The method maps the retrieved data to the specified <code>TResult</code> model.</p>
+<p>This method is useful when you have a list of specific content item identifiers from multiple content types (e.g., from a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a>) and need to fetch their data efficiently.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assuming you have content item GUIDs from the combined selector
+var contentTypes = new[] { Author.CONTENT_TYPE_NAME, Article.CONTENT_TYPE_NAME };
+var contentItemGuids = new[] { 
+    // Guids...
+ };
+
+// Gets the specified content items using default settings
+IEnumerable&lt;IContentItemFieldsSource&gt; specificItems =
+  await contentRetriever
+    .RetrieveContentOfContentTypesByGuids&lt;IContentItemFieldsSource&gt;(
+        contentTypes,
+        contentItemGuids);
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>All configuration options</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var contentTypes = new[] {
+    Author.CONTENT_TYPE_NAME,
+    Article.CONTENT_TYPE_NAME 
+};
+
+var contentItemGuids = new[] {
+    // Guids...
+};
+
+// Gets specific content items with custom configuration
+var parameters = new RetrieveContentOfContentTypesParameters
+{
+    WorkspaceNames = new[] { "BlogContent" }
+};
+
+// Disables caching
+var cacheSettings = RetrievalCacheSettings.CacheDisabled;
+
+IEnumerable&lt;IContentItemFieldsSource&gt; contentData =
+  await contentRetriever
+    .RetrieveContentOfContentTypesByGuids&lt;IContentItemFieldsSource&gt;(
+        contentTypes,
+        contentItemGuids,
+        parameters,
+        query =&gt; query
+                    // Selects specific columns
+                    .Columns("DisplayName", "ContentItemModifiedWhen")
+                    // Orders by modified date
+                    .OrderByDescending("ContentItemModifiedWhen"),
+        cacheSettings,
+        // Uses default mapping
+        configureModel: null
+);
+</code></pre>
+</div>
+
+<p>The <code>RetrieveContentOfContentTypesByGuids</code> method uses the <code>RetrieveContentOfContentTypesParameters</code> object. This object allows you to fine-tune how the content items are retrieved. For available parameters, see the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<p><strong>Note:</strong> When caching is enabled via <code>RetrievalCacheSettings</code>, appropriate cache dependencies based on the provided <code>contentItemGuids</code> are automatically included.</p>
+<h3 id="retrieve-content-items-by-guids">Retrieve content items by GUIDs</h3>
+<p><strong>Method:</strong> <code>RetrieveContentByGuids&lt;TResult&gt;(...)</code></p>
+<p>Retrieves a collection of specific reusable content items identified by their <code>ContentItemGUID</code> values. The method maps the retrieved data to the specified <code>TResult</code> model.</p>
+<p>This method is useful when you have a list of specific content item identifiers (e.g., from a <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">related items</a> field) and need to fetch their data efficiently.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic usage when expecting a single type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assuming 'Author' is a generated model class
+var specificAuthorGuids = new[] {
+    // Guid values...
+};
+
+// Gets the specified authors using default settings
+IEnumerable&lt;Author&gt; specificAuthors =
+  await contentRetriever.RetrieveContentByGuids&lt;Author&gt;(specificAuthorGuids);
+
+</code></pre>
+</div>
+
+<p>The rest of the usage is identical to <a href="#retrieve-content-items-of-a-single-content-type">Retrieve content items of a single content type</a>.</p>
+<p>The <code>RetrieveContentByGuids</code> method uses the <code>RetrieveContentParameters</code> object. This object allows you to fine-tune how the content items are retrieved. For available parameters, see the <a href="#content-item-query-parameters">Content item query parameters</a> table.</p>
+<p><strong>Note:</strong> When caching is enabled via <code>RetrievalCacheSettings</code>, appropriate cache dependencies based on the provided <code>contentItemGuids</code> are automatically included.</p>
+<h3 id="content-item-query-parameters">Content item query parameters</h3>
+<p>The following table contains all parameters available for content item query methods. Each parameter row specifies which methods support that parameter.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Default value</p>
+</td>
+<td>
+<p>Applicable methods</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>IncludeUrlPath</p>
+</td>
+<td>
+<p><code>true</code></p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Specifies if page URL data should be included in the results. This data is necessary when <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">resolving page URLs</a> and saves a database roundtrip if included.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>WorkspaceNames</p>
+</td>
+<td>
+<p><code>[]</code> (Empty <em>Enumerable</em>)</p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Names of the <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspaces</a> from which content should be retrieved.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LinkedItemsMaxLevel</p>
+</td>
+<td>
+<p><code>0</code></p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Controls the depth of linked content items to retrieve recursively. <code>0</code> means no linked items are retrieved.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LanguageName</p>
+</td>
+<td>
+<p><code>null</code></p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Allows you to override the default content <a href="/documentation/developers-and-admins/configuration/languages">language</a> determined by the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#access-current-preferred-language">current context</a>. If left <code>null</code>, the language retrieved from the current HTTP request is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UseLanguageFallbacks</p>
+</td>
+<td>
+<p><code>true</code></p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Determines if the system should attempt to retrieve content in <a href="/documentation/developers-and-admins/configuration/languages#language-fallbacks">fallback languages</a> if the content is not available in the primary specified language.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IncludeSecuredItems</p>
+</td>
+<td>
+<p><code>false</code></p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Specifies whether content items requiring special permissions (e.g., <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#page-security-configuration">secured sections</a>) should be included in the results.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IsForPreview</p>
+</td>
+<td>
+<p><code>null</code></p>
+</td>
+<td>
+<p>All content item query methods</p>
+</td>
+<td>
+<p>Allows overriding the preview mode context. If left null, the retrieval respects the current website context (whether the request is in preview mode or live). Set to true to force preview data or false to force live data.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

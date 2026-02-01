@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Object type configuration</title>
+</head>
+<body>
+<p><strong>Object type information</strong> refers to the metadata of Xperience <a href="/documentation/developers-and-admins/customization/object-types">object types</a>. The information determines the basic properties and behavior of an object type when: </p>
+<ul>
+<li>Performing basic CRUD operations over objects of a particular type</li>
+<li>Evaluating relationships with other classes (parent-child, object references and bindings)</li>
+<li>Evaluating object dependencies (e.g,, to perform automatic deletion of related objects)</li>
+</ul>
+<p>The configuration also determines how other system features that support working with object types behave:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/ci-cd">CI/CD</a> – controls how objects are serialized</li>
+<li>
+<a href="/documentation/developers-and-admins/development/caching">Caching</a> – controls the caching behavior</li>
+</ul>
+<p>Object types store their configuration in a separate type – <code>ObjectTypeInfo</code> – which is a mandatory component of each generated <em>Info</em> class, together with the following:</p>
+<ul>
+<li>A unique <em>object type name</em> as an identifier (generated <em>Info</em> classes store the value in a constant named <code>OBJECT_TYPE</code>).</li>
+<li>The <code>RegisterObjectType</code> assembly attribute. The attribute assigns the type information definition to the <em>Info</em> class via the unique <em>object type name</em>.</li>
+</ul>
+<h2 id="type-info-properties">Type info properties</h2>
+<h3 id="objecttypeinfo-constructor">ObjectTypeInfo constructor</h3>
+<p>Navigate to the <code>TYPEINFO</code> field in the <em>Info</em> class’s code and configure the following parameters in the <code>ObjectTypeInfo</code> constructor according to your requirements:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Parameter</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="3">
+<p>Object type metadata</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>providerType</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The <a href="https://learn.microsoft.com/en-us/dotnet/api/system.type" target="_blank">Type</a> of the class’s <em>InfoProvider</em> class. For example: <code>typeof(UserInfoProvider)</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>objectType</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Defined in the code of the <em>Info</em> class (typically in an <code>OBJECT_TYPE</code>constant). Serves as the primary identifier for the class. Use the object type name to select classes in the API and when <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">building user interfaces</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>objectClassName</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The code name assigned to the <a href="/documentation/developers-and-admins/customization/object-types">class</a> in the Xperience administration. Identifies the class’s definition in the database. For example, use the class code name when writing SQL where conditions for loading and filtering class records.</p>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>objectType and objectClassName identifiers</strong></p>
+<p>For custom object types, <strong>always</strong> use the same identifier for both the class and the object type (the default for generated <em>Info</em> classes). Two distinct identifiers are in rare cased used internally by the system for purposes beyond the scope of this document.</p>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="3">
+<p>Database-related configuration</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>idColumn </p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Column that stores the IDs of objects of the given type (a <em>primary key</em> column). Populated by the <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">code generator</a> if set on the object’s <strong>Code</strong> tab in the administration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>timeStampColumn </p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Column that stores the last modification date for objects. Can be <code>null</code>. Populated by the code generator if set on the object’s <strong>Code</strong> tab in the administration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>guidColumn </p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Column that stores the <a href="http://en.wikipedia.org/wiki/Globally_unique_identifier" target="_blank">GUID identifiers</a> of objects. Can be <code>null</code>. Populated by the code generator if set on the object’s <strong>Code</strong> tab in the administration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>codeNameColumn </p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Column that stores the unique text identifiers of objects. Can be <code>null</code> for classes without a dedicated code name column. Populated by the code generator if set on the object’s <strong>Code</strong> tab in the administration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>displayNameColumn </p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Column that stores the visible names of objects (names used in the administration interface or on the live site). Can be <code>null</code>. Populated by the code generator if set on the object’s <strong>Code</strong> tab in the administration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>binaryColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Column that stores any binary data related this type of objects. Can be <code>null</code>. Populated by the code generator if set on the object’s <strong>Code</strong> tab in the administration.</p>
+</td>
+</tr>
+<tr>
+<td colspan="3">
+<p>Object type relationships</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>parentIDColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>the name of the class field that stores the IDs of parent objects. Set to <code>null</code> for classes without a parent class. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>parentObjectType </p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>the <em>object type name</em> of the class’s parent (as defined in the type information of the parent class). Set to <code>null</code> for classes without a parent class. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a>.</p>
+</td>
+</tr>
+</table>
+
+<h3 id="objecttypeinfo-properties">ObjectTypeInfo properties</h3>
+<p>Use the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers" target="_blank">initializer</a> to set other properties for the object. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/reference-objecttypeinfo">Reference - ObjectTypeInfo</a> for more information about the available properties.</p>
+<h3 id="hashtable-caching">Hashtable caching</h3>
+<p>Info classes of object types support caching over columns that can be used to uniquely identify individual records (ID, Code name, GUID). Items get cached the first time they are fetched from the database. For subsequent queries targeting previously retrieved records, the cached values are used, reducing database usage. However, note that enabling hashtable caching for object types with a significant number of records may result in a large increase in application memory usage.</p>
+<p>The caching is enabled by placing the <code>InfoCache</code> attribute over the generated info class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.DataEngine;
+
+// Enables caching over the object ID and code name
+// Note that the code name and guid columns must also be set using the ObjectTypeInfo constructor
+[InfoCache(InfoCacheBy.ID | InfoCacheBy.Name | InfoCacheBy.Guid)]
+public partial class MyObjectTypeInfo : AbstractInfo&lt;MyObjectTypeInfo, IMyObjectTypeInfoProvider&gt;
+{
+} 
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Code generator support</strong></p>
+<p>The caching is also configurable via each object type’s <strong>Code</strong> tab in the administration. Columns usable as unique identifiers have the <em>Use hashtable</em> option available. The code generator reflects this setting when generating the code file by decorating the <em>Info</em> class with the <code>InfoCache</code> attribute using corresponding parameters. See <a href="/documentation/developers-and-admins/customization/object-types#configure-code-generation-for-data-classes">Configure code generation for data classes</a>.</p>
+</div>
+
+<p>The attribute also allows you to configure the caching behavior via the following optional properties:</p>
+<ul>
+<li>Cache priority (<code>Priority</code>) – Determines whether cached items can be released to relieve memory pressure. Set using the <code>InfoCachePriorty</code> enum. Allowed by default.</li>
+<li>Eager loading (<code>LoadEagerly</code>) – Loads all objects of the given type into the cache on application start. Note that eagerly loading objects with a lot of records consumes large amounts of application memory. Disabled by default.</li>
+</ul>
+<h2 id="additional-options">Additional options</h2>
+<p>You can use the type information to configure how object types behave in the system. See the following topics:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/enable-ci-cd-for-object-types">Enable CI/CD for object types</a> – configure the type information of your custom classes to support synchronization of data using <a href="/documentation/developers-and-admins/ci-cd">CI/CD</a>.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a> – define relationships among object types that are enforced by the system’s ORM framework:
+<ol type="1">
+<li>Parent-child – use the type information to define a hierarchy for the classes representing your module’s data. Setting parent-child relationships for classes ensures that the system can provide many types of automatic behavior.</li>
+<li>One-to-many and many-to-many relationships – define fields for your custom classes that store references (foreign keys) to objects of other classes and vice versa.</li>
+</ol>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/reference-objecttypeinfo">Reference - ObjectTypeInfo</a> – provides a reference of the <code>ObjectTypeInfo</code> properties that you can use to define object type behavior in the system.</li>
+</ul>
+
+</body>
+</html>

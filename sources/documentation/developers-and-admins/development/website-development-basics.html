@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Website development basics</title>
+</head>
+<body>
+<p><a href="http://xperience.io" target="_blank">Xperience by Kentico</a> is a content and digital experience management platform built with <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/overview" target="_blank">ASP.NET Core MVC</a>.</p>
+<p>This page provides a basic overview of the Xperience environment and the responsibilities of individual roles that interact with the system, with specific focus placed on the role of the site developer.</p>
+<h2 id="xperience-by-kentico-overview">Xperience by Kentico overview</h2>
+<p>Xperience is distributed as a set of NuGet integration packages for ASP.NET Core applications. The system is modular, each package providing functionality that the other packages build upon. The following packages form the core of the system:</p>
+<ul>
+<li>
+<strong>Kentico.Xperience.Core</strong> – the runtime assemblies for libraries and applications that use Xperience API. This package contains low-level APIs required by all applications that interact with Xperience.</li>
+<li>
+<strong>Kentico.Xperience.WebApp</strong> – builds upon the <em>Libraries</em> package by providing a set of Xperience management APIs specifically designed for use in web applications.</li>
+<li>
+<strong>Kentico.Xperience.Admin</strong> – provides the Xperience administration interface that adds a graphical UI for content management, digital marketing, and other features.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">Xperience by Kentico NuGet packages</a> for an overview of all available NuGet integration packages and their roles in the system.</p>
+<p>The following diagram summarizes the general roles of the main personas that interact with Xperience sites – Xperience users, developers, and website visitors:</p>
+<p></p>
+<p>There are two main parts to each Xperience project:</p>
+<ul>
+<li><a href="#xperience-administration">Xperience administration</a></li>
+<li><a href="#asp.net-core-mvc-live-site">ASP.NET Core MVC live site</a></li>
+</ul>
+<h3 id="xperience-administration">Xperience administration</h3>
+<p>The Xperience administration is installed into projects via the <strong>Kentico.Xperience.Admin</strong> NuGet package, and provides a graphical interface for the low-level management API from other Xperience packages. The administration exists parallel to the live site and can be safely removed without impacting live site functionality or content (e.g., for production deployments).</p>
+<p>Users of the Xperience administration can usually be segmented into the following roles:</p>
+<ul>
+<li>
+<strong>Site administrators</strong> – configure and manage the Xperience integration. Control the administration interface by managing user access.</li>
+<li>
+<strong>Developers</strong> – implement advanced configuration scenarios and customization. Also partially responsible for defining the site’s <a href="/guides/architecture/content-modeling/content-modeling-guide">content model</a> – the way content is structured impacts how developers work with it when building the site’s business and presentation layers.</li>
+<li>
+<strong>Content editors</strong> – create and maintain content managed by the system.</li>
+<li>
+<strong>Marketers</strong> – manage the project’s digital presence. Use collected data to launch targeted campaigns and provide personalized content. All with full support for compliance with the European Union’s General Data Protection Regulation (GDPR), if applicable to the project.</li>
+</ul>
+<h3 id="asp.net-core-mvc-live-site">ASP.NET Core MVC live site</h3>
+<p>The live site is a conventional ASP.NET Core MVC project that consumes and presents content managed by Xperience. </p>
+<p>The personas that primarily interact with the live site are:</p>
+<ul>
+<li>
+<strong>Developers</strong> – implement the site’s business and presentation layers using standard MVC practices. In addition, they use the Xperience API to retrieve and cache content, set up analytics, augment the default MVC routing support, and build custom Xperience components that aid administration users in content creation.</li>
+<li>
+<strong>Site visitors</strong> – regular users who view and interact with the site. The system can track their journey and behavior using specific digital marketing functionality. The collected data and observed patterns can be used to personalize displayed content on a visitor to visitor basis or send targeted email messages intended to drive engagement.</li>
+</ul>
+<h2 id="website-development-process-with-xperience">Website development process with Xperience</h2>
+<p>Xperience sites follow a development process similar to other MVC applications. However, Xperience provides specific functionality that simplifies or can completely replace parts of the process.</p>
+<p>A general development flow consists of the following steps:</p>
+<ol type="1">
+<li>
+<a href="#install-and-set-up-an-xperience-application">Install and set up a local Xperience application</a>.</li>
+<li>
+<a href="#define-the-projects-content-model">Define the project’s content model</a>.</li>
+<li>
+<a href="#configure-and-customize-xperience">Configure and customize Xperience according to your requirements</a>.</li>
+<li>
+<a href="#implement-the-applications-business-and-presentation-layers">Implement the application’s business and presentation layers</a>.</li>
+<li>
+<a href="#prepare-the-sites-content">Prepare the site’s content</a>.</li>
+<li>
+<a href="#deploy-to-a-live-environment">Deploy to a live environment</a>.</li>
+</ol>
+<p>The illustrated process isn’t rigorous, and you will most likely revisit certain steps multiple times as you iterate on the final implementation of the site.</p>
+<h3 id="install-and-set-up-an-xperience-application">Install and set up an Xperience application</h3>
+<p>Before you can begin, you need to <a href="/documentation/developers-and-admins/installation">install and set up</a> a local development instance. Xperience provides project templates and tools that developers can use to quickly bootstrap new projects.</p>
+<p>The next step is to <a href="/documentation/developers-and-admins/development/website-development-basics/set-up-local-hosting">set up local hosting</a> for the project. Xperience is built using .NET, which is natively cross-platform, so this largely depends on the preferred working environment of your team. To work over a shared database during development, you can use the provided <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> feature.</p>
+<h3 id="define-the-projects-content-model">Define the project’s content model</h3>
+<p>A <a href="https://alistapart.com/article/content-modelling-a-master-skill/" target="_blank">content model</a> documents all the content that an organization produces. Defining the content structure and establishing relationships between the different content types is essential for building a successful project.</p>
+<p>Xperience provides content modeling tools for website channels primarily in the form of:</p>
+<ul>
+<li>
+<strong>Content types</strong> – the primary method of storing structured content in Xperience is using pages. Each page is based on a blueprint – a <a href="/documentation/developers-and-admins/development/content-types">content type</a> that defines its basic structure. For example, every article created from an <em>Article</em> content type has the same properties.</li>
+<li>
+<strong>Page Builder</strong> – a graphical interface that allows content editors to design sections or entire pages using a WYSIWYG approach. <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder</a> uses elements called sections to take over designated parts of a page’s layout and enables editors to modify them in real-time using modular pieces of content called widgets (often prepared to fit specific projects).</li>
+<li>
+<strong>Content hub</strong> – <a href="/documentation/business-users/content-hub/content-item-assets">Content hub</a> provides a centralized repository for <a href="/documentation/business-users/content-hub/content-item-assets">assets managed by Xperience</a>. Editors can upload, manage, or update the files and their properties, such as their name or description, using the <a href="/documentation/administration-interface-basics">administration interface</a>. Decisions about storing general project-specific physical files (e.g., CSS, JS) are best made on a case-by-case basis for each implementation.</li>
+</ul>
+<p>See <a href="/guides/architecture/content-modeling/content-modeling-guide">Content modeling</a> for more information on content modeling or <a href="/guides/architecture/content-modeling/content-modeling-guide/design-website-content">Design website content</a> for website-specific information.</p>
+<h3 id="configure-and-customize-xperience">Configure and customize Xperience</h3>
+<p>Both Xperience and the Xperience administration interface offer high customizability and extensibility. Regular users and site administrators can achieve basic configuration tasks via settings available directly in the administration. </p>
+<p>For more advanced scenarios, developers directly modify <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options objects</a> related to the specific features, such as when configuring the system’s <a href="/documentation/developers-and-admins/configuration/email-configuration">mailout functionality</a> or <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication">user management</a> for the administration. For other configuration scenarios, see the <a href="/documentation/developers-and-admins/configuration">Configuration</a> section of the documentation.</p>
+<p>If certain default functionality doesn’t sufficiently cover a project’s requirements, developers can adjust the system’s behavior or implement additional features using:</p>
+<ul>
+<li>
+<strong>Event handling</strong> – the system raises <a href="/documentation/developers-and-admins/customization/handle-global-events">events</a> in response to page operations, live site user form submissions, basic CRUD operations over managed objects, and many others.</li>
+<li>
+<strong>Custom components for content editing</strong> – custom <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder widgets</a> might be necessary for certain types of modular content. Additionally, to provide a more comfortable content editing experience, <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a> and <a href="/documentation/developers-and-admins/customization/field-editor">other types of dialogs</a> for inserting content support <em>input validation</em> and the ability to hide specific components using <em>visibility conditions</em>. While the system provides a default set of components for validation and visibility, it might not cover all use cases sufficiently.</li>
+<li>
+<strong>Custom components for the live site</strong> – in Xperience, forms for gathering visitor submissions are managed using <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">Form Builder</a>, which uses <em>form components</em> to provide an editing interface for individual form input fields.</li>
+<li>
+<strong>Service decoration</strong> – developers can extend the system by <a href="/documentation/developers-and-admins/customization/decorate-system-services">decorating</a> the default behavior of system services and management classes.</li>
+<li>
+<strong>Custom administration functionality</strong> – developers can also create custom pages and applications in the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">administration interface</a> for advanced scenarios.</li>
+</ul>
+<p>For more information about the available options, see the <a href="/documentation/developers-and-admins/configuration">Configuration</a> and <a href="/documentation/developers-and-admins/customization">Customization</a> chapters in the documentation.</p>
+<h3 id="implement-the-applications-business-and-presentation-layers">Implement the application’s business and presentation layers</h3>
+<p>In this part of the process, developers work on the live site application. The development closely mimics that of any other MVC website – developers define views, models, controllers, and routing according to project requirements. However, they can also use specific Xperience features to simplify the development process.</p>
+<ul>
+<li>
+<strong>Content management APIs</strong> – Xperience provides a suite of content retrieval APIs for <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">page data</a>, <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-from-media-libraries">media files</a>, and <a href="/documentation/developers-and-admins/api/objectquery-api">general objects in the system</a>.</li>
+<li>
+<strong>Registration and authentication</strong> – enable visitors to <a href="/documentation/developers-and-admins/development/registration-and-authentication">register</a> and provide authenticated users access to secured content.</li>
+<li>
+<strong>Caching support</strong> – available caching APIs support standard memory caching even in distributed (<a href="/documentation/developers-and-admins/configuration/auto-scaling-support">scaled-out</a>) environments.</li>
+<li>
+<strong>Content tree-based routing</strong> – the system can <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">take over MVC routing</a> for pages managed in the project’s <a href="/documentation/business-users/website-content">content tree</a>. For these cases, developers only need to provide a corresponding view file that the system uses to display the page. Alternatively, if more direct control over the view model is necessary, developers can designate custom controller actions that the system uses to display specified pages. The developers then have full control over the implementation (including the model data). For content not directly managed by Xperience, conventional ASP.NET routing applies.</li>
+<li>
+<strong>GDPR support</strong> – if compliance with GDPR is necessary, the system offers a suite of features for personal data management ranging from basic <a href="/documentation/developers-and-admins/data-protection/consent-management">management of consents</a> to support for <a href="/documentation/developers-and-admins/data-protection/personal-data-collection">personal data collection</a> (to satisfy the <em>right to access</em>) and <a href="/documentation/developers-and-admins/data-protection/personal-data-erasure">data erasure</a> (to satisfy the <em>right to be forgotten</em>).</li>
+<li>
+<strong>Tag Helpers</strong> – a set of <a href="/documentation/developers-and-admins/development/reference-tag-helpers">custom ASP.NET Core Tag Helpers</a> that simplifies the inclusion of specific system API into views.</li>
+</ul>
+<p>For more information about the available APIs and features, see the <a href="/documentation/developers-and-admins/development">Development</a> section of the documentation.</p>
+<h3 id="prepare-the-sites-content">Prepare the site’s content</h3>
+<p>In parallel with the site’s development, editors prepare a content baseline required by the site at launch. They can use the content model defined in the previous steps – directly create pages and upload the necessary media files – or use an external application and import the work later.</p>
+<h3 id="deploy-to-a-live-environment">Deploy to a live environment</h3>
+<p>When everything is finished and the project is ready to go live, the last remaining step is deployment. Xperience is built using the .NET framework, which is natively cross-platform. You can deploy to either <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">the SaaS environment</a>, where your project is managed by Kentico, or <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">manage a deployment yourself</a>.</p>
+<p>In more complex deployment scenarios, production websites can be <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">published without the Xperience administration application</a>, reducing security risks. In such cases, the project is managed from a separate instance deployed on a private network or behind a firewall with both applications connected to the same database, which is possible due to the system’s <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">auto-scaling support</a>.</p>
+<p>For other deployment scenarios, see the individual chapters in the <a href="/documentation/developers-and-admins/deployment">Deployment</a> section of the documentation.</p>
+
+</body>
+</html>

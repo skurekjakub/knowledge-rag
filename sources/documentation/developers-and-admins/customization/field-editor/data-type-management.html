@@ -1,0 +1,686 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Data type management</title>
+</head>
+<body>
+<p>All data types assignable via the field editor must be explicitly registered. The system uses the metadata provided during registration to:</p>
+<ul>
+<li>generate the database columns storing the values of individual fields,</li>
+<li>configure code generator and field editor behavior,</li>
+<li>perform value conversions (and object mapping for complex types) when fetching data to and from the database.</li>
+</ul>
+<p>The following table highlights important types registered by default:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Field editor name</p>
+</td>
+<td>
+<p>C# data type</p>
+</td>
+<td>
+<p>Database representation</p>
+</td>
+<td>
+<p>Notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Boolean (Yes/No)</p>
+</td>
+<td>
+<p>bool</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/bit-transact-sql" target="_blank">bit</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Integer number</p>
+</td>
+<td>
+<p>int</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/int-bigint-smallint-and-tinyint-transact-sql" target="_blank">int</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Long integer number</p>
+</td>
+<td>
+<p>long</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/int-bigint-smallint-and-tinyint-transact-sql" target="_blank">bigint</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Decimal number</p>
+</td>
+<td>
+<p>decimal</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/decimal-and-numeric-transact-sql" target="_blank">decimal</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Date</p>
+</td>
+<td>
+<p>DateTime</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql" target="_blank">date</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Date and time</p>
+</td>
+<td>
+<p>DateTime</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/datetime2-transact-sql" target="_blank">datetime2</a></p>
+</td>
+<td>
+<p>Time values are stored in the time zone of the server where the application is running. However, the administration UI automatically converts and displays time in the local time zone of each user, based on browser and environment settings.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Time interval</p>
+</td>
+<td>
+<p>TimeSpan</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/time-transact-sql" target="_blank">time</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Text</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar</a></p>
+</td>
+<td>
+<p>This data type is not intended to store rich text content (formatted text that includes links, e.g., created using the <a href="/documentation/business-users/rich-text-editor">rich text editor</a>) – use <em>Rich text (HTML)</em> data type instead. Database field length is configurable when creating or editing fields (up to the database maximum).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Long text</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>This data type is not intended to store rich text content (formatted text that includes links, e.g., created using the <a href="/documentation/business-users/rich-text-editor">rich text editor</a>) – use <em>Rich text (HTML)</em> data type instead.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Rich text (HTML)</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents rich text content created with the <a href="/documentation/business-users/rich-text-editor">rich text editor</a>. This data type also ensures that usage of content items is tracked correctly.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Unique identifier (GUID)</p>
+</td>
+<td>
+<p>Guid</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/uniqueidentifier-transact-sql" target="_blank">uniqueidentifier</a></p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content item asset</p>
+</td>
+<td>
+<p>ContentItemAssetMetadata</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Binary data attached to a content item. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Pages and reusable content</p>
+</td>
+<td>
+<p>IEnumerable&lt;ContentItemReference&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of <a href="/documentation/business-users/content-hub">content items</a> and <a href="/documentation/business-users/website-content">pages</a> referenced by a specific content type field.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Media files</p>
+</td>
+<td>
+<p>IEnumerable&lt;AssetRelatedItem&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of media files. For example, chosen by the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">media file selector component</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Emails</p>
+</td>
+<td>
+<p>IEnumerable&lt;EmailRelatedItem&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of emails from an email channel, referenced by a specific field. For example, chosen by the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">email selector component</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Pages</p>
+</td>
+<td>
+<p>IEnumerable&lt;WebPageRelatedItem&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of <a href="/documentation/business-users/website-content">pages</a> from the content tree of a selected website channel. For example, chosen by the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">page selector component</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Headless items</p>
+</td>
+<td>
+<p>IEnumerable&lt;HeadlessItemReference&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of <a href="/documentation/business-users/headless-content">headless items</a> from a headless channel. For example, chosen by the headless item selector component.</p>
+<p>This data type is only available in fields of headless <a href="/documentation/developers-and-admins/development/content-types">content types</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Smart folder</p>
+</td>
+<td>
+<p>SmartFolderReference</p>
+</td>
+<td>
+<p><a href="https://learn.microsoft.com/en-us/sql/t-sql/data-types/uniqueidentifier-transact-sql" target="_blank">uniqueidentifier</a></p>
+</td>
+<td>
+<p>Represents a <a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">smart folder</a> selected via the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#smart-folder-selector">Smart folder selector component</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Taxonomy</p>
+</td>
+<td>
+<p>IEnumerable&lt;TagReference&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of tags selected via the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#tag-selector">tag selector component</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object code names</p>
+</td>
+<td>
+<p>IEnumerable&lt;string&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of object code names selected via the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">object code name selector component</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object global identifiers</p>
+</td>
+<td>
+<p>IEnumerable&lt;Guid&gt;</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql" target="_blank">nvarchar(max)</a></p>
+</td>
+<td>
+<p>Represents a collection of object guids selected via the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#object-selector">object guid selector component</a>.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p>Note that the system doesn’t maintain the referential integrity of objects linked via the Pages and reusable content, Media files, Emails, Pages, and Object code names data types. Custom code must account for the referenced objects no longer existing or being otherwise invalid.</p>
+</div>
+
+<h2 id="register-custom-data-types">Register custom data types</h2>
+<p>The default set of data types can be extended, which allows you to register additional data types into the system. To ensure that your data types are available in all scenarios, registration must be done <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">during application startup</a> in the <code>OnPreInit</code> method of a module class.</p>
+
+<div>
+
+</div>
+<div>
+<p>Custom data types registered in the system are not supported by the GraphQL API for <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a>. Only built-in scalar types can be used in content types available through the API. For more information, see <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">Retrieve headless content</a>.</p>
+</div>
+
+<p>To register a custom data type, call the <code>RegisterDataTypes(params DataType[])</code> method of the <code>DataTypeManager</code> class.</p>
+<p>The <code>DataType&lt;T&gt;</code> class provides multiple constructors suitable depending on the complexity of the type being registered.</p>
+<p>For primitive types and simple objects that can be directly serialized to the database, use</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+DataType&lt;T&gt;(sqlType: string sqlType,
+            fieldType: string fieldType,
+            schemaType: string schemaType,
+            conversionFunc: Func&lt;object, T, CultureInfo, T&gt; conversionFunc)
+
+</code></pre>
+</div>
+
+<p>where:</p>
+<ul>
+<li>
+<strong>T</strong> – generic substituted with the C# type of the data type being registered.</li>
+<li>
+<strong>sqlType</strong> – the <a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/data-types-transact-sql" target="_blank">SQL type</a> of the database column storing the values of the <code>DataType</code>.</li>
+<li>
+<strong>fieldType</strong> – the string identifier of the data type in the system. Must be <strong>lowercase</strong>.</li>
+<li>
+<strong>schemaType</strong> – the XSD data type (xs:string, xs:integer, etc.) used for XML serialization into <code>IDataContainer</code>.</li>
+<li>
+<strong>conversionFunc</strong> – the function used to convert the stored database value to the data type. Must be static.</li>
+</ul>
+<p>For composite types, use </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+DataType&lt;T&gt;(sqlType: string sqlType,
+            fieldType: string fieldType,
+            schemaType: string schemaType,
+            conversionFunc: Func&lt;object, T, CultureInfo, T&gt; conversionFunc,
+            dbConversionFunc: Func&lt;T, object, CultureInfo, object&gt; dbConversionFunc,
+            textSerializer: IDataTypeTextSerializer textSerializer)
+
+</code></pre>
+</div>
+
+<p>where:</p>
+<ul>
+<li>
+<strong>T</strong> – generic substituted with the C# type of the data type being registered.</li>
+<li>
+<strong>sqlType</strong> – the <a href="https://docs.microsoft.com/en-us/sql/t-sql/data-types/data-types-transact-sql" target="_blank">SQL type</a> of the database column storing the values of the DataType.</li>
+<li>
+<strong>fieldType</strong> – the string identifier of the data type in the system. Must be <strong>lowercase</strong>.</li>
+<li>
+<strong>schemaType</strong> – the XSD data type (<code>xs:string</code>, <code>xs:integer</code>, etc.) used for XML serialization into <code>IDataContainer</code>. For composite types, this is commonly set to <strong>xs:string</strong>, as you’re often storing a serialized object (e.g., as a JSON string).</li>
+<li>
+<strong>conversionFunc</strong> – the function used to convert the stored database value to the data type. Must be static.</li>
+<li>
+<strong>dbConversionFunc</strong> – the function used to convert the data type to its string representation for storage in the database (e.g., a JSON string). Must be static.</li>
+</ul>
+<p>For example, the composite type <code>MyCompositeType</code>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class MyCompositeType
+{
+    public int Identifier { get; set; }
+    public string Name { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>would use the following registration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Called during module pre-initialization on application startup
+protected override void OnPreInit()
+{
+    DataTypeManager.RegisterDataTypes(
+        new DataType&lt;MyCompositeType&gt;("nvarchar(max)", "mydatatype", "xs:string",
+                                    MyCompositeTypeHelper.ConvertToSystemRepresentation, 
+                                    MyCompositeTypeHelper.ConvertToDbRepresentation, 
+                                    new DefaultDataTypeTextSerializer("mydatatype"))
+            {
+                    // Data type configuration
+                    // See the 'Data type configuration' section for details
+            }
+    );
+} 
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public static class MyCompositeTypeHelper
+{   
+    public static object ConvertToDbRepresentation(MyCompositeType value, object defaultValue, CultureInfo _)
+    {
+        if (value == null)
+        {
+            return defaultValue;
+        }
+
+        try
+        {
+            return JsonSerializer.Serialize(value);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("An error occurred when serializing the data type.", e);
+        }
+    } 
+
+    public static MyCompositeType ConvertToSystemRepresentation(object value, MyCompositeType defaultValue, CultureInfo _)
+    {
+        if (value == null)
+        {
+            return defaultValue;
+        }
+
+        // We know the value is stored in the database as a JSON string
+        var stringValue = value as string;
+        if (string.IsNullOrEmpty(stringValue))
+        {
+            return defaultValue;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize&lt;MyCompositeType&gt;(stringValue);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("An error occurred when deserializing the data type.", e);
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The data type is now registered and can be assigned to object fields via the field editor. Note that to edit fields based on this data type, you also need to develop corresponding form components.</p>
+
+<div>
+
+</div>
+<div>
+<p>The following blog post contains a step-by-step implementation of a custom data type: <a href="https://community.kentico.com/blog/embedded-structured-content-and-the-power-of-custom-data-types" target="_blank">Embedded structured content and the power of custom data types</a>.</p>
+</div>
+
+<h3 id="data-type-configuration">Data type configuration</h3>
+<p>During data type registration, you can also configure the following properties that control the behavior of the system when working with the data type in code generators, the field editor, and database queries. </p>
+<p><strong>Field editor</strong></p>
+<ul>
+<li><p><strong>Hidden</strong> – indicates whether the data type is hidden from the field editor interface.</p></li>
+<li><p><strong>HasConfigurableDefaultValue</strong> – indicates whether the data type needs a configurable default value. Controls the visibility of the default value editor in the field editor interface. See <a href="#assign-default-value-editors-for-custom-data-types">Assign default value editors for custom data types</a>.</p></li>
+<li>
+<p><strong>IsAvailableForDataClass</strong> – used to explicitly select data classes (specific content types or module classes) for which the data type is available. The following example ensures that the data type is available only for fields of content types and not for module classes:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  new DataType&lt;MyCompositeType&gt;("nvarchar(max)", "mydatatype", "xs:string",
+                            MyCompositeTypeHelper.ConvertToSystemRepresentation,
+                            MyCompositeTypeHelper.ConvertToDbRepresentation,
+                            new DefaultDataTypeTextSerializer("mydatatype"))
+  {
+      // Makes the data type available only if the data class represents a content type
+      // You can add additional conditions here to restrict availability further
+      IsAvailableForDataClass = dataClassInfo =&gt; dataClassInfo.IsContentType()
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p><strong>Code generators</strong></p>
+<ul>
+<li>
+<strong>TypeAlias</strong> – C# type assigned to properties generated from fields based on the data type.</li>
+<li>
+<strong>DefaultValueCode</strong> – C# code for the default value of the data type. Provided as a string literal. For example: <code>"String.Empty"</code>
+</li>
+</ul>
+<p><strong>General</strong></p>
+<ul>
+<li>
+<strong>DbType</strong> – System.Data.SqlDbType used when generating database queries. Set to the same type as the data type’s sqlType parameter.</li>
+<li>
+<strong>VariableSize</strong> – indicates that the type can have variable size. For example, <em>nvarchar(value)</em>. If set to true, the field editor interface also offers a <em>Size</em> field that allows users to set the size of the underlying database column.
+<ul>
+<li>
+<strong>DefaultSize</strong> – used when size isn’t provided via the field editor.</li>
+</ul>
+</li>
+<li>
+<strong>VariablePrecision</strong> – indicates that the type can have variable precision (e.g., floats). If set to true, the field editor interface also offers a <em>Precision</em> field that allows users to set the precision of the underlying database column.
+<ul>
+<li>
+<strong>DefaultPrecision</strong> – used when precision isn’t provided via the field editor.</li>
+</ul>
+</li>
+</ul>
+<h2 id="assign-default-value-editors-for-custom-data-types">Assign default value editors for custom data types</h2>
+<p>Most data types assignable via the field editor provide a way to specify a default value for fields of that data type. For custom data types, you can assign a fitting UI form component via <code>RegisterDefaultValueComponent</code>. The method is available in admin module classes (derived from the <code>AdminModule</code> base class) – see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">Prepare your environment for admin development</a> for more information about admin modules.</p>
+<p>The method takes the following parameters:</p>
+<ul>
+<li>
+<strong>dataType</strong> – the string identifier of the data type.</li>
+<li>
+<strong>componentIdentifier</strong> – the string identifier of the form component used as default value editor.</li>
+<li>
+<strong>Func&lt;object, string&gt; serializationFunction</strong> – handles serialization of the form component’s underlying type to it’s string representation.</li>
+<li>
+<strong>Func&lt;string, object&gt; deserializationFunction</strong> – handles deserialization from string into the form component’s underlying type.</li>
+</ul>
+<p>Call the method during admin module initialization:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.DataEngine;
+using CMS.Helpers;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyAdminModule : AdminModule
+{
+    public AdminBaseModule()
+            : base("My.Xperience.Admin.Module")
+    {
+    }
+
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Assigns text input as the default value editor for "mydatatype"
+        RegisterDefaultValueComponent("mydatatype", TextInputComponent.IDENTIFIER, 
+                                        ValidationHelper.GetValue&lt;string&gt;, value =&gt; ValidationHelper.GetValue&lt;string&gt;(value))
+    }
+}  
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

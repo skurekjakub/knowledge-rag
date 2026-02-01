@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Custom file system providers</title>
+</head>
+<body>
+<p>The <code>CMS.IO</code> library allows you to customize Xperience to support a file system of your choice. As described in <a href="/documentation/developers-and-admins/api/files-api-and-cms-io">Files API and CMS.IO</a>, you can achieve this by developing a custom provider based on the classes contained within <code>CMS.IO</code>.</p>
+<h2 id="preparation">Preparation</h2>
+<p>To implement a custom file system provider, you need to add a new assembly to the Xperience solution:</p>
+<ol type="1">
+<li>Open your solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a new Class Library project</a>.</li>
+</ol>
+<h2 id="implementation">Implementation</h2>
+<p>To create a file system provider, implement the following classes:</p>
+<ol type="1">
+<li>
+<p>Create two separate classes that inherit from the following abstract classes:</p>
+<ul>
+<li>CMS.IO.AbstractDirectory</li>
+<li>CMS.IO.AbstractFile</li>
+</ul>
+</li>
+<li><p>Implement all methods defined in the abstract classes.</p></li>
+<li>
+<p>Create three other classes that inherit from the following classes:</p>
+<ul>
+<li>CMS.IO.DirectoryInfo</li>
+<li>CMS.IO.FileInfo</li>
+<li>CMS.IO.FileStream</li>
+</ul>
+</li>
+<li><p>Override all methods and properties from those classes.</p></li>
+<li>
+<p>Create constructors for the classes listed in step 3 according to the following table:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>
+Inherits from
+</p>
+</td>
+<td>
+<p>
+Constructors
+</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>
+CMS.IO.DirectoryInfo
+</p>
+</td>
+<td>
+<p>
+public DirectoryInfo(string path)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+CMS.IO.FileInfo
+</p>
+</td>
+<td>
+<p>
+public FileInfo(string filename)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+CMS.IO.FileStream
+</p>
+</td>
+<td>
+<p>
+public FileStream(string path, CMS.IO.FileMode mode)
+</p>
+<p>
+public FileStream(string path, CMS.IO.FileMode mode, CMS.IO.FileAccess access)
+</p>
+<p>
+public FileStream(string path, CMS.IO.FileMode mode, CMS.IO.FileAccess access, CMS.IO.FileShare share)
+</p>
+<p>
+public FileStream(string path, CMS.IO.FileMode mode, CMS.IO.FileAccess access, CMS.IO.FileShare share, int bSize)
+</p>
+</td>
+</tr>
+</table>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: The custom file system provider classes must be placed into a namespace that <strong>exactly</strong> matches the name of the given assembly.</p>
+</div>
+
+<h2 id="configuration">Configuration</h2>
+<p>Perform the following configuration steps to start using your custom file system provider:</p>
+<ol type="1">
+<li>Add the <strong>CMSStorageProviderAssembly</strong> application setting to your project. Set the key’s value to the assembly name of your custom provider.</li>
+<li>Configure the project to use the provider.
+<ul>
+<li>Use the API to create an instance of the <code>CMS.IO.StorageProvider</code> class and <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">map specific project folders</a> to your custom provider.</li>
+</ul>
+</li>
+</ol>
+<h3 id="example">Example</h3>
+<p>The following code registers a module that maps the content items folder to a custom storage provider:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.Base;
+using CMS.DataEngine;
+using CMS.IO;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(CustomInitializationModule))]
+
+public class CustomInitializationModule : Module
+{
+    // Module class constructor, the system registers the module under the name "CustomInit"
+    public CustomInitializationModule()
+        : base("CustomInit")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Creates a new StorageProvider instance using the custom 'CustomFileSystemProvider' assembly
+        var customContentItemAssetProvider = new StorageProvider("custom", "CustomFileSystemProvider");
+
+        // Maps a directory to the provider
+        StorageHelper.MapStoragePath("~/assets/contentitems/", customContentItemAssetProvider);
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>To create an instance of the <code>StorageProvider</code> class for your custom file system provider, call the constructor with the following parameters:</p>
+<ol type="1">
+<li>The provider’s external storage name. Can be an empty string for providers that use the local file system. If you are using <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a> or <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a> providers in your project, the <em>Azure</em> or <em>Amazon</em> names are reserved by the corresponding providers.</li>
+<li>The name of the class library containing the provider’s implementation.</li>
+<li>(Optional) A <em>bool</em> parameter that specifies whether the storage is shared.</li>
+</ol>
+<p>For more information about storage provider mapping options, see <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">File system providers</a>.</p>
+</div>
+
+
+</body>
+</html>

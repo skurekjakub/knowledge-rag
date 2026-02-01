@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Editing components in Xperience by Kentico</title>
+</head>
+<body>
+<p>In Xperience by Kentico, editing components are no longer only used when configuring <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components. Instead, you can use them across the entire Xperience administration (e.g., in <a href="/documentation/developers-and-admins/development/content-types">content types</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validation</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility</a> conditions, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">custom configuration dialogs</a>).</p>
+<p>A consequence of this broadened scope is that the Kentico Xperience 13 approach of assigning and configuring editing components via the <code>EditingComponent</code> attribute is now obsolete. Editing components in Xperience by Kentico, though functionally mostly equivalent, use a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">different technology stack</a> to integrate with the new administration interface.</p>
+<p>The old API remains supported and is backward compatible, including modal dialog support. However, this will change in the future when support for Kentico Xperience 13 ends. We <strong>strongly recommend</strong> updating your codebase to the new components as soon as possible.</p>
+<p>See:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a> for more information about the new API used to assign editing components.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Reference - Admin UI form components</a> for a reference of all components usable in the admin UI.</li>
+</ul>
+<p>See the <a href="#form-components">Form components</a> section for general information about updating to the new admin UI form components.For details about updating selector components, see the following sections:</p>
+<ul>
+<li><a href="#page-selector">Page selector</a></li>
+<li><a href="#url-selector">URL selector</a></li>
+<li><a href="#object-selector">Object selector</a></li>
+<li><a href="#general-selector">General selector</a></li>
+<li><a href="#media-file-selector">Media file selector</a></li>
+<li><a href="#path-selector">Path selector</a></li>
+<li><a href="#attachment-selector">Attachment selector</a></li>
+</ul>
+<h2 id="form-components">Form components</h2>
+<p>In Kentico Xperience 13, you assigned editing components using the <code>EditingComponent</code> attribute and configured them via the <code>EditingComponentProperty</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Kentico Xperience 13 usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Forms.Web.Mvc;
+
+// Assigns the 'TextAreaComponent' as the editing component of the 'Text' property
+[EditingComponent(TextAreaComponent.IDENTIFIER)]
+[EditingComponentProperty(nameof(TextAreaProperties.Placeholder), "Enter your text here...")]
+public string Text { get; set; }
+</code></pre>
+</div>
+
+<p>In Xperience by Kentico, each editing component has a dedicated attribute that allows you to configure all properties in the constructor.</p>
+<p>Update the code by mapping the corresponding <code>EditingComponentProperty</code> calls to individual attribute constructor parameters. Keep in mind that some properties may be renamed, changed, or added in the new product:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Xperience by Kentico usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+// Assigns the 'TextAreaComponent' as the editing component of the 'Text' property
+[TextAreaComponent(WatermarkText = "Enter your text here...")]
+public string  Text { get; set; }
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Builder compatibility mode</strong></p>
+<p>Existing <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components with properties using the old <code>EditingComponent</code> attributes remain functional, and are displayed in “compatibility mode” within the Page or Form Builder interface.</p>
+<p>However, this compatibility mode is only intended as a short-term solution to help get <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico">upgraded projects</a> running as soon as possible. This option will stop working when support for Kentico Xperience 13 ends. We <strong>strongly recommend</strong> that you update your components to the new Xperience by Kentico framework.</p>
+</div>
+
+<h2 id="selectors">Selectors</h2>
+<h3 id="page-selector">Page selector</h3>
+<p>In Kentico Xperience 13, you assigned the page selector using the <code>EditingComponent</code> attribute and configured it via the <code>EditingComponentProperty</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Kentico Xperience 13 usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Components.Web.Mvc.FormComponents;
+
+[EditingComponent(PageSelector.IDENTIFIER)]
+[EditingComponentProperty(nameof(PageSelectorProperties.RootPath), "/Articles")]
+[EditingComponentProperty(nameof(PageSelectorProperties.MaxPagesLimit), 0)]
+// Returns a list of page selector items (node GUIDs)
+public IEnumerable&lt;PageSelectorItem&gt; Pages { get; set; } = new List&lt;PageSelectorItem&gt;();
+
+</code></pre>
+</div>
+
+<p>In Xperience by Kentico, the page selector has a dedicated <code>WebPageSelectorComponent</code> attribute that allows you to configure all properties in the constructor. Also, the return type was changed to a collection of <code>WebPageRelatedItem</code> objects.</p>
+<p>Update the code by mapping the corresponding <code>EditingComponentProperty</code> calls to individual attribute constructor parameters. The properties of the returned object were not changed and will be updated automatically: </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Xperience by Kentico usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Collections.Generic;
+using System.Linq;
+
+using CMS.Websites;
+
+using Kentico.Xperience.Admin.Websites.FormAnnotations;
+
+// Returns a list of selected page items (node GUIDs)
+[WebPageSelectorComponent(TreePath = "/Articles", MaximumPages = 5)]
+public IEnumerable&lt;WebPageRelatedItem&gt; Pages { get; set; } = new List&lt;WebPageRelatedItem&gt;(); 
+
+</code></pre>
+</div>
+
+<h3 id="url-selector">URL selector</h3>
+<p>In Kentico Xperience 13, you assigned the URL selector using the <code>EditingComponent</code> attribute and configured it via the <code>EditingComponentProperty</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Kentico Xperience 13 usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Components.Web.Mvc.FormComponents;
+
+[EditingComponent(UrlSelector.IDENTIFIER)]
+[EditingComponentProperty(nameof(UrlSelectorProperties.Tabs), ContentSelectorTabs.Attachment | ContentSelectorTabs.Media)]
+[EditingComponentProperty(nameof(UrlSelectorProperties.MediaAllowedExtensions), ".gif;.png;.jpg;.jpeg")]
+[EditingComponentProperty(nameof(UrlSelectorProperties.AttachmentAllowedExtensions), ".gif;.png;.jpg;.jpeg")]
+[EditingComponentProperty(nameof(UrlSelectorProperties.MediaLibraryName), "Graphics")]
+// Returns a string containing the relative URL of the selected page
+public string Url { get; set; }
+
+</code></pre>
+</div>
+
+<p>In Xperience by Kentico, the URL selector contains a few changes:</p>
+<ul>
+<li>you can only use it to select page URLs. Attachments and files from media libraries are not supported. If you have page or page template configurations with media file URLs stored using the selector, the data persists until users make a different selection using the new selector and save the changes.</li>
+<li>the URL selector now has a dedicated <code>UrlSelectorComponent</code> attribute that allows you to configure all properties in the constructor. However, due to the reduction in available selection scopes, the selector no longer allows you to configure the:
+<ol type="1">
+<li>available selection tabs, previously set via <code>UrlSelectorProperties.Tabs</code>.</li>
+<li>extension filter for selectable types of media files and attachments, previously set via <code>UrlSelectorProperties.MediaAllowedExtensions</code> and <code>UrlSelectorProperties.AttachmentAllowedExtensions</code>.</li>
+<li>filter for media libraries from which users can select the media files, previously set via <code>UrlSelectorProperties.MediaLibraryName</code>.</li>
+</ol>
+</li>
+</ul>
+<p>The following snippet shows an example of the new usage:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Xperience by Kentico usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Content.FormAnnotations;
+
+// Returns a string containing the relative URL of the selected page
+[UrlSelectorComponent(Label = "Select a page")]
+public string PageUrl { get; set; }
+
+</code></pre>
+</div>
+
+<h3 id="object-selector">Object selector</h3>
+<p>In Kentico Xperience 13, you assigned the object selector using the <code>EditingComponent</code> attribute and configured it via the <code>EditingComponentProperty</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Kentico Xperience 13 usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Components.Web.Mvc.FormComponents;
+
+[EditingComponent(ObjectSelector.IDENTIFIER)]
+[EditingComponentProperty(nameof(ObjectSelectorProperties.ObjectType), "cms.user")]
+[EditingComponentProperty(nameof(ObjectSelectorProperties.WhereConditionProviderType), typeof(ObjectWhere))]
+[EditingComponentProperty(nameof(ObjectSelectorProperties.OrderBy), new string[] { "UserName DESC" })]
+public IEnumerable&lt;ObjectSelectorItem&gt; Users { get; set; } = new List&lt;ObjectSelectorItem&gt;();
+
+public class ObjectWhere : IObjectSelectorWhereConditionProvider
+{
+    // Where condition limiting the selectable objects     
+    public WhereCondition Get() =&gt; new WhereCondition().WhereStartsWith("UserName", "a"); 
+}
+
+</code></pre>
+</div>
+
+<p>In Xperience by Kentico, the object selector has a dedicated <code>ObjectSelectorComponent</code> attribute that allows you to configure all properties in the constructor. Also, the return type was changed to a collection of <code>ObjectRelatedItem</code> objects.</p>
+<p>To update the code, map the corresponding <code>EditingComponentProperty</code> calls to individual attribute constructor parameters:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Content.FormAnnotations;
+
+[ObjectSelectorComponent("cms.user", WhereConditionProviderType = typeof(ObjectWhere), OrderBy = new string[] { "UserName DESC" })]
+public IEnumerable&lt;ObjectRelatedItem&gt; Users { get; set; } = new List&lt;ObjectRelatedItem&gt;();
+
+public class ObjectWhere : IObjectSelectorWhereConditionProvider
+{
+    // Where condition limiting the selectable objects
+    public WhereCondition Get() =&gt; new WhereCondition().WhereStartsWith("UserName", "a");
+}
+
+</code></pre>
+</div>
+
+<h3 id="general-selector">General selector</h3>
+<p>In Kentico Xperience 13, you assigned the General selector using the <code>EditingComponent</code> attribute and configured it via the <code>EditingComponentProperty</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Kentico Xperience 13 usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+
+[EditingComponent(GeneralSelector.IDENTIFIER)]
+[EditingComponentProperty(nameof(GeneralSelectorProperties.DataProviderType), typeof(UserGeneralSelectorDataProvider))]
+public IEnumerable&lt;GeneralSelectorItem&gt; UserOptions { get; set; } = new List&lt;GeneralSelectorItem&gt;();
+
+
+</code></pre>
+</div>
+
+<p>In Xperience by Kentico, the General selector has a dedicated <code>GeneralSelectorComponent</code> attribute that allows you to configure all properties in the constructor. Instead of returning a collection of <em>GeneralSelectorItem</em> objects, General selector now returns a collection of <em>string</em> objects, which contain the values of the selected items.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Xperience by Kentico usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns the General selector as the property's editing component
+[GeneralSelectorComponent(
+            dataProviderType : typeof(UserGeneralSelectorDataProvider),
+            Label = "Users",
+            Placeholder = "Choose a user")]
+public IEnumerable&lt;string&gt; UserOptions { get; set; }
+
+</code></pre>
+</div>
+
+<h3 id="media-file-selector">Media file selector</h3>
+<p>There are no plans to make the media file selector available in Xperience by Kentico.</p>
+<h3 id="path-selector">Path selector</h3>
+<p>There are no plans to make the path selector available in Xperience by Kentico.</p>
+<p>If you need to retrieve a collection of <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#filter-pages-based-on-content-tree-structure">tree paths</a>, we recommend using the <a href="#page-selector">Page selector</a> and obtaining paths from the selected pages:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Use the page selector to obtain a collection of tree paths</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves the GUIDs of the selected pages from the 'Pages' property
+List&lt;Guid&gt; pageGuids = model?.Properties?.Pages?
+                                           .Select(i =&gt; i.WebPageGuid)
+                                           .ToList();
+
+// Retrieves the data of the selected article pages
+IEnumerable&lt;string&gt; articlePaths = (await contentRetriever.RetrievePagesByGuids&lt;Article&gt;(pageGuids))
+                                                  .Select(t =&gt; t.SystemFields.WebPageItemTreePath);
+
+</code></pre>
+</div>
+
+<h3 id="attachment-selector">Attachment selector</h3>
+<p>There are no plans to make the attachment selector available for Xperience by Kentico. Page attachments are not supported by the system – use <a href="/documentation/business-users/content-hub">Content hub</a> instead.</p>
+
+</body>
+</html>

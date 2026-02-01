@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Price calculation</title>
+</head>
+<body>
+<p>The price calculation service <code>IPriceCalculationService</code> calculates prices, promotions, taxes, shipping costs, and totals across the entire commerce experience – from <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">product catalog</a> displays through shopping cart summaries to final <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process">checkout</a> totals.</p>
+<p>Different calculation modes optimize the service for each scenario, running only the steps required for that context. This page explains the calculation pipeline and how to choose the right mode for your use case.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Key points</strong></p>
+<ul>
+<li>The price calculation service uses a <strong>pipeline architecture</strong> with sequential calculation steps.</li>
+<li>Three <strong>calculation modes</strong> (<code>Catalog</code>, <code>ShoppingCart</code>, <code>Checkout</code>) optimize performance for different scenarios.</li>
+<li>You must implement a <strong>product data retriever</strong> to connect the service to your catalog. See <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#create-a-product-data-retriever">Set up price calculation</a>.</li>
+<li>
+<strong>Tax calculation</strong> requires a custom implementation – the default step does not calculate taxes. See <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#create-a-tax-calculation-step">Set up price calculation</a>.</li>
+<li>All calculation steps can be <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization">customized or extended</a> to fit your business logic.</li>
+</ul>
+</div>
+
+<h2 id="minimum-required-implementation">Minimum required implementation</h2>
+<p>To make the price calculation API usable in your project, you need to implement two components:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Component</p>
+</td>
+<td>
+<p>Required for</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Product data retriever</strong></p>
+</td>
+<td>
+<p>All modes</p>
+</td>
+<td>
+<p>Implements <code>IProductDataRetriever</code> to load product information and pricing data from your <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">catalog</a>. See <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#implement-product-data-retrieval">Implement product data retrieval</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Tax calculation step</strong></p>
+</td>
+<td>
+<p>ShoppingCart, Checkout modes</p>
+</td>
+<td>
+<p>Overrides the default <code>ITaxPriceCalculationStep</code> to calculate taxes. The default implementation does not add taxes. See <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#create-a-tax-calculation-step">Set up price calculation</a>.</p>
+</td>
+</tr>
+</table>
+
+<p>Once you’ve implemented and registered these components, the price calculation service automatically handles the rest of the calculation pipeline, including unit price calculations, catalog promotions, subtotals, order promotions, shipping costs, and final totals.</p>
+<p>For complete implementation examples, examine the <em>ProductDataRetriever.cs</em> and <em>DancingGoatTaxPriceCalculationStep.cs</em> files in the <a href="/documentation/developers-and-admins/installation#available-project-templates">Dancing Goat</a> sample project.</p>
+<h2 id="calculation-modes">Calculation modes</h2>
+<p>The price calculation service supports three calculation modes that determine which steps execute. Set the <code>Mode</code> property on the <code>PriceCalculationRequest</code> to control the calculation scope.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Mode</p>
+</td>
+<td>
+<p>Use case</p>
+</td>
+<td>
+<p>Steps executed</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Catalog</strong></p>
+</td>
+<td>
+<p>Product listings, category pages, product detail pages</p>
+</td>
+<td>
+<p>Product data loading, catalog promotions, line subtotals</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>ShoppingCart</strong></p>
+</td>
+<td>
+<p>Shopping cart display before shipping selection</p>
+</td>
+<td>
+<p>All Catalog steps plus order promotions, taxes, line totals, order totals</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Checkout</strong></p>
+</td>
+<td>
+<p>Final checkout with shipping</p>
+</td>
+<td>
+<p>All steps including shipping calculation</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p>The default mode is <code>PriceCalculationMode.Catalog</code>. Always set the appropriate mode based on your context to ensure correct calculations and optimal performance.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Set calculation mode based on context</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="6"><code>
+var catalogRequest = new PriceCalculationRequest
+{
+    Items = productItems,
+    LanguageName = "en",
+    // Defaults to 'Catalog' if not set
+    Mode = PriceCalculationMode.Catalog
+};
+</code></pre>
+</div>
+
+<p>For detailed usage examples of each mode, see <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#calculate-prices">Calculate prices</a>.</p>
+<h2 id="price-calculation-flow">Price calculation flow</h2>
+<p>The price calculation service transforms a <code>PriceCalculationRequest</code> into a <code>PriceCalculationResult</code> through a series of sequential steps:</p>
+<ol type="1">
+<li><p><strong>Input preparation</strong> – You provide a <code>PriceCalculationRequest</code> containing items to be priced with their product identifiers and quantities. Depending on the calculation mode, you may also include customer details, selected shipping and payment methods, and delivery addresses.</p></li>
+<li><p><strong>Price calculation steps</strong> – The <code>IPriceCalculationService</code> executes a series of calculation steps in sequence. Each step performs a specific pricing task, modifying the <code>PriceCalculationResult</code> as it progresses through the pipeline.</p></li>
+<li><p><strong>Result compilation</strong> – The service returns a <code>PriceCalculationResult</code> containing itemized pricing details, subtotals, shipping costs, taxes, and the grand total.</p></li>
+</ol>
+<p></p>
+<h3 id="calculation-steps">Calculation steps</h3>
+<p>The calculation pipeline consists of the following steps. Each step only runs if included in the selected <a href="#calculation-modes">calculation mode</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Step</p>
+</td>
+<td>
+<p>Modes</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Load product data</p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>Loads product information and pricing data using your <code>IProductDataRetriever</code> implementation</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Catalog promotions</p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>Applies <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">catalog promotions</a> to individual products (best discount wins)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Line subtotals</p>
+</td>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>Calculates line subtotals after catalog discounts</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Shipping</p>
+</td>
+<td>
+<p>Checkout</p>
+</td>
+<td>
+<p>Determines shipping cost based on the selected shipping method</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Order promotions</p>
+</td>
+<td>
+<p>ShoppingCart, Checkout</p>
+</td>
+<td>
+<p>Applies <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/order-discounts">order promotions</a> that discount the entire order</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Taxes</p>
+</td>
+<td>
+<p>ShoppingCart, Checkout</p>
+</td>
+<td>
+<p>Calculates taxes (requires custom implementation)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Line totals</p>
+</td>
+<td>
+<p>ShoppingCart, Checkout</p>
+</td>
+<td>
+<p>Calculates final line totals including taxes</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Order total</p>
+</td>
+<td>
+<p>ShoppingCart, Checkout</p>
+</td>
+<td>
+<p>Sums line subtotals, shipping, and taxes</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Grand total</p>
+</td>
+<td>
+<p>ShoppingCart, Checkout</p>
+</td>
+<td>
+<p>Sets the final grand total to be paid</p>
+</td>
+</tr>
+</table>
+
+<p>You can customize the default flow by <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization#modify-existing-calculation-steps">modifying existing steps</a> or <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization#add-a-custom-calculation-step">adding custom steps</a> to the pipeline.</p>
+<h2 id="basic-usage">Basic usage</h2>
+<p>Inject <code>IPriceCalculationService</code> and call <code>Calculate</code> with a <code>PriceCalculationRequest</code>. The service returns a <code>PriceCalculationResult</code> containing itemized prices, totals, and applied promotions.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Calculate prices for cart items</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="3,13-22,25"><code>
+public class ShoppingCartController : Controller
+{
+    private readonly IPriceCalculationService priceCalculationService;
+
+    public ShoppingCartController(IPriceCalculationService priceCalculationService)
+    {
+        this.priceCalculationService = priceCalculationService;
+    }
+
+    public async Task&lt;IActionResult&gt; Index(IEnumerable&lt;ShoppingCartItem&gt; cartItems)
+    {
+        // Build the request with items to price
+        var request = new PriceCalculationRequest
+        {
+            Items = cartItems.Select(item =&gt; new PriceCalculationRequestItem
+            {
+                ProductIdentifier = item.ProductSKU,
+                Quantity = item.Quantity
+            }).ToList(),
+            LanguageName = "en",
+            Mode = PriceCalculationMode.ShoppingCart
+        };
+
+        // Calculates cart prices
+        PriceCalculationResult result = await priceCalculationService.Calculate(request);
+
+        // Process the calculation result...
+    }
+}
+</code></pre>
+</div>
+
+<p>For complete examples of each calculation mode, see <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#calculate-prices">Calculate prices</a>.</p>
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation">Set up price calculation</a> – Implement product data retrieval and use the calculation service</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization">Customize price calculation</a> – Extend data objects, modify calculation steps, or add custom steps</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process">Checkout process</a> – Integrate price calculation into your checkout process</li>
+</ul>
+
+</body>
+</html>

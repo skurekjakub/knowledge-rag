@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Media library configuration</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Media libraries sunset</strong></p>
+<p>Media libraries have been officially sunset, and their related API members have been marked as obsolete. Support for media libraries will continue for one more year (until July 24, 2026), after which the feature and all associated APIs will be completely removed.</p>
+<p>See <a href="/guides/architecture/media-libraries-migration-guidance">Media library migration</a> for instructions on how to migrate your media library files to <a href="/documentation/business-users/content-hub">Content hub</a>.</p>
+</div>
+
+<p>Using the Media libraries application, users can store multimedia files such as photos, pictures, sound files, videos, package files, or documents. The maximum size allowed for a single file is 100 MB.</p>
+<p>This page covers media library configuration options you may wish to use in your applications:</p>
+<ul>
+<li><a href="#supported-file-types">Supported file types</a></li>
+<li><a href="#enable-upload-of-custom-file-types">Enable upload of custom file types</a></li>
+<li><a href="#image-file-request-protection">Image file request protection</a></li>
+</ul>
+<h2 id="supported-file-types">Supported file types</h2>
+<p>Media libraries support the following types of images: <strong>bmp</strong>, <strong>gif</strong>, <strong>png</strong>, <strong>jpg</strong>, <strong>jpeg</strong>, <strong>tiff</strong>, <strong>tif</strong>, <strong>webp</strong>, <strong>avif</strong>. These types of image files can be uploaded to media libraries and displayed in your channels by default. Support for <strong>svg</strong> images can be enabled after considering the <a href="#support-for-svg-images">potential security impacts</a>.</p>
+<p>The system detects audio and video files based on their <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types" target="_blank">MIME type</a> (audio types starting with the <em>audio/</em> prefix and video types starting with the <em>video/</em> prefix). For successfully detected audio and video file types, the system renders appropriate HTML5 markup. The types of files that can be previewed or played on your website therefore depend on the web browser (modern HTML5 web browsers typically support one or more of the <strong>ogg</strong>, <strong>mp4</strong>, or <strong>webm</strong> video codecs, and <strong>mp3</strong>, <strong>wav</strong>, or <strong>ogg</strong> audio codecs).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Non-image file types</strong></p>
+<p>All other file types are recognized as <strong>documents</strong>, which means that you cannot play them as videos or display them as images. You can still store them in the library and provide download links to visitors.</p>
+<p><strong>Limitations for avif images in media libraries</strong></p>
+<p>Media library <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-from-media-libraries#resize-images">resizing functionality</a> is not supported for image files with the avif format. Additionally, media libraries cannot calculate the size of avif images and their resolution is displayed as “0x0 px”.</p>
+</div>
+
+<h2 id="enable-upload-of-custom-file-types">Enable upload of custom file types</h2>
+<p>If you want to configure the system to allow upload of a custom file type into media libraries, you need to:</p>
+<ol type="1">
+<li>
+<a href="#customize-allowed-extensions">Enable the custom extensions</a> to be uploaded to the media library.</li>
+<li>(<em>Optional</em>) If you want to use a custom extension as an image file, you need to configure the system to <a href="#specify-image-file-types">recognize the extension as an image file</a>.</li>
+</ol>
+<h3 id="customize-allowed-extensions">Customize allowed extensions</h3>
+<p>To customize the set of file types that can be uploaded into media libraries:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Navigate to the <strong>Content → Assets</strong> category.</li>
+<li>Add the selected file extensions into the <strong>Asset allowed extensions</strong> setting in the <strong>Security</strong> section (separated by semicolons).</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Setting shared with the content hub</strong></p>
+<p>The <strong>Asset allowed extensions</strong> setting is shared with the <a href="/documentation/developers-and-admins/configuration/content-hub-configuration">content hub</a>. Changing the value of the setting also limits file types that can be uploaded to the content hub.</p>
+</div>
+
+<h3 id="specify-image-file-types">Specify image file types</h3>
+<p>By default, the system can recognize and process any media type, if you have the right player for the given file type. You can allow custom file types to be recognized as image files via a configuration key. However, by specifying image file types, you disable the automatic detection and support for media file types other than those explicitly added via your configuration.</p>
+<p>To allow media files of specified types to be recognized as image files, add the <code>CMSImageExtensions</code> key to your application’s configuration file (<em>appsettings.json</em> by default).</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+"CMSImageExtensions": "bmp;gif;ico;png;wmf;jpg;jpeg;tiff;tif;webp;svg;avif;jfif;jfi;jif;jpe;dib"
+</code></pre>
+</div>
+
+<p>Files of the specified types are now recognized as image files and will be, for example, offered in the <em>Insert image</em> dialog of the rich text editor.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Unsupported features for vector graphic formats</strong></p>
+<p>Vector graphic formats other than <strong>svg</strong> (such as <strong>eps</strong>, <strong>pdf</strong>, <strong>ai</strong>) are not supported as image extensions in media libraries. These formats can be stored as documents and displayed on the website, but the preview functionality in the <strong>Media libraries</strong> application and asset selectors is unavailable for such files.</p>
+</div>
+
+<h3 id="support-for-svg-images">Support for SVG images</h3>
+<p>Although the <a href="https://en.wikipedia.org/wiki/SVG" target="_blank">SVG</a> vector format for images is supported by media libraries, it is not allowed by default. SVG images may host scripts or CSS and can pose a security risk. If you wish to use the SVG image format, you need to manually <a href="#customize-allowed-extensions">enable support for the extension</a>.</p>
+<p>The system does <strong>not</strong> perform sanitization of SVG images when they are <a href="/documentation/business-users/media-libraries/manage-media-files#upload-files-into-the-media-library">uploaded</a>. This means that SVG files stored in media libraries may potentially contain malicious content. The system protects against these risks by adding a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP" target="_blank">CSP header</a> to all responses that serve files through the system’s endpoints (<em>/getmedia</em>, etc.). This header prevents execution of inline scripts.</p>
+<p>If your project uses custom endpoints or other functionality to serve images, you need to provide your own security measures.</p>
+
+<div>
+
+</div>
+<div>
+<p>When displaying SVG images in custom HTML, always use the <code>&lt;img&gt;</code> element and its <code>src</code> attribute, rather than including the SVG code directly in the HTML.</p>
+</div>
+
+<p>Also consider additional security measures for SVG images if you have files mapped to external storage providers, such as <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure storage</a> or <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>. If files in external storage are accessed outside of Xperience endpoints, the system cannot provide any protection, and security depends on the features of the given storage provider.</p>
+<h2 id="image-file-request-protection">Image file request protection</h2>
+<p>The system allows you to protect the media library image file endpoint (i.e., <em>/getmedia</em>), so that access to resized variants of image files is restricted only to validated requests.</p>
+<p>The protection works by adding a validation hash at the end of requests to system handlers that contain resize parameters for image files. When the request protection is enabled, a request to <em>example.com/getmedia/1d35f70d-…-3a3a25bcf363/E5yfzxe.jpg?width=200</em> would return the image in the default size. To retrieve the image in the desired size, you need to generate a validation hash for the request URL: <em>example.com/getmedia/1d35f70d-…-3a3a25bcf363/E5yfzxe.jpg?width=200&amp;mediaprotectionhash=94f…fcf</em></p>
+
+<div>
+
+</div>
+<div>
+<p>If performance is crucial, it is recommended to use a different approach to image resizing, e.g., a CDN with resizing capabilities.</p>
+</div>
+
+<p>Content authored in the system includes the validation hash. For content managed outside of the system (e.g., links to image files from stylesheets), you need to make sure that all image requests with the resize query parameter include the validation hash. To generate a validation hash for image file requests:</p>
+<ol type="1">
+<li><p>Make sure that the request protection is enabled. In the administration interface, enable the <strong>Settings → Content → Assets → Enable image file request protection</strong> setting.</p></li>
+<li>
+<p>Generate the validation hash using the <code>GetProtectedUrl</code> method of the <code>IMediaProtectionService</code>.</p>
+<ul>
+<li>Both relative and absolute request URLs are supported.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Generate validation hash for a request</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ // An instance of the `IMediaProtectionService` obtained using the dependency injection
+ IMediaProtectionService mediaProtectionService;
+
+ // Retrieves a requests URL with a validation hash
+ var urlWithHash = mediaProtectionService.GetProtectedUrl("~/getmedia/1d35f70d-dcd8-4dc8-a528-3a3a25bcf363/E5yfzxe.jpg?width=201");
+ </code></pre>
+</div>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Validation hash and hash string salt</strong></p>
+<p>Values of the validation hash are dependent on the <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures#configure-the-hash-salt-for-macro-signatures">hash string salt</a> value configured for the environment. It is crucial to have the value of the hash string salt synchronized across different environments. If the value of the hash string salt changes, all static generated request URLs (e.g., static CSS files and scripts) with the validation hash need to be updated and generated again.</p>
+</div>
+
+<h3 id="enable-image-file-request-protection-on-existing-projects">Enable image file request protection on existing projects</h3>
+<p>When you enable the request protection on an existing project, you also need to ensure that any affected URLs in already existing content (i.e., any URLs to image files with resizing parameters) are updated to contain the validation hash. Otherwise, all affected URLs without a validation hash return image files in the original dimensions.</p>
+<ul>
+<li>Affected URLs in custom code need to be validated using the <code>GetProtectedUrl</code> method of the <code>IMediaProtectionService</code>.</li>
+<li>Affected URLs in static files need to be manually validated and replaced with a URL with the validation hash.</li>
+<li>Depending on the customizations in your project, you may also need to update the affected URLs in existing content to be converted to URLs with the validation hash.</li>
+</ul>
+
+</body>
+</html>

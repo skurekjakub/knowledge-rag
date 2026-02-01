@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Admin UI customization model overview</title>
+</head>
+<body>
+<p>This page covers two topics:</p>
+<ul>
+<li>an overview of the <a href="#extensions-and-customization-points">extension and customization points</a> available in the admin UI.</li>
+<li>
+<a href="#admin-ui-development-process">the development process</a> for admin UI extensions.</li>
+</ul>
+<h2 id="extensions-and-customization-points">Extensions and customization points</h2>
+<p>You can customize the following parts of the Xperience administration: </p>
+<ul>
+<li>
+<a href="#ui-pages">UI pages</a>
+<ul>
+<li><a href="#ui-page-commands">UI page commands</a></li>
+<li><a href="#ui-page-extenders">UI page extenders</a></li>
+</ul>
+</li>
+<li><a href="#ui-form-component-framework">UI form component framework</a></li>
+</ul>
+<h3 id="ui-pages">UI pages</h3>
+<p>Pages in the client application are defined via UI pages. The URL of each page derives from its ancestors – pages specify their parent during registration. You can add new pages to existing applications or create entirely new page structures for custom applications.</p>
+<p>A single UI page consists of the following components:</p>
+<ul>
+<li>
+<strong>Back-end definition</strong> – a class in the Xperience .NET application. Retrieves the data displayed on the client and defines <a href="#ui-page-commands">command handlers</a> for user interactions with the page.</li>
+<li>
+<strong>Client template</strong> – a React component that describes the layout and appearance of the UI page (written in <a href="https://react.dev/learn/writing-markup-with-jsx" target="_blank">JSX</a>). Displays data received from the back end and invokes commands in response to user interaction.</li>
+<li>
+<strong>Registration attribute</strong> – ties the back-end definition and a corresponding client template together.</li>
+</ul>
+<p>The following diagram illustrates the basic structure of UI pages:</p>
+<p></p>
+<p>The system provides support for creating most types of pages found in a default installation of Xperience (listing pages, info object editing pages, pages with forms). For more information about developing UI pages, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a>.</p>
+<h4 id="ui-application-pages">UI application pages</h4>
+<p>Every application in the admin UI is contained within an application page that serves as the app’s entry point and the root for its UI page subtree. The following diagram illustrates a sample application structure:</p>
+<p></p>
+<p>For more information, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-application-pages">UI application pages</a>.</p>
+<h4 id="ui-page-commands">UI page commands</h4>
+<p>Page commands enable the execution of arbitrary code on the server back end from within the client-side application. Typical use cases for commands are CRUD operations on database objects (creating or deleting new users, for example). However, you can use commands to execute any custom logic on the back end. </p>
+<p>Commands belong to individual UI pages. They can also be inherited from other classes (e.g., base classes that provide common logic for multiple UI pages).</p>
+<p>The following diagram illustrates the basic lifecycle of a command: </p>
+<p></p>
+<p>In the diagram:</p>
+<ol type="1">
+<li>A command is invoked from the client-side administration interface (e.g., via a button click or a similar user interaction).</li>
+<li>The React application sends a request to the back end with contextual information about the invoked command (name, source page, and any other required data).</li>
+<li>Based on the provided information, the back end executes the command (a method annotated with a specific attribute) and returns a result back to the client.</li>
+<li>The client receives the result and reacts accordingly (e.g., displays a message, reloads the page to display new data, redirects the user)</li>
+</ol>
+<p>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">UI pages</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">UI page commands</a> for more information about developing UI pages and page commands.</p>
+<h4 id="ui-page-extenders">UI page extenders</h4>
+<p>Page extenders allow you to modify the back-end definition of existing UI pages without directly editing their source code. You can use extenders to add new <a href="#ui-page-commands">commands</a> or change the configuration of pages. For example, you can add additional columns to an object listing (e.g., to display additional properties of registered users) or specify new actions (e.g., perform a specific operation with selected objects).</p>
+<p>Additionally, page extenders contain <code>Before</code> and <code>After</code> events tied to command execution. The events enable you to register handlers that execute before or after a specific command handler method is invoked.</p>
+<p></p>
+<p>For more information about developing UI pages and commands, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extenders</a>.</p>
+<h3 id="ui-form-component-framework">UI form component framework</h3>
+<p>UI form components define the editing interface for fields that comprise forms used to edit or configure objects and pages in the admin UI.</p>
+<p>Each form field is assigned a single form component, which manages the field’s editing interface by providing, for example, a text box, a group of radio buttons, or a drop-down selector input for the underlying value. Well-designed forms can make working with the admin UI much simpler for business users and administrators alike.</p>
+<p>UI form components are different from form components used in <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a>. UI form components integrate into the React-based client application. For this reason, their front end must be written as a React component (not as an MVC View file used in Form Builder components).</p>
+<p>To learn how to write custom UI form components, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a>.</p>
+<h4 id="validation-rules-and-visibility-conditions">Validation rules and visibility conditions</h4>
+<p>For better user experience, you can constrain component input using</p>
+<ul>
+<li>validation rules that allow users to submit only data that fulfills specified conditions, and</li>
+<li>visibility conditions that hide designated fields until set criteria are met.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">UI form component validation rules</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">UI form component visibility conditions</a> for a reference of input constraint elements available in default Xperience installations and guides to implement additional elements that fit your requirements.</p>
+<h2 id="admin-ui-development-process">Admin UI development process</h2>
+<p>This section introduces concepts and best practices related to the development of admin UI customizations. Any customization you choose to implement will, in the majority of cases, fall into one of two categories:</p>
+<ol type="1">
+<li>
+<p><a href="#back-end-development">Use existing client components to extend parts of the UI with back-end code.</a></p>
+<ul>
+<li>In this case, you’re reusing available React components to build the UI, so only changes to the back end are necessary.</li>
+</ul>
+</li>
+<li>
+<p><a href="#client-application-development">Write new JavaScript modules with custom React components for the client application together with corresponding back-end code.</a></p>
+<ul>
+<li>In this case, you need to develop modules that export new React components for consumption by the client application. The modules must be embedded in an assembly and registered using back-end code (same as other components).</li>
+</ul>
+</li>
+</ol>
+<p>The admin UI doesn’t rely on location conventions to detect customizations – the structure of your custom code is therefore entirely up to you. However, there are certain deployment scenarios that benefit from specific setups. See <a href="#custom-code-location">Custom code location</a> for more information.</p>
+<h3 id="back-end-development">Back-end development</h3>
+<p>When developing the admin UI using only back-end code, you’re reusing React UI components available in the system by default. Most commonly, this will be the case when adding new <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> or applications, or writing <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">extenders</a> for existing pages.</p>
+<p>The following steps summarize the general process:</p>
+<ol type="1">
+<li>Create a new assembly dedicated to admin-related code.
+<ul>
+<li>We recommend separating admin UI custom code into a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">dedicated class library project</a>. Using separate assemblies keeps the code intended for the admin UI separate from custom code and your site implementation. It also provides a convenient place to embed compiled JS modules with client code and simplifies certain <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">advanced deployment scenarios</a>.</li>
+<li>To access all admin UI-related APIs, install the <strong>Kentico.Xperience.Admin</strong> NuGet package to the project.</li>
+</ul>
+</li>
+<li>Write the required customizations.</li>
+</ol>
+<h3 id="client-application-development">Client application development</h3>
+<p>In this case, you’re developing modules that export new React components for consumption by the client application. The module must be embedded in an assembly and registered using back-end code (same as other components).</p>
+<p>The following steps summarize the general process:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">Prepare your environment for client development</a>.</li>
+<li>Develop required client components.
+<ul>
+<li>You can make use of existing Xperience components provided by the <a href="#client-application-javascript-modules">base system modules</a>.</li>
+</ul>
+</li>
+<li>Use the components when writing the corresponding <a href="#back-end-development">back-end code</a>.</li>
+</ol>
+<h4 id="client-application-javascript-modules">Client application JavaScript modules</h4>
+<p>Xperience client components and configuration is available in the following modules:</p>
+<ul>
+<li>
+<a href="https://www.npmjs.com/package/@kentico/xperience-admin-base" target="_blank">@kentico/xperience-admin-base</a>
+<ul>
+<li>Core components and functionality, such as navigation, forms, commands, hooks, and notifications.</li>
+</ul>
+</li>
+<li>
+<a href="https://www.npmjs.com/package/@kentico/xperience-admin-components" target="_blank">@kentico/xperience-admin-components</a>
+<ul>
+<li>React UI components used to build out the client application.</li>
+</ul>
+</li>
+<li>
+<a href="https://www.npmjs.com/package/@kentico/xperience-webpack-config" target="_blank">@kentico/xperience-webpack-config</a>
+<ul>
+<li>Webpack config files for bundling client modules.</li>
+</ul>
+</li>
+</ul>
+<h3 id="custom-code-location">Custom code location</h3>
+<p>We recommend separating admin UI custom code into a dedicated class library project. Using separate assemblies keeps the code intended for the admin UI separate from custom code and your site implementation. It also provides a convenient place to embed compiled JS modules with client code and simplifies certain <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">advanced deployment scenarios</a>.</p>
+<h4 id="back-end-files">Back-end files</h4>
+<p>For custom code that only requires changes on the back end (reuses default client components and functionality) create a custom assembly and reference it from the main .NET application.</p>
+<p>All customizations are registered into the system via assembly attributes collected during application initialization, meaning there are no location conventions for admin UI code. Regardless, keeping a clean directory structure is a good practice, especially when developing larger blocks of custom functionality. </p>
+<p>For illustration, an example directory structure in the class library:</p>
+<ul>
+<li>~/&lt;UIPages&gt;/&lt;Application&gt;/&lt;PageClasses&gt;</li>
+<li>~/&lt;UIPages&gt;/&lt;Application&gt;/&lt;PageExtenders&gt;</li>
+<li>~/&lt;UIFormComponents&gt;/&lt;Name&gt;/&lt;ComponentFiles&gt;</li>
+</ul>
+<p>With other types of customizations following a similar pattern.</p>
+<h4 id="client-files">Client files</h4>
+<p>When developing custom JS modules for the client application, you can use a boilerplate project that comes with a custom assembly usable for both back-end and client code. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">Prepare your environment for admin development</a>.</p>
+<p>How you structure individual files within the modules is up to your preference. However, same as for the back-end files, we recommend keeping an organized directory structure. For example, you can create a separate folder for each type of customization.</p>
+
+</body>
+</html>

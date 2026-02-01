@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Emails</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>Xperience by Kentico allows you to prepare emails and edit their content directly in the administration interface.</p>
+<h2 id="prerequisites-and-limitations">Prerequisites and limitations</h2>
+<p>To allow the system to send out emails, developers and administrators need to set up and configure:</p>
+<ul>
+<li>One or more <a href="/documentation/developers-and-admins/configuration/email-configuration">email clients</a> for sending emails (for example an SMTP server or SendGrid integration)</li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Email channels</a></li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Content types</a> for emails</li>
+<li>Email templates – two different types of templates are available:
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Macro-based email templates</a> (edited directly in the administration)</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates">Email Builder templates</a> (prepared by developers within the project’s code) – only available for emails with the <em>Automation</em>, <em>Regular</em> and <em>Order status change</em> purposes.</li>
+</ul>
+</li>
+<li>To send <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails to subscribers</a>, the <a href="/documentation/developers-and-admins/digital-marketing-setup/enable-email-subscriptions#enable-the-email-marketing-feature">email marketing feature</a> must be enabled</li>
+</ul>
+<p>Only emails with the <a href="#email-purposes">purposes</a> described on this page can be created and edited in email channels. Other system emails are managed as <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> (for example, user password reset and registration emails) or need to be created by developers.</p>
+<h2 id="email-channels">Email channels</h2>
+<p>Emails in Xperience are created and managed within <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>. A single project may contain multiple email channels, focusing on different content strategies, languages and audience engagement techniques. Each email channel has a unique <em>sending domain</em>, which represents your company or brand, and is used in all <em>sender addresses</em> for the channel’s emails.</p>
+<p>Channels allow for a clean separation of your organization’s emails. Every email channel has <strong>its own application</strong> in the Xperience administration, where you can create and send emails.</p>
+<p></p>
+<h3 id="find-emails">Find emails</h3>
+<p>Email channel applications may contain a large number of emails. The search bar allows you to find emails with a name or content type matching the entered text.</p>
+<p>You can also <strong>Filter</strong> the list of emails to display only selected content types or items containing specific tags.</p>
+<p></p>
+<h2 id="emails-and-templates">Emails and templates</h2>
+<p>Emails created in Xperience consist of two content layers:</p>
+<ul>
+<li>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Email templates</a> – define the overall layout of emails and add fixed content, such as a header or footer. You can reuse a single template for any number of emails. Two different types of email templates are available:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Macro-based email templates</a> – edited directly in the administration. These templates contain macros that serve as placeholders for the fields of email content types, as well as system elements, such as a regular email’s unsubscribe link URL. Every email content type has a set of allowed email templates that can be selected.</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates">Email Builder templates</a> – prepared and registered by developers within the project’s code. Allow content editors to compose emails using configurable components in the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder visual interface</a>. Only available for emails with the <em>Automation</em>, <em>Regular</em> and <em>Order status change</em> purposes.</li>
+</ul>
+</li>
+<li><p><a href="#create-emails">Emails</a> – every email is based on a selected email template and content type. Email content is added into fields predefined by the selected content type, and then displayed within the template. Additionally, every email has system fields for setting standard email properties, such as the subject and sender information.</p></li>
+</ul>
+<p></p>
+<h2 id="email-purposes">Email purposes</h2>
+<p>Every email is created with one of the following purposes:</p>
+<ul>
+<li>
+<strong>Regular</strong> – emails sent as part of a regular series to subscribed recipients. See <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Send regular emails to subscribers</a> for detailed information and instructions.</li>
+<li>
+<strong>Form autoresponder</strong> – sent automatically to visitors after they submit a <a href="/documentation/business-users/digital-marketing/forms">form</a>. Also used to set up email marketing subscription when a double opt-in link is added to the content. Can be sent as part of an <a href="/documentation/business-users/digital-marketing/automation">automation process</a> that uses a form submission trigger.</li>
+<li>
+<strong>Confirmation</strong> – confirmation messages sent to users after they subscribe or unsubscribe from email marketing.</li>
+<li>
+<strong>Automation</strong> – sent out by an <a href="/documentation/business-users/digital-marketing/automation">automation process</a>. Cannot be sent manually.</li>
+<li>
+<strong>Order status change</strong> – emails automatically sent to customers when <a href="/documentation/business-users/manage-commerce-stores">commerce orders</a> are created or moved between <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses">statuses</a>.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Currently, the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder visual interface</a> is only supported for emails with the <em>Regular</em>, <em>Automation</em> or <em>Order status change</em> purposes.</p>
+</div>
+
+<h2 id="create-emails">Create emails</h2>
+<ol type="1">
+<li><p>Open an email channel application in Xperience.</p></li>
+<li><p>Select <strong>New email</strong>.</p></li>
+<li>
+<p>Fill in the email properties:</p>
+<ul>
+<li>
+<strong>Name</strong> – the name of the email displayed in Xperience (for example when selecting a form autoresponder email).</li>
+<li>
+<strong>Email purpose</strong> – select the email’s purpose (see <a href="#email-purposes">Email purposes</a>). To learn more about creating regular emails, see <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Send regular emails to subscribers</a>.</li>
+<li>
+<strong>Content type</strong> – select the <a href="/documentation/developers-and-admins/development/content-types">content type</a> for your email.</li>
+</ul>
+</li>
+<li><p>Select <strong>Continue</strong>.</p></li>
+<li><p>Choose a suitable email template (<a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates">Email Builder</a> or <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">macro-based</a>) to set the email’s layout and fixed content.</p></li>
+<li><p>Select <strong>Create</strong>.</p></li>
+<li>
+<p>Prepare the email’s content:</p>
+<ul>
+<li>
+<p>In the <strong>Content</strong> view mode, fill in the email’s fields:</p>
+<ul>
+<li><p><strong>Subject</strong> – the email’s subject line.</p></li>
+<li>
+<p><strong>Preview text</strong> – the brief text that recipients see in their inbox after the email sender information and the subject line. We recommend keeping the preview text between 40 and 100 characters (email clients only show a limited number of characters). The preview text only applies if it is included in the selected <em>Email template</em> by your developers:</p>
+<ul>
+<li>For macro-based email templates, the email body must contain a suitably placed <code>{%previewtext%}</code> <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates#email-template-macros">placeholder</a>.</li>
+<li>For Email Builder templates, see <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#email-preview-text-support">Email preview text support</a> for more information.</li>
+</ul>
+</li>
+<li><p>Other email content fields are available depending on the selected content type. Typically, there will be one or more fields where you can use the <a href="/documentation/business-users/rich-text-editor">Rich text editor</a> to create the email content.</p></li>
+<li>
+<p>In many cases, emails will have fields that allow you to add content by selecting <strong>reusable content items</strong> (blocks of text, images, etc.). See <a href="/documentation/business-users/content-hub">Content hub</a> to learn more.<br>
+</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Secured content items</strong></p>
+When selecting reusable content items, note that secured items with the <strong>Requires authentication</strong> flag enabled are not included in emails. If you send an email containing secured items, the corresponding content will be missing in the email.
+</div>
+
+
+<div>
+
+</div>
+<div>
+Xperience by Kentico integrates AI features that allow you to generate content suggestions for email subjects and content fields. To learn how to get access and use the AI features, see <a href="/documentation/developers-and-admins/configuration/aira-configuration">Artificial intelligence features</a>.
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>If using an Email Builder template, you can compose the email’s content using configurable components in the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder view mode</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email language</strong></p>
+All emails within an email channel use the same <a href="/documentation/developers-and-admins/configuration/languages">language</a>. If you wish to send emails in another language, you need to switch to a different email channel. Your project’s administrators need to prepare an email channel for every language that you wish to use.
+</div>
+</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong> and then <strong>Continue</strong>.</p></li>
+<li><p>In the <strong>Properties</strong> panel, select a <strong>Sender</strong> (senders are predefined for the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>).</p></li>
+<li><p>Select <strong>Save</strong> in the <strong>Properties</strong> panel.</p></li>
+</ol>
+<p>When you create a new email, it is not immediately available for sending. To continue, you need to adjust the email’s workflow status.</p>
+<h3 id="email-lifecycle">Email lifecycle</h3>
+<p>When viewing an email in an email channel application, you can find the current status at the end of the administration breadcrumbs navigation, and the available action in the upper right corner of the view.</p>
+<p></p>
+<p>Emails with the <strong>Form autoresponder</strong>, <strong>Confirmation</strong>, <strong>Automation</strong> or <strong>Order status change</strong> <a href="#email-purposes">purpose</a> can have one of the following statuses:</p>
+<ul>
+<li> <strong>Draft (Initial)</strong> – new emails that have never been published.
+<ul>
+<li>Cannot be sent until you use the <strong>Publish</strong> action to move the email to the <em>Published</em> status.</li>
+</ul>
+</li>
+<li> <strong>Published</strong> – emails that are ready to be sent.
+<ul>
+<li>Displayed as read-only and cannot be edited. If you wish to modify the email, use the <strong>Edit email</strong> action to change the status to <em>Draft</em>.</li>
+</ul>
+</li>
+<li> <strong>Draft (New version)</strong> – emails that have already been published, but a new version is being edited.
+<ul>
+<li>If the system needs to send an email while it is in the <em>Draft</em> status (e.g., a form autoresponder), the previously published content and properties are used.</li>
+<li>You can edit the email’s content or properties and <strong>Save</strong> the changes.</li>
+<li>When the editing is complete, use the <strong>Publish</strong> action to overwrite the previously published content and move back to the <em>Published</em> status.</li>
+<li>You can revert back to the previously published content at any time. Expand the available actions drop-down and select <strong>Revert to published</strong>.</li>
+</ul>
+</li>
+<li>
+<strong>Custom workflow step</strong> – emails can go through custom workflow steps before they are ready to be sent (“between” the <em>Draft</em> and <em>Published</em> status). To learn more about these steps, see <a href="/documentation/developers-and-admins/configuration/workflows">workflows</a>. The email works as if in the <em>Draft</em> status until the workflow step is changed to <em>Published</em>.</li>
+</ul>
+<p>Emails with the <strong>Regular</strong> purpose are sent only once to a specific list of recipients, and <strong>have a different workflow cycle</strong>. See <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Send regular emails to subscribers</a> to learn more.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Linked content items and workflow</strong></p>
+<p>In many cases, your emails will have fields or Email Builder component properties that allow you to add content by selecting <strong>reusable content items</strong> (blocks of text, images, etc.). Every linked content item has its own workflow status. If you send an email that contains unpublished content items, the corresponding content will be missing in the email.</p>
+<p>When publishing an email with fields linking to reusable content items or pages, the cascade publishing dialog opens. You can view all linked items that are currently not in the <em>Published</em> status. Select any of the listed items to publish them together with the email. See <a href="/documentation/business-users/content-hub/content-items#cascade-publishing">Content hub</a> to learn more.</p>
+</div>
+
+<h3 id="edit-emails">Edit emails</h3>
+<p>When editing an email in an email channel application, you can switch between view modes in the options panel on the right:</p>
+<ul>
+<li>
+<strong>Preview</strong> – allows you to see 3 different views (<em>desktop</em>, <em>mobile</em>, <em>inbox</em>) of the email content as it will appear to recipients, including the fixed content from the email template. Any <a href="#personalize-emails-with-dynamic-text">personalized dynamic text</a> in the email appears as it would for a fake recipient named <em>John Doe</em>.</li>
+<li>
+<strong>Content</strong> – allows you to edit the email content fields, as well as the email’s subject and preview text. While in the <em>Content</em> view mode, you can expand the following panels:
+<ul>
+<li>
+<strong>Properties</strong> – to adjust the email properties, i.e., the email’s template and sender information.</li>
+<li>
+<strong>Plain text</strong> – to enter the plain text version of the email’s content. The plain text must combine content from all of the email’s fields, as well as static text contained in the template. Adding plain text content improves the deliverability of emails. Some recipients may prefer plain text emails, and certain email clients only accept plain text.</li>
+</ul>
+</li>
+<li>
+<strong>Email Builder</strong> – allows you to compose the email’s content using configurable components in a visual interface. Only available for emails with the <em>Automation</em>, <em>Regular</em> and <em>Order status change</em> <a href="#email-purposes">purposes</a>. For detailed information, see <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Create emails in Email Builder</a>. While in the <em>Email Builder</em> view mode, you can access the <em>Properties</em> panel to adjust the email’s sender information.</li>
+<li>
+<strong>Statistics</strong> – displays statistics tracked for the email, including the number of sent emails, email opens and clicked links. These statistics are anonymous, collected without connecting actions to individual recipients. See <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">Track email statistics</a>.</li>
+<li>
+<strong>Contact activities</strong> – displays actions performed by individual email recipients, specifically link clicks. Depending on your project’s <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking/log-email-activities">implementation</a>, email activities are only logged for recipients who agree to be tracked, for example based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>). This can result in discrepancies between the number of logged activities and the email’s overall statistics, which are anonymously logged for all recipients.</li>
+</ul>
+<h3 id="personalize-emails-with-dynamic-text">Personalize emails with dynamic text</h3>
+<p>Emails allow you to include personalized pieces of text based on information known about the recipient or data relevant to the email’s context.</p>
+<p>You can add dynamic text while editing emails in an email channel application. Dynamic text is supported for text fields in <strong>Content</strong> view mode (fields that use a <em>Text input</em>, <em>Text area</em> or <em>Rich text editor</em> form component in the <a href="/documentation/developers-and-admins/development/content-types">content type</a> configuration), and also in the <strong>Plain text</strong> dialog.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Dynamic text not supported in Email Builder</strong></p>
+<p>Dynamic text is not supported for the content of rich text editors or component properties in <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder view mode</a>.</p>
+</div>
+
+<p>Add dynamic text by entering or copying placeholders into the appropriate location within email fields:</p>
+<ul>
+<li>For most email <a href="#email-purposes">purposes</a>, the following placeholders are available:
+<ul>
+<li>
+<strong>{{FirstName}}</strong> – the recipient’s first name</li>
+<li>
+<strong>{{LastName}}</strong> – the recipient’s last name</li>
+<li>
+<strong>{{Email}}</strong> – the recipient’s email address</li>
+</ul>
+</li>
+<li>For <em>Order status change</em> emails, the available placeholders are different, and instead allow you to access the data of the given customer’s <a href="/documentation/business-users/manage-commerce-stores">order</a>.</li>
+</ul>
+<p>Optionally, you can add a backup text to any placeholder in the following format: <strong>{{FirstName, backup}}</strong>. The backup text is displayed when the system doesn’t have the given value available for the recipient.</p>
+<p></p>
+<p>For <strong>Rich text editor</strong> fields, you can alternatively add dynamic text via the editor toolbar:</p>
+<ol type="1">
+<li>Place the cursor to the desired location within a rich text field and select <strong>Insert Dynamic Text</strong> () on the editor toolbar.</li>
+<li>Fill in the dialog:
+<ul>
+<li>
+<strong>Recipient attribute</strong> – select the recipient attribute or order value that will be displayed.</li>
+<li>
+<strong>Backup text</strong> – text displayed to recipients who do not have a value available for the selected attribute.</li>
+</ul>
+</li>
+<li>Select <strong>Insert</strong>.</li>
+</ol>
+<p></p>
+<p>The rich text field now contains a highlighted piece of dynamic text, showing the selected recipient attribute. You cannot modify dynamic text after it has been added. If you need to make adjustments, delete the text and add it again with the required values.</p>
+<p>When sending emails to specific recipients, the system replaces dynamic text with information available for the recipient.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Sources for dynamic text values</strong></p>
+<p>When replacing dynamic text values for individual recipients, the system loads the information based on the email’s <a href="#email-purposes">purpose</a>:</p>
+<ul>
+<li>For <em>Regular</em> and <em>Confirmation</em> emails, the email attempts to get the values from the <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> representing the recipient.</li>
+<li>For <em>Form autoresponder</em> emails, the values are loaded from the matching fields of the submitted form. If fields are not available for the <em>First</em> or <em>Last name</em>, the email attempts to get the values from the contact representing the recipient.</li>
+<li>For <em>Automation</em> emails, the values are loaded from the matching fields of the form whose submission triggered the <a href="/documentation/business-users/digital-marketing/automation">automation process</a>. If the process isn’t triggered by a form submission or such fields are not available, the email attempts to get the values from the processed contact.</li>
+<li>For <em>Order status change</em> emails, the placeholders values are always loaded from the data of the related commerce <a href="/documentation/business-users/manage-commerce-stores">order</a>.</li>
+</ul>
+</div>
+
+<h3 id="send-draft-emails">Send draft emails</h3>
+<p>You can preview and test your emails by sending a draft version to any address.</p>
+<ol type="1">
+<li><p>Select the email in an email channel application.</p></li>
+<li><p>Make sure there are no unintended changes in the email’s content. The system automatically saves the email when sending a draft.</p></li>
+<li><p>In the <strong>Content</strong> view mode, select <strong>Send draft</strong> from the drop-down list in the upper right corner of the view.<br>
+</p></li>
+<li>
+<p>Enter the email addresses where you want to send the draft.</p>
+<ul>
+<li>By default, the <em>To</em> field is prefilled with the email address of your user account.</li>
+<li>You can enter multiple email addresses separated by semicolons (;).</li>
+</ul>
+</li>
+<li><p>Select <strong>Send</strong>.</p></li>
+</ol>
+<p>Draft emails differ from normally sent emails in the following ways:</p>
+<ul>
+<li>The email content is sent based on the latest edited status of the email, even if the changes are not published. Normally sent emails always contain the published version of the email content.</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">Email statistics</a> are not tracked for drafts.</li>
+<li>Because the recipients are not linked to contacts in the system, any <a href="#personalize-emails-with-dynamic-text">personalized dynamic text</a> in the email appears as it would for a fake recipient named <em>John Doe</em>.</li>
+<li>Certain features, such as <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">unsubscription links</a>, are not functional in draft emails.</li>
+</ul>
+<h3 id="clone-emails">Clone emails</h3>
+<p>When creating new emails, you can save time by reusing the content and settings of an existing email.</p>
+<ol type="1">
+<li>In an email channel application, view the list of emails.</li>
+<li>Select the <strong>Clone</strong> () action next to the email that you want to reuse.</li>
+<li>Select <strong>Clone</strong> in the confirmation dialog.</li>
+</ol>
+<p>You can also <strong>Clone</strong> an email by using the drop-down list in the upper right corner in the <strong>Content</strong> view mode of the email you’d like to reuse.</p>
+<p>The application creates a new email with the same content and properties as the original. Adjust the new email’s subject, content, sender, and any other properties as required.</p>
+<h3 id="send-regular-emails-to-subscribed-recipients">Send regular emails to subscribed recipients</h3>
+<p><em>Regular</em> emails provide additional options that allow you to send the email to contacts in a selected recipient list.</p>
+<p>For detailed information about this scenario, see <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Send regular emails to subscribers</a>.</p>
+<h3 id="send-form-autoresponder-emails">Send form autoresponder emails</h3>
+<p>After you create one or more <em>Form autoresponder</em> emails, you can assign them to the autoresponder of a form:</p>
+<ol type="1">
+<li>Open the <strong>Forms</strong> application in Xperience.</li>
+<li>Select the form in the list.</li>
+<li>Select <strong>Autoresponder</strong> in the options panel on the right.</li>
+<li>Pick an autoresponder email from the list.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>Whenever a user submits the form on your website, the system automatically sends them an email with the specified content and properties.</p>
+<h4 id="set-up-automation-processes">Set up automation processes</h4>
+<p>If you wish to set up a more advanced email scenario when a form is submitted, you can create an <a href="/documentation/business-users/digital-marketing/automation">automation process</a> in the <strong>Automation</strong> tab. This allows you to send a series of multiple emails, add waiting intervals, or send different emails based on conditions.</p>
+<p><strong>Send email</strong> steps in automation processes support the following email purposes:</p>
+<ul>
+<li>
+<strong>Form autoresponder</strong> – for scenarios where the process is triggered by an <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">email subscription form</a>. Use the <em>Form autoresponder</em> email to send the double opt-in link used to confirm the subscription. Typically, this is the first email sent by the automation process.</li>
+<li>
+<strong>Automation</strong> – for all other emails sent as part of the automation process.</li>
+</ul>
+<p>Once completed and enabled, the automation process is then triggered for any user who submits the form.</p>
+
+</body>
+</html>

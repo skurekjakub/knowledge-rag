@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Customize order creation</title>
+</head>
+<body>
+<p>The <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/order-creation">order creation service</a> provides several mapper interfaces that allow you to customize the order creation process without modifying core functionality. Use these interfaces to add <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">custom fields</a> to orders, customers, addresses, and order items, or to modify data before it’s persisted to the database.</p>
+<h2 id="when-to-customize">When to customize</h2>
+<p>Consider implementing custom mappers when you need to:</p>
+<ul>
+<li>Store additional business-specific data on orders, customers, or addresses</li>
+<li>Calculate or derive values during order creation (loyalty points, customer segments, etc.)</li>
+<li>Integrate with external systems and store integration metadata</li>
+<li>Apply custom business rules before persisting order data</li>
+<li>Maintain audit trails or custom tracking information</li>
+</ul>
+<h2 id="customer-information-mapping">Customer information mapping</h2>
+<p>Implement <code>ICustomerInfoMapper&lt;TOrderData&gt;</code> to add custom fields to customer records or modify customer data during order creation.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom customer mapper</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Maps custom fields to customer records during order creation.
+/// Only called when creating new customers, not for existing ones.
+/// &lt;/summary&gt;
+public class CustomCustomerInfoMapper : ICustomerInfoMapper&lt;CustomOrderData&gt;
+{
+    public CustomerInfo PopulateInfo(CustomerInfo customerInfo, CustomOrderData orderData)
+    {
+        // Add custom logic to populate additional customer fields
+        // Example: customerInfo.SetValue("CustomerLoyaltyPoints", orderData.LoyaltyPoints);
+
+        return customerInfo;
+    }
+}</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Important</strong>: Custom mappers are called only when creating new customer records. If an existing customer is found (by member ID or email), the mapper is not invoked. To update existing customer data, you need to implement separate customer update logic outside the order creation process.</p>
+</div>
+
+<h3 id="registration">Registration</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Register in the application IoC container
+builder.Services.AddTransient&lt;ICustomerInfoMapper&lt;CustomOrderData&gt;, CustomCustomerInfoMapper&gt;();
+</code></pre>
+</div>
+
+<h2 id="order-information-mapping">Order information mapping</h2>
+<p>Implement <code>IOrderInfoMapper&lt;TOrderData, TPriceCalculationResult&gt;</code> to add custom fields to order records. This mapper has access to both the order data and the price calculation result, allowing you to store calculated values or metadata with the order.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom order mapper</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Maps custom fields to order records.
+/// Has access to both order data and price calculation results.
+/// &lt;/summary&gt;
+public class CustomOrderInfoMapper : IOrderInfoMapper&lt;CustomOrderData, PriceCalculationResult&gt;
+{
+    public OrderInfo PopulateInfo(
+        OrderInfo orderInfo,
+        CustomOrderData orderData,
+        PriceCalculationResult calculationResult)
+    {
+        // Add custom logic to populate additional order fields
+
+        // Examples
+        orderInfo.SetValue("OrderAdditionalNotes", orderData.AdditionaNotes);
+        orderInfo.SetValue("OrderGiftMessage", orderData.GiftMessage);
+
+        return orderInfo;
+    }
+}</code></pre>
+</div>
+
+<h3 id="registration-1">Registration</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Register in the application IoC container
+builder.Services.AddTransient(typeof(IOrderInfoMapper&lt;,&gt;),
+    typeof(CustomOrderInfoMapper&lt;,&gt;));
+</code></pre>
+</div>
+
+<h2 id="address-mapping">Address mapping</h2>
+<p>Implement <code>ICustomerAddressInfoMapper&lt;TAddressDto&gt;</code> or <code>IOrderAddressInfoMapper&lt;TAddressDto&gt;</code> to add custom fields to address records. Both customer addresses and order addresses can be extended independently.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom address mapper</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Maps custom fields to order address records.
+/// &lt;/summary&gt;
+public class CustomAddressInfoMapper : IOrderAddressInfoMapper&lt;CustomAddressDto&gt;
+{
+    public OrderAddressInfo PopulateInfo(
+        OrderAddressInfo orderAddressInfo,
+        CustomAddressDto addressDto)
+    {
+        // Add custom logic to populate additional address fields
+
+        // Examples
+        orderAddressInfo.SetValue("AddressDeliveryNotes", addressDto.DeliveryNotes);
+
+        return orderAddressInfo;
+    }
+
+    public CustomAddressDto PopulateDto(CustomAddressDto addressDto, OrderAddressInfo orderAddressInfo)
+    {
+        // Reverse mapping if needed for reading order addresses
+        return addressDto;
+    }
+}</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Address comparison</strong>: When checking for duplicate customer addresses, the service uses all fields including custom fields in the comparison. Ensure your custom fields are appropriate for duplicate detection, or implement custom comparison logic if needed.</p>
+</div>
+
+<h3 id="registration-2">Registration</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Register in the application IoC container
+builder.Services.AddTransient&lt;IOrderAddressInfoMapper&lt;CustomAddressDto&gt;, CustomAddressInfoMapper&gt;();
+</code></pre>
+</div>
+
+<h2 id="order-item-mapping">Order item mapping</h2>
+<p>Implement <code>IOrderItemInfoMapper&lt;TOrderData, TPriceCalculationResult&gt;</code> to add custom fields to order items. This is useful for storing product-specific metadata or configuration data with each line item.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom order item mapper</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Maps custom fields to order item records.
+/// Useful for product configuration, warranty selections, etc.
+/// &lt;/summary&gt;
+public class CustomOrderItemInfoMapper : IOrderItemInfoMapper&lt;CustomOrderData, PriceCalculationResult&gt;
+{
+    public OrderItemInfo PopulateInfo(
+        OrderItemInfo orderItemInfo,
+        CustomOrderData orderData,
+        PriceCalculationResult calculationResult,
+        ProductIdentifier productIdentifier)
+    {
+        // Add custom logic to populate additional order item fields
+
+        // Examples
+        orderItemInfo.SetValue("ItemWarrantyMonths", 24);
+        orderItemInfo.SetValue("ItemConfiguration", "CustomConfig");
+
+        return orderItemInfo;
+    }
+}</code></pre>
+</div>
+
+<h3 id="registration-3">Registration</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Register in the application IoC container
+builder.Services.AddTransient(typeof(IOrderItemInfoMapper&lt;,&gt;), typeof(CustomOrderItemInfoMapper&lt;,&gt;)); 
+</code></pre>
+</div>
+
+<h2 id="price-calculation-customization">Price calculation customization</h2>
+<p>Implement <code>IPriceCalculationRequestMapper&lt;TPriceCalculationRequest, TOrderData&gt;</code> to add custom data to <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization#extend-data-transfer-objects">price calculation requests</a> before prices are calculated. This allows you to influence the pricing calculation with order-specific context.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom calculation request mapper</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Maps custom data to price calculation requests.
+/// Allows passing order-specific context to pricing calculations.
+/// &lt;/summary&gt;
+public class CustomCalculationRequestMapper : IPriceCalculationRequestMapper&lt;PriceCalculationRequest, CustomOrderData&gt;
+{
+    public PriceCalculationRequest PopulateCalculationRequest(
+        PriceCalculationRequest calculationRequest,
+        CustomOrderData orderData)
+    {
+        // Add custom logic to modify the calculation request
+
+        // Example: Add customer tier for tiered pricing
+        // Example: Add promotional context or B2B contract information
+
+        return calculationRequest;
+    }
+}</code></pre>
+</div>
+
+<p>For more information on customizing the price calculation pipeline itself, see <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization">Customize price calculation</a>.</p>
+<h3 id="registration-4">Registration</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Register in the dependency injection container
+builder.Services
+    .AddTransient(typeof(IPriceCalculationRequestMapper&lt;,&gt;), typeof(CustomCalculationRequestMapper&lt;,&gt;));
+</code></pre>
+</div>
+
+<h2 id="extending-order-data">Extending order data</h2>
+<p>To use custom fields in your mappers, extend the <code>OrderData</code> class and use your custom class throughout your order creation implementation:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom order data</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Extended order data with custom fields.
+/// &lt;/summary&gt;
+public class CustomOrderData : OrderData
+{
+    public int LoyaltyPoints { get; set; }
+    public string AdditionaNotes { get; set; } = string.Empty;
+    public string GiftMessage { get; set; } = string.Empty;
+}</code></pre>
+</div>
+
+<p>You can also extend address DTOs to add custom address fields:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Custom address DTO</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Extended address DTO with delivery notes field.
+/// &lt;/summary&gt;
+public record CustomAddressDto : AddressDto
+{
+    public string DeliveryNotes { get; set; } = string.Empty;
+}</code></pre>
+</div>
+
+<p>Update your controller to use the custom order data type:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Using custom order data</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Example controller using custom order data type.
+/// Shows how to create orders with custom fields.
+/// &lt;/summary&gt;
+public class CustomCheckoutController : Controller
+{
+    private readonly IOrderCreationService&lt;CustomOrderData, PriceCalculationRequest,
+        PriceCalculationResult, AddressDto&gt; orderCreationService;
+
+    public CustomCheckoutController(
+        IOrderCreationService&lt;CustomOrderData, PriceCalculationRequest,
+            PriceCalculationResult, AddressDto&gt; orderCreationService)
+    {
+        this.orderCreationService = orderCreationService;
+    }
+
+    public async Task&lt;IActionResult&gt; CreateOrder(CancellationToken cancellationToken)
+    {
+        var orderData = new CustomOrderData
+        {
+            // Populates standard fields
+            MemberId = 1,
+            OrderNumber = "ORD-2024-0001",
+            LanguageName = "en",
+            BillingAddress = new AddressDto
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john@example.com",
+                Line1 = "123 Main St",
+                City = "New York",
+                Zip = "10001",
+                CountryID = 1,
+                StateID = 1
+            },
+            OrderItems =
+            [
+                new OrderItem
+                {
+                    ProductIdentifier = new ProductIdentifier { Identifier = 123 },
+                    Quantity = 2
+                }
+            ],
+            
+            // Populates custom fields
+            LoyaltyPoints = 150,
+            GiftMessage = "Happy Birthday!"
+        };
+
+        int orderId = await orderCreationService.CreateOrder(orderData, cancellationToken);
+        return RedirectToAction("Confirmation", new { orderId });
+    }
+}</code></pre>
+</div>
+
+
+</body>
+</html>

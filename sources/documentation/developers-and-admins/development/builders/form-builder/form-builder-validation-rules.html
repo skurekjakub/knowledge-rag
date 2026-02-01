@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form Builder validation rules</title>
+</head>
+<body>
+<p>Validation rules restrict the values that can be submitted into <a href="/documentation/business-users/digital-marketing/forms">form</a> fields. For example, validation can limit the maximum allowed text length or the highest number a user can enter into a field.</p>
+<p>To learn how to add validation rules to fields in the Form Builder interface, see <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#field-validation">Field validation</a>.</p>
+<p>The system provides a basic set of validation rules by default, and also allows developers to define custom rules suitable for project-specific scenarios.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Validation of empty values</strong></p>
+<p>The system does not trigger validation rules for form fields that are submitted with an unfilled value. If you wish to enforce user input for a particular field, mark it as <strong>Required</strong> in the field’s <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#field-properties">properties dialog</a>.</p>
+</div>
+
+<h2 id="define-custom-validation-rules">Define custom validation rules</h2>
+
+<div>
+
+</div>
+<div>
+<p>Classes related to Form Builder validation rules are located in the <code>Kentico.Forms.Web.Mvc</code> namespace.</p>
+<p>The system also contains <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validation rules for admin UI form components</a> with classes in the <code>Kentico.Xperience.Admin.Base.Forms</code> namespace. The two types of validations rules serve different purposes.</p>
+</div>
+
+<p>To develop a Form Builder validation rule, create the following:</p>
+<ol type="1">
+<li>
+<a href="#properties-class">Properties class</a> – defines properties that parameterize the validation rule’s behavior and provides the configuration interface for the rule in the Form Builder UI.</li>
+<li>
+<a href="#validation-rule-class">Validation rule class</a> – contains the rule’s validation logic.</li>
+</ol>
+<p>All validation rules must also be <a href="#register-validation-rules">registered</a> in the system.</p>
+<p>Validation rules are <strong>strongly typed</strong>. For example, a rule defined for the <code>int?</code> type can only be applied to fields that use a <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form component</a> of the corresponding type.</p>
+<h3 id="properties-class">Properties class</h3>
+<p>Properties provide configuration options that modify the behavior of the validation rule. For example, a validation rule that enforces a maximum number of characters would have a property that allows form editors to set the maximum text length.</p>
+<ol type="1">
+<li>Create a class that inherits from <code>FormValidationRuleProperties</code>.</li>
+<li>Add a property to the class for each configuration option.</li>
+<li>Define the interface for the configuration options by decorating the properties with the attributes of corresponding <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">admin UI form components</a>.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a> to learn more.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Forms.Web.Mvc;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+// Validation rule properties class with a text and integer configuration option
+public class CustomFormValidationRuleProperties : FormValidationRuleProperties
+{
+    [TextInputComponent(Label = "Text value", Order = 0)]
+    // Marked as required, so the rule cannot be added without setting a value for the property
+    [RequiredValidationRule]
+    public string RuleTextProperty { get; set; }
+
+    [NumberInputComponent(Label = "Number value", Order = 1)]
+    [RequiredValidationRule]
+    public int RuleNumberProperty { get; set; }
+}
+</code></pre>
+</div>
+
+<h3 id="validation-rule-class">Validation rule class</h3>
+<p>The validation rule class contains the core validation logic that evaluates whether a submitted field value meets the rule’s requirements.</p>
+<ol type="1">
+<li>Create a validation rule class that inherits from <code>SingleFieldFormValidationRule&lt;TProperties, TValue&gt;</code>.
+<ul>
+<li>Substitute the <code>TProperties</code> generic with the type of the rule’s <a href="#properties-class">properties class</a>.</li>
+<li>Substitute the <code>TValue</code> generic with the <code>System.Type</code> of the <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form components</a> for which the rule is applicable (e.g., basic data types such as <code>string</code> or <code>int</code>). Nullable types such as <code>int?</code> are supported. For example, the <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">default Form Builder form components</a> for numeric inputs use nullable types.</li>
+</ul>
+</li>
+<li>Override the <code>Validate</code> method and implement the rule’s validation logic:
+<ul>
+<li>The <code>value</code> parameter contains the submitted value of the field.</li>
+<li>Return <code>true</code> to indicate that the value is valid or <code>false</code> if the validation fails.</li>
+</ul>
+</li>
+<li>(Optional) Override the <code>GetDefaultErrorMessage</code> method to set the rule’s default error message.
+<ul>
+<li>The default error message is used if another message is not entered when applying the rule to a specific form field.</li>
+<li>The default error message text can be <a href="/documentation/developers-and-admins/customization/admin-ui-localization">localized</a> using <code>ILocalizationService</code>.</li>
+<li>The error message (default or field-specific) is displayed to users when they attempt to submit an invalid value, and also in the list of applied validation rules when viewing field configuration in the Form Builder interface. For example: “The value must be between 1 and 100”.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.Forms.Web.Mvc;
+
+ using System.Threading;
+ using System.Threading.Tasks;
+
+ public class CustomFormValidationRule : SingleFieldFormValidationRule&lt;CustomFormValidationRuleProperties, string&gt;
+ {
+     // Defines the rule's validation logic
+     protected override Task&lt;bool&gt; Validate(string value, CancellationToken cancellationToken)
+     {
+         return Task.FromResult(true);
+     }
+
+     // Sets the error message used if one is not specified when applying the rule to a specific form field
+     // Allows you to generate a message containing the specified rule property values
+     public override Task&lt;string&gt; GetDefaultErrorMessage()
+     {
+         return Task.FromResult("Validation failed. Please adjust the value.");
+     }
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+You can access the values of the rule’s configurable <a href="#properties-class">properties</a> through the <code>Properties</code> property of the validation rule base class.
+</div>
+
+
+<div>
+
+</div>
+<div>
+For a more complete implementation of a validation rule, see the <a href="#example">Example</a>.
+</div>
+</li>
+</ol>
+<h2 id="register-validation-rules">Register validation rules</h2>
+<p>To register a validation rule, use the <code>RegisterFormBuilderValidationRule</code> assembly attribute. This attribute ensures the validation rule is recognized by the system and available in the <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">Form Builder interface</a>. When registering rules, specify the following parameters for the attribute:</p>
+<ul>
+<li>
+<strong>identifier</strong> – a unique <code>string</code> identifier of the validation rule. We recommend using a unique prefix in your identifiers to prevent conflicts when deploying components to other projects. For example, use prefixes matching your company’s name.</li>
+<li>
+<strong>ruleType</strong> – the <code>System.Type</code> of the <a href="#validation-rule-class">validation rule class</a>.</li>
+<li>
+<strong>name</strong> – the name displayed when selecting validation rules for form fields in the administration interface.</li>
+<li>(Optional) <strong>description</strong> – a user-friendly description of the validation rule. Displayed when adding validation rules in the administration interface.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Both the <strong>name</strong> and the <strong>description</strong> parameters can be <a href="/documentation/developers-and-admins/customization/admin-ui-localization">localized</a> using resource string keys. Use a string value in format <code>{$my.resource.string.key$}</code>.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Validation rule registration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Forms.Web.Mvc;
+
+// Registers the validation rule
+[assembly: RegisterFormBuilderValidationRule(
+    identifier: "Acme.CustomValidationRule",
+    ruleType: typeof(CustomValidationRule),
+    name: "Custom validation",
+    description: "Contains custom validation logic.")]
+</code></pre>
+</div>
+
+<p>The validation rule is now registered in the system. Users can include it when <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#field-validation">configuring field validation</a> on the <strong>Form Builder</strong> tab of the <strong>Forms</strong> application.</p>
+<h2 id="example">Example</h2>
+<p>The following example demonstrates the implementation of a validation rule that checks if a submitted number lies within a specified closed interval. The example implements the rule for fields using a <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form component</a> with the <code>int?</code> type:</p>
+<p>First, create a properties class that allows users to configure the bounds of the interval when adding the validation rule:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Validation rule properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Forms.Web.Mvc;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class IntervalFormValidationRuleProperties : FormValidationRuleProperties
+{
+    // Property for setting the minimum value of the interval
+    // Marked as required, so the rule cannot be added without setting a value
+    // Must be at least 1 in this example
+    [NumberInputComponent(Label = "Minimum value}", Order = 0)]
+    [RequiredValidationRule]
+    [MinimumIntegerValueValidationRule(1)]
+    public int MinimumValue { get; set; }
+
+    // Property for setting the maximum value of the interval
+    // Marked as required, so the rule cannot be added without setting a value
+    [NumberInputComponent(Label = "Maximum value", Order = 1)]
+    [RequiredValidationRule]
+    public int MaximumValue { get; set; }
+}
+</code></pre>
+</div>
+
+<p>Continue by creating the validation rule class with the required logic, together with the attribute that <a href="#register-validation-rules">registers</a> the rule into the system.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Validation rule class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Forms.Web.Mvc;
+
+using System.Threading;
+using System.Threading.Tasks;
+
+// Registers the validation rule
+[assembly: RegisterFormBuilderValidationRule(
+    identifier: "Acme.IntervalValidationRule",
+    ruleType: typeof(IntervalFormValidationRule),
+    name: "Interval validation",
+    description: "Checks whether the input lies within the specified closed interval.")]
+
+public class IntervalFormValidationRule : 
+    SingleFieldFormValidationRule&lt;IntervalFormValidationRuleProperties, int?&gt;
+{
+    // Defines the rule's validation logic
+    protected override Task&lt;bool&gt; Validate(int? value, CancellationToken cancellationToken)
+    {
+        // Validation is not performed if the value is null
+        // To enforce user input for a particular field, mark the field as 'Required' instead of using validation rules
+        if (value is null)
+        {
+            return Task.FromResult(true);
+        }
+
+        // Returns true if the component's value lies between the specified bounds
+        return Task.FromResult((Properties.MinimumValue &lt;= value) &amp;&amp; (value &lt;= Properties.MaximumValue));
+    }
+
+    // Sets the error message used if one is not specified when applying the rule to a specific form field
+    public override Task&lt;string&gt; GetDefaultErrorMessage()
+    {
+        return Task.FromResult($"The value must lie between [{Properties.MinimumValue};{Properties.MaximumValue}].");
+    }
+}
+</code></pre>
+</div>
+
+<p>The rule is now available when configuring validation in the Form Builder interface for fields based on a form component with the <code>int?</code> type. When applied, the rule ensures that the given form can only be submitted if the field contains a number within the specified interval.</p>
+
+</body>
+</html>

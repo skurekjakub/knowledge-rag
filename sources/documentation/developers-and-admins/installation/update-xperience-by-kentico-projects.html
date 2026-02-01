@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Update Xperience by Kentico projects</title>
+</head>
+<body>
+<p>We recommend that you update your Xperience by Kentico projects regularly. Updates are released in the form of:</p>
+<ul>
+<li>
+<strong>Hotfixes</strong> – weekly fixes of issues and reported security vulnerabilities. May include improvements that increase the system’s security against potential threats.</li>
+<li>
+<strong>Refreshes</strong> – more extensive updates that add new features, introduce changes, and fix issues. Refreshes are planned for every month, but the release schedule may vary depending on the features included in each refresh.</li>
+</ul>
+<p>Check the <a href="/documentation/changelog">Changelog</a> for additional details, workarounds and instructions related to individual update versions.</p>
+<p>In rare cases, <strong>Refreshes</strong> (only major version updates) may contain breaking changes to the codebase, typically for obsolete or infrequently-used code. Check the <em>Breaking changes</em> sections of the <em>Changelog</em> to see if your codebase or other important functionality is affected.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Update automation</strong></p>
+<p>While the instructions on this page can be followed and performed manually, it is also possible to automate all steps of the Xperience by Kentico update process using various types of automation tools, release management software, pipelines or scripts.</p>
+</div>
+
+<h2 id="update-process-overview">Update process overview</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Before updating</strong></p>
+<ul>
+<li>Create a backup of your Xperience database, project folder and the folder where you store assets (<strong>~/assets</strong> by default). In case of a failed update, use these backups to restore your environment to its original state to prevent inconsistent data.</li>
+<li>When updating a development project with <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> enabled, familiarize yourself with the <a href="#update-development-projects-with-continuous-integration">Update instructions for CI</a>.</li>
+</ul>
+</div>
+
+<p>Start by performing the update on a local development instance of your Xperience project:</p>
+<ol type="1">
+<li>
+<a href="#update-nuget-packages">Update the project’s Xperience NuGet packages</a>.</li>
+<li>
+<a href="#update-data-and-files">Update the project’s database and files</a>.</li>
+</ol>
+<p>After you successfully test the update locally, you can apply the update to your Xperience application’s production deployment. The following steps outline the general approach, but the exact process will depend on your deployment flow and hosting environment.</p>
+<ol type="1">
+<li>Temporarily stop your production application (provide a suitable offline page) or prepare a staging deployment that you can later swap.</li>
+<li>Deploy the <a href="#update-nuget-packages">updated web project</a> to your production or staging environment.</li>
+<li>Perform the <a href="#update-data-and-files">database and file update</a> for your production environment.
+<ul>
+<li>There are various ways to run the update command, depending on your deployment process and environment. For example, from a deployment pipeline, a local project with a “production” configuration that connects to the production database and file system, or if possible directly on the target environment.</li>
+<li>For deployed applications containing built assemblies, run the following <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-run#description" target="_blank">dotnet</a> command (replace the assembly with the name of your Xperience project’s DLL):
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  dotnet myxperienceproject.dll --kxp-update
+  </code></pre>
+</div>
+</li>
+<li>To skip the database backup prompt in an automated environment, add the <code>--skip-confirmation</code> parameter to the update command.</li>
+</ul>
+</li>
+<li>Finalize the update (relaunch the stopped production application, swap your staging and production slots, etc.).</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>In addition to updating individual projects, we also recommend updating the templates used for installing new projects. See <a href="#update-project-templates">Update project templates</a>.</p>
+</div>
+
+<h3 id="update-nuget-packages">Update NuGet packages</h3>
+<p>To update your project’s Xperience code libraries and administration:</p>
+<ol type="1">
+<li><p>Open your application in <strong>Visual Studio</strong>.</p></li>
+<li><p>Right-click your website project in the <strong>Solution Explorer</strong> and select <strong>Manage NuGet Packages</strong>.</p></li>
+<li>
+<p>On the <strong>Updates</strong> card, select all <strong>Kentico.Xperience</strong> NuGet packages and click <strong>Update</strong>.</p>
+<ul>
+<li><strong>Kentico.Xperience.WebApp</strong></li>
+<li><strong>Kentico.Xperience.Admin</strong></li>
+<li>All installed <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">extension packages</a>
+</li>
+</ul>
+</li>
+<li><p>Rebuild the solution.</p></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Target update version</strong></p>
+<p>We strongly recommend updating to the latest available version of Xperience. However, if you wish to update to a specific version, you can select it in Visual Studio’s <em>NuGet Package Manager</em> interface or specify it when running the <a href="https://learn.microsoft.com/en-us/nuget/consume-packages/install-use-packages-dotnet-cli#install-or-update-a-package" target="_blank">dotnet add package</a> command.</p>
+</div>
+
+<p>The application will not start until the NuGet package version matches your database version. Continue by <a href="#update-data-and-files">updating your project’s database and files</a>.</p>
+<h3 id="update-data-and-files">Update data and files</h3>
+<p>After <a href="#update-nuget-packages">updating your project’s NuGet packages</a>, update the database and file system using the .NET command-line interface (CLI). This update always targets the new version of the project’s NuGet packages.</p>
+<ol type="1">
+<li><p>Shut down your Xperience application if it is running and receives traffic.</p></li>
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to the root folder of the project you want to update.</p></li>
+<li>
+<p>Run the following command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build --kxp-update
+
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Command details</strong></p>
+<p>If updating a deployed application containing built assemblies, use the <code>dotnet myxperienceproject.dll --kxp-update</code> command instead (replace the assembly with the name of your Xperience project’s DLL). For more information, see the <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-run#description" target="_blank">dotnet run documentation</a>.</p>
+<p>When updating a full project locally, add the <code>--no-build</code> parameter to the <code>dotnet run</code> command if you have already rebuilt your project after <a href="#update-nuget-packages">updating the NuGet packages</a>. This option saves time and avoids another unnecessary project build before the update. To prevent errors after building the project with a configuration other than <em>Debug</em> mode, set the <code>--property:Configuration</code> parameter to the desired value.</p>
+<p>Add the <code>--</code> syntax separator before any command parameters that you wish to pass directly to the Xperience application (<code>--kxp-update</code>). This prevents conflicts with general .NET CLI parameters, for example when using the <code>--help</code> option.</p>
+<p>If you wish to skip the database backup prompt when running the update command (e.g., in an automated environment), add the <code>--skip-confirmation</code> parameter. For example:</p>
+<div>
+<div>
+<pre><code>
+ dotnet run -- --kxp-update --skip-confirmation
+ </code></pre>
+</div>
+</div>
+</div>
+</li>
+</ol>
+<p>The command updates the project’s database and in certain cases assets or folders on the file system (using SQL scripts and API operations). The database version now matches the version of the project’s Xperience NuGet packages.</p>
+<p>The update process does not automatically start the application when finished. After the update, you can run the application again using the <code>dotnet run</code> command, or another suitable approach depending on your hosting environment.</p>
+<h2 id="update-projects-in-the-saas-environment">Update projects in the SaaS environment</h2>
+<p>Xperience by Kentico applications <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed to the SaaS environment</a> need to be updated manually. Use the following process:</p>
+<ol type="1">
+<li>Update your project in a local development environment to the desired version.
+<ul>
+<li>See <a href="#update-nuget-packages">Update NuGet packages</a> and <a href="#update-data-and-files">Update data and files</a>.</li>
+</ul>
+</li>
+<li>Create a new <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-with-a-deployment-package">deployment package</a>.
+<ul>
+<li>Update the <strong>$CDRepository/repository.config</strong> file according to your <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> object filtering requirements. If you use the <code>&lt;IncludedObjectTypes&gt;</code> element, check the <em>New object types for CI/CD</em> section of the <a href="/documentation/changelog">changelog</a> for any new object types introduced by the update.</li>
+</ul>
+</li>
+<li>Redeploy the package to your Xperience Portal project.</li>
+</ol>
+<p>The deployment process automatically ensures that the database in the SaaS environment is up-to-date.</p>
+<h2 id="update-development-projects-with-continuous-integration">Update development projects with Continuous Integration</h2>
+<p>If you are updating a development project with <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> enabled:</p>
+<ul>
+<li>Before running the update, disable CI.</li>
+<li>Apply the update separately for each instance in your development environment. You cannot fully synchronize the database update using your source control system and CI.</li>
+<li>If you use the <code>&lt;IncludedObjectTypes&gt;</code> element in your CI <em>repository.config</em> file to <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">filter object types</a>, check the <em>New object types for CI/CD</em> section of the <a href="/documentation/changelog">changelog</a> for any new object types introduced by the update. Add any new object types that you wish to include in CI.</li>
+<li>After updating, every developer needs to <strong>run complete serialization for all objects</strong> to recreate the content of the <em>CIRepository</em> folder on their instance (use the <code>--kxp-ci-store</code> CLI command).</li>
+<li>After one developer commits the update changes to the source control, other developers CANNOT commit or load changes until they apply the update to their own instance.</li>
+</ul>
+<h3 id="example-update-process-with-ci">Example – Update process with CI</h3>
+<p>The following steps show an example of the update process for a local development instance using Continuous Integration (suitable for an automated script, etc.).</p>
+<ol type="1">
+<li><p>Commit all pending changes under the CI repository to your source control.</p></li>
+<li><p>Create a backup of your Xperience database and project folder.</p></li>
+<li><p>Shut down the Xperience application, and any other applications that connect to the same database.</p></li>
+<li><p><a href="#update-nuget-packages">Update the project’s NuGet packages</a>.</p></li>
+<li>
+<p>Disable CI.</p>
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>SQL</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ UPDATE CMS_SettingsKey SET KeyValue = N'False' WHERE KeyName = N'CMSEnableCI'
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p><a href="#update-data-and-files">Update project data</a>.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>.NET CLI</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build --kxp-update
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Re-enable CI.</p>
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>SQL</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ UPDATE CMS_SettingsKey SET KeyValue = N'True' WHERE KeyName = N'CMSEnableCI'
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Serialize all objects to the <em>CIRepository</em> folder.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>.NET CLI</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build --kxp-ci-store
+
+ </code></pre>
+</div>
+</li>
+<li><p>Commit the update changes to your source control.</p></li>
+</ol>
+<h2 id="update-administration-customization-projects">Update administration customization projects</h2>
+<p>If you have one or more <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">projects for custom administration development</a>, remember to perform the following when updating to a newer Xperience by Kentico version:</p>
+<ul>
+<li><p>Update the Xperience by Kentico NuGet packages installed in the custom admin back-end project.</p></li>
+<li>
+<p>Update the dependencies of your custom admin client project – <em>@kentico/xperience-admin-base</em>, <em>@kentico/xperience-admin-components</em>, <em>@kentico/xperience-webpack-config</em>, etc. Use the <a href="https://docs.npmjs.com/cli/v9/commands/npm-update" target="_blank">npm-update</a> command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  # Switches to the directory containing client module code
+  cd ..\Acme.Web.Admin\Client
+  npm update
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h2 id="update-project-templates">Update project templates</h2>
+<p>If you have installed the <a href="/documentation/developers-and-admins/installation#install-project-templates-package">Xperience project templates package</a> on your machine, we recommend keeping the templates up-to-date. This is required if you wish to create new projects that include released features and fixes.</p>
+<p>To update the Xperience project templates, open the command line and run:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Update project templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet new update
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Customize price calculation</title>
+</head>
+<body>
+<p>The <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation service</a> provides several customization options to fit your specific business requirements. You can extend the core data transfer objects, modify existing calculation steps, or add entirely new steps to the calculation pipeline.</p>
+<h2 id="extend-data-transfer-objects">Extend data transfer objects</h2>
+<p>To customize a data transfer object, create a new class that inherits from the respective object, add your custom fields, and use the custom class in your calculation steps and services. When you extend these classes, you also need to update any related classes or services that utilize them to ensure compatibility with your custom fields.</p>
+<p>The following objects are available for extension:</p>
+<ul>
+<li><code>PriceCalculationRequest</code></li>
+<li><code>PriceCalculationResult</code></li>
+<li><code>PriceCalculationRequestItem</code></li>
+<li><code>PriceCalculationResultItem</code></li>
+<li><code>ProductIdentifier</code></li>
+<li><code>ProductData</code></li>
+</ul>
+<p>The following example demonstrates extending <code>ProductData</code> with custom fields and creating corresponding result types that enforce type safety through generics.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Define custom data transfer objects</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>// Custom ProductData with additional fields
+public record CodesamplesProductData : ProductData
+{
+    public TaxCategoryEnum TaxCategory { get; init; }
+    public bool IsTaxExempt { get; init; }
+    public IEnumerable&lt;TagReference&gt; Categories { get; init; } = [];
+}
+
+/// &lt;summary&gt;
+/// Price calculation request item for code samples.
+/// &lt;/summary&gt;
+public record CodeSamplesPriceCalculationRequestItem
+    : PriceCalculationRequestItemBase&lt;ProductIdentifier&gt;;
+
+/// &lt;summary&gt;
+/// Price calculation request for code samples.
+/// &lt;/summary&gt;
+public record CodesamplesPriceCalculationRequest
+    : PriceCalculationRequestBase&lt;CodeSamplesPriceCalculationRequestItem, AddressDto&gt;;
+
+/// &lt;summary&gt;
+/// Price calculation result item for code samples.
+/// &lt;/summary&gt;
+public sealed class CodesamplesPriceCalculationResultItem
+    : PriceCalculationResultItemBase&lt;ProductIdentifier, CodesamplesProductData&gt;
+{
+}
+
+/// &lt;summary&gt;
+/// Price calculation result for code samples.
+/// &lt;/summary&gt;
+public class CodesamplesPriceCalculationResult
+    : PriceCalculationResultBase&lt;CodesamplesPriceCalculationResultItem&gt;;</code></pre>
+</div>
+
+<p>These custom types can be used when <a href="#modify-existing-calculation-steps">modifying calculation steps</a> or <a href="#add-a-custom-calculation-step">adding custom steps</a>.</p>
+<h2 id="modify-existing-calculation-steps">Modify existing calculation steps</h2>
+<p>You can modify the behavior of existing <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation#calculation-steps">calculation steps</a> to implement custom pricing logic without creating entirely new steps. When you register a custom step implementation, it automatically replaces the default step implementation in the calculation pipeline.</p>
+<p>The following calculation step interfaces can be overridden:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Interface</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>IProductDataLoaderPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Loads product information and pricing data using the given <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#implement-product-data-retrieval">IProductDataRetriever implementation</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ICatalogPromotionPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Evaluates and applies catalog promotions to individual products.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ILineSubtotalsPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Calculates line subtotals after catalog discounts.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>IShippingPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Calculates shipping costs.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>IOrderPromotionPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Evaluates and applies order-level promotions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ITaxPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Calculates applicable taxes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ILineTotalPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Calculates final line totals including taxes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>IOrderTotalPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Calculates the order total price.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>IOrderGrandTotalPriceCalculationStep</code></p>
+</td>
+<td>
+<p>Calculates the final grand total.</p>
+</td>
+</tr>
+</table>
+
+<h3 id="override-a-calculation-step">Override a calculation step</h3>
+<ol type="1">
+<li><p>Create a custom class that implements the interface for the calculation step you want to modify. Add the <code>Execute</code> method with your custom logic.</p></li>
+<li>
+<p>Register your implementation in the <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> container. When you register a custom step implementation, it automatically replaces the default step in the calculation pipeline:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ // Register with open generics to replace the default implementation
+ builder.Services.AddTransient(typeof(IModifiedCalculationStep&lt;,&gt;), typeof(ModifiedCalculationStep&lt;,&gt;));
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>For a complete example of overriding a calculation step, see <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#implement-tax-calculation">Implement tax calculation</a>, which demonstrates replacing the default tax step with custom tax logic.</p>
+<h2 id="customize-calculation-steps">Customize calculation steps</h2>
+<p>You can customize the calculation pipeline by overriding existing calculation steps or adding new custom steps. Both approaches require creating a <a href="#create-a-custom-steps-provider">custom calculation steps provider</a> to control which steps execute and in what order.</p>
+<h3 id="add-a-custom-calculation-step">Add a custom calculation step</h3>
+<p>Custom calculation steps allow you to add specialized pricing logic such as volume-based discounts, loyalty program benefits, handling fees, gift wrapping charges, or complex promotional rules.</p>
+<ol type="1">
+<li>
+<p>Add a custom class that implements <code>IPriceCalculationStep&lt;TPriceCalculationRequest, TPriceCalculationResult&gt;</code>. In the <code>Execute</code> method, define your custom logic to modify the calculation result based on the calculation request.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Custom calculation step implementation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>public sealed class CustomCalculationStep&lt;TRequest, TResult&gt; : IPriceCalculationStep&lt;TRequest, TResult&gt;
+ where TRequest : PriceCalculationRequest
+ where TResult : PriceCalculationResult
+{
+ public Task Execute(IPriceCalculationData&lt;TRequest, TResult&gt; calculationData, CancellationToken cancellationToken)
+ {
+     // Custom calculation logic
+     return Task.CompletedTask;
+ }
+}</code></pre>
+</div>
+</li>
+<li>
+<p>Register your implementation in the <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> container to make it available to the price calculation service.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ builder.Services.AddTransient(typeof(IPriceCalculationStep&lt;,&gt;), typeof(CustomCalculationStep&lt;,&gt;));
+ </code></pre>
+</div>
+</li>
+<li><p>Create a custom calculation steps provider (see below) to include your new step in the calculation pipeline.</p></li>
+</ol>
+<h3 id="create-a-custom-steps-provider">Create a custom steps provider</h3>
+<p>A custom steps provider allows you to control which steps execute and in what order. You can reorganize the default pipeline, add custom steps, or conditionally include steps based on request properties such as the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation#calculation-modes">calculation mode</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>When you register a custom implementation of <code>IPriceCalculationStepsProvider</code>, you need to ensure that all required calculation steps are included, including the default calculation steps. If any required step is omitted, the price calculation service may not function correctly, leading to incomplete or incorrect price calculations.</p>
+</div>
+
+<ol type="1">
+<li>
+<p>Create a class that implements <code>IPriceCalculationStepsProvider&lt;TPriceCalculationRequest, TPriceCalculationResult&gt;</code>. Inject all default and custom calculation steps through the constructor.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Custom calculation steps provider</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>public class CustomCalculationStepsProvider&lt;TRequest, TResult&gt; : IPriceCalculationStepsProvider&lt;TRequest, TResult&gt;
+ where TRequest : PriceCalculationRequest
+ where TResult : PriceCalculationResult
+{
+ private readonly IProductDataLoaderPriceCalculationStep&lt;TRequest, TResult&gt; productDataLoaderStep;
+ private readonly ICatalogPromotionPriceCalculationStep&lt;TRequest, TResult&gt; catalogPromotionStep;
+ private readonly ILineSubtotalsPriceCalculationStep&lt;TRequest, TResult&gt; lineSubtotalsStep;
+ private readonly IShippingPriceCalculationStep&lt;TRequest, TResult&gt; shippingStep;
+ private readonly IOrderPromotionPriceCalculationStep&lt;TRequest, TResult&gt; orderPromotionStep;
+ private readonly IPriceCalculationStep&lt;TRequest, TResult&gt; customStep;
+ private readonly ITaxPriceCalculationStep&lt;TRequest, TResult&gt; taxStep;
+ private readonly ILineTotalPriceCalculationStep&lt;TRequest, TResult&gt; lineTotalStep;
+ private readonly IOrderTotalPriceCalculationStep&lt;TRequest, TResult&gt; orderTotalStep;
+ private readonly IOrderGrandTotalPriceCalculationStep&lt;TRequest, TResult&gt; orderGrandTotalStep;
+
+ public CustomCalculationStepsProvider(
+     IProductDataLoaderPriceCalculationStep&lt;TRequest, TResult&gt; productDataLoaderStep,
+     ICatalogPromotionPriceCalculationStep&lt;TRequest, TResult&gt; catalogPromotionStep,
+     ILineSubtotalsPriceCalculationStep&lt;TRequest, TResult&gt; lineSubtotalsStep,
+     IShippingPriceCalculationStep&lt;TRequest, TResult&gt; shippingStep,
+     IOrderPromotionPriceCalculationStep&lt;TRequest, TResult&gt; orderPromotionStep,
+     IPriceCalculationStep&lt;TRequest, TResult&gt; customStep,
+     ITaxPriceCalculationStep&lt;TRequest, TResult&gt; taxStep,
+     ILineTotalPriceCalculationStep&lt;TRequest, TResult&gt; lineTotalStep,
+     IOrderTotalPriceCalculationStep&lt;TRequest, TResult&gt; orderTotalStep,
+     IOrderGrandTotalPriceCalculationStep&lt;TRequest, TResult&gt; orderGrandTotalStep)
+ {
+     this.productDataLoaderStep = productDataLoaderStep;
+     this.catalogPromotionStep = catalogPromotionStep;
+     this.lineSubtotalsStep = lineSubtotalsStep;
+     this.shippingStep = shippingStep;
+     this.orderPromotionStep = orderPromotionStep;
+     // Injects the custom step
+     this.customStep = customStep;
+     this.taxStep = taxStep;
+     this.lineTotalStep = lineTotalStep;
+     this.orderTotalStep = orderTotalStep;
+     this.orderGrandTotalStep = orderGrandTotalStep;
+ }
+}</code></pre>
+</div>
+</li>
+<li>
+<p>Implement the <code>Get</code> method to return the calculation steps in the desired order. The method receives the calculation request, enabling conditional step selection based on properties like the calculation mode.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Get method implementation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    // The Get method receives the request to enable conditional step selection based on calculation mode
+ public IEnumerable&lt;IPriceCalculationStep&lt;TRequest, TResult&gt;&gt; Get(
+     TRequest request)
+ {
+     // Runs for all modes (Catalog, ShoppingCart, Checkout)
+     yield return productDataLoaderStep;
+     yield return catalogPromotionStep;
+     yield return lineSubtotalsStep;
+
+     // Determines steps for ShoppingCart and Checkout modes only
+     if (request.Mode == PriceCalculationMode.ShoppingCart
+         || request.Mode == PriceCalculationMode.Checkout)
+     {
+         // Adds shipping only in Checkout mode
+         if (request.Mode == PriceCalculationMode.Checkout)
+         {
+             yield return shippingStep;
+         }
+
+         yield return orderPromotionStep;
+         // Inserts custom step after order promotions
+         yield return customStep;
+         yield return taxStep;
+         yield return lineTotalStep;
+         yield return orderTotalStep;
+         yield return orderGrandTotalStep;
+     }
+ }</code></pre>
+</div>
+</li>
+<li>
+<p>Register the custom steps provider to replace the default calculation pipeline. When you register your custom steps provider, the calculation service automatically detects and uses it, executing your custom step during calculations.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ builder.Services.AddTransient(typeof(IPriceCalculationStepsProvider&lt;,&gt;), typeof(CustomCalculationStepsProvider&lt;,&gt;));
+ </code></pre>
+</div>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom calculation modes</strong></p>
+<p><code>PriceCalculationMode</code> can be extended with custom values. You can create custom modes by instantiating new <code>PriceCalculationMode</code> objects with custom names. Handle custom modes in your custom steps provider’s <code>Get</code> method to control which calculation steps execute for each mode.</p>
+</div>
+
+
+</body>
+</html>

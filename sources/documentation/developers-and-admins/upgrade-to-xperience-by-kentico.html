@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Upgrade to Xperience by Kentico</title>
+</head>
+<body>
+<p>Kentico offers a set of tools and materials to help you upgrade your projects to Xperience by Kentico, whether you come from a <a href="#upgrade-from-kentico-xperience">previous version of Kentico Xperience</a> or from a <a href="#migrate-from-other-platforms">different platform</a>.</p>
+<h2 id="upgrade-from-kentico-xperience">Upgrade from Kentico Xperience</h2>
+<p>To upgrade a project from a previous version of Kentico Xperience to Xperience by Kentico:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/installation">Create a boilerplate</a> Xperience by Kentico project.</li>
+<li>Migrate your data and content from the old project using the <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico/migration-toolkit#kentico-migration-tool">Kentico Migration Tool</a>.</li>
+<li>Manually transfer any code, customizations, and any unsupported content and adjust them for Xperience by Kentico’s <a href="#technical-comparison">architecture and API differences</a>.</li>
+<li>Deploy your Xperience by Kentico project either to our <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS environment</a> or to your <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>See our series of <a href="/guides/upgrade-to-xbyk/upgrade-from-kx13">guides</a> for a more detailed walkthrough of the upgrade process.</p>
+</div>
+
+<h3 id="technical-comparison">Technical comparison</h3>
+<p>The following table and diagram outline the main differences in the <strong>architecture</strong> of the Xperience products.</p>
+<p></p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Kentico Xperience 13</p>
+</td>
+<td>
+<p>Xperience by Kentico</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Consists of two separate applications – one for the live site and one for the administration.</p>
+<p>The live site application can be built using <a href="https://docs.microsoft.com/en-us/aspnet/mvc/overview/getting-started/introduction/" target="_blank">ASP.NET MVC 5</a> or <a href="https://docs.microsoft.com/en-us/aspnet/core/introduction-to-aspnet-core" target="_blank">ASP.NET Core</a> (as part of .NET Core 3.1 or newer).</p>
+<p>The administration application is based on <a href="https://learn.microsoft.com/en-us/aspnet/web-forms/" target="_blank">ASP.NET Web forms</a>.</p>
+</td>
+<td>
+<p>Both the live site and administration run as a single application, based on the current .<a href="/documentation/developers-and-admins/installation/system-requirements">NET version requirements</a>.</p>
+<p>The Xperience administration is integrated into the application via a <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">NuGet package</a>. It is possible to <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">deploy sites without the administration</a>.</p>
+<p>To learn more, see the full <a href="/documentation/developers-and-admins/installation/system-requirements">System requirements</a> and <a href="/documentation/developers-and-admins/development/website-development-basics">Website development basics</a>.</p>
+</td>
+</tr>
+</table>
+
+<h3 id="major-differences">Major differences</h3>
+<ul>
+<li>
+<strong>Sites</strong> – sites are no longer used in Xperience by Kentico. Instead, websites are represented by <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a>.</li>
+<li>
+<strong>Cultures</strong> – multilingual functionality and content is based on <a href="/documentation/developers-and-admins/configuration/languages">languages</a> that users configure in the system.</li>
+</ul>
+<h3 id="api">API</h3>
+<p>Xperience by Kentico preserves a large part of the Kentico Xperience 13 API and general code patterns, including:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/api/database-table-api">Info and InfoProvider API</a> and custom <a href="/documentation/developers-and-admins/customization/object-types">object types</a>
+</li>
+<li><a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder components</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder components</a></li>
+<li>
+<a href="/documentation/developers-and-admins/customization/handle-global-events">Event handlers</a> (with differences in the available events, see <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">Reference - Global system events</a>)</li>
+</ul>
+<p>However, the Page API and data structure is completely different. See <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">Content item query API</a>, <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">ContentRetriever API</a> and <a href="/documentation/developers-and-admins/api/content-item-api/content-item-database-structure">Content item database structure</a>.</p>
+<p>Xperience by Kentico currently provides a smaller, more focused set of features than Kentico Xperience 13. Correspondingly, there are differences in the API due to unavailable features, or features with a different scope and capabilities.</p>
+<p><strong>See also</strong>: <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico/editing-components-in-xperience-by-kentico">Editing components in Xperience by Kentico</a></p>
+<h3 id="administration">Administration</h3>
+<p>The Xperience by Kentico administration is based on .NET and uses <a href="https://reactjs.org/" target="_blank">React.js</a> as its UI framework. This is a major change from the Kentico Xperience 13 administration built using Web Forms.</p>
+<p>The administration can be customized and extended, as described in <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">Extend the administration interface</a>. However, customizations of the Kentico Xperience 13 administration UI are incompatible due to the different technology stack.</p>
+<h2 id="migrate-from-other-platforms">Migrate from other platforms</h2>
+<p>You can migrate your projects to Xperience by Kentico from other platforms outside of the Kentico ecosystem, like Sitecore or Sitefinity. To simplify the process, use the respective <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico/migration-toolkit">Migration tool</a>. Each tool can be further customized to satisfy specific project requirements.</p>
+
+</body>
+</html>

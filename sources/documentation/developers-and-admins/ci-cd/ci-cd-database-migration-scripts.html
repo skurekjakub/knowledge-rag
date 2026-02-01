@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>CI/CD database migration scripts</title>
+</head>
+<body>
+<p>The Xperience <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> and <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> features serialize the data of most objects from the database into XML files on the file system. However, changes to database indexes, functions, stored procedures, custom views, and similar are not supported by CI/CD. To keep the database consistent, these changes need to be handled manually.</p>
+<p>We recommend using <strong>migration scripts</strong> to synchronize database changes not managed by CI/CD.</p>
+<h2 id="synchronize-database-changes-using-migration-scripts">Synchronize database changes using migration scripts</h2>
+<p>A migration script allows you to alter a database by modifying its schema. This alteration can be as simple as adding or removing a column, or a complex refactoring task such as splitting tables or changing column properties in a way that could affect the stored data.</p>
+<h3 id="migration-scripts-in-a-cicd-workflow">Migration scripts in a CI/CD workflow</h3>
+<p>In addition to serialized database object data, you can add the following migration script files to the repository folder:</p>
+<ul>
+<li>
+<strong>@migrations</strong> – folder for storing all created migrations connected to a particular repository. Since all migration scripts for a repository are stored in this folder, their file names need to be unique.</li>
+<li>
+<strong>Before.txt</strong> – holds the file names of all migrations applied before the repository is restored to the database. Insert only the migration file names without the <code>.sql</code> suffix. Each file name must be added on a <strong>separate line</strong>.</li>
+<li>
+<strong>After.txt</strong> – holds the file names of all migrations applied after the repository is restored to the database. Insert only the migration file names without the <code>.sql</code> suffix. Each file name must be added on a <strong>separate line</strong>.</li>
+</ul>
+<p>The Xperience database contains the <strong>CI_Migration</strong> and <strong>CD_Migration</strong> tables used by the system to record migrations already executed on the database.</p>
+<p>When you need to create or modify objects not supported by CI/CD (for example table indexes, functions, or stored procedures) and you want to synchronize or deploy these changes, you need to:</p>
+<ol type="1">
+<li><p>Write a migration script that applies the required change to the database. Refer to <a href="#example---database-change-migration-script">Example - Database change migration script</a> for an example of the process.</p></li>
+<li><p>Reference the migration script in either the <strong>Before.txt</strong> or <strong>After.txt</strong> file.</p></li>
+<li>
+<p>Run the CI/CD restore utility with the <code>--enable-migrations</code> parameter on databases you want to keep synchronized.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Run database migrations as part of CI/CD restore process</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ dotnet run -- --kxp-ci-restore --enable-migrations
+ </code></pre>
+</div>
+
+<ul>
+<li>For <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> scenarios, you can adjust the path to migration-related files using the <code>--migrations-path</code> parameter. The location must contain the <em>@migrations</em> folder and the <em>Before.txt</em> and <em>After.txt</em> files. Specify either an absolute or application root-relative path to the files. If you store migrations in the root of your CD repository, the parameter can be omitted (the migration path is taken from <code>repository-path</code>).
+
+<div>
+When <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploying</a> to our <a href="/documentation/developers-and-admins/saas">SaaS</a> solution, migrations detected in the deployment package are applied automatically.
+</div>
+
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Set custom path to migrations data for CD restore</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  dotnet run -- --kxp-cd-restore --repository-path "..." --enable-migrations --migrations-path "..."
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="when-to-execute-a-migration">When to execute a migration?</h3>
+<p>After creating a migration script, you need to decide whether it is going to be applied before or after the CI/CD files are restored.</p>
+<p>The <strong>Before.txt</strong> file should only contain migrations that manipulate the database before the CI/CD files are restored. These migrations can, for example:</p>
+<ul>
+<li>Drop indexes before their tables are deleted by the restore process.</li>
+<li>Delete foreign key constraints before their tables are deleted by the restore process.</li>
+</ul>
+<p>The <strong>After.txt</strong> file should only contain migrations that manipulate the restored database. These migrations can, for example:</p>
+<ul>
+<li>Create new indexes.</li>
+<li>Create new views.</li>
+<li>Add foreign key constraints.</li>
+<li>Add or modify stored procedures.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>If you have multiple migrations, carefully consider the order in which they should be executed. The migration scripts in both the <em>Before.txt</em> and <em>After.txt</em> files are executed sequentially from the first to the last line.</p>
+</div>
+
+<h3 id="example---database-change-migration-script">Example - Database change migration script</h3>
+<p>If you need to create a new index on, for example, a column <strong>OfficeName</strong> in a custom module class table <strong>CompanyOffices</strong> and want this change to be reflected in the repository, you need to: </p>
+<ol type="1">
+<li>
+<p>Create a new migration script (for example, <strong>AddOfficeNameIndex.sql</strong>):</p>
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>AddOfficeNameIndex.sql</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ CREATE INDEX IX_CompanyOffices_OfficeName ON CompanyOffices(OfficeName);
+
+ </code></pre>
+</div>
+</li>
+<li><p>Add the migration script to the <em>@migrations</em> folder.</p></li>
+<li>
+<p>Add the migration name to a new line in the <em>After.txt</em> file (the index should only be created after the database is updated).</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong>After.txt</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ ...
+ AddOfficeNameIndex
+
+ </code></pre>
+</div>
+</li>
+<li><p>Commit your changes to your source control repository (CI) or add them to the appropriate deployment repository (CD).</p></li>
+</ol>
+<p>When the repository containing your changes is restored with the <code>--enable-migrations</code> parameter on another database, the <strong>AddOfficeNameIndex.sql</strong> migration is applied after the restore operation (creating the <em>IX_CompanyOffices_OfficeName</em> index). The migration is then added to the <em>CI_Migration</em> table, marked as applied, and will not be executed again on the target database.</p>
+<h2 id="roll-back-database-changes">Roll back database changes</h2>
+<p>When rolling back changes in Continuous Integration scenarios, it is important to realize that migrations you have created and committed to source control may have already been applied to other databases. Therefore, removing your migrations from the <em>@migrations</em> folder and <em>Before.txt</em> or <em>After.txt</em> is <strong>insufficient</strong>. You also need to write a new migration script that returns the database schema to its original state.</p>
+<h3 id="example---roll-back-changes">Example - Roll back changes</h3>
+<p>The rollback process is demonstrated here by extending the <a href="#example---database-change-migration-script">example above</a>. To revert the changes made by the <strong>AddOfficeNameIndex.sql</strong> migration, you need to:</p>
+<ol type="1">
+<li><p>Delete the migration script <strong>AddOfficeNameIndex.sql</strong> from the <em>@migrations</em> folder.</p></li>
+<li><p>Remove the migration name <strong>AddOfficeNameIndex</strong> from the list of migrations in the <em>After.txt</em> file.</p></li>
+<li>
+<p>Create a new migration script (for example, <strong>RemoveOfficeNameIndex.sql</strong>) that removes the index (if it exists):</p>
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>RemoveOfficeNameIndex.sql</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ IF EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_CompanyOffices_OfficeName' AND object_id = OBJECT_ID('CompanyOffices'))
+ BEGIN
+     DROP INDEX IX_CompanyOffices_OfficeName ON CompanyOffices
+ END
+
+ </code></pre>
+</div>
+</li>
+<li><p>Add the migration script to the <em>@migrations</em> folder.</p></li>
+<li>
+<p>Add the migration name to a new line in the <em>Before.txt</em> file (the index should be dropped before its table is deleted during the restore process):</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong>Before.txt</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ ...
+ RemoveOfficeNameIndex
+
+ </code></pre>
+</div>
+</li>
+<li><p>Commit your changes to your source control repository.</p></li>
+</ol>
+<p>When the repository containing your changes is restored with the <code>--enable-migrations</code> parameter on another database, the <strong>RemoveOfficeNameIndex.sql</strong> migration is applied before the restore operation (removing the <em>IX_CompanyOffices_OfficeName</em> index, if it exists). The migration is then added to the <em>CI_Migration</em> table, marked as applied, and will not be executed again on the target database.</p>
+<h3 id="restore-the-database-to-a-specific-point-in-time">Restore the database to a specific point in time</h3>
+<p>If you need to revert your database to a specific backup, we recommend restoring the backup to a clean database to avoid possible structural database conflicts which may arise when restoring the database to an older version.</p>
+<ol type="1">
+<li>Create a clean Xperience database or restore a database backup from before the point in time you wish to restore.</li>
+<li>Get the required version of your Xperience solution and the repository folder from your source control system.</li>
+<li>Update the <strong>CMSConnectionString</strong> in the project’s configuration file (<em>appsettings.json</em> by default) to point to the new database.</li>
+<li>Rebuild the solution in Visual Studio.</li>
+<li>Execute your Continuous Integration restore process (including migration scripts).</li>
+</ol>
+<p>After the restore finishes, you can continue working with the restored database backup.</p>
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Example - Personalization condition type</title>
+</head>
+<body>
+<p>This page contains a full code sample that demonstrates how to develop a personalization condition type. To learn more about the development process in general, visit our <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/develop-personalization-condition-types">Develop personalization condition types</a> page.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contact tracking</strong></p>
+<p>We recommend setting up <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">tracking of contacts</a> on your website. The tracking is required for the example to work correctly (and for most types of conditions that utilize Xperience digital marketing features and data).</p>
+</div>
+
+<p>When finished, this condition type allows you to display different live site content to visitors based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consent agreements</a> they have given. Content editors are able to define different variants of widget content for any number of consents.</p>
+<p>Create a <strong>HasGivenConsentConditionType</strong> class in your project. Place the class file into a component folder for the condition type, for example: <em>~/Components/PageBuilder/PersonalizationConditions/HasGivenConsent/</em></p>
+
+<div>
+
+</div>
+<div>
+<p>We recommend using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> to initialize service instances.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>HasGivenConsentConditionType.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.ContactManagement;
+using CMS.Core;
+using CMS.DataProtection;
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.PageBuilder.Web.Mvc.Personalization;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+using MyProject.Components.PageBuilder.PersonalizationConditions.HasGivenConsent;
+
+[assembly: RegisterPersonalizationConditionType(
+    identifier: "MyProject.Personalization.HasGivenConsentConditionType",
+    type: typeof(HasGivenConsentConditionType),
+    name: "Has given consent agreement",
+    Description = "Evaluates whether the contact has given an agreement with a specified consent declaration.",
+    IconClass = "icon-clipboard-checklist",
+    Hint = "Enter the code name of a consent. The condition is fulfilled for visitors who have given an agreement with the given consent.")]
+
+namespace MyProject.Components.PageBuilder.PersonalizationConditions.HasGivenConsent
+{
+    public class HasGivenConsentConditionType : ConditionType
+    {
+        // Parameter: Code name that identifies the consent for which visitors need to give an agreement to fulfill the condition
+        // Assigns the default Xperience text input component to the property, which allows users to enter a text value in the configuration dialog
+        [TextInputComponent(Order = 0, Label = "Consent code name")]
+        public string ConsentCodeName { get; set; }
+
+        /// &lt;summary&gt;
+        /// Default property representing the name of the personalization variant.
+        /// &lt;/summary&gt;
+        public override string VariantName
+        {
+            get
+            {
+                // Uses the specified consent code name as the name of the variant
+                return ConsentCodeName;
+            }
+            set
+            {
+                // No need to set the variant name property
+            }
+        }
+
+        public override bool Evaluate()
+        {
+            // Gets the contact object of the current visitor
+            ContactInfo currentContact = ContactManagementContext.GetCurrentContact(false);
+
+            // Creates an instance of the consent agreement service
+            var consentAgreementService = Service.Resolve&lt;IConsentAgreementService&gt;();
+
+            // Gets the consent object based on its code name
+            ConsentInfo consent = ConsentInfo.Provider.Get(ConsentCodeName);
+            if (consent == null || currentContact == null)
+            {
+                return false;
+            }
+
+            // Checks if the contact has given a consent agreement
+            return consentAgreementService.IsAgreed(currentContact, consent);
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

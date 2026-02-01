@@ -1,0 +1,319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Rich text editor customization</title>
+</head>
+<body>
+<p>The <a href="/documentation/business-users/rich-text-editor">rich text editor</a> in Xperience can be extended by defining <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">custom editor configurations</a> and by developing <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">custom plugins</a>.</p>
+<p>Additionally, the system allows developers to exactly control which rich text editor configurations are loaded, and to make dynamic adjustments of the configuration content. This can be done by providing a custom implementation of the <code>IRichTextEditorConfigurationProvider</code> service. In most cases, we recommend extending the default implementation via the <a href="/documentation/developers-and-admins/customization/decorate-system-services">decorator pattern</a>.</p>
+<p>The sections below provide examples of scenarios that use this customization pattern:</p>
+<ul>
+<li><a href="#replace-the-default-editor-configuration">Replace the default editor configuration</a></li>
+<li><a href="#add-custom-css-to-the-rich-text-editor">Add custom CSS to the rich text editor</a></li>
+</ul>
+<h2 id="replace-the-default-editor-configuration">Replace the default editor configuration</h2>
+<p>When adding fields with the <em>Rich text editor</em> form component in the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, the selected <strong>Configuration name</strong> determines which options and plugins are available in the editor toolbar. If the user leaves the <em>Configuration name</em> empty, the field uses a default editor configuration.</p>
+<p>You can use the <code>IRichTextEditorConfigurationProvider</code> service to replace the default configuration with a <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">custom editor configuration</a> that is preferred for your project. With this change, users no longer need to select your custom configuration for every rich text field.</p>
+<ol type="1">
+<li>Open your Xperience solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) with class discovery enabled to the solution, or re-use an existing assembly.</li>
+<li>Create a new custom class in the assembly, and implement the <code>IRichTextEditorConfigurationProvider</code> interface.</li>
+<li>Add the <code>GetConfigurationByName</code> method:
+<ul>
+<li>The <code>configurationName</code> parameter contains the identifier of the configuration that was requested. Write a condition to detect the configurations that you want to replace.
+<ul>
+<li>Access the constants in the <code>RichTextEditorConfigurationsIdentifiers</code> class to get the identifiers of the system’s configurations:
+<ul>
+<li>
+<code>STRUCTURED_CONTENT</code> – for <a href="/documentation/business-users/content-hub">reusable content items</a>
+</li>
+<li>
+<code>WEBSITE_STRUCTURED_CONTENT</code> – for <a href="/documentation/business-users/website-content">pages</a>
+</li>
+<li>
+<code>HEADLESS_STRUCTURED_CONTENT</code> – for <a href="/documentation/business-users/headless-content">headless items</a>
+</li>
+<li>
+<code>AUTORESPONDER_EMAIL_CONTENT</code> – for <a href="/documentation/business-users/digital-marketing/emails">emails</a> with the <em>Form autoresponder</em> purpose</li>
+<li>
+<code>EMAIL_CONTENT</code> – for all other emails</li>
+<li>
+<code>NOTIFICATION_EMAIL_CONTENT</code> – for <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a>
+</li>
+<li>
+<code>CONSENT_TEXT</code> – for <a href="/documentation/developers-and-admins/data-protection/consent-management">consent text</a> fields</li>
+<li>
+<code>CONTACT_NOTES</code> – for the <em>Notes</em> field when editing <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> details</li>
+</ul>
+</li>
+<li>For rich text editor fields with the default “empty” configuration outside of the above locations, the <code>configurationName</code> is <code>null</code>.</li>
+</ul>
+</li>
+<li>Use the <a href="/documentation/developers-and-admins/customization/decorate-system-services#decorate-services-via-dependency-injection">decorator customization pattern</a> to call the default implementation for cases where you do not wish to replace the requested configuration.</li>
+</ul>
+</li>
+<li>Register the implementation using the <code>RegisterImplementation</code> assembly attribute.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Replacing the default rich text editor configurations</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+
+using CMS;
+
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Websites;
+
+// Registers the custom IRichTextEditorConfigurationProvider implementation
+[assembly: RegisterImplementation(typeof(IRichTextEditorConfigurationProvider), typeof(CustomDefaultRichTextEditorConfigurationProvider))]
+
+public class CustomDefaultRichTextEditorConfigurationProvider : IRichTextEditorConfigurationProvider
+{
+    private readonly IRichTextEditorConfigurationProvider richTextEditorConfigurationProvider;
+    
+    public CustomDefaultRichTextEditorConfigurationProvider(IRichTextEditorConfigurationProvider richTextEditorConfigurationProvider)
+    {
+        // Gets an instance of the default IRichTextEditorConfigurationProvider service
+        this.richTextEditorConfigurationProvider = richTextEditorConfigurationProvider;
+    }
+    
+    // Loads the configuration for instances of the rich text editor in the administration
+    public string GetConfigurationByName(string configurationName)
+    {
+        // The 'configurationName' parameter contains the identifier of the requested editor configuration
+        // This condition replaces the system's default editor configuration for page fields
+        if (string.IsNullOrEmpty(configurationName) || 
+            string.Equals(configurationName, RichTextEditorConfigurationsIdentifiers.WEBSITE_STRUCTURED_CONTENT, StringComparison.OrdinalIgnoreCase))
+        {
+            // Use the identifier of your preferred custom configuration
+            // For example, access the IDENTIFIER constant of the class used to register the configuration
+            return richTextEditorConfigurationProvider.GetConfigurationByName(CustomDefaultEditorConfiguration.IDENTIFIER);
+        }
+
+        // Calls the default implementation and returns the unmodified configuration in all other cases
+        return richTextEditorConfigurationProvider.GetConfigurationByName(configurationName);
+    }
+}
+</code></pre>
+</div>
+
+<h2 id="add-custom-css-to-the-rich-text-editor">Add custom CSS to the rich text editor</h2>
+<p>The following example demonstrates how to adjust the appearance and design of the rich text editor by inserting custom styles. The recommended approach is to create a <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">custom plugin</a> containing the required elements and CSS, and then use the <code>IRichTextEditorConfigurationProvider</code> service to dynamically insert your plugin into the appropriate <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#customize-the-editor">editor configurations</a>.</p>
+<ol type="1">
+<li>Create a custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">JavaScript module for the admin UI</a>.
+<ul>
+<li>Use the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development#client-development-boilerplate">client development boilerplate</a> project to simplify the set up. Make sure the project has the <strong>Kentico.Xperience.Admin</strong> NuGet package installed so it can access admin UI-related APIs.</li>
+</ul>
+</li>
+<li>Extend the module’s <code>webpack.config.js</code> to support CSS loading. For more information on configuring CSS loaders, see the <a href="https://webpack.js.org/loaders/#styling" target="_blank">webpack documentation</a>.
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>webpack.config.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ const projectConfig = {
+     module: {
+         rules: [
+             ...
+             // Adds the loader for basic CSS
+             {
+                 test: /\.css$/,
+                 use: ["style-loader", "css-loader"],
+             },
+         ],
+     },
+  ...
+ };
+ </code></pre>
+</div>
+</li>
+<li>Within the module, create a React component file for the plugin.
+<ul>
+<li>Import any required styles. You do not need to return any custom markup.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>CustomCSSRichTextEditorPlugin.tsx</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ import React from 'react';
+
+ // Imports custom styles
+ import './CustomCSSRichTextEditorPlugin.css';
+
+ // The plugin component's name must have the 'RichTextEditorPlugin' suffix
+ export const CustomCSSRichTextEditorPlugin = () =&gt; {
+     return (
+         // No markup to return
+         &lt;&gt;&lt;/&gt;
+     );
+ };
+ </code></pre>
+</div>
+</li>
+<li>Add files containing the styles that you wish to import.
+<ul>
+<li>You can use basic CSS, or any CSS extension language supported by your module’s environment.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>CSS</span>
+</div>
+<strong>CustomCSSRichTextEditorPlugin.css</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ /* Examples of custom styles for the fr-view class, which is applied to the editor's content area */
+ .fr-view h2 {
+     font-size: 3em;
+ }
+
+ .fr-view {
+     background-color: red;
+ }
+ </code></pre>
+</div>
+</li>
+<li>Export the plugin component from the module:
+
+<div>
+<div>
+<div>
+<span>TSX</span>
+</div>
+<strong>entry.tsx</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ export * from './path/CustomCSSRichTextEditorPlugin';
+ </code></pre>
+</div>
+</li>
+<li>Create a class in the admin module, and implement the <code>IRichTextEditorConfigurationProvider</code> interface.</li>
+<li>Add the <code>GetConfigurationByName</code> method and insert the <code>customPlugins</code> array with your custom CSS plugin into every configuration:
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Adding the custom CSS plugin to rich text editor configurations</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using System.Text.Json;
+ using System.Text.Json.Nodes;
+
+ using CMS;
+ using Kentico.Xperience.Admin.Base.Forms;
+
+ // Registers the custom IRichTextEditorConfigurationProvider implementation
+ [assembly: RegisterImplementation(typeof(IRichTextEditorConfigurationProvider), typeof(CustomCssRichTextEditorConfigurationProvider))]
+
+ public class CustomCssRichTextEditorConfigurationProvider : IRichTextEditorConfigurationProvider
+ {
+     private readonly IRichTextEditorConfigurationProvider richTextEditorConfigurationProvider;
+
+     public CustomCssRichTextEditorConfigurationProvider(IRichTextEditorConfigurationProvider richTextEditorConfigurationProvider)
+     {
+         // Gets an instance of the default IRichTextEditorConfigurationProvider service
+         this.richTextEditorConfigurationProvider = richTextEditorConfigurationProvider;
+     }
+
+     public string GetConfigurationByName(string configurationName)
+     {
+         // Gets the requested rich text editor configuration
+         var configuration = richTextEditorConfigurationProvider.GetConfigurationByName(configurationName);
+
+         // Adds the custom CSS plugin to the configuration's JSON content
+         var jsonObj = JsonNode.Parse(configuration);
+         if (jsonObj?["customPlugins"] is JsonArray optionsArray)
+         {
+             var newOption = new JsonObject
+             {
+                 // Replace 'orgName' and 'projectName' with the values for your client admin module.
+                 // The final part of the plugin name must match the name of 
+                 // the plugin's React component without the 'RichTextEditorPlugin' suffix.
+                 ["pluginName"] = "@orgName/projectName/CustomCSS"
+             };
+
+             optionsArray.Add(newOption);
+         }
+
+         // Returns the modified configuration content, including the custom CSS plugin
+         return jsonObj?.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+     }
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+In the <code>pluginName</code> configuration value, replace <code>orgName</code> and <code>projectName</code> with your own values. By default, the boilerplate project uses <code>acme</code> and <code>web-admin</code> respectively. The final part of the plugin name must match the name of the plugin’s React component without the <em>RichTextEditorPlugin</em> suffix (<em>CustomCSS</em> in this example).
+</div>
+</li>
+</ol>
+<p>The custom <code>IRichTextEditorConfigurationProvider</code> service dynamically inserts the custom CSS plugin into every rich text editor configuration, and the imported CSS is applied to the editor in the admin UI.</p>
+
+</body>
+</html>

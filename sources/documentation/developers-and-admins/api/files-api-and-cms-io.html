@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Files API and CMS.IO</title>
+</head>
+<body>
+<p><strong>CMS.IO</strong> is a namespace that serves as an interlayer between the business layer of Xperience and storage used for physical files. <code>CMS.IO</code> is used throughout the system instead of the default <code>System.IO</code> library provided by .NET in order to be compatible with various types of storage systems.</p>
+<p><code>CMS.IO</code> contains abstractions that access file storage by means of a provider object. Depending on the storage type that you use for your files, the system utilizes one of the following providers:</p>
+<ul>
+<li>
+<strong>File system storage</strong> – used by default for files stored in the Windows file system. The provider is a wrapper for the standard <code>System.IO</code> library.</li>
+<li>
+<strong>Azure storage</strong> – used when storing files in <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a>.</li>
+<li>
+<strong>Amazon storage</strong> – used when storing files in the <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a> storage service.</li>
+</ul>
+<p>The following diagram demonstrates how <code>CMS.IO</code> accesses different types of file storage via provider objects:</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>This documentation assumes that you are familiar with the <code>System.IO</code> library and know how to use it to manipulate files and directories. <a href="https://docs.microsoft.com/en-us/dotnet/api/system.io" target="_blank">Learn how to use System.IO</a>.</p>
+</div>
+
+<h2 id="cms.io">CMS.IO</h2>
+<p>Working with <code>CMS.IO</code> is in most aspects the same as working with <code>System.IO</code>. We recommend using <code>CMS.IO</code> instead of <code>System.IO</code> in your code so that your custom code doesn’t depend on a single file system type.</p>
+<h2 id="similarities-between-cms.io-and-system.io">Similarities between CMS.IO and System.IO</h2>
+<h3 id="classes">Classes</h3>
+<ul>
+<li>Directory</li>
+<li>DirectoryInfo</li>
+<li>File</li>
+<li>FileInfo</li>
+<li>FileStream</li>
+<li>Path</li>
+<li>StreamReader</li>
+<li>StreamWriter</li>
+<li>StringReader</li>
+<li>StringWriter</li>
+</ul>
+<h3 id="enumerations">Enumerations</h3>
+<ul>
+<li>FileAccess</li>
+<li>FileAttributes</li>
+<li>FileMode</li>
+<li>FileShare</li>
+<li>SearchOption</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Other classes and enumerations</strong></p>
+<p>For classes and enumerations not implemented by <code>CMS.IO</code>, we recommend using the standard implementations from the <code>System.IO</code> namespace (for example <a href="https://msdn.microsoft.com/en-us/library/system.io.stream(v=vs.110).aspx" target="_blank">System.IO.Stream</a>). Xperience expects these types across its API.</p>
+</div>
+
+<h2 id="differences-between-cms.io-and-system.io">Differences between CMS.IO and System.IO</h2>
+<p>The most significant difference is in the creation of new instances of objects. Instead of a constructor, each class contains a <code>New</code> method, which accepts the same parameters as the class’ constructor.</p>
+<p>The following example shows how to write text into a file. You can see that the instance of the FileInfo class is created using the <code>New</code> method. Note that the <code>StreamWriter</code> class used in the example is also a member of <code>CMS.IO</code>, not <code>System.IO</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.IO;
+
+...
+
+FileInfo fi = FileInfo.New("MyFile.txt");
+
+using (StreamWriter sw = fi.CreateText())
+{
+    sw.WriteLine("Hello world!");
+}
+
+</code></pre>
+</div>
+
+<p>There are a number of types that can be found in <code>System.IO</code>, but are not implemented in <code>CMS.IO</code>. These include seldom used classes, class members, and methods. Additionally, <code>CMS.IO</code> doesn’t define exceptions. You need to use exceptions from <code>System.IO</code>, or implement custom ones.</p>
+<h3 id="helper-methods">Helper methods</h3>
+<p><code>CMS.IO</code> contains additional methods and properties which simplify operations with files and directories. The following list describes the most useful methods:</p>
+<h4 id="directoryhelper-class">DirectoryHelper class</h4>
+<ul>
+<li>
+<strong>void DeleteDirectoryStructure(string path)</strong> – deletes the directory specified by the path parameter and all subdirectories.</li>
+<li>
+<strong>void EnsureDiskPath(string path, string startingPath)</strong> – checks whether all directories between <code>startingPath</code> and <code>path</code> exist and creates them if necessary.</li>
+<li>
+<strong>void EnsurePathBackslash(string path)</strong> – adds a backslash to the end of the path, if missing.</li>
+</ul>
+
+</body>
+</html>

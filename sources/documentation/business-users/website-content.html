@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Website content</title>
+</head>
+<body>
+<p>Website content is represented by <strong>pages</strong>, a special type of <a href="/documentation/business-users/content-hub">content items</a> used specifically for <a href="/guides/architecture/content-modeling/content-modeling-guide">modeling content</a> in website channels. The main difference between pages and content items is that content items are best suited to store reusable pieces of structured content and are not available in the content tree. On the other hand, one page in the content tree usually represents one page on your website. Pages can also contain <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder content</a>, on top of containing various media files, or structured content within their fields.</p>
+<p>Pages for each channel are managed in respective website channel applications – by default, the name of the application corresponds to the name of the channel. The application enables you to create, delete, and reorganize pages or edit their content and properties. It also provides intuitive page lifecycle management.</p>
+<p></p>
+<h2 id="page-lifecycle">Page lifecycle</h2>
+<p>By default, all pages follow a lifecycle that contains simple predefined statuses. Each page can be in one of the following statuses:</p>
+<ul>
+<li> <strong>Draft (Initial)</strong> – a new page that has not been published yet.</li>
+<li> <strong>Published</strong> – the current version of the page is published and is visible on the live site.
+<ul>
+<li>If the page is scheduled to be <em>Unpublished</em> in the future, the  icon is displayed after the published status.</li>
+</ul>
+</li>
+<li> <strong>Draft (New version)</strong> – an older version of this page has been published, but the current changes are not visible on the live site.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/workflows">Custom workflow step</a> (the item is being edited, “between” the <em>Draft</em> and <em>Published</em> status)</li>
+<li> <strong>Scheduled</strong> – the page is scheduled to be published at a selected date and time.</li>
+<li> <strong>Unpublished</strong> – an unpublished page that was previously published, but is not visible on the live site anymore.</li>
+<li> <strong>Not translated</strong> – the page is not yet translated to the currently selected language.</li>
+</ul>
+<p>A newly created page (i.e. in the <em>Draft</em> step) is not available on the live site unless you publish it. Any changes you make to a page in the application are not visible on the live site until you publish the page again.</p>
+<p>Untranslated pages are available on the live site in their <a href="/documentation/developers-and-admins/configuration/languages">fallback variant</a>, if fallbacks are set up. For more information on multilingual pages see <a href="/documentation/business-users/website-content/translate-pages">Translate pages</a>.</p>
+<p>The following diagram illustrates the default page lifecycle in a simplified way:</p>
+<p></p>
+<h2 id="view-modes">View modes</h2>
+<p>When working with pages, there are three view modes available: <em>Preview</em>, <em>Content</em>, and <em>Page Builder</em>.</p>
+<p>You can access each view mode in the page menu:</p>
+<p></p>
+<h3 id="preview">Preview</h3>
+<p>The <strong>Preview</strong> view mode displays the latest version of the page. This means that it displays even pages that are not yet published.</p>
+<p>You can use the preview mode to see what your changes will look like once published. If you need to share the preview with somebody who doesn’t have access to the administration, you can create a <a href="#shareable-preview-urls">shareable preview URL</a>.</p>
+<p>The following table summarizes the differences between content displayed on the live site and in the <strong>Preview</strong> mode:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Page lifecycle status</p>
+</td>
+<td>
+<p>Live site</p>
+</td>
+<td>
+<p>Preview mode</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Draft (Initial)</strong> – new page</p>
+<p><a href="/documentation/developers-and-admins/configuration/workflows">Custom workflow step</a> – new page</p>
+</td>
+<td>
+<p>No content displayed.</p>
+</td>
+<td>
+<p>Displays the latest saved content of the page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Published</strong> with no further changes</p>
+</td>
+<td colspan="2">
+<p>*Display the same content.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Draft (New version)</strong> – previously published page</p>
+<p><a href="/documentation/developers-and-admins/configuration/workflows">Custom workflow step</a> – previously published page</p>
+</td>
+<td>
+<p>Displays the last published version.</p>
+</td>
+<td>
+<p>Displays the latest saved content of the page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Unpublished</strong></p>
+</td>
+<td>
+<p>No content displayed.</p>
+</td>
+<td>
+<p>Displays the latest saved content of the page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Not translated</strong></p>
+</td>
+<td>
+<p>Page in fallback language.</p>
+</td>
+<td>
+<p>Not available.</p>
+</td>
+</tr>
+</table>
+
+<p>*Right after publishing the page, the <strong>Preview</strong> mode may display published changes that are not yet visible on the live site (e.g. because of caching used for performance optimization).</p>
+<p><strong>Note</strong>: For pages and <a href="/documentation/business-users/content-hub/content-items">reusable items</a> linked on the page, the currently published version is displayed when the page is visible on the live site, while the <strong>Preview</strong> mode always shows their latest saved content.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Open preview in a new tab</strong></p>
+<p>To make the editing process more convenient, you can open the preview of a page on a new tab. Expand the page actions menu and select <strong>Open preview in new tab</strong>.</p>
+<p></p>
+</div>
+
+<h3 id="content">Content</h3>
+<p>Using the <strong>Content</strong> view mode, you can edit the fields of a <strong>structured page</strong> – page storing data within separate fields. The data stored on a structured page can be also displayed on other pages.</p>
+<h3 id="page-builder">Page Builder</h3>
+<p>You can create pages of certain pre-configured types and use the <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder</a> feature to edit their content directly in the website channel application. Page Builder is a user-friendly feature which allows users to build pages using configurable widgets prepared by the developers.</p>
+<h2 id="used-in">Used in</h2>
+<p>Under <strong>Used in</strong>, you can <a href="/documentation/business-users/website-content/track-page-usages">track</a> where the page is used. This can help you understand how <a href="/documentation/business-users/website-content/edit-and-publish-pages">editing</a> or <a href="/documentation/business-users/website-content/delete-pages">deleting</a> the page would impact other content.</p>
+<h2 id="urls">URLs</h2>
+<p>Under <strong>URLs</strong> you can <a href="/documentation/business-users/website-content/manage-page-urls">view and configure</a> the page’s URL, specify vanity URLs and select canonical URLs.</p>
+<h2 id="properties">Properties</h2>
+<p>Under <strong>Properties</strong>, you can view additional information about the currently selected page (lifecycle status, content type, author, etc.), manage its <a href="/documentation/business-users/website-content/secure-pages">access privileges</a> on the live site, and see which roles in the system have which <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">permissions</a> for the page.</p>
+<h2 id="shareable-preview-urls">Shareable preview URLs</h2>
+<p>When <a href="/documentation/business-users/website-content/edit-and-publish-pages">editing</a> a page, you may need to show your changes to reviewers who don’t have access to the Xperience by Kentico administration. To make this possible, you can create a temporary <em>shareable preview URL</em> and send it to the reviewer, allowing them to see your changes that are not yet visible on the live site.</p>
+<h3 id="how-shareable-preview-urls-work">How shareable preview URLs work?</h3>
+<p>Shareable preview shows the same content you see when using the <a href="#preview">preview mode</a>. However, the links on the page open the live site rather than displaying the preview of the content. An exception are links to <a href="/documentation/business-users/content-hub/content-item-assets">assets</a> that open the preview with the latest saved content.</p>
+<p>If you generate a shareable URL for a page in the <em>Draft</em> status or a custom workflow step, the URL can be accessed until:</p>
+<ul>
+<li>the page is published</li>
+<li>the changes are <a href="/documentation/business-users/website-content/edit-and-publish-pages#revert-changes">reverted</a> to the currently published version</li>
+<li>the sharing is <a href="#stop-sharing-the-preview-of-a-page">stopped</a>
+</li>
+<li>the URL automatically expires
+<ul>
+<li>by default, this occurs after 7 days unless <a href="/documentation/developers-and-admins/configuration/shareable-preview-urls#change-automatic-expiration">changed</a> by your administrator</li>
+</ul>
+</li>
+</ul>
+<p>See the <a href="/documentation/developers-and-admins/configuration/shareable-preview-urls#expiration">expiration details</a> for more information.</p>
+<h3 id="get-a-shareable-preview-url">Get a shareable preview URL</h3>
+<p>To get a shareable preview URL:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>Find the page you want to share for preview.</li>
+<li>Go to the <strong>URLs</strong> tab.</li>
+<li>Under <strong>Shareable preview URL</strong>, select <strong>Share</strong> or <strong>Sharing options</strong>.
+<ul>
+<li>What you see depends on whether the page is already being shared or not.</li>
+</ul>
+</li>
+<li>Select <strong>Copy URL</strong>.</li>
+</ol>
+<p>The URL is now copied to your clipboard, and you can send it to your external collaborators. If you continue to edit the page and save the changes, they will be reflected on the shareable preview.</p>
+<p>A new URL is generated each time you copy it. All shareable URLs associated with the page show the same content.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Shareable preview shortcut</strong></p>
+<p>You can use the shortcut in the action menu to obtain a shareable preview URL:</p>
+<p></p>
+</div>
+
+<h3 id="stop-sharing-the-preview-of-a-page">Stop sharing the preview of a page</h3>
+<p>To stop sharing the preview of a page with external users:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>Find the page you want to stop sharing.</li>
+<li>Go to the <strong>URLs</strong> tab.</li>
+<li>Under <strong>Shareable preview URL</strong>, select <strong>Sharing options</strong>.</li>
+<li>Select <strong>Stop sharing</strong>.</li>
+<li>Confirm the dialog to invalidate all shareable URLs created for this page.</li>
+</ol>
+<h2 id="synchronize-pages">Synchronize pages</h2>
+<p>Xperience allows you to easily transfer new and updated pages from one instance of Xperience by Kentico to another. For detailed information and instructions, see <a href="/documentation/business-users/content-sync">Content sync</a>.</p>
+
+</body>
+</html>

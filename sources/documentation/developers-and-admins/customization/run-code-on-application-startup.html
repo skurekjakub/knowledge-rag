@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Run code on application startup</title>
+</head>
+<body>
+<p>Xperience customization scenarios sometimes require you to call specific system API during application startup to achieve the desired behavior. Some examples include: </p>
+<ul>
+<li>assigning handlers to <a href="/documentation/developers-and-admins/customization/handle-global-events">global system events</a>
+</li>
+<li>adding custom implementations of objects to global collections (e.g., <a href="/documentation/developers-and-admins/data-protection/personal-data-erasure">personal data erasers</a> and <a href="/documentation/developers-and-admins/data-protection/personal-data-collection">collectors</a>)</li>
+<li>registering custom JavaScript modules containing <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">admin UI customizations</a>
+</li>
+</ul>
+<p>The system provides a convenient entry point for such code in the form of <strong>code-only modules</strong>. Modules are <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom classes</a> that provide the following methods:</p>
+<ul>
+<li>
+<code>OnInit</code> – the system executes the code during the initialization (start) of the application. A typical example of <code>OnInit</code> code is assigning handler methods to system events.</li>
+<li>
+<code>OnPreInit</code> – the system executes the code before <code>OnInit</code>. Does <em>not</em> support any operations that require access to the database. For example, can be used to register <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">custom data types</a>.</li>
+</ul>
+<p>Xperience collects all module classes during application startup and executes their <code>OnInit</code> and <code>OnPreInit</code> methods. The initialization order of modules is not guaranteed and cannot be controlled (modules can be initialized in a different order every time the application starts). For this reason, we don’t recommend relying on the initialization order in your custom code.</p>
+<h3 id="run-custom-code-on-application-startup">Run custom code on application startup</h3>
+<p>To run custom code on application startup:</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio.</p></li>
+<li>
+<p>Create a custom class that inherits from <code>CMS.DataEngine.Module</code>.</p>
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for best practices about adding custom classes to Xperience projects.</li>
+</ul>
+</li>
+<li>
+<p>Define the constructor of the module class:</p>
+<ul>
+<li>Inherit from the base constructor.</li>
+<li>Enter the code name of the module as the base constructor parameter. The code name must be unique within the application.</li>
+</ul>
+</li>
+<li><p>Register the module class using the <code>RegisterModule</code> assembly attribute.</p></li>
+<li>
+<p>Override the <code>OnInit</code> or <code>OnPreInit</code> method (follow the guidelines of your particular customization scenario) and call the required startup code inside.</p>
+<ul>
+<li>
+<p>Override <code>OnInit(ModuleInitParameters)</code> to access the application’s service container via <a href="https://learn.microsoft.com/en-us/dotnet/api/system.iserviceprovider" target="_blank">IServiceProvider</a>, for example if you need to resolve dependencies required for the module’s code.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  protected override void OnInit(ModuleInitParameters parameters)
+  {
+      // Resolve services via IServiceProvider. e.g., ILogger
+      parameters.Services.GetRequiredService&lt;ILogger&lt;CustomModule&gt;&gt;();
+      ...
+  }
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Override <code>OnPreInit(ModuleInitParameters)</code> if you wish to access the application’s <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" target="_blank">IServiceCollection</a> during module pre-initialization. For example, you can dynamically configure the application’s startup options.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  protected override void OnPreInit(ModulePreInitParameters parameters)
+  {
+      // Access IServiceCollection, e.g., to configure startup options like EmailQueueOptions
+      parameters.Services.Configure&lt;EmailQueueOptions&gt;(...);
+      ...
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>The system executes the methods when collecting registered modules during application startup.</p>
+<h3 id="example">Example</h3>
+<p>The following example resolves dependencies on other services from <code>IServiceProvider</code> accessed via <code>ModuleInitParameters</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Service resolution using ModuleInitParameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+using CMS.ContentEngine;
+using CMS.Core;
+using CMS.DataEngine;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+[assembly: RegisterModule(typeof(CustomModule))]
+
+public class CustomModule : Module
+{
+    private ILogger&lt;CustomModule&gt; logger;
+
+    // Module class constructor, inherits from the base constructor with the code name of the module as the parameter
+    public CustomModule() : base(nameof(CustomModule))
+    {
+    }
+
+    protected override void OnInit(ModuleInitParameters parameters)
+    {
+        // Access 'IServiceProvider' via ModuleInitParameters and resolve 'ILogger'
+        logger = parameters.Services.GetRequiredService&lt;ILogger&lt;CustomModule&gt;&gt;();
+
+        // Registers an event handler
+        ContentItemEvents.Publish.Execute += ContentItem_Published;
+    }
+
+    private void ContentItem_Published(object sender, PublishContentItemEventArgs e)
+    {
+        // Logs an information event whenever a content item is published
+        string message = $"Content item '{e.DisplayName}' was published.";
+        logger.LogInformation(new EventId(0, "CONTENT_ITEM_PUBLISHED"), message);
+    }
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

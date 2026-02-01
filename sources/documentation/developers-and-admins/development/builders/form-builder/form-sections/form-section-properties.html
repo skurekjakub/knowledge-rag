@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form section properties</title>
+</head>
+<body>
+<p>When developing <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">form sections</a>, you can define properties that allow editors to adjust the content or behavior of the sections directly in the Form Builder interface. Users interact with the section properties through section configuration dialogs.</p>
+<p>Use the following process to develop properties for a section:</p>
+<ol type="1">
+<li><a href="#create-property-models">Create a model class that defines the section properties</a></li>
+<li><a href="#define-the-configuration-dialog">Define the configuration dialog to allow form editors to modify the properties</a></li>
+<li><a href="#handle-properties-in-section-code">Handle the properties in the section’s code</a></li>
+<li><a href="#register-sections-with-properties">Specify the property model class in the section’s registration attribute</a></li>
+</ol>
+<h2 id="create-property-models">Create property models</h2>
+<p>The properties of a form section must be defined within a model class that implements the <code>IFormSectionProperties</code> interface (available in the <code>Kentico.Forms.Web.Mvc</code> namespace).</p>
+<p>Specify each section property by creating a corresponding property in the model class. You can also set default values for the properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class TitledSectionProperties : IFormSectionProperties
+{
+    // Defines a title property and sets its default value 
+    public string Title { get; set; } = "General";
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Register sections with properties</strong></p>
+<p>When <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">registering</a> form sections with properties, you additionally need to set the <code>PropertiesType</code> property of the <code>RegisterFormSection</code> attribute to the <code>System.Type</code> of the section’s property model class.</p>
+</div>
+
+<h2 id="define-the-configuration-dialog">Define the configuration dialog</h2>
+<p>The configuration dialog provides a simple way for form editors to set the values of section properties. In the property model class, you need to define <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> for section properties which you want to make editable in the configuration dialog. </p>
+<ol type="1">
+<li><p>Edit the section’s property model class in your live site project.</p></li>
+<li>
+<p>Define the visual interface of the configuration dialog:</p>
+<ul>
+<li>Decorate the appropriate properties using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component’s attribute</a>.</li>
+<li>The attribute assigns and configures an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">admin UI form component</a>, which is used as the input element for the given property in the configuration dialog. You can use the system’s <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">default UI form components</a> or develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom UI form components</a> depending on the type of input required.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Setting an editing component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+// Defines a title property whose value is edited via a text input in the section configuration dialog
+[TextInputComponent(Label = "Title")]
+public string Title { get; set; } = "General";
+
+</code></pre>
+</div>
+
+<p>Users can now select the <strong>Configure</strong> () icon when <a href="/documentation/business-users/digital-marketing/forms">working with sections in the Form Builder interface</a>. This opens the section properties dialog, and the configured property values affect the section’s content and functionality.</p>
+<h2 id="handle-properties-in-section-code">Handle properties in section code</h2>
+<p>In order for properties to have an effect on a section’s content or functionality, you need to retrieve the property values and adjust the section’s output code or logic correspondingly. The required steps depend on the development approach used to create the section (see <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">Form sections</a> for more information).</p>
+<h3 id="basic-sections">Basic sections</h3>
+<p>For basic sections implemented only as a partial view (without a view component) and a properties class, handle the property values directly in the section’s view.</p>
+<p>The view must use the generic <code>FormSectionViewModel&lt;TPropertyModel&gt;</code> class as its model, with the appropriate property model class as the generic type parameter. The system ensures that the property values configured for the currently processed section are passed to the view. Retrieve the property values from the model’s <code>Properties</code> member, which returns an object of the specified property model class.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Forms.Web.Mvc
+@using Kentico.Web.Mvc
+
+@model FormSectionViewModel&lt;TitledSectionProperties&gt;
+
+@if (!string.IsNullOrEmpty(Model?.Properties?.Title))
+{
+    &lt;h2&gt;@Model.Properties.Title&lt;/h2&gt;
+}
+
+&lt;div&gt;
+    @await Html.Kentico().FormZoneAsync()
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h3 id="sections-based-on-a-view-component">Sections based on a view component</h3>
+<p>To work with properties in your form section view components, the component’s <em>Invoke</em> or <em>InvokeAsync</em> method signature must declare the <code>FormSectionViewModel&lt;TPropertiesType&gt;</code> parameter, with the appropriate property model class as the generic type.</p>
+<p>The section’s properties are accessible via the <code>Properties</code> member of the <code>FormSectionViewModel</code> parameter, which returns an object of the specified property model class. The object’s property values are loaded from the current configuration of the processed section.</p>
+<p>You can then adjust your code based on the values of individual section properties, or pass them to the section’s view using an appropriate view model.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+using Kentico.Forms.Web.Mvc;
+
+public class TitledSectionViewComponent : ViewComponent
+{  
+    public Task&lt;IViewComponentResult&gt; Invoke(FormSectionViewModel&lt;TitledSectionProperties&gt; sectionProperties)
+    {
+        // Prepares a view model object containing the section's Title property
+        var viewModel = new TitledSectionViewModel
+        {
+            Title = sectionProperties.Properties.Title
+        };
+
+        return View("~/Components/FormSections/TitledSection/_TitledSection.cshtml", viewModel);       
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="register-sections-with-properties">Register sections with properties</h2>
+<p>When <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">registering</a> form sections with properties, you additionally need to set the <code>PropertiesType</code> property of the <code>RegisterFormSection</code> attribute to the <code>System.Type</code> of the section’s property model class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+[assembly: RegisterFormSection("MySections.TitledSection",  
+                               "Titled section",
+                               customViewName: "~/Components/FormSections/TitledSection/_TitledSection.cshtml",
+                               PropertiesType = typeof(TitledSectionProperties),
+                               Description = "Organizes fields into a section with a configurable title.",
+                               IconClass = "icon-square")]
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Section with a custom view component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+[assembly: RegisterFormSection("MySections.TitledSection",
+                                typeof(TitledSectionViewComponent),
+                                "Titled section",
+                                PropertiesType = typeof(TitledSectionProperties),
+                                Description = "Organizes fields into a section with a configurable title.",
+                                IconClass = "icon-square")]
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

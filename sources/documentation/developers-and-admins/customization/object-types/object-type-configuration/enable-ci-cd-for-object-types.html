@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Enable CI/CD for object types</title>
+</head>
+<body>
+<p>The Xperience <a href="/documentation/developers-and-admins/ci-cd">CI/CD</a> functionality allows you to serialize the data of objects from the database into XML files and then use a source control system to synchronize the files between different instances. Though the configuration options and API members covered on this page strongly imply relation to only Continuous Integration, the setup ensures support for <strong>BOTH</strong> Continuous Integration and Continuous Deployment. </p>
+<p>To configure CI/CD support for an object type:</p>
+<ol type="1">
+<li>
+<p>Edit the generated <em>Info</em> class representing the object type.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Important</strong>: To use CI/CD, the code of your custom object type must be located in a separate assembly. See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for more information.</p>
+</div>
+</li>
+<li>
+<p>Set the <code>ContinuousIntegrationSettings</code> property in the initializer of the <code>TYPEINFO</code> member.</p>
+<ul>
+<li>Set the <code>Enabled</code> property to <code>true</code><em>.</em>
+</li>
+<li>(Optional) Set other <a href="#continuousintegrationsettings">ContinuousIntegrationSettings properties</a> according to the requirements of your class’s data.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ // Enables Continuous Integration for the object type
+ ContinuousIntegrationSettings =
+ {
+     Enabled = true
+ },
+
+ </code></pre>
+</div>
+</li>
+<li><p>(Optional) Set the <code>SerializationSettings</code> property of the <code>TYPEINFO</code> member. Use a nested initializer to configure the <a href="#serializationsettings">SerializationSettings properties</a>.</p></li>
+<li><p>Save the changes.</p></li>
+</ol>
+<p>If Continuous Integration is enabled, the system now tracks all create, update and delete operations for objects of the given custom class and serializes the data into XML files in the repository folder. To transfer all existing data of the class into your repository, run <a href="/documentation/developers-and-admins/ci-cd/continuous-integration#ContinuousIntegration-ciserialize">complete serialization for all objects</a>.</p>
+<p>You can also use your custom object type’s name (the value of the <code>OBJECT_TYPE</code> constant) when <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">filtering objects</a> within the repository configuration file.</p>
+<h2 id="deleting-object-types-that-have-cicd-enabled">Deleting object types that have CI/CD enabled</h2>
+<p>Use the following process if you ever need to delete an object type with existing data and CI/CD enabled:</p>
+<ol type="1">
+<li>First, delete the given type’s code files and rebuild the containing assembly (or remove the entire assembly if it is no longer needed).</li>
+<li>Delete the object type in the <strong>Modules</strong> application in the Xperience administration.</li>
+<li>Manually delete the folder representing the type’s data from the repository folder (the system automatically removes the data from the database but cannot clear the Continuous Integration data).</li>
+</ol>
+<h2 id="references">References</h2>
+
+<div>
+
+</div>
+<div>
+<p>The reference lists the <code>ContinuousIntegrationSettings</code>and <code>SerializationSettings</code> properties that are intended for public use. The classes also contain other members that are used internally or handled automatically by the system. We do not recommend working with any of the undocumented members.</p>
+</div>
+
+<h3 id="continuousintegrationsettings">ContinuousIntegrationSettings</h3>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Enabled</p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td colspan="1">
+<p>Indicates whether the class is included in CI/CD (when serializing all objects to the file system and tracking object changes).</p>
+<p><a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Child classes</a> are included only if the property is also enabled for the parent class.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>DependencyColumns</p>
+</td>
+<td colspan="1">
+<p>ICollection&lt;string&gt;</p>
+</td>
+<td colspan="1">
+<p>Defined as an <em>ICollection</em> of column names. When the values of the specified columns are changed for an object, Continuous Integration reserializes the given object and all of its child or otherwise dependent objects.</p>
+<p>Only needs to be set for classes that use non-standard columns to determine the identity of objects. The object type’s <strong>code name</strong>, <strong>GUID</strong>, <strong>parent ID</strong>, and <strong>group ID</strong> columns are included by default.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ObjectFileNameFields</p>
+</td>
+<td colspan="1">
+<p>ICollection&lt;string&gt;</p>
+</td>
+<td colspan="1">
+<p>Overrides the names of the XML files containing the serialized data of the class’s objects within the repository folder. By default, the XML files are named according to the value stored in <code>CodeNameColumn</code>. For object types without a code name column, the value stored in <code>GuidColumn</code> is used instead.</p>
+<p>The property is defined as an <code>ICollection</code> of column names that the system combines into the names of the serialized XML files. Underscores ( _ ) are used as separators between the values of the specified columns.</p>
+<p><strong>Note</strong>: For CI/CD to work correctly, the combination of columns must be unique within the appropriate scope (within the objects under a specific parent, etc.).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ObjectIdentificationFields</p>
+</td>
+<td>
+<p>ICollection&lt;string&gt;<br>
+</p>
+</td>
+<td>
+<p>Defined as an <code>ICollection</code> of field names used for object identification in a database when the <code>CodeNameColumn</code> is not available. The specified fields are used in a where condition which searches for an existing record in the target database during the CI/CD restore process.</p>
+<p>Set this property for objects that don’t have a code name column (e.g., permissions set in the <a href="/documentation/developers-and-admins/configuration/users/role-management">Role management</a>) that could be used to match objects between the source and target instances during the CD restore process.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ObjectTypeFolderName</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Sets the name of the folder that stores the XML files containing the serialized data of the class’s objects within the repository folder.</p>
+<p>If not specified, the object type name (<code>ObjectTypeInfo.ObjectType</code>) is used.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>SeparatedFields</p>
+</td>
+<td colspan="1">
+<p>IEnumerable&lt;SeparatedField&gt;</p>
+</td>
+<td colspan="1">
+<p>Identifies columns that CI/CD stores into separate files when serializing objects to the file system. The separated file is created within the same folder as the main XML file holding the remaining serialized data of the object.</p>
+<p>Define separated columns within an <code>IEnumerable</code> collection of <code>SeparatedField</code> objects. For each <code>SeparatedField</code> object, specify the name of the column as the constructor parameter. You can configure additional settings for the separated file through the properties of the object.</p>
+<p><strong>Note</strong>: If the class has a column that stores binary data (specified in <code>ObjectTypeInfo.BinaryColumn</code>), the system includes the column in <code>SeparatedFields</code> by default. Manually setting the <code>SeparatedFields</code> property overrides the default separation settings for <code>BinaryColumn</code>, but you can define a custom <code>SeparatedField</code> object for the given column.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ContinuousIntegrationSettings =
+{
+    Enabled = true,
+
+    // Adds a field that CI/CD serializes into a separate file (in addition to the BinaryColumn field)
+    SeparatedFields = new List&lt;SeparatedField&gt;
+    {
+        new SeparatedField("SeparatedField")
+        {
+            FileName = "CustomFileName",
+            FileExtension = ".txt"
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="serializationsettings">SerializationSettings</h3>
+<p>The <code>SerializationSettings</code> property of <code>ObjectTypeInfo</code> determines how the system serializes class objects from the database into XML data.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>ExcludedFieldNames</p>
+</td>
+<td colspan="1">
+<p>ICollection&lt;string&gt;</p>
+</td>
+<td colspan="1">
+<p>Allows you to limit which fields are included when serializing objects of the given class to XML. Defined as an <code>ICollection</code> of field names that you wish to exclude from the serialization (blacklist).</p>
+<p>By default, the system automatically excludes the database columns identified by the following properties:</p>
+<ul>
+<li><code>IDColumn</code></li>
+<li>
+<code>TimeStampColumn</code> (“last modified” column)</li>
+<li><code>VersionGUIDColumn</code></li>
+<li><code>BinaryColumn</code></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>StructuredFields</p>
+</td>
+<td colspan="1">
+<p>IEnumerable&lt;IStructuredField&gt;</p>
+</td>
+<td colspan="1">
+<p>Identifies fields that contain structured data that cannot directly be serialized as inner text values of an XML element. The default implementation handles columns that store structured data as XML with simple values and a fixed order of elements.</p>
+<p>To work with custom formats or advanced XML schemas, you need to create an <code>IStructuredData</code> implementation that defines how the serialization occurs. To register custom data formats, use the generic variant of the <code>IStructuredField</code> class. </p>
+</td>
+</tr>
+</table>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+SerializationSettings =
+{
+    // Adds two fields to the default collection of fields that are excluded from the serialized data
+    ExcludedFieldNames = { "ClassField", "ClassSecondField" },
+
+    // Ensures that the system processes "ClassXmlField" as nested XML in the serialized data
+    StructuredFields = new IStructuredField[]
+    {
+        new StructuredField("ClassXmlField")
+    }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

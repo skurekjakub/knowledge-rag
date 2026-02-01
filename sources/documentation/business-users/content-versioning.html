@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content versioning</title>
+</head>
+<body>
+<p>When content versioning is <a href="/documentation/developers-and-admins/configuration/content-versioning-configuration">enabled</a>, the system automatically stores the previously published versions of <a href="/documentation/business-users/content-hub/content-items">reusable content items</a>, <a href="/documentation/business-users/website-content">pages</a>, and <a href="/documentation/business-users/headless-content">headless items</a>. Other types of content, such as forms and emails, are not versioned.</p>
+<p>Versioning allows users to:</p>
+<ul>
+<li>
+<a href="#view-version-history">view previously published versions</a> of versioned items</li>
+<li>
+<a href="#restore-previously-published-versions">restore previously published versions</a> of versioned items</li>
+<li>find out who and when made changes to versioned items</li>
+<li>view the history of the following actions:
+<ul>
+<li><a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublish-pages">unpublishing</a></li>
+<li>scheduled <a href="/documentation/business-users/website-content/edit-and-publish-pages#scheduled-publishing">publishing</a> and <a href="/documentation/business-users/website-content/edit-and-publish-pages">unpublishing</a>
+</li>
+<li>canceling of scheduled publishing and unpublishing</li>
+</ul>
+</li>
+</ul>
+<h2 id="version-history">Version history</h2>
+<p>The version history of an item allows you to <a href="#view-version-history">view</a> the list of previously published versions and other records. Published versions (  ) in the version history contain the data that were used in the fields of the item. Only published versions can be restored.</p>
+<p>Version history includes other records that are created when the item is unpublished (  ), scheduled to be published (  ) or unpublished (  ), and also when these scheduled actions are canceled (  ). Other actions, such as <em>Save</em>, <em>Discard</em>, or moving to workflow steps other than <em>Publish</em> and <em>Unpublish</em>, are not tracked.</p>
+<p>Versions and records are identified by the date and time when they were automatically created. Each version also contains the name of the user who made the changes.</p>
+<p></p>
+<h3 id="linked-content">Linked content</h3>
+<p>Linked items are shown and restored in their most recently published version. Fields of an item that reference other content that exists outside of the given item (for example, media files, tags, smart folders) also show the current version of the content, which is used when the item is restored. Note that the current version of the content that is displayed can differ from the version that was used when the selected version of the item was published.</p>
+<h3 id="assets">Assets</h3>
+<p><a href="/documentation/business-users/content-hub/content-item-assets">Files</a> uploaded to content items (for example, photos, videos, or documents) are not versioned. That means that files are always shown and restored in their latest version and previous versions aren’t accessible.</p>
+<h3 id="page-builder">Page Builder</h3>
+<p>If a <a href="/documentation/business-users/website-content">page</a> contains <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder</a> data, the data is displayed in a separate section and structured according to the sections and widgets used in the Page Builder. The record also includes page template properties at the bottom of this section. Content from inline editors is displayed as plain text.</p>
+<h2 id="versioning-coverage">Versioning coverage</h2>
+<p>Versioning has to be <a href="/documentation/developers-and-admins/configuration/content-versioning-configuration">configured</a> to be applied. The number of versions stored in the system is set during the configuration.</p>
+<ul>
+<li>
+<strong>Versioned data</strong>
+<ul>
+<li>data from the <em>Content</em> tab, except for <a href="#assets">assets</a>
+</li>
+<li>data from <em>Page Builder</em> tab (applies only to pages)</li>
+</ul>
+</li>
+<li>
+<strong>Examples of non-versioned data include</strong>:
+<ul>
+<li><a href="#assets">assets</a></li>
+<li>all <a href="/documentation/business-users/website-content/manage-page-urls">page URLs</a>
+</li>
+<li>positions of pages in the content tree</li>
+<li><a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="view-version-history">View version history</h2>
+<p>To view version history of a <a href="/documentation/business-users/content-hub/content-items">reusable content item</a>, <a href="/documentation/business-users/website-content">page</a>, or <a href="/documentation/business-users/headless-content">headless item</a>:</p>
+<ol type="1">
+<li><p>Open Content hub or the corresponding channel application where the item is located.</p></li>
+<li><p>Find and select the item for which you want to view the version history.</p></li>
+<li>
+<p>Expand the action menu and select <strong>Show version history</strong>.</p>
+<ul>
+<li>The <strong>Show version history</strong> option is available in any workflow step.</li>
+</ul>
+</li>
+</ol>
+<p></p>
+<p>You can now browse the version history. Selecting a published version in the version history allows you to view the data that was used in that version. Assets, linked items, and any content that exists outside of this item are shown in their <a href="#linked-content">current version</a>.</p>
+<p></p>
+<h2 id="restore-previously-published-versions">Restore previously published versions</h2>
+
+<div>
+
+</div>
+<div>
+<p>When restoring a version, the item is restored to the <em>Draft</em> step with the data from the selected version. Changes that weren’t published at the time of restoring will be lost.</p>
+</div>
+
+<p>To restore a version of a <a href="/documentation/business-users/content-hub/content-items">reusable content item</a>, <a href="/documentation/business-users/website-content">page</a>, or <a href="/documentation/business-users/headless-content">headless item</a>:</p>
+<ol type="1">
+<li>
+<a href="#view-version-history">Open the version history</a> of the item whose previous version you want to restore.</li>
+<li>Select the version you want to restore in the version history.
+<ul>
+<li>Only published versions can be restored.
+
+<div>
+
+</div>
+<div>
+For <a href="/documentation/business-users/content-hub/content-items#link-content-items">linked items</a> and <a href="/documentation/business-users/content-hub/content-item-assets">assets</a>, the latest published version is used. Other <a href="#linked-content">content</a> that exists outside of the item is restored in its current version. If the underlying <a href="/documentation/developers-and-admins/development/content-types">content type</a> was modified since the version you want to restore was published, some fields might be <a href="#modifications-of-content-types-of-versioned-items">affected</a>. To learn more about the versioning coverage, see the <a href="#versioning-coverage">Versioning coverage</a> section.
+</div>
+</li>
+</ul>
+</li>
+<li>Select <strong>Restore this version</strong>.</li>
+<li>Confirm restoration of this version by selecting <strong>Restore version</strong> in the dialog window.</li>
+</ol>
+<p>The item is always restored to the <em>Draft</em> step with the data from the selected version. You can edit the item and the restored version is not visible until you publish it.</p>
+<h3 id="modifications-of-content-types-of-versioned-items">Modifications of content types of versioned items</h3>
+<p>Modifying a <a href="/documentation/developers-and-admins/development/content-types">content type</a> of a versioned item can influence what happens when restoring a version of an item of the modified content type.</p>
+<h4 id="field-addition">Field addition</h4>
+<p>If a new required field is added to an existing <a href="/documentation/developers-and-admins/development/content-types">content type</a>, and you <a href="#restore-previously-published-versions">restore a version</a> that didn’t have this field, this field is populated with the most recently used value of this field. That would be either the value from the last published version or from the <em>Draft</em> that is currently edited.</p>
+<p>When an optional field is added to the content type, it is left empty in versions that didn’t have this field.</p>
+<h4 id="modification-of-a-field-data-type">Modification of a field data type</h4>
+<p>When a field’s <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> is changed, and both data types are compatible (for example, a date and text), the modified fields are filled in when restoring a previous version. If the data types are not compatible (for example, a text field changed to a checkbox), the given field is left empty.</p>
+<h4 id="field-removal">Field removal</h4>
+<p>When a field is removed, the previous version is restored without the deleted field and without the data from this field.</p>
+
+</body>
+</html>

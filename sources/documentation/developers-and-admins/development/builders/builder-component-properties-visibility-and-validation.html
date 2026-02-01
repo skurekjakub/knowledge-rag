@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Builder component properties visibility and validation</title>
+</head>
+<body>
+<p>Similar to how you assign <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to Page, Email, or Form Builder component properties (<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widgets</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">sections</a>, <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/develop-personalization-condition-types">personalization conditions</a>, etc.), the API also allows you to set validation rules and visibility conditions that apply to the corresponding configuration dialog. Properties can have multiple validation rules or visibility conditions assigned this way.</p>
+<ul>
+<li>
+<p><strong>Validation rules</strong> are used to constrain user input to ensure that only data in the desired format are provided.</p>
+<p>By default, the system provides a set of validation rules that covers some of the most common use cases – required input, email address, minimum and maximum text length. For the full list, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules#default-validation-rules">Default validation rules</a>. In addition, the system allows you to develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">custom validation rules</a> suitable for your scenarios.</p>
+</li>
+<li>
+<p><strong>Visibility conditions</strong> control how and when properties are displayed to users in the configuration interface (dialog or panel).</p>
+<p>By default, the system provides a set of conditions that determine visibility based on another property of the same component. For example, you can have a property setting a widget’s heading text and make it visible only when editors enable another checkbox property to actually display a widget heading. For the full list of visibility conditions provided by the system, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions#default-visibility-conditions">Default visibility conditions</a>. In addition, the system allows you to develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">custom visibility conditions</a> suitable for your scenarios.</p>
+
+<div>
+
+</div>
+<div>
+<p>Visibility conditions are restricted only to properties managed by editing components. They are NOT applicable to widget properties that users manage through an inline editor.</p>
+</div>
+</li>
+</ul>
+<h2 id="add-validation-rules">Add validation rules</h2>
+<p>Use the following process to add validation rules to the properties of a component:</p>
+<ol type="1">
+<li>Open your project in Visual Studio.</li>
+<li>Edit the class containing the component’s properties.</li>
+<li>Identify properties where validation is desirable.</li>
+<li>Decorate the properties with attributes that correspond to the desired validation rules. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules#default-validation-rules">Default validation rules</a>.
+<ul>
+<li>You can add multiple validation rule attributes to a single property.</li>
+</ul>
+</li>
+</ol>
+<p>The given component’s configuration dialog now validates user input according to the assigned validation rules.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Examples - validation rules</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+...
+
+[NumberInputComponent(Order = 1, Label = "Age")]
+[RequiredValidationRule]
+public int Age { get; set; }
+
+// Textbox property for entering a city value
+[TextInputComponent(Order = 2, Label = "City")]
+[MaxLengthValidationRule(20)]
+public string City{ get; set; }
+
+</code></pre>
+</div>
+
+<h2 id="add-visibility-conditions">Add visibility conditions</h2>
+<p>Use the following process to add visibility conditions to the properties of a component:</p>
+<ol type="1">
+<li>Open your project in Visual Studio.</li>
+<li>Edit the class containing the component’s properties (property model, etc.).</li>
+<li>Identify the property that you want to hide or display based on a condition.</li>
+<li>Decorate the property using the attribute that corresponds to the desired visibility condition. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions#default-visibility-conditions">Default visibility conditions</a>.
+<ul>
+<li>You can add multiple visibility condition attributes to a single property. The property is visible if <strong>all</strong> added visibility conditions are fulfilled.</li>
+</ul>
+</li>
+<li>Pass the name of the property on which the condition depends (use the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/nameof" target="_blank">nameof</a> expression) into the attribute’s constructor.</li>
+</ol>
+<p>The given component’s configuration dialog now displays properties based on the assigned visibility conditions.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Property order requirement</strong></p>
+<p>Visibility dependencies between properties are restricted by the order in which the properties are displayed in the configuration dialog. Properties can only depend on properties with a lower order, i.e. those that are shown before them in the dialog.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Examples - visibility conditions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+...
+
+// Checkbox property that controls whether the widget displays advanced properties
+[CheckBoxComponent(Order = 0, Label = "Show advanced")]
+public bool ShowAdvanced { get; set; }
+
+// Textbox property for entering the widget's heading text
+// Visible only if the widget's advanced properties are displayed
+[TextInputComponent(Order = 1, Label = "Heading text")]
+[VisibleIfTrue(nameof(ShowAdvanced))]
+public string HeadingText { get; set; }
+
+// Textbox property for entering a city value
+[TextInputComponent(Order = 2, Label = "City")]
+public string City{ get; set; }
+
+// Checkbox property indicating whether the widget offers express shipping
+// Visible only if the entered city is "New York" and the widget's advanced properties are displayed
+[CheckBoxComponent(Order = 3, Label = "Offer express shipping")]
+[VisibleIfTrue(nameof(ShowAdvanced))]
+[VisibleIfEqualTo(nameof(City), "New York", StringComparison.OrdinalIgnoreCase)]
+public bool ExpressShipping { get; set; }
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

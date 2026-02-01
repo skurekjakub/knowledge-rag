@@ -1,0 +1,841 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>ContentRetriever API</title>
+</head>
+<body>
+<p><code>IContentRetriever</code> provides a unified API to fetch various types of content managed by Xperience from within web applications. It’s intended as the primary service for the retrieval of:</p>
+<ul>
+<li>Pages</li>
+<li>Reusable content items</li>
+<li>Content sharing <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>
+</li>
+</ul>
+<p>The simplest way to use <code>IContentRetriever</code> is directly calling each method with the default settings, which are optimized for most common scenarios:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve the current page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Retrieve the current page
+var currentPage = await contentRetriever.RetrieveCurrentPage&lt;HomePage&gt;();
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve pages of a specific content type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Retrieve all pages of a specific content type
+var articles = await contentRetriever.RetrievePages&lt;ArticlePage&gt;();
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve reusable content items</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Retrieve content items by content type
+var testimonials = await contentRetriever.RetrieveContent&lt;TestimonialItem&gt;();
+</code></pre>
+</div>
+
+<p>Functionally, the API serves as an abstraction layer over <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">content query</a>, where it handles common retrieval scenarios by providing default, recommended configuration for various aspects like <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api#build-queries">query construction</a>, <a href="/documentation/developers-and-admins/configuration/languages#language-fallbacks">language fallback</a> handling, and <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-linked-content-items">linked item retrieval</a>. However, it also provides developers the option to override these defaults by exposing parts of the retrieval lifecycle (e.g., query construction, model mapping) via function delegates.</p>
+<p>This page introduces concepts shared by all methods available on the service, together with relevant examples. For a complete method reference, see <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api">Reference - ContentRetriever API</a>.</p>
+<h2 id="shared-aspects-of-the-api">Shared aspects of the API</h2>
+<h3 id="configurable-retrieval-behavior">Configurable retrieval behavior</h3>
+<p><code>IContentRetriever</code> method overloads accept an optional parameter object, named according to the retrieval scenario (e.g., <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api#retrieve-the-current-page">RetrieveCurrentPageParameters</a>, <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api#retrieve-pages-of-a-single-content-type">RetrievePagesParameters</a> ). These objects allow you to configure the high-level behavior and scope of the content retrieval operation. They primarily control how and under what context data is fetched.</p>
+<p>These parameters objects define behavior such as:</p>
+<ul>
+<li>The desired <a href="/documentation/developers-and-admins/configuration/languages">content language</a> (<code>LanguageName</code>, <code>UseLanguageFallbacks</code>).</li>
+<li>Whether to retrieve preview or live content (<code>IsForPreview</code>).</li>
+<li>The depth of linked content to include (<code>LinkedItemsMaxLevel</code>).</li>
+<li>Whether to include content items requiring <a href="/documentation/business-users/website-content/secure-pages">authentication</a> (<code>IncludeSecuredItems</code>).</li>
+<li>Scope limitations like specific <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#filter-pages-based-on-content-tree-structure">content tree paths</a> (<code>PathMatch</code>) or <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspaces</a> (<code>WorkspaceNames</code>).</li>
+</ul>
+<p>When you call a retriever method without providing a specific parameters object – often by using the simpler extension method overloads – or if you provide a default instance (<code>new RetrieveCurrentPageParameters()</code> for example), the API uses sensible defaults.</p>
+<p>These defaults are designed for the most common use cases, typically relying on the current request’s context (e.g., using the detected preferred language, respecting the current preview mode status) and opting for safer, less resource-intensive settings (like <code>LinkedItemsMaxLevel = 0</code> and <code>IncludeSecuredItems = false</code>). This results in concise and performant queries.</p>
+<p>The flexibility of this approach is in overriding the defaults when instantiating these objects. This allows you to tailor the retrieval to specific requirements. For example:</p>
+<ul>
+<li>You might need to display content in a specific language regardless of the user’s preference:
+
+<div>
+<pre><code>
+  new RetrievePagesParameters { LanguageName = "spanish" }
+  </code></pre>
+</div>
+</li>
+<li>You might need to fetch related items linked from a main article:
+
+<div>
+<pre><code>
+  new RetrieveCurrentPageParameters { LinkedItemsMaxLevel = 1 }
+  </code></pre>
+</div>
+</li>
+<li>You might need to ensure you’re always getting the latest, unpublished content:
+
+<div>
+<pre><code>
+  new RetrieveContentParameters { IsForPreview = true }
+  </code></pre>
+</div>
+</li>
+<li>You might need to retrieve pages only within a specific section of the site:
+
+<div>
+<pre><code>
+  new RetrievePagesParameters { PathMatch = PathMatch.Children("/products") }
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>By using these parameters objects, you gain explicit control over the retrieval context and scope, ensuring the retriever fetches the right content based on your application’s requirements, rather than just relying on provided defaults.</p>
+<p>All <code>*Parameters</code> objects also include a <code>Default</code> property. This property provides a default instance of the specific parameter type when no custom configuration is needed. Useful when a configuration action is syntactically required but no additional configuration is necessary (for instance, when using certain advanced overloads of the available methods). However, note that the default object is only populated in certain scenarios, see: <a href="#request-context-requirements">Request context requirements</a>.</p>
+<h3 id="optional-query-configuration">Optional query configuration</h3>
+<p>Certain overloads of <code>IContentRetriever</code> methods accept an <code>additionalQueryConfiguration</code> parameter. This parameter allows you to directly configure the underlying <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api#build-queries">content query builder</a> instance, providing advanced control over the database query construction beyond what is possible using the <a href="#configurable-retrieval-behavior">retrieval parameters</a> described above.</p>
+<p>You can use this to apply various query modifications, such as:</p>
+<ul>
+<li>
+<strong>Filtering</strong> – limiting results using <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#where">Where</a> conditions.</li>
+<li>
+<strong>Sorting</strong> – defining <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#orderby">OrderBy</a> clauses.</li>
+<li>
+<strong>Projection</strong> – specifying exact database columns to retrieve using <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#columns">Columns</a>.</li>
+<li>
+<strong>Paging</strong> – limits results using:
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#topn">TopN</a> – returns only the first <code>N</code> records according to the specified order. Cannot be combined with <code>Offset</code>.</li>
+<li>
+<a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#offset">Offset</a> – skips the first <code>offset</code> records and then retrieves the next <code>fetch</code> records. This is the recommended method for implementing paging and requires an <code>OrderBy</code> clause to ensure consistent results. Cannot be combined with <code>TopN</code>.</li>
+</ul>
+</li>
+<li>
+<strong>Linked items configuration</strong> – options for retrieving <a href="/documentation/business-users/content-hub/content-items#link-content-items">linked items</a> via <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#withlinkeditems">WithLinkedItems</a>. Linked item depth is reflected from the corresponding <a href="#configurable-retrieval-behavior">method configuration object</a>.</li>
+<li>
+<strong>Method-specific options</strong> – certain configuration options are unique to specific methods. For example, <code>UrlPathColumns</code> for page queries or <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-item-query#insmartfolder">InSmartFolder</a> for content item queries.</li>
+</ul>
+<p>Query configuration objects are named according to the corresponding retrieval method (e.g., <code>RetrieveCurrentPageQueryParameters</code>, <code>RetrievePagesQueryParameters</code>, <code>RetrieveContentQueryParameters</code>). All <code>*QueryParameters</code> objects also include a <code>Default</code> property. This property provides a default instance of the specific parameter type when no custom configuration is needed. Useful when a configuration action is syntactically required but no additional configuration is necessary (for instance, when using certain advanced overloads of the available methods).</p>
+<h3 id="url-retrieval-behavior">URL retrieval behavior</h3>
+<p>When retrieving pages using <code>IContentRetriever</code>, you have control over how page URLs are generated, particularly for multilingual sites and when retrieving data explicitly to construct URLs. This is managed through the <a href="#optional-query-configuration">additionalQueryConfiguration delegate</a>, which allows you to customize the underlying query.</p>
+<h4 id="controlling-url-language-with-fallbacks">Controlling URL language with fallbacks</h4>
+<p>By default, <code>IContentRetriever</code> methods configure their internal queries to use <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls#url-language-behavior">UrlLanguageBehavior.UseRequestedLanguage</a>. When a page uses content from a fallback language, the URL is still generated for the originally requested language.</p>
+<p>Use <code>SetUrlLanguageBehavior(UrlLanguageBehavior.UseFallbackLanguage)</code> to generate URLs that match the actual language of the retrieved content instead of the requested language.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Configure query to use fallback language for URLs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="3"><code>
+var pages = await contentRetriever.RetrievePages&lt;ArticlePage&gt;(
+    new RetrievePagesParameters { LanguageName = "es" },
+    query =&gt; query.SetUrlLanguageBehavior(UrlLanguageBehavior.UseFallbackLanguage),
+    new RetrievalCacheSettings(cacheItemNameSuffix:
+        $"{nameof(RetrievePagesQueryParameters.SetUrlLanguageBehavior)}|UseFallbackLanguage")
+);
+
+foreach (var page in pages) {
+  // If content fell back to English, URL will be
+  // '/en/my-page' instead of '/es/my-page'
+  var url = page.GetUrl();
+}
+</code></pre>
+</div>
+
+<h4 id="optimizing-retrieved-data-for-url-generation">Optimizing retrieved data for URL generation</h4>
+<p>To improve query performance when your primary need is page URLs rather than full page content, use the <code>UrlPathColumns()</code> method in the <code>additionalQueryConfiguration</code>.</p>
+<p>This method ensures that the query only fetches the minimal set of data columns required to construct page URLs. This is especially beneficial when you intend to use the URLs for navigation menus, sitemaps, or other linking purposes without loading the entire page object.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve pages optimized for URL generation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4-6"><code>
+var pagesWithUrlsOnly = await contentRetriever.RetrievePages&lt;ArticlePage&gt;(
+    RetrievePagesParameters.Default,
+    // Retrieves the title and all columns required for URL resolution
+    query =&gt; query
+              .Columns("ArticleTitle")
+              .UrlPathColumns(),
+    new RetrievalCacheSettings(cacheItemNameSuffix:
+        $"{nameof(RetrievePagesQueryParameters.Columns)}|ArticleTitle|{nameof(RetrievePagesQueryParameters.UrlPathColumns)}")
+);
+</code></pre>
+</div>
+
+<p>Using <code>UrlPathColumns()</code> helps ensure that <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls#using-the-geturl-extension-method">GetUrl()</a> can operate on the retrieved objects without further database calls, as the necessary data is already pre-fetched.</p>
+<h3 id="implicit-result-caching">Implicit result caching</h3>
+<p>The <code>IContentRetriever</code> API supports implicit result <a href="/documentation/developers-and-admins/development/caching/data-caching">caching</a>. By default, caching is enabled for all retrieval methods unless explicitly disabled using <code>RetrievalCacheSettings.CacheDisabled</code>.</p>
+<p>You can configure <a href="/documentation/developers-and-admins/development/caching/data-caching#cache-reusable-content-items-and-pages">caching behavior</a> using the <code>RetrievalCacheSettings</code> parameter. This parameter allows you to:</p>
+<ul>
+<li>
+<strong>Enable or disable caching</strong> – Use <code>RetrievalCacheSettings.CacheDisabled</code> to disable caching for specific retrieval operations.</li>
+<li>
+<strong>Set cache item name suffix</strong> – If you <a href="#optional-query-configuration">modify the default query</a> used when retrieving data, you must ensure a unique cache item name for the data via a suffix appended to the cache key. See <a href="#ensure-unique-cache-keys">Ensure unique cache keys</a>.</li>
+<li>
+<strong>Set cache expiration</strong> – Specify the cache expiration time using the <code>CacheExpiration</code> property.</li>
+<li>
+<strong>Use sliding expiration</strong> – Enable sliding expiration by setting <code>UseSlidingExpiration</code> to <code>true</code>.</li>
+<li>
+<strong>Add additional cache dependencies</strong> – Use the <code>AdditionalCacheDependencies</code> property to define custom dependencies for cache invalidation.</li>
+</ul>
+<h4 id="default-cache-settings">Default cache settings</h4>
+<ul>
+<li>The default cache expiration time is set to <strong>10</strong> minutes. This value is used when no specific expiration is provided in <code>RetrievalCacheSettings</code>. You can set a default expiration time globally for all requests made via the content retriever API using <code>ContentRetrieverCacheOptions</code>. See <a href="#set-global-cache-expiration-time">Set global cache expiration time</a>.</li>
+<li>Sliding expiration is <strong>disabled</strong> by default, meaning the cache duration is fixed and doesn’t get extended when the cached item is accessed.</li>
+</ul>
+<h4 id="caching-with-custom-configuration">Caching with custom configuration</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Use custom caching configurations</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="3-8,13"><code>
+// Configure cache settings with a 30-minute expiration and sliding expiration enabled.
+var cacheSettings = new RetrievalCacheSettings(
+    // Add a unique suffix to identify the cached data.
+    cacheItemNameSuffix: $"{nameof(ContentTypesQueryParameters.OfContentType)}|ArticleGenerated",
+    // Cache entries will expire 30 minutes after their last access.
+    cacheExpiration: TimeSpan.FromMinutes(30),
+    // Resets the expiration timer on each access to keep frequently accessed items in the cache.
+    useSlidingExpiration: true);
+
+var result = await contentRetriever.RetrieveCurrentPage&lt;ArticleGenerated&gt;(
+    RetrieveCurrentPageParameters.Default,
+    RetrieveCurrentPageQueryParameters.Default,
+    cacheSettings
+);
+</code></pre>
+</div>
+
+<h4 id="disable-result-caching">Disable result caching</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Disable caching for queries</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="5"><code>
+var result = await contentRetriever.RetrieveCurrentPage&lt;ArticleGenerated&gt;(
+    RetrieveCurrentPageParameters.Default,
+    RetrieveCurrentPageQueryParameters.Default,
+    // Disables result caching for the query
+    RetrievalCacheSettings.CacheDisabled
+);
+</code></pre>
+</div>
+
+<h4 id="ensure-unique-cache-keys">Ensure unique cache keys</h4>
+<p>When you use the <code>additionalQueryConfiguration</code> parameter to customize the query, you must provide a <code>cacheItemNameSuffix</code> in <code>RetrievalCacheSettings</code>. This suffix ensures that the cache key is unique for your specific query variation, as the system <strong>does not</strong> reflect the additional query configuration in the final constructed cache item name.</p>
+<p>A recommended pattern for the suffix is to combine the name of the query configuration object with a string representation of its parameters. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Ensure unique cache item names for parameterized queries</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4,9"><code>
+var cacheSettings = new RetrievalCacheSettings(
+    // Constructs a unique suffix by combining the string representation of the parameter values.
+    // This ensures that different query configurations result in different cache keys.
+    cacheItemNameSuffix: $"{nameof(RetrievePagesQueryParameters.TopN)}|3"
+);
+
+var result = await contentRetriever.RetrieveCurrentPage&lt;ArticleGenerated&gt;(
+    RetrieveCurrentPageParameters.Default,
+    a =&gt; a.TopN(3),
+    cacheSettings
+);
+</code></pre>
+</div>
+
+<p>This practice helps prevent cache collisions when different query configurations might otherwise produce the same default cache key. Your strategy for generating suffixes should ensure consistent outputs varied only by the provided parameterization. This way, you leverage the cache item name generated internally by the method to its maximum potential and minimize the possibility of caching identical results multiple times under different keys.</p>
+<p>In requests that don’t modify the retrieval query in any way, the suffix can be defined as an empty string.</p>
+<h4 id="set-global-cache-expiration-time">Set global cache expiration time</h4>
+<p>Results returned by the API are by default cached for 10 minutes, unless overridden directly at the point of the retrieval operation by a specific instance of <code>RetrievalCacheSettings</code>. You can set this default caching period using <code>ContentRetrieverCacheOptions</code> and the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options pattern</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Set global cache expiration time</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="8"><code>
+// Sets the global default cache expiration for IContentRetriever instances.
+// This value is used if no specific RetrievalCacheSettings.CacheExpiration is provided
+// at the point of a retrieval operation, allowing for both global defaults and granular overrides.
+builder.Services.Configure&lt;ContentRetrieverCacheOptions&gt;(options =&gt;
+{
+    // Sets the default cache duration to 30 minutes.
+    // Individual IContentRetriever calls can override this via RetrievalCacheSettings.
+    options.DefaultCacheExpiration = TimeSpan.FromMinutes(30);
+});
+</code></pre>
+</div>
+
+<h4 id="gather-generated-cache-dependencies">Gather generated cache dependencies</h4>
+<p>The <code>IContentRetriever</code> API automatically collects generated <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">cache dependencies</a> for all retrieved items. This is achieved using the <code>CacheDependencyCollector</code> class, which operates in a scoped context. You can access the collected dependencies by creating an instance of <code>CacheDependencyCollector</code> and calling its <code>GetCacheDependency()</code> method.</p>
+<p>This is particularly useful when you have a broader caching strategy that needs to incorporate the dependencies of data fetched by multiple content retriever calls. For example, you can disable caching for individual requests, collect cache dependencies generated for the retrieved data, and use them as dependencies in a broader cached section.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Gather cache dependencies using CacheDependencyCollector</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7,13,20,27"><code>
+using Kentico.Content.Web.Mvc;
+using CMS.Helpers;
+
+// Initializes a new collector scope
+using (var dependencyCollector = new CacheDependencyCollector())
+{
+    var cachedData = await progressiveCache.LoadAsync(async (cs) =&gt;
+    {
+        var page = await contentRetriever.RetrieveCurrentPage&lt;Home&gt;(
+            RetrieveCurrentPageParameters.Default,
+            RetrieveCurrentPageQueryParameters.Default,
+            // Cache disabled for the request
+            cacheSettings: RetrievalCacheSettings.CacheDisabled
+        );
+
+        var relatedArticles = await contentRetriever.RetrievePages&lt;ArticlePage&gt;(
+            RetrievePagesParameters.Default,
+            RetrievePagesQueryParameters.Default,
+            // Cache disabled for the request
+            cacheSettings: RetrievalCacheSettings.CacheDisabled
+        );
+
+        // Get the combined dependencies from all IContentRetriever calls
+        // within the CacheDependencyCollector's scope up until this point.
+        // The current set of dependencies continues to accumulate
+        // until the parent scope gets disposed.
+        cs.CacheDependency = dependencyCollector.GetCacheDependency();
+
+        // ...
+    }, cacheSettings);
+}
+</code></pre>
+</div>
+
+<p>The collector also supports nested scopes. If you create multiple <code>CacheDependencyCollector</code> instances in a nested fashion (e.g., within a method that calls another method, both using a collector), dependencies from inner scopes are automatically propagated to outer scopes upon disposal of the inner collector.</p>
+<p>The <code>CacheDependencyCollector.AddCacheDependency(CMSCacheDependency dependency)</code> method can also be used to manually add dependencies to the current scope if needed. Note that the method must be called from inside an initialized collector scope – the call otherwise returns an exception.</p>
+<h3 id="request-context-requirements">Request context requirements</h3>
+<p>Certain <code>IContentRetriever</code> method parameters (<code>ChannelName</code>, <code>LanguageName</code>, <code>IsForPreview</code>) can be detected automatically when the request’s domain matches a configured <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Automatic context detection</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Callable from any route where request domain
+// matches an existing website channel domain.
+var articles = await contentRetriever.RetrievePages&lt;ArticlePage&gt;();
+</code></pre>
+</div>
+
+<p>Additionally, the <code>RetrieveCurrentPage</code> method is only intended to be called from inside code handled by <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">content tree-based routing</a>, which provides all required parameters for the retrieval (page ID, etc.).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>RetrieveCurrentPage context requirements</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Callable from code handled by content tree-based routing.
+var currentPage = await contentRetriever.RetrieveCurrentPage&lt;HomePage&gt;();
+</code></pre>
+</div>
+
+<p>When automatic detection is not possible, you need to provide these parameters explicitly:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Specify context parameters explicitly</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var articles = await contentRetriever.RetrievePages&lt;ArticlePage&gt;(
+    new RetrievePagesParameters
+    {
+        ChannelName = "MyWebsite",
+        LanguageName = "en",
+        IsForPreview = false
+    }
+);
+</code></pre>
+</div>
+
+<p>Explicit parameterization is needed when:</p>
+<ul>
+<li>Request domain does not match any configured <a href="/documentation/business-users/website-content">website channel</a>.</li>
+<li>Executing code in background jobs or <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled tasks</a>.</li>
+<li>Running code in <a href="/documentation/developers-and-admins/api/use-the-xperience-by-kentico-api-externally">console applications or CLI tools</a>.</li>
+</ul>
+<p>If context cannot be detected automatically, the API throws an <code>InvalidOperationException</code> with messages such as:</p>
+<ul>
+<li>“The HTTP context is not available. Ensure that the <code>IContentRetrieverWebsiteContextProvider</code> is used within a valid HTTP request context.”</li>
+<li>“Website data context could not be retrieved. Parameters <code>ChannelName</code>, <code>LanguageName</code>, and <code>IsForPreview</code> need to be specified manually.”</li>
+</ul>
+<h3 id="custom-model-mapping">Custom model mapping</h3>
+<p>The <code>IContentRetriever</code> API provides flexible model mapping capabilities that support both registered content types and custom model classes. The underlying model mapping system uses the following priority:</p>
+<ol type="1">
+<li><p><strong>Registered content types</strong> – If a model type is registered for the content type via <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#registercontenttypemapping-attribute">RegisterContentTypeMappingAttribute</a> and your target model type (provided via the generic method parameter) is assignable from the registered type, the registered type is used for mapping.</p></li>
+<li><p><strong>Direct model mapping</strong> – If no registered type is found or it’s not assignable, your specified model type is used directly for mapping. The model must be a non-abstract class, struct, or record with a parameterless constructor. The API attempts automatic mapping to your specified model, using case-insensitive property matching with the columns retrieved by the query. This flexibility allows you to use any custom, simplified models containing only the properties you need.</p></li>
+</ol>
+<p></p>
+<h4 id="custom-mapping-with-configuremodel-delegate">Custom mapping with configureModel delegate</h4>
+<p>Additionally, <code>IContentRetriever</code> method overloads include an optional <code>configureModel</code> parameter, which allows you to inject custom logic into the model mapping pipeline for even more advanced scenarios.</p>
+<p></p>
+<p>The parameter has the following signature:</p>
+
+<div>
+<pre><code>
+Func&lt;IContentQueryDataContainer, TInput, Task&lt;TResult&gt;&gt; configureModel;
+</code></pre>
+</div>
+
+<p>This parameter gives you control over how the retrieved data is mapped to your resulting model class.</p>
+<ul>
+<li><p><code>IContentQueryDataContainer</code> – contains the database row (page, content item) being mapped. You can access column values via <code>GetValue&lt;TValue&gt;(string columnName)</code>.</p></li>
+<li>
+<p><code>TInput</code> – the intermediate mapped object. This could be either a registered content type model or your custom model type, depending on the mapping priority. For example, when calling:</p>
+
+<div>
+<pre><code>
+  contentRetriever.RetrievePages&lt;ArticleGenerated&gt;()
+  </code></pre>
+</div>
+
+<p><code>TInput</code> contains an instance of <code>ArticleGenerated</code> for each mapped item from the result set. You can use this intermediate representation to fetch the data, run additional transformations (combining fields, or enriching the model with external data) and any other custom logic.</p>
+</li>
+<li><p><code>TResult</code> – the final type you want to return from the content retrieval operation. This is the type of object that your <code>configureModel</code> delegate creates and returns.</p></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>See the <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api#run-queries-and-map-the-result">Run queries and map the result</a> documentation to learn about the content item query model mapping lifecycle. <code>IContentRetriever</code> methods simply expose certain parts of the lifecycle.</p>
+</div>
+
+<h4 id="direct-model-mapping-without-registration">Direct model mapping without registration</h4>
+<p>You can use any custom model class directly without needing to register it using <code>RegisterContentTypeMappingAttribute</code>. If you leave <code>configureModel</code> as <code>null</code>, the content retriever attempts automatic mapping to your specified model type, using case-insensitive property matching with the columns retrieved by the query. This works for both <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated model classes</a> and custom classes that match the underlying content type structure.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Direct mapping to a custom model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Custom model class without content type registration
+public class SimpleArticle
+{
+    public string Title { get; set; }
+    public string Summary { get; set; }
+    public DateTime PublishedDate { get; set; }
+}
+
+var contentTypes = new[] { ArticlePage.CONTENT_TYPE_NAME, BlogPage.CONTENT_TYPE_NAME };
+
+// Direct mapping to custom model 'SimpleArticle' that does not need to be registered
+var articles = await contentRetriever.RetrievePagesOfContentTypes&lt;SimpleArticle&gt;(contentTypes);
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Direct mapping to a generated class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// 'ArticleGenerated' is a model class generated by Xperience
+// Works the same way as before - uses registered mapping if available
+var articles = await contentRetriever.RetrievePages&lt;ArticleGenerated&gt;();
+</code></pre>
+</div>
+
+<h4 id="advanced-mapping-with-configuremodel-delegate">Advanced mapping with configureModel delegate</h4>
+<p>For more complex scenarios, you can provide a custom mapping function using the <code>configureModel</code> delegate. This function receives the raw data for each retrieved item and the intermediate mapped object, allowing you to implement custom transformation logic.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Advanced mapping with configureModel delegate</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Content.Web.Mvc;
+
+// Custom view model for complex transformations
+public class CustomArticleViewModel 
+{ 
+    public string PageTitle { get; set; }
+    public string PageAdminTitle { get; set; }
+    public string FormattedDate { get; set; }
+}
+
+// Using configureModel for complex transformations
+// TInput could be either a registered model or custom model based on mapping priority
+var customViewModels = 
+    await contentRetriever.RetrievePages&lt;SimpleArticle, CustomArticleViewModel&gt;(
+        new RetrievePagesParameters(),
+        null, // No query modifications
+        RetrievalCacheSettings.CacheDisabled,
+        
+        // configureModel delegate for custom transformations
+        async (container, mappedResult) =&gt;
+        {
+            // 'mappedResult' is the intermediate SimpleArticle object
+            // 'container' provides access to raw database data
+            return new CustomArticleViewModel
+            {
+                PageTitle = mappedResult.Title ?? "Default Title",
+                PageAdminTitle = container.GetValue&lt;string&gt;("WebPageItemName"),
+                FormattedDate = mappedResult.PublishedDate.ToString("MMM dd, yyyy")
+            };
+        }
+);
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>See <a href="#usage-scenarios">Usage scenarios</a> for common use cases and recommendations for when to use either approach.</p>
+</div>
+
+<p>This mechanism offers flexibility, allowing simple mapping for standard cases and complex, custom transformations for advanced scenarios.</p>
+<h4 id="usage-scenarios">Usage scenarios</h4>
+<h5 id="direct-mapping-to-custom-models">Direct mapping to custom models</h5>
+<ul>
+<li>
+<em>Use case:</em> Using custom model classes without requiring content type registration. Create simplified models with only the properties you need, or use models that don’t exactly match the content type structure.</li>
+<li>
+<em>Approach:</em> Use methods like <code>contentRetriever.RetrieveCurrentPage&lt;YourCustomClass&gt;()</code> directly. The model must be a non-abstract class with a parameterless constructor.</li>
+</ul>
+<h5 id="simple-direct-mapping-to-registered-models">Simple direct mapping to registered models</h5>
+<ul>
+<li>
+<em>Use case:</em> Retrieving content directly into <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated model classes</a> or other registered content type models when your class structure matches the content type fields.</li>
+<li>
+<em>Approach:</em> Use methods like <code>contentRetriever.RetrieveCurrentPage&lt;YourRegisteredClass&gt;()</code>.</li>
+</ul>
+<h5 id="small-adjustments-or-conformance-to-shared-models-minimal-custom-mapping">Small adjustments or conformance to shared models (Minimal custom mapping)</h5>
+<ul>
+<li>
+<em>Use case:</em> Making small changes like formatting dates, providing default values, renaming properties for view models, or when the intermediate mapped object needs slight modifications.</li>
+<li>
+<em>Approach:</em> Use the <code>configureModel</code> delegate with simple transformations or object-to-object mapping.</li>
+</ul>
+<h5 id="complex-transformations-and-custom-view-models-extensive-custom-mapping">Complex transformations and custom view models (Extensive custom mapping)</h5>
+<ul>
+<li>
+<em>Use case:</em> Transforming fetched content into view models with significantly different structures, combining multiple source fields, performing calculations or conditional logic, or accessing data not directly available through standard mapping.</li>
+<li>
+<em>Approach:</em> Leverage the <code>configureModel</code> delegate extensively to build your target C# object with full control over the transformation process.</li>
+</ul>
+<h3 id="using-shared-types-for-bulk-content-retrieval">Using shared types for bulk content retrieval</h3>
+<p><a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#icontentitemfieldssource-interfaces">Generated model classes</a> implement shared interfaces that provide access to system properties:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Page content type model classes</a> implement <code>IWebPageFieldsSource</code>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Reusable content type model classes</a> implement <code>IContentItemFieldsSource</code>
+</li>
+</ul>
+<p>However, the way <code>IContentRetriever</code> methods work with these interfaces depends on how content types are identified and resolved during retrieval operations.</p>
+<p>The following <code>IContentRetriever</code> methods:</p>
+<ul>
+<li><code>RetrievePages</code></li>
+<li><code>RetrievePagesByGuids</code></li>
+<li><code>RetrieveContent</code></li>
+<li><code>RetrieveContentByGuids</code></li>
+</ul>
+<p>determine the target content type from the provided generic. This identification happens through the <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects#registercontenttypemapping-attribute">RegisterContentTypeMappingAttribute</a> present on <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated model classes</a>.</p>
+<p>Since <code>IWebPageFieldsSource</code> and <code>IContentItemFieldsSource</code> are shared interfaces without specific content type mappings, using them directly as generic type parameters is not supported by these methods. The system cannot determine which specific content type to retrieve:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Unsupported approaches</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// These approaches are not supported - no content type can be determined
+var pages = await contentRetriever.RetrievePages&lt;IWebPageFieldsSource&gt;();
+var content = await contentRetriever.RetrieveContent&lt;IContentItemFieldsSource&gt;();
+</code></pre>
+</div>
+
+<h4 id="multi-content-type-page-retrieval-with-retrieveallpages">Multi-content type page retrieval with RetrieveAllPages</h4>
+<p>When you need to retrieve pages across multiple content types without knowing the specific types at compile time, use the <code>RetrieveAllPages</code> method. This method retrieves all web pages that match the specified <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api#retrieve-all-pages">parameterization</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve all page content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="3"><code>
+// Retrieves all page content types matching the specified criteria
+IEnumerable&lt;IWebPageFieldsSource&gt; allPages =
+    await contentRetriever.RetrieveAllPages&lt;IWebPageFieldsSource&gt;(
+        new RetrieveAllPagesParameters 
+        {
+            LanguageName = "en-US",
+            PathMatch = PathMatch.Children("/articles")
+        }
+);
+</code></pre>
+</div>
+
+<h4 id="retrieving-pages-by-guids-across-content-types">Retrieving pages by GUIDs across content types</h4>
+<p>When you need to retrieve pages of any content type by specific GUIDs, use the <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api#retrieve-all-pages-by-guids">RetrieveAllPagesByGuids</a> method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve pages by GUIDs across all content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4-6"><code>
+// A collection of page GUIDs (typically obtained from Page selector)
+var webPageItemGuids = new[] { guid1, guid2, guid3 };
+
+var pagesByGuids = await contentRetriever.
+    RetrieveAllPagesByGuids&lt;IWebPageFieldsSource&gt;(
+        webPageItemGuids);
+</code></pre>
+</div>
+
+<p>This method provides automatic cache dependency management based on the provided GUIDs, making it more efficient and convenient than manual query configuration.</p>
+<h4 id="limitations-for-reusable-content-items">Limitations for reusable content items</h4>
+<p>The <code>RetrieveAllPages</code> (<code>RetrieveAllPagesByGuids</code>) approach is only available for page content types. For reusable content items, you must use one of the following approaches:</p>
+<ul>
+<li>Specify exact content types you want to retrieve.</li>
+<li>Use <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> to group related content types that share common properties.</li>
+</ul>
+<p>You can cast results to the shared <code>IContentItemFieldsSource</code> interface when retrieving across multiple reusable field schemas or content types:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Reusable content item retrieval requires specific content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Retrieve a specific reusable content type
+var testimonials = await contentRetriever.RetrieveContent&lt;TestimonialItem&gt;();
+
+// Retrieve multiple specific content types using reusable field schema
+var schemaNames = new[] { IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME };
+IEnumerable&lt;IMetadataFields&gt; itemsWithSchema =
+  await contentRetriever.RetrieveContentOfReusableSchemas&lt;IMetadataFields&gt;(schemaNames);
+
+// Retrieve across multiple reusable schemas and cast to shared interface
+var schemaNames = new[] {
+    IMetadataFields.REUSABLE_FIELD_SCHEMA_NAME,
+    ISeoFields.REUSABLE_FIELD_SCHEMA_NAME
+};
+IEnumerable&lt;IContentItemFieldsSource&gt; itemsWithSchemas =
+  await contentRetriever.RetrieveContentOfReusableSchemas&lt;IContentItemFieldsSource&gt;(schemaNames);
+</code></pre>
+</div>
+
+<h2 id="method-reference">Method reference</h2>
+<p>See <a href="/documentation/developers-and-admins/api/content-item-api/reference-content-retriever-api">Reference - ContentRetriever API</a> for a reference of all methods available on <code>IContentRetriever</code>.</p>
+
+</body>
+</html>

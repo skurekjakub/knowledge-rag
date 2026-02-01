@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Custom activities</title>
+</head>
+<body>
+<p>Activities represent actions that your <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> perform. In addition to the <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">default activity types</a>, you can also define custom activity types, which allow you to track any other required actions.</p>
+<ol type="1">
+<li><a href="#add-custom-activity-types">Add custom activity types in the Xperience administration</a></li>
+<li><a href="#log-custom-activities">Implement custom activity logging</a></li>
+</ol>
+<p>Marketers can view custom activities in the standard <a href="/documentation/business-users/digital-marketing/contact-activities">activity log</a> for contacts. You can also segment contacts according to custom activities by preparing <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> with activity-based conditions. The contact groups can then be used to <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization">personalize content</a> on your websites.</p>
+<p>For example, a custom activity could be used on a bank’s website in the following scenario. The site uses a custom <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder widget</a> to display a loan calculator. The widget logs a custom “Loan calculator usage” activity whenever a visitor runs the calculator. A contact group stores all contacts who have performed this custom activity, which marketers can use to send targeted loan offers and display personalized content on other pages.</p>
+<h2 id="add-custom-activity-types">Add custom activity types</h2>
+<ol type="1">
+<li><p>Open the <strong>Contact management</strong> application in the Xperience administration.</p></li>
+<li><p>Switch to the <strong>Activity</strong> <strong>types</strong> tab.</p></li>
+<li><p>Select <strong>New activity type</strong>.</p></li>
+<li>
+<p>Fill in the fields:</p>
+<ul>
+<li>
+<strong>Activity type name</strong> – the name of the activity type displayed in the Xperience administration.</li>
+<li>
+<em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.
+<ul>
+<li>The code name is used when <a href="#log-custom-activities">logging activities</a> of the given type.</li>
+</ul>
+</li>
+<li>
+<strong>Description</strong> – we strongly recommend adding a description for all custom activity types. Describe the purpose of the activity and what actions are tracked. The description is displayed to other marketers in the Xperience administration.</li>
+<li>
+<strong>Enabled</strong> – controls whether activities of this type are logged. Can be disabled or enabled at any time.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+<p>Your custom activity type is now ready to be logged.</p>
+<p></p>
+<h2 id="log-custom-activities">Log custom activities</h2>
+<p>After defining custom activity types, developers need to set up the system to log the activities when the corresponding visitor actions occur. The following options are available:</p>
+<ul>
+<li><a href="#server-side-code">Server-side code</a></li>
+<li><a href="#client-side-code">Client-side code</a></li>
+<li><a href="#headless-tracking">Headless tracking</a></li>
+<li><a href="#cross-site-tracking">Cross-site tracking</a></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tracking consent required</strong></p>
+<p>Due to <a href="/documentation/developers-and-admins/data-protection">personal data protection</a> policies, custom activities on <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a> are only logged for visitors who give <a href="/documentation/developers-and-admins/data-protection/consent-development">consent to be tracked as contacts</a> and have the required <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> set (<em>Visitor</em> or <em>All</em>).</p>
+</div>
+
+<h3 id="server-side-code">Server-side code</h3>
+<p>You can log custom activities using the Xperience server-side API. For example, this approach can be used in the code of <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> components.</p>
+<ol type="1">
+<li>Edit the code where you want the activity to be logged.
+<ul>
+<li>Custom activities are logged for the <strong>current contact</strong>, so you cannot use code where the HTTP request context is not available (e.g., asynchronous worker threads).</li>
+</ul>
+</li>
+<li>Call the <code>Log</code> method of the <code>ICustomActivityLogger</code> service (e.g., obtained using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a>).</li>
+<li>Specify the method’s parameters:
+<ul>
+<li>
+<code>customActivityType</code> – the <em>Code name</em> of the activity type.</li>
+<li>
+<code>activityData</code> – a <code>CustomActivityData</code> object that specifies the properties of the logged activity. We recommend setting at least the <code>ActivityTitle</code> (displayed in the activity log). Optionally, you can set a <code>string</code> as the <code>ActivityValue</code> for every logged activity.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Activities;
+
+// Stores an instance of the ICustomActivityLogger service (e.g., obtained using dependency injection)
+private readonly ICustomActivityLogger customActivityLogger;
+
+..
+
+// Prepares the activity data (e.g., using the loan size as the activity value)
+var loanCalculatorActivityData = new CustomActivityData() {
+    ActivityTitle = "Loan calculator usage",
+    ActivityValue = "50000"
+};
+
+// Logs the 'custom_loan_calculator' activity for the current contact
+customActivityLogger.Log("custom_loan_calculator", loanCalculatorActivityData);
+
+</code></pre>
+</div>
+
+<p>The activities are now logged when your custom code is triggered.</p>
+<h3 id="client-side-code">Client-side code</h3>
+<p>To track some types of visitor actions, you may wish to log custom activities using JavaScript on the client side. This can be useful for basic interactions with important elements on your pages, for example when a visitor clicks a “call to action” button or link.</p>
+<p>As a prerequisite, you need to register an activity logging script onto your pages.</p>
+<p>Make sure the <code>Html.Kentico().ActivityLoggingScriptV2</code> extension method is called on all pages where you wish to log custom activities – either in your site’s main layout, or in the views of individual pages. We recommend adding the script at the end of the <em>&lt;head&gt;</em> tag in the page code. The method’s <code>logCustomActivity</code> parameter must be <code>true</code>. This is the default state if you call the method without any parameters.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Activities.Web.Mvc
+
+@* Registers the script that allows custom activity logging *@
+@Html.Kentico().ActivityLoggingScriptV2()
+
+</code></pre>
+</div>
+
+<p>You can then log custom activities in your scripts by calling the <code>kxt('</code>customactivity<code>')</code> function. Specify the following parameters for the logged activity:</p>
+<ul>
+<li>
+<code>type</code> – the <em>Code name</em> of the activity type.</li>
+<li><code>value</code></li>
+<li><code>title</code></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;button id="btnCTA" onclick="logCtaClickActivity();"&gt;See our special offers!&lt;/button&gt;
+
+...
+
+&lt;script type="text/javascript"&gt;
+    // Click handler for the CTA button, which logs a custom activity
+    var logCtaClickActivity = function logCtaClickActivity() { 
+        kxt('customactivity',  {
+            type: 'custom_cta',
+            value: 'btnCTA', // Stores the id of the clicked button element as the activity value
+            title: 'Custom CTA click'
+    persona: admin, developer
+        });
+    }
+&lt;/script&gt;
+
+</code></pre>
+</div>
+
+<p>The <code>kxt('</code>customactivity<code>')</code> function sends a request that logs the specified custom activity for the <strong>current contact</strong>. These activity logging requests are handled by a dedicated endpoint, which is added by calling the <code>UseActivityTracking</code> method in your Xperience application’s startup code (see <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">Set up activities</a>).</p>
+<h4 id="script-conflicts">Script conflicts</h4>
+<p>If you encounter script conflicts with the <code>kxt</code> function (for example when using custom or third-party JavaScript libraries), you can rename the function by setting a custom name in the <code>loggingFunctionName</code> parameter of the <code>ActivityLoggingScriptV2</code> registration method.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@* Changes the name of the custom activity logging function to 'customActivityTracker' *@
+@Html.Kentico().ActivityLoggingScriptV2(loggingFunctionName: "customActivityTracker")
+
+...
+
+&lt;script type="text/javascript"&gt;
+    customActivityTracker('customactivity',  {
+        type: 'custom_cta',
+        value: 'btnCTA',
+        title: 'Custom CTA click'
+    persona: admin, developer
+    }); 
+&lt;/script&gt;
+
+</code></pre>
+</div>
+
+<h3 id="headless-tracking">Headless tracking</h3>
+<p>You can log custom activities through the <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">headless tracking API</a>.</p>
+<ol type="1">
+<li><p>Make sure the tracking API is enabled.</p></li>
+<li><p>Consider and evaluate consent requirements for the current contact.</p></li>
+<li>
+<p>Send a POST request from your external application to the <strong>/Kentico.Tracking/activities</strong> endpoint. The following example demonstrates the data structure required for the request body:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ {
+     "Channel": "df6721ee-2562-4ef3-ae0f-9d733458550a",
+     "Contact": "052fff6b-cedb-4757-b939-b5cbee2a7aff",
+     "Activities": [
+         {
+             "Type": "custom_loan_calculator",
+             "Value": "5000"
+         }
+     ]
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h3 id="cross-site-tracking">Cross-site tracking</h3>
+<p>You can log custom activities from external sites covered by <a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">cross-site tracking</a>. Call the <code>kxt('</code>customactivity<code>')</code> function in your cross-site tracking scripts.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Logs a custom activity
+kxt('customactivity', {
+    // The 'type' parameter must match the code name of the custom activity type
+    type: 'custom_loan_calculator',
+    value: 'value'
+});
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

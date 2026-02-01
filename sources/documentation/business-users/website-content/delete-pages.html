@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Delete pages</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>In the current version of Xperience by Kentico, deleted pages can be <a href="/documentation/business-users/recycle_bin">restored</a>. If you’re using a version older than 30.12.0, deleting a page is a non-reversible action.</p>
+</div>
+
+<p>To delete a page:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>Locate the page or section you want to delete in the content tree.</li>
+<li>Open the <strong>More actions</strong> () drop-down and select <strong>Move to recycle bin</strong> to open the deletion dialog.
+<ul>
+<li>
+<p>If the deleted page is used in other content, you may want to <a href="/documentation/business-users/website-content/track-page-usages">check the usage</a> of the page and edit all content where it is used.</p>
+<p></p>
+</li>
+</ul>
+</li>
+<li>Choose where to redirect visitors when they try to reach the deleted page. Your options depend on the page’s language variants.
+<ul>
+<li>If a page variant in a fallback language is available, you need to select one of the two options below.
+<ol type="a">
+<li><strong>Serve content in fallback language</strong></li>
+<li>
+<strong>Redirect to a page</strong>
+<ul>
+<li>If chosen, continue with <strong>Select existing page</strong>.</li>
+<li>Navigate to the target page for the redirect in the content tree on the left.</li>
+<li>Select the page in the list on the right.</li>
+<li>Confirm the configuration with the <strong>Select</strong> button.</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>If there’s no fallback available, you can:
+<ol type="a">
+<li>Create a redirect using <strong>Select existing page</strong>.
+<ul>
+<li>Navigate to the target page for the redirect in the content tree on the left.</li>
+<li>Select the page in the list on the right.</li>
+<li>Confirm the configuration with the <strong>Select</strong> button.</li>
+</ul>
+</li>
+<li>Leave the page without a redirect. Visitors will receive a <a href="https://en.wikipedia.org/wiki/HTTP_404" target="_blank">404 error</a> when they try to reach the deleted page.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+If you decide not to create a redirect from the deleted page, it cannot be added later in the admin UI. See <a href="#redirects-from-deleted-pages">Redirects from deleted pages</a> for other options. If you delete a page targeted by redirects, the redirect configuration of the deleted page can affect redirects from other pages. See section <a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublishing-or-deleting-pages-targeted-by-redirects">Unpublishing or deleting pages targeted by redirects</a> for details.
+</div>
+</li>
+</ul>
+</li>
+<li>Check the pages you are about to delete and confirm the dialog to delete the pages.</li>
+</ol>
+<p>You have successfully deleted the page. Visitors trying to access the page are redirected according to the options you chose. You can find the page in the recycle bin and <a href="/documentation/business-users/recycle_bin#restore-deleted-items">restore</a> it later.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you have translated the page into multiple languages, this process deletes only the current language variant of the page. In order to delete the page completely, you need to delete its variants in all languages. Deleting the last language variant of the page deletes it permanently from the content tree.</p>
+</div>
+
+<h2 id="redirects-from-deleted-pages">Redirects from deleted pages</h2>
+<p>Using redirects from deleted pages can prevent visitors from getting a 404 error when they try to access deleted pages. You can edit and delete redirects in the <a href="/documentation/business-users/website-content/manage-page-urls#manage-redirects-from-deleted-pages">URLs</a> application on the <strong>Former URLs</strong> tab. If a redirect from a deleted page was never created or has been deleted, it cannot be added in the admin UI. However, the redirect can be added via <a href="/documentation/developers-and-admins/development/routing/custom-redirects">code</a>, for example by developers. Visitors who try to access a deleted page without a redirect will be served content in a fallback language if available. Otherwise, they receive the 404 error.</p>
+<p>If a page’s language variant is deleted with a redirect and the page is later translated again into the same language, the redirect is deleted.</p>
+<p>For more information about redirects, see <a href="/documentation/business-users/website-content/edit-and-publish-pages#redirects-from-unpublished-and-deleted-pages">Edit and publish pages</a>.</p>
+<h2 id="deleting-a-page-with-child-pages">Deleting a page with child pages</h2>
+<p>Deleting a page that has only one language variant also deletes its child pages. When deleting such a page, all pages that are going be deleted can be seen in a listing in the sidebar dialogue. The listing shows all language variants that are about to be deleted. You can see existing redirects from pages that are <a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublish-pages">unpublished</a> or scheduled to be unpublished (  ). Redirects from pages that are scheduled to be unpublished are activated when deleted.</p>
+<p>You can open () each page in a new tab to create a missing redirect by <a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublish-pages">unpublishing</a> or deleting the page, or to <a href="/documentation/business-users/website-content/manage-page-urls#manage-redirects-from-unpublished-pages">adjust</a> an existing redirect if the page is already unpublished.</p>
+<p>We recommend deleting pages individually to avoid mistakes.</p>
+<p></p>
+<h2 id="restore-deleted-pages">Restore deleted pages</h2>
+<p>The current version of Xperience by Kentico allows you to restore deleted pages from the recycle bin. See <a href="/documentation/business-users/recycle_bin#restore-deleted-items">Restore deleted items</a> for more information. If you’re using a version older than 30.12.0, recovering deleted content is not possible.</p>
+
+</body>
+</html>

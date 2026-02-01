@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Retrieve content from media libraries</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Media libraries sunset</strong></p>
+<p>Media libraries have been officially sunset, and their related API members have been marked as obsolete. Support for media libraries will continue for one more year (until July 24, 2026), after which the feature and all associated APIs will be completely removed.</p>
+<p>See <a href="/guides/architecture/media-libraries-migration-guidance">Media library migration</a> for instructions on how to migrate your media library files to <a href="/documentation/business-users/content-hub">Content hub</a>.</p>
+</div>
+
+<p>Media libraries serve as one type of data storage for your application. They can store different types of audio, video, image, and document files. For a complete list of the file types supported by default, see <a href="/documentation/developers-and-admins/configuration/media-library-configuration">Media library configuration</a>.</p>
+<p>This page covers how you can:</p>
+<ul>
+<li><a href="#retrieve-media-library-files">Retrieve media library files</a></li>
+<li><a href="#get-media-file-urls">Get media file URLs</a></li>
+<li><a href="#display-media-library-files">Display media files</a></li>
+</ul>
+<h2 id="retrieve-media-library-files">Retrieve media library files</h2>
+<p>The following example demonstrates how to retrieve files from Xperience media libraries in MVC applications. The example uses a media library with the code name <em>SampleMediaLibrary</em>. For this example to function, substitute the code name with any media library from your solution.</p>
+<ol type="1">
+<li>Open Xperience project in Visual Studio.</li>
+<li>Create a view model class representing media files. Define properties for storing the media file values that you wish to use in your views.</li>
+<li>Create a new controller class or edit an existing one.</li>
+<li>Implement a GET action method to retrieve media files. This example retrieves .jpg files from the <em>SampleMediaLibrary</em> media library.</li>
+<li>Use the view model to pass media file data to your views.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Required using statements</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Collections.Generic;
+using System.Linq;
+
+using Microsoft.AspNetCore.Mvc;
+
+using CMS.MediaLibrary;
+using CMS.Base;
+
+using Kentico.Content.Web.Mvc;
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve media files in a controller action</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+private readonly IMediaFileUrlRetriever mediaFileUrlRetriever;
+private readonly IInfoProvider&lt;MediaLibraryInfo&gt; mediaLibraryInfoProvider;
+private readonly IInfoProvider&lt;MediaFileInfo&gt; mediaFileInfoProvider;
+
+// Initializes instances of required services using dependency injection
+public MediaLibraryController(IMediaFileUrlRetriever mediaFileUrlRetriever,
+                              IInfoProvider&lt;MediaLibraryInfo&gt; mediaLibraryInfoProvider,
+                              IInfoProvider&lt;MediaFileInfo&gt; mediaFileInfoProvider)
+{
+    this.mediaFileUrlRetriever = mediaFileUrlRetriever;
+    this.mediaLibraryInfoProvider = mediaLibraryInfoProvider;
+    this.mediaFileInfoProvider = mediaFileInfoProvider;
+}
+
+/// &lt;summary&gt;
+/// Retrieves media files with the .jpg extension from the 'SampleMediaLibrary'.
+/// &lt;/summary&gt;
+public IActionResult ShowMediaFiles()
+{
+    // Gets an instance of the 'SampleMediaLibrary' media library
+    MediaLibraryInfo mediaLibrary = mediaLibraryInfoProvider.Get("SampleMediaLibrary");
+
+    // Gets a collection of media files with the .jpg extension from the media library
+    IEnumerable&lt;MediaFileInfo&gt; mediaLibraryFiles = mediaFileInfoProvider.Get()
+                                .WhereEquals("FileLibraryID", mediaLibrary.LibraryID)
+                                .WhereEquals("FileExtension", ".jpg");
+
+    // Prepares a collection of view models containing required data of the media files
+    IEnumerable&lt;MediaFileViewModel&gt; model = mediaLibraryFiles.Select(
+            mediaFile =&gt; {
+                IMediaFileUrl fileUrl = mediaFileUrlRetriever.Retrieve(mediaFile);
+                return new MediaFileViewModel
+                {
+                    FileTitle = mediaFile.FileTitle,
+                    // Gets the relative path to the media file
+                    RelativeUrl = fileUrl.RelativePath
+                };
+            }
+    );
+
+    // Passes the model to the view
+    return View(model);
+}
+
+</code></pre>
+</div>
+
+<h2 id="get-media-file-urls">Get media file URLs</h2>
+<p>To resolve the URLs of retrieved media library files (<code>MediaFileInfo</code> objects), use the <code>IMediaFileUrlRetriever</code> service from the <code>Kentico.Content.Web.Mvc</code> namespace. The service exposes a <code>Retrieve</code> method that takes a <code>MediaFileInfo</code> object as its parameter and returns an <code>IMediaFileUrl</code> instance with the following properties:</p>
+<ul>
+<li> <code>RelativePath</code> – the application relative (starting with <code>~/</code>) permanent path to the file. For example: <em>~/getmedia/0140bccc-9d47-41ea-94a9-ca5d35b2964c/sample_image.jpg</em>. This format ensures that the image remains accessible if the file is renamed or moved to a different media library or directory on the file system.</li>
+<li> <code>DirectPath</code> – the direct path to the media file on the file system. For example: <em>~/MediaLibraryFolder/sample_image.jpg</em>. These URLs change whenever the file is renamed or moved to a different media library (directory on the file system).</li>
+<li>
+<code>QueryStringParameters</code> – a collection of query string parameters appended to the URL.</li>
+<li>
+<code>IsImage</code> – a boolean flag indicating whether the URL leads to an image file. See <a href="#resize-images">Resize images</a>.</li>
+</ul>
+<h2 id="resize-images">Resize images</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Image processing</strong></p>
+<p>Image operations are provided by <em>IImageProcessingService</em> from the <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">Kentico.Xperience.ImageProcessing NuGet package</a>. The package doesn’t guarantee compatibility with niche distributions and platforms. If you run into issues with image processing on the hosting platform of your choice, you will need to provide your own implementation of <code>IImageProcessingService</code> registered using the <a href="/documentation/developers-and-admins/customization/integrate-custom-code">RegisterImplementation attribute</a>.</p>
+<p><strong>Resizing not supported for avif images</strong></p>
+<p>The default <em>IImageProcessingService</em> used for resizing media library images does not support the avif image format.</p>
+</div>
+
+<p>You can resize images via extension methods for the <code>IMediaFileUrl</code> object. The methods add query string parameters that change the URL behavior and allow you to customize the format of the files.</p>
+<p>The following extensions are available:</p>
+<ul>
+<li>
+<code>WithSizeConstraint</code> – used to resize image media files. You can resize image files via the <code>SizeConstraint</code> parameter. Note, however, that this parameterization never upscales the image. The following image size constraints are available:
+<ul>
+<li><p><code>Empty</code> –  leaves the image unchanged.</p></li>
+<li><p><code>Height(100)</code> – resizes the image to the specified height (maintains aspect ratio).</p></li>
+<li><p><code>Width(100)</code> – resizes the image to the specified width (maintains aspect ratio).</p></li>
+<li><p><code>MaxWidthOrHeight(100)</code> – resizes the image so that its width and height do not exceed the specified value (maintains aspect ratio).</p></li>
+<li>
+<p><code>Size(100, 120)</code> – resizes the image to the specified width and height. Doesn’t maintain the aspect ratio.</p>
+
+<div>
+
+</div>
+<div>
+<p>It’s not possible to resize image files via the <code>SizeConstraint</code> parameter when using <strong>direct URLs</strong>. Files accessed via direct URLs are processed directly by the server, skipping application processing entirely.</p>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="set-the-encoding-quality-for-resized-images">Set the encoding quality for resized images</h3>
+<p>You can configure the encoding quality of resized images via the <code>EncodingQuality</code> option of the <code>ImageProcessingOptions</code> class. The option accepts values from the range 0 - 100. Lower values indicate stronger compression that results in smaller, lower quality images. The default implementation sets the threshold to <strong>80</strong> and uses <a href="https://learn.microsoft.com/en-us/dotnet/api/skiasharp.skimage.encode" target="_blank">SKImage.Encode</a> to perform the encoding, which skips the compression step for lossless and unsupported image formats.</p>
+<p>Set the configuration during application startup:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.ImageProcessing;
+
+var builder = WebApplication.CreateBuilder(args);
+
+...
+
+builder.Services.AddOptions&lt;ImageProcessingOptions&gt;()
+    // Sets the quality level for resized images to 90%, resulting in a barely noticeable loss of image quality
+    // (only the highest frequencies from the image are filtered) and a roughly 30-40% size reduction
+    .Configure(o =&gt; o.EncodingQuality = 90);
+
+</code></pre>
+</div>
+
+<h2 id="display-media-library-files">Display media library files</h2>
+<p>To display media library files on your website, create views that work with the generated media file URLs. To convert relative URLs to their application absolute format, use methods from the framework’s <code>UrlHelper</code> class, such as <code>Url.Content</code>:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Display media files in Razor views</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@model IEnumerable&lt;MediaFileViewModel&gt;
+
+&lt;h2&gt;Media library file listing&lt;/h2&gt;
+
+@foreach (MediaFileViewModel mediaFile in Model)
+{
+    @* Gets an application absolute URL for the media file *@
+    string url = Url.Content(mediaFile.RelativeUrl);
+
+    &lt;img src="@url" alt="@mediaFile.FileTitle" /&gt;
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

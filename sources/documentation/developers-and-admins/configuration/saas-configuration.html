@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SaaS configuration</title>
+</head>
+<body>
+<p>Kentico’s <a href="/documentation/developers-and-admins/saas">SaaS</a> offering provides infrastructure and supporting services that allow you to deploy, host and manage Xperience by Kentico projects in the cloud. With the features and benefits of hosting your projects in the cloud also comes some necessary configuration you need to do for your projects to work optimally. To configure your application:</p>
+<ol type="1">
+<li>
+<a href="#environment-identification-extension-methods">Identify your working environment</a>.</li>
+<li>
+<a href="#DeploytotheSaaSenvironment-EnableAppInsights">Enable Microsoft Application Insights</a>.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/email-configuration#Emailconfiguration-EnableManagedSendGrid">Enable managed SendGrid integration</a>.</li>
+<li>(<em>Optional</em>) Configure <a href="#cloudflare-cdn">Cloudflare CDN</a>.</li>
+<li>(<em>Optional</em>) Configure <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage folder mapping</a> for <a href="/guides/architecture/content-modeling/content-modeling-guide/store-files">physical files</a> and any <a href="/guides/architecture/content-modeling/content-modeling-guide/store-files#unmanaged-files-and-when-to-use-them">unmanaged binary files</a> referenced by your application. Consider this configuration, especially if your application works with binary files stored outside of the dedicated <em>~/assets</em> directory that is mapped to the blob by default. Persisting binary data outside of the blob storage can be unreliable and lead to data loss in case the hosting service recycles the application (e.g., due to infrastructure changes).</li>
+<li>(<em>Optional</em>) <a href="/documentation/developers-and-admins/configuration/content-sync-configuration">Configure the content synchronization feature</a>.</li>
+<li>(<em>Optional</em>) <a href="#define-a-custom-app-offline-file">Define a custom static page to display when your application is unavailable</a>.</li>
+</ol>
+<p>To see more information about the configuration of custom domains visit <a href="/documentation/developers-and-admins/configuration/website-channel-management#configure-a-domain-name-in-the-xperience-administration">website domains</a> or <a href="/documentation/developers-and-admins/configuration/email-configuration#configurable-sender-email-addresses">email sending domains</a>.</p>
+<h3 id="environment-identification-extension-methods">Environment identification extension methods</h3>
+<p>Use the following extension methods to identify your application’s currently active environment:</p>
+<ul>
+<li>
+<code>IsQa()</code> and <code>IsUat()</code> (available in the <code>Kentico.Xperience.Cloud</code> namespace)</li>
+<li>native .NET <code>IHostEnvironment</code> extensions:
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.hostenvironmentenvextensions.isdevelopment" target="_blank">IsDevelopment()</a></li>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.hostenvironmentenvextensions.isproduction" target="_blank">IsProduction()</a></li>
+<li>
+<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.hostenvironmentenvextensions.isenvironment" target="_blank">IsEnvironment()</a> with the environment names from <code>CloudEnvironments</code> (available in the <code>Kentico.Xperience.Cloud</code> namespace)</li>
+</ul>
+</li>
+</ul>
+<p>For example, use the environment identification extension methods to <a href="/documentation/developers-and-admins/configuration/email-configuration#Emailconfiguration-EnableManagedSendGrid">integrate Twilio SendGrid</a> in SaaS deployment environments but not in your local development environment.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Environment identification in Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Microsoft.Extensions.Hosting;
+
+using Kentico.Xperience.Cloud;
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+if (builder.Environment.IsQa() ||
+    builder.Environment.IsUat() ||
+    builder.Environment.IsEnvironment(CloudEnvironments.Custom) ||
+    builder.Environment.IsEnvironment(CloudEnvironments.Staging) ||
+    builder.Environment.IsProduction())
+{
+    // Code executed in SaaS deployment environments (QA, UAT, STG, Custom, PROD)
+    builder.Services.AddKenticoCloud(builder.Configuration);
+    builder.Services.AddXperienceCloudSendGrid(builder.Configuration);
+    builder.Services.AddXperienceCloudDataProtection(builder.Configuration);
+    // ...
+}
+</code></pre>
+</div>
+
+<h3 id="microsoft-application-insights-integration">Microsoft Application Insights integration</h3>
+<p>Xperience integrates <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core" target="_blank">Application Insights for ASP.NET Core applications</a> to enable monitoring and aggregation of metrics for your website:</p>
+<ul>
+<li>Event log – errors and warnings from the <a href="/documentation/developers-and-admins/configuration/event-log">Xperience event log</a>.</li>
+<li>.NET exceptions and errors – in addition to errors that are included in the Xperience event log, also covers exceptions that can occur before the Xperience application is fully running.</li>
+<li>(<em>Optional</em>) <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-overview" target="_blank">Client-side telemetry</a>
+</li>
+</ul>
+<p>You can view the Application Insights logs for your deployments in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> using the corresponding applications under the <strong>Monitoring</strong> section:</p>
+<ul>
+<li>
+<strong>Event log</strong> – displays entries from the Xperience event log and any custom messages sent via the Application Insights SDK.</li>
+<li>
+<strong>Exceptions</strong> – displays all .NET exceptions (errors) from Application Insights.</li>
+</ul>
+<p>Enabling the Application Insights integration is also helpful if you ever need to debug or monitor your application with the Kentico support team.</p>
+<h4 id="enable-microsoft-application-insights-integration">Enable Microsoft Application Insights integration</h4>
+<ol type="1">
+<li>Open your Xperience project in Visual Studio and edit the <strong>Program.cs</strong> file.</li>
+<li>Call <code>WebApplicationBuilder.Services.AddXperienceCloudApplicationInsights</code> when building the web application.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects">Configure new projects</a> for the recommended middleware order.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Enabling AppInsights integration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Cloud;
+
+ ...
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ ...
+
+ builder.Services.AddXperienceCloudApplicationInsights(builder.Configuration);
+
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>Refer to Microsoft’s documentation on how to use <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/visual-studio" target="_blank">Application Insights in Visual Studio in a development environment</a>.</p>
+</div>
+</li>
+<li>(<em>Optional</em>) <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core#enable-client-side-telemetry-for-web-applications" target="_blank">Enable client-side telemetry</a>.</li>
+<li>Rebuild the solution.</li>
+</ol>
+<h3 id="cloudflare-cdn">Cloudflare CDN</h3>
+<p>The SaaS environment integrates <a href="https://www.cloudflare.com/learning/cdn/what-is-a-cdn/" target="_blank">Cloudflare CDN</a> to ensure better application performance and availability by distributing the network load across the CDN data centers and by caching website resources.</p>
+
+<div>
+
+</div>
+<div>
+<p>Cloudflare CDN also provides security protection against <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DDoS attacks</a> and other threats. You can monitor security events in <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#security-events">Xperience Portal</a>.</p>
+</div>
+
+<p>Cloudflare CDN performs caching as described in <a href="https://developers.cloudflare.com/cache/concepts/default-cache-behavior/" target="_blank">Default Cache Behavior</a>.</p>
+<ul>
+<li>Files with the <a href="https://developers.cloudflare.com/cache/concepts/default-cache-behavior/#default-cached-file-extensions" target="_blank">Default cached extensions</a> (images, videos, CSS, JS, PDF, etc.) are cached. By default, the cache time-to-live (TTL) is based on the response’s HTTP status code – see <a href="https://developers.cloudflare.com/cache/how-to/configure-cache-status-code/#edge-ttl" target="_blank">Edge TTL</a>.</li>
+<li>The HTML output of pages is not cached.</li>
+</ul>
+<p>You can control the CDN caching for supported file extensions by setting the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control" target="_blank">Cache-Control</a> HTTP header directives for each response. For example:</p>
+<ul>
+<li>
+<em>no-cache</em>, <em>private</em>, <em>no-store</em>, <em>max-age=0</em> – disables caching</li>
+<li>
+<em>max-age=&lt;seconds&gt;</em> – enables caching with the specified time-to-live (TTL). For more information, see <a href="https://developers.cloudflare.com/cache/concepts/retention-vs-freshness/" target="_blank">Retention versus Freshness (TTL)</a>.</li>
+</ul>
+<p>There are several ways to set HTTP headers, for example, by using the <code>ResponseCache</code> attribute to set <em>Cache-Control</em> directives. See <a href="https://learn.microsoft.com/en-us/aspnet/core/performance/caching/response" target="_blank">Response caching in ASP.NET Core</a> to learn how to set HTTP headers in ASP.NET Core.</p>
+<p>For example, the following code shows how to set the <em>Cache-Control</em> header for static files in your application’s <em>Program.cs</em> file:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+builder.Services.Configure&lt;StaticFileOptions&gt;(o =&gt;
+{
+    o.OnPrepareResponse = context =&gt;
+    {
+        // Caches static files for 7 days
+        context.Context.Response.Headers.Append("Cache-Control", "public,max-age=604800");
+    };
+});
+
+...
+
+app.UseStaticFiles();
+
+...
+
+</code></pre>
+</div>
+
+<h3 id="define-a-custom-app-offline-file">Define a custom App Offline file</h3>
+<p>When the application is offline, for example, when <a href="/documentation/developers-and-admins/saas/xperience-portal#schedule-maintenance-of-xperience-portal-projects">scheduled Xperience Portal project maintenance</a> is in progress, a generic .NET static page is displayed when accessing the application.</p>
+<p>Create an <strong>app_offline.htm_</strong> file in the project’s root to replace the default generic page. The <strong>app_offline.htm</strong> page is displayed only if the database is updated during the run of the deployment pipeline. The file will be packaged with the deployment package. See <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-with-a-deployment-package">Deploy</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Use the file name suffixed with an underscore (_), as <strong>app_offline.htm</strong> is not a valid custom App Offline name in Xperience.</p>
+<p>See Microsoft documentation for more information about the <a href="https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/app-offline?view=aspnetcore-6.0" target="_blank">App Offline file (app_offline.htm)</a>.</p>
+</div>
+
+
+</body>
+</html>

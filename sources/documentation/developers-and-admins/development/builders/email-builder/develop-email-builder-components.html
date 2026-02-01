@@ -1,0 +1,1534 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Develop Email Builder components</title>
+</head>
+<body>
+<p>The <a href="/documentation/developers-and-admins/development/builders/email-builder">Email Builder</a> framework consists of components, which are implemented using <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/" target="_blank">ASP.NET Blazor</a> as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">Razor components</a>.</p>
+<p>Email Builder components fit together in the following hierarchy to form an email:</p>
+<p></p>
+<ul>
+<li>
+<strong><a href="#templates">Email templates</a></strong> – the top-level component that sets the email’s overall design, as well as any fixed content, such as a header and footer. Templates contain one or more editable areas.
+<ul>
+<li>
+<strong>Editable areas</strong> – parts of templates that are empty by default, but can be edited using the Email Builder visual interface.</li>
+</ul>
+</li>
+<li>
+<strong><a href="#sections">Sections</a></strong> – blocks of markup that specify a layout for email content, typically containing one or more columns. Can store an arbitrary number of widget zones – areas where content creators place widgets. Sections are fully customizable, and as a developer, you have absolute freedom in the way you set each section’s layout.
+<ul>
+<li>
+<strong>Widget zones</strong> – allow content editors to insert widgets. Each zone can contain any number of widgets (depending on the design limitations of the parent template and section).</li>
+</ul>
+</li>
+<li>
+<strong><a href="#widgets">Widgets</a></strong> – reusable components that represent individual pieces of email content, such as text, images, CTA links, etc. Widgets can be easily manipulated by content editors and other non-technical users.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email Builder Starter Kit</strong></p>
+<p>We recommend using the Email Builder Starter kit to speed up the development of your components. The Starter Kit provides a basic set of components, which allow users to create the most common types of email content. You can adjust the components according to specific project requirements or use them as examples when implementing your own custom components. The Starter Kit components use <a href="#mjml-markup">MJML markup</a>.</p>
+<p>The Starter Kit is available in the <a href="https://github.com/Kentico/xperience-by-kentico-email-builder-starter-kit" target="_blank">Xperience by Kentico Email Builder Starter Kit</a> GitHub repository. See the repository’s <em>README</em> file for detailed information and instructions.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Manage multiple email channels</strong></p>
+<p>If you’re working with multiple email channels, see <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management/manage-multiple-email-channels">Manage multiple email channels</a> for recommended file structure, naming conventions, and guidance on managing your Email Builder components.</p>
+</div>
+
+<h2 id="mjml-markup">MJML markup</h2>
+<p>Email Builder components support two different types of markup:</p>
+<ul>
+<li>
+<strong><a href="https://documentation.mjml.io/#mjml-guides" target="_blank">MJML markup language</a></strong> – a framework that makes it easier to create responsive emails, and can speed up your email development time. Its semantic syntax is easy to learn and straightforward.</li>
+<li>
+<strong>HTML</strong> – you can use standard HTML markup if you are not comfortable switching to another markup language, or wish to reuse existing code.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Combining HTML and MJML Email Builder components is not supported</strong></p>
+<p>When planning to use Email Builder for a project, you need to decide whether to use HTML or MJML components. You cannot combine both types within a single project. Once you enable MJML support, HTML components will no longer work.</p>
+</div>
+
+<p>To enable MJML support for Email Builder components:</p>
+<ol type="1">
+<li>Install the <strong>Kentico.Xperience.Mjml</strong> NuGet package into your project.</li>
+<li>Call <code>AddMjmlForEmails</code> in your application’s startup code (<em>Program.cs</em>).</li>
+<li>Replace the default <a href="#sections">section</a> (which contains HTML markup) with an MJML section:
+<ol type="1">
+<li>Assign the identifier of a suitable MJML section into <code>EmailBuilderOptions.DefaultSectionIdentifier</code>.</li>
+<li>Set <code>EmailBuilderOptions.RegisterDefaultSection</code> to <code>false</code>.</li>
+</ol>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Web.Mvc;
+using Kentico.EmailBuilder.Web.Mvc;
+using Kentico.Xperience.Mjml;
+
+// ...
+
+builder.Services.AddKentico(features =&gt;
+{
+    // Enables Email Builder
+    features.UseEmailBuilder();
+
+    // ...
+});
+
+builder.Services.Configure&lt;EmailBuilderOptions&gt;(options =&gt;
+{
+    // Allows Email Builder for the 'Acme.Email' content type
+    options.AllowedEmailContentTypeNames = ["Acme.Email"];
+    // Replaces the default Email Builder section
+    options.DefaultSectionIdentifier = "Acme.DefaultMjmlSection";
+    options.RegisterDefaultSection = false;
+});
+
+// Enables MJML markup processing for Email Builder components
+builder.Services.AddMjmlForEmails();
+
+// ...
+</code></pre>
+</div>
+
+<h3 id="mjml-limitations">MJML limitations</h3>
+<ul>
+<li>The <a href="https://documentation.mjml.io/#mj-raw" target="_blank">&lt;mj-raw&gt;</a> MJML tag is only supported in the markup of <a href="#templates">email templates</a>, and may result in errors or work incorrectly in other components (sections or widgets).</li>
+<li>Using MJML tags to apply custom styling, for example <a href="https://documentation.mjml.io/#mj-attributes" target="_blank">&lt;mj-attributes&gt;</a>, <a href="https://documentation.mjml.io/#mj-html-attributes" target="_blank">&lt;mj-html-attributes&gt;</a>, <a href="https://documentation.mjml.io/#mj-style" target="_blank">&lt;mj-style inline=“inline”&gt;</a> or <a href="https://documentation.mjml.io/#mj-font" target="_blank">&lt;mj-font&gt;</a>, may lead to inconsistent appearance of the resulting component. Such components may be displayed slightly differently in <em>Email Builder</em> mode than in the final email content. To get an accurate reference for how recipients will see an email, use the <strong>Preview</strong> mode.</li>
+</ul>
+<h2 id="blazor-development-best-practices">Blazor development best practices</h2>
+<p>All Email Builder components must be developed as ASP.NET Razor components (Blazor). If you are new to Blazor development, start by familiarizing yourself with at least the following .NET documentation:</p>
+<ul>
+<li>
+<a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/" target="_blank">ASP.NET Core Blazor</a> – a general overview of Blazor development</li>
+<li>
+<a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">ASP.NET Core Razor components</a> – the basics of Razor component development</li>
+<li>
+<a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/lifecycle" target="_blank">ASP.NET Core Razor component lifecycle</a> – explains the component lifecycle and how to use lifecycle events</li>
+</ul>
+<p>Additionally, follow these practices when developing Email Builder components:</p>
+<ul>
+<li>Use <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/dependency-injection#request-a-service-in-a-component" target="_blank">Dependency injection</a> to access instances of Xperience API services in the markup or code of your components.</li>
+<li>Consider splitting components into two files – HTML/MJML and Razor markup in a Razor file (<code>.razor</code>) and C# code in a code-behind file defined as a partial class (<code>.razor.cs</code>).
+<ul>
+<li>For simple components that mostly consist of markup, you can keep everything within the <code>.razor</code> file. But components with any significant code logic are easier to develop and maintain with a separate code-behind file.</li>
+<li>See <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#partial-class-support" target="_blank">Partial class support</a> to learn more about splitting Razor components into multiple files.</li>
+<li>
+<strong>Note</strong>: The component code-behind must belong in the same namespace as the Razor file code, which uses an automatic namespace in format <code>&lt;assembly name&gt;.&lt;folder structure&gt;</code> by default. If you use a complicated folder structure to store components, you can override the Razor file’s namespace explicitly using the <a href="https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor#namespace" target="_blank">@namespace</a> directive.</li>
+</ul>
+</li>
+<li>If you wish to share reusable content between Email Builder components, prepare separate Razor components and nest them within the Razor markup.
+<ul>
+<li>For MJML components, you can create MJML files with reusable content and add them using <a href="https://documentation.mjml.io/#mj-include" target="_blank">&lt;mj-include&gt;</a>.</li>
+</ul>
+</li>
+<li>If you plan to create a large number of Email Builder components, consider placing them into a dedicated <a href="https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class" target="_blank">Razor class library</a> (RCL).
+<ul>
+<li>Install the <strong>Kentico.Xperience.WebApp</strong> NuGet package into the RCL project.</li>
+<li>The RCL must have <a href="/documentation/developers-and-admins/customization/integrate-custom-code#enable-class-discovery">class discovery</a> enabled – add the <code>[assembly: CMS.AssemblyDiscoverable]</code> attribute to a class within the project, for example <em>Properties/AssemblyInfo.cs</em>.</li>
+<li>Add a project reference from your main Xperience web project to the RCL.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Global import of using statements</strong></p>
+<p>To set up your Razor component folder for Email Builder development, you can create an <strong>_Imports.razor</strong> file in the root, and add a <code>@using Kentico.VisualBuilderComponents.Rcl.Components</code> statement. The namespace allows you access Email Builder components, such as editable areas and widget zones, within your Email Builder Razor components. You can also add using statements for any other frequently used namespaces.</p>
+<p>Alternatively, you can add using statements for the <code>Kentico.VisualBuilderComponents.Rcl.Components</code> namespace directly into the code of individual components.</p>
+</div>
+
+<h2 id="styles-images-and-assets-for-email-builder-components">Styles, images and assets for Email Builder components</h2>
+<p>Your emails may often require custom CSS, images and other assets to achieve their desired appearance. When composing emails from Email Builder components, styling will need to be part of the component definitions.</p>
+<p>Use one of the following options to include CSS styles:</p>
+<ul>
+<li>The most recommended option for styling emails is to use inline CSS code for your HTML or MJML elements.</li>
+<li>If you prefer to embed CSS, you can place style definitions into the <em>&lt;head&gt;</em> tag of your <a href="#templates">templates</a> (for MJML templates, use the <a href="https://documentation.mjml.io/#mj-head" target="_blank">&lt;mj-head&gt;</a> → <a href="https://documentation.mjml.io/#mj-style" target="_blank">&lt;mj-style&gt;</a> MJML components).</li>
+<li>For MJML components, you can include CSS from external files using <a href="https://documentation.mjml.io/#mj-include" target="_blank">&lt;mj-include&gt;</a> components.</li>
+</ul>
+<p>To include font definitions, prepare and include <code>@font-face</code> declarations or import web fonts. For MJML components, you can include .css files with font declarations using <a href="https://documentation.mjml.io/#mj-font" target="_blank">&lt;mj-font&gt;</a> component’s the <em>&lt;head&gt;</em> tag of your <a href="#templates">templates</a>.</p>
+<p>Carefully consider how to store images and other files assets for Email Builder components:</p>
+<ul>
+<li>For <strong>local development and testing</strong>, you can store images or other assets in the Xperience project’s <em>wwwroot/Content/Images</em> folder.</li>
+<li>For <strong>production environments</strong> that send emails to real recipients, images and other file assets must be linked from a publicly available storage, such as a CDN.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Images in MJML components</strong></p>
+<p>For components with MJML markup, include images using the appropriate MJML components, such as <a href="https://documentation.mjml.io/#mj-image" target="_blank">&lt;mj-image&gt;</a> or <a href="https://documentation.mjml.io/#mj-hero" target="_blank">&lt;mj-hero&gt;</a>.</p>
+</div>
+
+<h2 id="templates">Templates</h2>
+<p>Templates are the top-level component that sets the email’s overall design, as well as any fixed content, such as a header and footer. The template content is defined through HTML or <a href="#mjml-markup">MJML markup</a>. Templates also define areas that can be edited using the Email Builder visual interface.</p>
+<p>Develop templates as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">ASP.NET Razor components</a> and follow our <a href="#blazor-development-best-practices">Blazor development best practices</a>.</p>
+<h3 id="template-types">Template types</h3>
+<p>Two types of Email Builder templates are available:</p>
+<ul>
+<li>
+<strong>Default email templates</strong> are defined by your code. The <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder content</a> of an email is empty when a default template is initially assigned.</li>
+<li>
+<strong>Preset email templates</strong> are saved from an email that was created using another Email Builder template. If the email contains <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder content</a>, such as widgets and sections, the preset template will contain a snapshot of this content on top of the layout defined in the default email template.</li>
+</ul>
+<p>Developers define the email layout in the form of <strong>default</strong> email templates. Content creators then create an email from a default email template, or define <strong>preset</strong> email templates that inherit the layout from the default email templates.</p>
+<h3 id="email-builder-scripts-and-styles">Email Builder scripts and styles</h3>
+<p>Templates must load scripts and styles required for the Email Builder UI. Add the following components into the template markup:</p>
+<ul>
+<li>
+<code>&lt;EmailBuilderStyles /&gt;</code> – renders links for required stylesheet files. Call within the &lt;head&gt; tag of the email markup (within the the <a href="https://documentation.mjml.io/#mj-head" target="_blank">&lt;mj-head&gt;</a> component for MJML templates).</li>
+<li>
+<code>&lt;EmailBuilderScripts /&gt;</code> – renders required script tags and script file links. Call before the closing &lt;/body&gt; tag of the page code (at the end of the <a href="https://documentation.mjml.io/#mj-body" target="_blank">&lt;mj-body&gt;</a> component for MJML templates).</li>
+</ul>
+<p>These components ensure that the scripts and styles are loaded when the email is being edited in the Email Builder visual interface.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>HTML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.VisualBuilderComponents.Rcl.Components
+&lt;html&gt;
+&lt;head&gt;
+    ...
+    &lt;EmailBuilderStyles /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    ...
+    &lt;EmailBuilderScripts /&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>MJML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.VisualBuilderComponents.Rcl.Components
+&lt;mjml&gt;
+  &lt;mj-head&gt;
+    ...
+    &lt;EmailBuilderStyles /&gt;
+  &lt;/mj-head&gt;
+  &lt;mj-body&gt;
+    ...
+    &lt;EmailBuilderScripts /&gt;
+  &lt;/mj-body&gt;
+&lt;/mjml&gt;
+</code></pre>
+</div>
+
+<h3 id="email-preview-text-support">Email preview text support</h3>
+<p>When editing <a href="/documentation/business-users/digital-marketing/emails">emails</a> on the <strong>Content</strong> tab, users in Xperience can enter a <strong>Preview text</strong> – a brief text that recipients see in their inbox after the email sender information and the subject line.</p>
+<p>To support the preview text, you need include it in a suitable location within your email templates. Retrieve the value from the <strong>EmailPreviewText</strong> field via the <a href="#email-fields">EmailContext</a> API.</p>
+<p>For templates with <a href="#mjml-markup">MJML markup</a>, add the preview text value into an <a href="https://documentation.mjml.io/#mj-preview" target="_blank">&lt;mj-preview&gt;</a> component in the template’s <a href="https://documentation.mjml.io/#mj-head" target="_blank">&lt;mj-head&gt;</a> section.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>MJML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;mjml&gt;
+  &lt;mj-head&gt;
+    ...
+    &lt;mj-preview&gt;
+      @Email?.EmailPreviewText
+    &lt;/mj-preview&gt;
+  &lt;/mj-head&gt;
+  &lt;mj-body&gt;
+    ...  
+  &lt;/mj-body&gt;
+&lt;/mjml&gt;
+
+@code {
+    private EmailContext _emailContext;
+
+    protected EmailContext EmailContext =&gt; _emailContext ??= EmailContextAccessor.GetContext();
+    protected Generated.Models.Email Email;
+
+    [Inject]
+    public IEmailContextAccessor EmailContextAccessor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Email = await EmailContext.GetEmail&lt;Generated.Models.Email&gt;();
+    }
+}
+</code></pre>
+</div>
+
+<p>For HTML templates, insert the preview text value after the template’s opening <code>&lt;body&gt;</code> tag. Most email clients display a content preview, showing the starting characters of the email’s body. Enclose the preview text in a hidden element, so that you do not affect the visible email content and design.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>HTML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;body&gt;
+    &lt;div style="display: none; font-size: 1px; color: #ffffff; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;"&gt;
+      @Email?.EmailPreviewText
+    &lt;/div&gt;
+    ...
+&lt;/body&gt;
+
+@code {
+    private EmailContext _emailContext;
+
+    protected EmailContext EmailContext =&gt; _emailContext ??= EmailContextAccessor.GetContext();
+    protected Generated.Models.Email Email;
+
+    [Inject]
+    public IEmailContextAccessor EmailContextAccessor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Email = await EmailContext.GetEmail&lt;Generated.Models.Email&gt;();
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="editable-areas">Editable areas</h3>
+<p>Editable areas mark the locations in your emails where you want users to edit content by adding <a href="#sections">sections</a> and <a href="#widgets">widgets</a>. To place editable areas, add <code>EditableArea</code> components within the template’s body:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;EditableArea AreaIdentifier="MainContent" DefaultSectionIdentifier="Acme.ExampleEmailSection" /&gt;
+</code></pre>
+</div>
+
+<p>The <code>AreaIdentifier</code> property of each editable area must be a string without whitespace characters that is unique within the context of the given template.</p>
+<p>The <code>DefaultSectionIdentifier</code> property allows you to set the <a href="#sections">section</a> which is automatically added into the area for new emails and in cases where an editor removes the last section from the area. If not specified, the area uses the global default section set for the <a href="/documentation/developers-and-admins/development/builders/email-builder#enable-the-email-builder-feature">Email Builder feature</a>.</p>
+<p>See <a href="#limit-allowed-sections-and-widgets">Limit allowed sections and widgets</a> to learn how to limit which sections and widgets are allowed in your areas.</p>
+<h3 id="template-properties">Template properties</h3>
+<p>When developing Email Builder templates, you can define properties that allow content editors to adjust the appearance or behavior of the template directly through the administration interface. Content editors can set the template properties via a configuration dialog.</p>
+<p>A template can be shared by any number of emails and each email has its own separate configuration of the available template properties.</p>
+<p>Use the following process to develop properties for a template:</p>
+<ol type="1">
+<li>
+<p>Create a model class implementing the <code>IEmailTemplateProperties</code> interface.</p>
+<ul>
+<li>We recommend storing the properties model class within the same folder and namespace as the related template’s Razor component files.</li>
+</ul>
+</li>
+<li>
+<p>Define each property by adding a corresponding C# property in the model class.</p>
+<ul>
+<li>You can set default values for the properties.</li>
+</ul>
+</li>
+<li>
+<p>Assign <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to define the visual interface for properties that you want to make editable in the template’s configuration dialog.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Template property model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.EmailBuilder.Web.Mvc;
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ public class TemplateColorProperties : IEmailTemplateProperties
+ {
+     // Property providing a text input for configuring the color of the template's header and footer
+     [TextInputComponent(Label = "Background color", Order = 1)]
+     public string Color { get; set; } = "#f0f0f0";
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editing components with links to content items</strong></p>
+If you decorate any template property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a>), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the property.
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced property options</strong></p>
+You can add dynamic <a href="/documentation/developers-and-admins/development/builders/builder-component-properties-visibility-and-validation">visibility conditions and validation</a> that restricts how and when properties are displayed in the template configuration dialog.
+</div>
+</li>
+<li>
+<p>Render or otherwise handle the properties in the template’s code.</p>
+<ul>
+<li>The template Razor component code must contain a property that:
+<ul>
+<li>is named <strong>Properties</strong>
+</li>
+<li>has a type matching the template’s property model class</li>
+<li>is designated as a razor component property via the <code>Parameter</code> attribute</li>
+</ul>
+</li>
+<li>
+<strong>Note</strong>: Always consider the type of content that you are rendering in the template markup. For example, properties using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#rich-text-editor">RichTextEditorComponent</a> editing component return raw HTML values, which you need to render as a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#raw-html" target="_blank">MarkupString</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Handling template properties</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;mjml&gt;
+     &lt;mj-head&gt;
+         &lt;EmailBuilderStyles /&gt;
+     &lt;/mj-head&gt;
+     &lt;mj-body&gt;
+         &lt;mj-section background-color="@Properties?.Color" &gt;
+             ...
+         &lt;/mj-section&gt;
+
+         &lt;EditableArea AreaIdentifier="MainContent" DefaultSectionIdentifier="Acme.ExampleEmailSection" /&gt;
+
+         &lt;mj-section background-color="@Properties?.Color"&gt;
+             ...
+         &lt;/mj-section&gt;
+         &lt;EmailBuilderScripts /&gt;
+     &lt;/mj-body&gt;
+ &lt;/mjml&gt;
+
+ @code {
+     [Parameter]
+     public TemplateColorProperties Properties { get; set; }
+ }
+ </code></pre>
+</div>
+</li>
+<li><p>Set the <code>PropertiesType</code> property of the <code>RegisterEmailTemplate</code> attribute to the type of the property model class when <a href="#register-templates">registering the template</a>.</p></li>
+</ol>
+<p>Users can now click the <strong>Configure template</strong> () icon when working with the template in the Email Builder UI. This opens the template properties dialog, and the configured property values affect the appearance and behavior of the template in the resulting email. Every email using the template has its own separate configuration of the template’s properties.</p>
+<h3 id="register-templates">Register templates</h3>
+<p>Templates must be registered using the <code>RegisterEmailTemplate</code> assembly attribute. You can add the attribute to the start of the template’s Razor component code-behind class (if you have created one), or use a central class to register all of your Email Builder components, e.g., <code>ComponentRegister.cs</code>.</p>
+<p>Specify the following parameters for the attribute:</p>
+<ul>
+<li>
+<code>identifier</code> – a unique identifier for the template. We recommend using a unique prefix in your identifiers to prevent conflicts with other templates, for example matching your company’s name.</li>
+<li>
+<code>name</code> – the name used to identify the template when creating emails in the administration interface.</li>
+<li>
+<code>componentType</code> – the <code>System.Type</code> of the template’s <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#component-name-class-name-and-namespace" target="_blank">Razor component class</a>.</li>
+</ul>
+<p>You also need to specify the email <a href="/documentation/developers-and-admins/development/content-types">content types</a> for which the template will be available via the attribute’s <code>ContentTypeNames</code> property. Set the value to an array of email content type code names.</p>
+<p>For templates with <a href="#template-properties">properties</a>, you also need to specify the type of the template’s property model class in the <code>PropertiesType</code> property of the <code>RegisterEmailTemplate</code> attribute.</p>
+<p>You can also set the following optional properties:</p>
+<ul>
+<li>
+<code>Description</code> – additional description text displayed as a tooltip in the Email Builder template selector.</li>
+<li>
+<code>IconClass</code> – the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">font icon class</a> displayed in the Email Builder template selector.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Email Builder template registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.EmailBuilder.Web.Mvc;
+
+[assembly: RegisterEmailTemplate(
+    identifier: "Acme.ExampleEmailTemplate",
+    name: "Example template",
+    componentType: typeof(ExampleEmailTemplate),
+    ContentTypeNames = ["Acme.Email"],
+    PropertiesType = typeof(TemplateColorProperties))]
+</code></pre>
+</div>
+
+<p>Once your templates are registered, they appear in the template selector when creating new <a href="/documentation/business-users/digital-marketing/emails">emails</a> of the specified content types in an email channel.</p>
+<h3 id="template-notes-and-limitations">Template notes and limitations</h3>
+<ul>
+<li>For templates with MJML markup, you can use MJML’s <a href="https://documentation.mjml.io/#mj-section" target="_blank">&lt;mj-section&gt;</a> components, but only for fixed hard-coded content. Do <strong>not</strong> place <a href="#editable-areas">editable areas</a> inside <code>&lt;mj-section&gt;</code> tags. For content that is managed in editable areas, add the <code>&lt;mj-section&gt;</code> tags into <a href="#sections">Email Builder sections</a>.</li>
+<li>Deleting a template or its registration code will break any <a href="/documentation/business-users/digital-marketing/emails">emails</a> that use the template.</li>
+<li>When developing templates for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a>, you need to provide a link that allows recipients to unsubscribe. See <a href="#regular-email-unsubscription-links">Regular email unsubscription links</a>.</li>
+</ul>
+<h2 id="sections">Sections</h2>
+<p>Sections are blocks of markup that specify a layout for email content, typically containing one or more columns. Section content is defined through HTML or <a href="#mjml-markup">MJML markup</a>. Sections contain one or more <a href="#widget-zones">zones</a> where editors can add widgets using the Email Builder visual interface.</p>
+<p>Develop sections as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">ASP.NET Razor components</a> and follow our <a href="#blazor-development-best-practices">Blazor development best practices</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Sections with MJML markup</strong></p>
+<p>When using <a href="#mjml-markup">MJML markup</a> for Email Builder components, define the section’s layout using <a href="https://documentation.mjml.io/#mj-section" target="_blank">&lt;mj-section&gt;</a> and <a href="https://documentation.mjml.io/#mj-column" target="_blank">&lt;mj-column&gt;</a> components.</p>
+<p>The options for column width are <strong>restricted</strong> to the following predefined values:</p>
+<ul>
+<li>Percent values:
+<ul>
+<li>1%, 2%, 3%, 5%, 10%, 15%, … , 95%, 100% (multiples of 5% between 5 and 100)</li>
+<li>33.33333333333333% and 66.66666666666666%<br>
+(the value must be copied with the exact number of digits)</li>
+<li>The sum of all column widths must be 100%.</li>
+</ul>
+</li>
+<li>Length values in px: 1, 2, 3, 5, 10, 20, …, 590, 600px (multiples of 10px between 10 and 600)</li>
+</ul>
+<p><strong>Note</strong>: All section content must be placed within an <a href="https://documentation.mjml.io/#mj-section" target="_blank">&lt;mj-section&gt;</a> component. Anything outside may not be rendered correctly.</p>
+</div>
+
+<h3 id="widget-zones">Widget zones</h3>
+<p>Widget zones allow content editors to insert <a href="#widgets">widgets</a>. Each zone can contain any number of widgets, depending on the design limitations of the parent template and section. Every section must contain at least one widget zone – sections without widget zones are not supported.</p>
+<p>To place widget zones into section markup, add <code>WidgetZone</code> components. The <code>ZoneName</code> property of each zone component must be a string without whitespace characters that is unique within the given section.</p>
+<p>See <a href="#limit-allowed-sections-and-widgets">Limit allowed sections and widgets</a> to learn how to limit which widgets are allowed in your widget zones.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - MJML section</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+&lt;mj-section&gt;
+    &lt;mj-column width="33.33333333333333%"&gt;
+        &lt;WidgetZone ZoneName="ZoneA" /&gt;
+    &lt;/mj-column&gt;
+
+    &lt;mj-column width="33.33333333333333%"&gt;
+        &lt;WidgetZone ZoneName="ZoneB" /&gt;
+    &lt;/mj-column&gt;
+
+    &lt;mj-column width="33.33333333333333%"&gt;
+        &lt;mj-spacer height="55px" width="50%"&gt;&lt;/mj-spacer&gt;
+        &lt;mj-image src="..." href="..."&gt;&lt;/mj-image&gt;
+        &lt;mj-spacer height="155px"&gt;&lt;/mj-spacer&gt;
+    &lt;/mj-column&gt;
+&lt;/mj-section&gt;
+
+@code {
+    // ...
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Ensure transfer of widgets between section types</strong></p>
+<p>Users in the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder UI</a> can replace an existing section with a different section. Any widgets within the original section are automatically moved to the new section’s zones. The system attempts to match widget zones according to their <code>ZoneName</code>. If a matching zone isn’t found in the new section, widgets from the given zone are placed into the first zone within the section’s code.</p>
+<p>For example:</p>
+<div>
+<table>
+<thead>
+<tr>
+<td>
+<p>Original section</p>
+</td>
+<td>
+<p>New section</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>ZoneA: Widget 1, Widget 2<br>
+ZoneB: Widget 3<br>
+ZoneC: Widget 4</p>
+</td>
+<td>
+<p>ZoneA: Widget 1, Widget 2, Widget 4<br>
+ZoneB: Widget 3<br>
+ZoneSidebar:</p>
+</td>
+</tr>
+</table>
+</div>
+<p>We recommend setting matching <code>ZoneName</code> values for corresponding widget zones across all of your Email Builder sections.</p>
+</div>
+
+<h3 id="section-properties">Section properties</h3>
+<p>When developing Email Builder sections, you can define properties that allow content editors to adjust the appearance or behavior of the section directly in the administration interface. Users interact with section properties through the section configuration dialog.</p>
+<p>Use the following process to develop properties for a section:</p>
+<ol type="1">
+<li>
+<p>Create a model class implementing the <code>IEmailSectionProperties</code> interface.</p>
+<ul>
+<li>We recommend storing the properties model class within the same folder and namespace as the related section’s Razor component files.</li>
+</ul>
+</li>
+<li>
+<p>Define each property by adding a corresponding C# property in the model class.</p>
+<ul>
+<li>You can set default values for the properties.</li>
+</ul>
+</li>
+<li>
+<p>Assign <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to define the visual interface for properties that you want to make editable in the section’s configuration dialog.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Section property model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.EmailBuilder.Web.Mvc;
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ public class SectionColorProperties : IEmailSectionProperties
+ {
+     // Property providing a text input for configuring the section's color
+     [TextInputComponent(Label = "Background color", Order = 1)]
+     public string Color { get; set; } = "#FFF";
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editing components with links to content items</strong></p>
+If you decorate any section property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a>), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the property.
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced property options</strong></p>
+You can add dynamic <a href="/documentation/developers-and-admins/development/builders/builder-component-properties-visibility-and-validation">visibility conditions and validation</a> that restricts how and when properties are displayed in the section configuration dialog.
+</div>
+</li>
+<li>
+<p>Render or otherwise handle the properties in the section’s code.</p>
+<ul>
+<li>The section Razor component code must contain a property that:
+<ul>
+<li>is named <strong>Properties</strong>
+</li>
+<li>has a type matching the section’s property model class</li>
+<li>is designated as a razor component property via the <code>Parameter</code> attribute</li>
+</ul>
+</li>
+<li>
+<strong>Note</strong>: Always consider the type of content that you are rendering in the section markup. For example, properties using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#rich-text-editor">RichTextEditorComponent</a> editing component return raw HTML values, which you need to render as a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#raw-html" target="_blank">MarkupString</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Handling section properties</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;mj-section background-color="@Properties?.Color"&gt;
+     ...
+ &lt;/mj-section&gt;
+
+ @code {
+     [Parameter]
+     public SectionColorProperties Properties { get; set; }
+ }
+ </code></pre>
+</div>
+</li>
+<li><p>Set the <code>PropertiesType</code> property of the <code>RegisterEmailSection</code> attribute to the type of the property model class when <a href="#register-sections">registering the section</a>.</p></li>
+</ol>
+<p>Users can now click the <strong>Configure section</strong> () icon when working with the section in the Email Builder UI. This opens the section properties dialog, and the configured property values affect the appearance and behavior of the section in the resulting email.</p>
+<h3 id="register-sections">Register sections</h3>
+<p>Sections must be registered using the <code>RegisterEmailSection</code> assembly attribute. You can add the attribute to the start of the section’s Razor component code-behind class (if you have created one), or use a central class to register all of your Email Builder components, e.g., <code>ComponentRegister.cs</code>.</p>
+<p>Specify the following parameters for the attribute:</p>
+<ul>
+<li>
+<code>identifier</code> – a unique identifier for the section. We recommend using a unique prefix in your identifiers to prevent conflicts with other sections, for example matching your company’s name.</li>
+<li>
+<code>name</code> – the name displayed in the section selection dialog within the Email Builder UI.</li>
+<li>
+<code>componentType</code> – the <code>System.Type</code> of the section’s <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#component-name-class-name-and-namespace" target="_blank">Razor component class</a>.</li>
+</ul>
+<p>For sections with <a href="#section-properties">properties</a>, you also need to specify the type of the section’s property model class in the <code>PropertiesType</code> property of the <code>RegisterEmailSection</code> attribute.</p>
+<p>You can also set the following optional properties:</p>
+<ul>
+<li>
+<code>Description</code> – additional description text displayed as a tooltip in the Email Builder section selection dialog.</li>
+<li>
+<code>IconClass</code> – the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">font icon class</a> displayed in the section selection dialog.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Email Builder section registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.EmailBuilder.Web.Mvc;
+
+[assembly: RegisterEmailSection(
+    identifier: "Acme.ExampleEmailSection",
+    name: "Example section",
+    componentType: typeof(ExampleEmailSection),
+    PropertiesType = typeof(SectionColorProperties),
+    IconClass = "icon-rectangle-a")]
+</code></pre>
+</div>
+
+<p>Once your sections are registered, they appear in the selection dialog displayed when adding sections in editable areas in the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder UI</a>.</p>
+<h3 id="assign-a-default-section">Assign a default section</h3>
+<p><a href="#editable-areas">Editable areas</a> in Email Builder have a default section, which is automatically added when the area is empty. This includes new areas where content editors have not yet placed any other section, and scenarios where an editor removes the last section from an area.</p>
+<p>The system provides a built-in <strong>Default</strong> section for this purpose. This <em>Default</em> section uses HTML markup, and contains a single widget zone without any layout or formatting.</p>
+<p>You can replace the default section globally for the Email Builder to ensure that your editable areas have output code that exactly matches your email design requirements. Replacing the default section is <strong>required</strong> if you wish to use <a href="#mjml-markup">MJML markup</a> for Email Builder components.</p>
+<ol type="1">
+<li>Adjust the configuration of <code>EmailOptions</code> in your application’s startup code (<em>Program.cs</em>).</li>
+<li>Assign the identifier of your preferred default section into the <code>DefaultSectionIdentifier</code> property.</li>
+<li>To disable the system’s built-in <em>Default</em> section, also set the <code>RegisterDefaultSection</code> property to <code>false</code>.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Warning</strong>: If your email channels already have existing emails that use Email Builder, replace all occurrences of the <em>Default</em> section in email content before you disable it. Otherwise, an error will occur when viewing or sending the given emails.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+builder.Services.Configure&lt;EmailBuilderOptions&gt;(options =&gt;
+{
+    // Allows Email Builder for the 'Acme.Email' content type
+    options.AllowedEmailContentTypeNames = ["Acme.Email"];
+    // Sets the default Email Builder section
+    options.DefaultSectionIdentifier = "Acme.DefaultSection";
+    // Disables the system's default Email Builder section
+    options.RegisterDefaultSection = false;
+});
+</code></pre>
+</div>
+
+<p>Empty editable areas now use the new default section. The change does NOT modify the sections within existing Email Builder content.</p>
+<p>You can also override the global default section for individual <a href="#editable-areas">editable areas</a> – specify the section identifier in the <code>DefaultSectionIdentifier</code> property of <code>EditableArea</code> components.</p>
+<h2 id="widgets">Widgets</h2>
+<p>Widgets are reusable components that represent individual pieces of email content, such as text, images, CTA links, etc. Content editors can easily add, configure and move widgets within <a href="#widget-zones">widget zones</a> in the Email Builder visual interface.</p>
+<p>Develop widgets as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">ASP.NET Razor components</a> and follow our <a href="#blazor-development-best-practices">Blazor development best practices</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Widgets with MJML markup</strong></p>
+<p>When using <a href="#mjml-markup">MJML markup</a> for Email Builder components, do <strong>not</strong> include <a href="https://documentation.mjml.io/#mj-column" target="_blank">&lt;mj-column&gt;</a> components in widget content. Columns must be defined in the layout of the parent <a href="#sections">sections</a>.</p>
+</div>
+
+<h3 id="widget-properties">Widget properties</h3>
+<p>When developing Email Builder widgets, you can define properties that allow content editors to adjust the widget content or behavior directly in the administration interface. Users interact with widget properties through the widget configuration dialog or in the main Email Builder interface through <a href="/documentation/developers-and-admins/development/builders/email-builder/inline-editors-email-builder-widgets">inline editors</a>. You can combine the configuration dialog and inline editors for a single widget property.</p>
+<p>Use the following process to develop properties for a widget:</p>
+<ol type="1">
+<li>
+<p>Create a model class implementing the <code>IEmailWidgetProperties</code> interface.</p>
+<ul>
+<li>We recommend storing the properties model class within the same folder and namespace as the related widget’s Razor component files.</li>
+</ul>
+</li>
+<li>
+<p>Define each widget property by adding a corresponding C# property in the model class.</p>
+<ul>
+<li>You can set default values for the properties.</li>
+</ul>
+</li>
+<li>
+<p>Assign <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to define the visual interface for properties that you want to make editable in the widget’s configuration dialog.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Widget property model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.EmailBuilder.Web.Mvc;
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ public class CTAWithTextWidgetProperties : IEmailWidgetProperties
+ {
+     // Property providing a text input for the main CTA caption
+     [TextInputComponent(Label = "CTA caption", Order = 1)]
+     public string Caption { get; set; }
+
+     // Property providing a text input for the CTA link URL
+     [TextInputComponent(Label = "CTA URL", Order = 2)]
+     public string Url { get; set; }
+
+     // Property providing a rich text editor for an intro text block
+     [RichTextEditorComponent(Label = "CTA intro text", Order = 3)]
+     public string RichTextIntro { get; set; }
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editing components with links to content items</strong></p>
+If you decorate any widget property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a>), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the widget property.
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced property options</strong></p>
+You can add dynamic <a href="/documentation/developers-and-admins/development/builders/builder-component-properties-visibility-and-validation">visibility conditions and validation</a> that restricts how and when properties are displayed in the widget configuration dialog.
+</div>
+</li>
+<li>
+<p>Render or otherwise handle the properties in the widget’s code.</p>
+<ul>
+<li>The widget’s Razor component code must contain a property that:
+<ul>
+<li>is named <strong>Properties</strong>
+</li>
+<li>has a type matching the widget’s property model class</li>
+<li>is designated as a razor component property via the <code>Parameter</code> attribute</li>
+</ul>
+</li>
+<li>
+<strong>Note</strong>: Always consider the type of content that you are rendering in the widget markup. For example, properties using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#rich-text-editor">RichTextEditorComponent</a> editing component return raw HTML values, which you need to render as a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#raw-html" target="_blank">MarkupString</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Handling widget properties</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;mj-button href="@Properties?.Url" background-color="#f45e43" color="white"&gt;
+     @Properties?.Caption
+ &lt;/mj-button&gt;
+ &lt;mj-text&gt;
+     @((MarkupString)Properties?.RichTextIntro)
+ &lt;/mj-text&gt;
+
+ @code {
+     [Parameter]
+     public CTAWithTextWidgetProperties Properties { get; set; }
+ }
+ </code></pre>
+</div>
+</li>
+<li><p>Set the <code>PropertiesType</code> property of the <code>RegisterEmailWidget</code> attribute to the type of the property model class when <a href="#register-widgets">registering the widget</a>.</p></li>
+</ol>
+<p>Users can now click the <strong>Configure widget</strong> () icon when working with widgets in the Email Builder UI. This opens the widget properties dialog, and the configured property values affect the content of the widget in the resulting email.</p>
+<h3 id="register-widgets">Register widgets</h3>
+<p>Widgets must be registered using the <code>RegisterEmailWidget</code> assembly attribute. You can add the attribute to the start of the widget’s Razor component code-behind class (if you have created one), or use a central class to register all of your Email Builder components, e.g., <code>ComponentRegister.cs</code>.</p>
+<p>Specify the following parameters for the attribute:</p>
+<ul>
+<li>
+<code>identifier</code> – a unique identifier for the widget. We recommend using a unique prefix in your identifiers to prevent conflicts with other widgets, for example matching your company’s name.</li>
+<li>
+<code>name</code> – the name displayed in the widget selection dialog within the Email Builder UI.</li>
+<li>
+<code>componentType</code> – the <code>System.Type</code> of the widget’s <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#component-name-class-name-and-namespace" target="_blank">Razor component class</a>.</li>
+</ul>
+<p>For widgets with <a href="#widget-properties">properties</a>, you also need to specify the type of the widget’s property model class in the <code>PropertiesType</code> property of the <code>RegisterEmailWidget</code> attribute.</p>
+<p>You can also set the following optional properties:</p>
+<ul>
+<li>
+<code>Description</code> – additional description text displayed as a tooltip in the Email Builder widget selection dialog.</li>
+<li>
+<code>IconClass</code> – the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">font icon class</a> displayed when viewing the widget in the widget list.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Email Builder widget registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.EmailBuilder.Web.Mvc;
+
+[assembly: RegisterEmailWidget(
+    identifier: "Acme.CTAWithTextWidget",
+    name: "CTA with text",
+    componentType: typeof(CTAWithTextWidget),
+    PropertiesType = typeof(CTAWithTextWidgetProperties),
+    IconClass = "icon-light-bulb")]
+</code></pre>
+</div>
+
+<p>Once your widgets are registered, they appear in the selection dialog displayed when adding widgets in the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder UI</a>.</p>
+<h2 id="limit-allowed-sections-and-widgets">Limit allowed sections and widgets</h2>
+<p>You can define restrictions for editable areas and the sections within them, enabling you to configure which components (<a href="#widgets">widgets</a> or <a href="#sections">sections</a>) can be added to them.</p>
+<p>The allowed components properties work as an allowlist – you list the components that you want to allow in your editable area or section, and all others are automatically excluded. You can also set the properties to the following special values (found in the <code>Kentico.EmailBuilder.Web.Mvc</code> namespace):</p>
+<ul>
+<li>
+<code>AllowedComponents.ALL</code> – all components are allowed.</li>
+<li>
+<code>AllowedComponents.NONE</code> – no components are allowed (equivalent to an empty list of identifiers).</li>
+</ul>
+<p>Editable area restrictions of widgets are combined with any widget restrictions set for individual <a href="#widget-zones">widget zones</a>. Both sets of restrictions apply to create the final list of allowed widgets for a given zone.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: Prepare the identifiers of allowed components as a string array, and then assign the array to the appropriate property.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.EmailBuilder.Web.Mvc
+
+@{
+    var MyAllowedWidgets = new[] { DancingGoatButtonWidget.IDENTIFIER,
+                                   DancingGoatTextWidget.IDENTIFIER
+                                 };
+    var MyAllowedSections = AllowedComponents.All;
+}
+
+&lt;EditableArea AreaIdentifier="MainContent" AllowedWidgets="MyAllowedWidgets" AllowedSections="MyAllowedSections" /&gt;
+</code></pre>
+</div>
+
+<p>The <code>AllowedSections</code> property allows you to define a list of sections which can be added to an editable area. The items in the list are the string identifiers of the given sections. If not specified, all registered sections are allowed.</p>
+<p>The <code>AllowedWidgets</code> property allows you to define a list of widgets which can be added to an editable area or widget zone. The items in the list are the string identifiers of the given widgets. If not specified, all registered widgets are allowed.</p>
+<p>When adding a new widget or section to a limited editable area, editors can now only choose from the set of allowed components. When dragging widgets or sections between areas, the interface visually distinguishes between areas where you can and cannot drop the components.</p>
+<p>The component limiting feature is intended as a way to set guidelines for content editors, not as a security measure. When you limit an area, existing instances of widgets and sections placed in the area are not validated or removed.</p>
+<h2 id="access-contextual-information-in-components">Access contextual information in components</h2>
+<p>In some cases, you may need to adjust the content or functionality of your components according to the context in which they are used.</p>
+<ul>
+<li><a href="#email-builder-mode">Email Builder mode</a></li>
+<li><a href="#email-preview-mode">Email preview mode</a></li>
+<li><a href="#email-fields">Email fields</a></li>
+<li><a href="#email-metadata">Email metadata</a></li>
+<li><a href="#recipient-context">Recipient context</a></li>
+<li><a href="#regular-email-unsubscription-links">Regular email unsubscription links</a></li>
+<li><a href="#commerce-order-context">Commerce order context</a></li>
+</ul>
+<h3 id="email-builder-mode">Email Builder mode</h3>
+<p>The Email Builder mode allow you to check the stage of the email lifecycle where a component is being used. For example, a component can be displayed to content editors in the Email Builder’s editing mode, or processed by the system when putting together the final email content sent to recipients.</p>
+<p>Obtain an instance of the <code>IEmailContextAccessor</code> service (using dependency injection), call the <code>GetContext</code> method to retrieve an <code>EmailContext</code> object, and access the <code>BuilderMode</code> property. The property has a value from the <code>EmailBuilderMode</code> enum with the following possible states:</p>
+<ul>
+<li>
+<code>Off</code> – the email’s output is being rendered before being sent to recipients. Also used when displaying emails in Preview mode.</li>
+<li>
+<code>Edit</code> – the email is being edited in Email Builder.</li>
+<li>
+<code>ReadOnly</code> – the email is being viewed in Email Builder, but editing is disabled (e.g., for sent or scheduled emails, or for users without the <em>Update</em> permission for the email channel).</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Razor markup</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+
+@inject IEmailContextAccessor emailContextAccessor
+
+@if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+{
+    @* Content rendered only in Email Builder edit mode *@
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>C# code-behind</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.EmailBuilder.Web.Mvc;
+
+// Stores an instance of the IEmailContextAccessor service (e.g., obtained using dependency injection)
+private readonly IEmailContextAccessor emailContextAccessor;
+
+// Executes the following block only in Email Builder edit mode
+if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+{
+    // Targeted custom logic
+}
+</code></pre>
+</div>
+
+<h3 id="email-preview-mode">Email preview mode</h3>
+<p>The Email Builder API allows you to check if an Email Builder component is being viewed in preview mode or processed by the system when putting together the final email content sent to recipients. This can be useful when working with contexts that are not available in preview modes (for example <a href="#commerce-order-context">Commerce order context</a>), or if you wish to populate a component with sample data for previews.</p>
+<p>Obtain an instance of the <code>IEmailContextAccessor</code> service (using dependency injection), call the <code>GetContext</code> method to retrieve an <code>EmailContext</code> object, and access the <code>IsPreview</code> property. The property’s value is:</p>
+<ul>
+<li>
+<code>true</code> when the email is being viewed in Preview or Email Builder mode in the administration UI or being sent as a draft.</li>
+<li>
+<code>false</code> when the email is being sent to real recipients.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Razor markup</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+
+@inject IEmailContextAccessor emailContextAccessor
+
+@if (emailContextAccessor.GetContext().IsPreview)
+{
+    @* Content rendered only in preview modes *@
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>C# code-behind</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.EmailBuilder.Web.Mvc;
+
+// Stores an instance of the IEmailContextAccessor service (e.g., obtained using dependency injection)
+private readonly IEmailContextAccessor emailContextAccessor;
+
+// Executes the following block only in preview modes
+if (emailContextAccessor.GetContext().IsPreview)
+{
+    // Targeted custom logic
+}
+</code></pre>
+</div>
+
+<h3 id="email-fields">Email fields</h3>
+<p>Every <a href="/documentation/business-users/digital-marketing/emails">email</a> is based on a <a href="/documentation/developers-and-admins/development/content-types">content type</a>, which defines a set of fields for storing content. All email content types have the <em>EmailSubject</em> and <em>EmailPreviewText</em> system fields, and can have any number of other fields, such as rich text inputs or <a href="/documentation/business-users/content-hub/content-item-assets">content item asset</a> selectors. Users edit the fields for specific emails in the <em>Content</em> view in email channel applications.</p>
+<p>You can use content from email fields within your Email Builder components.</p>
+<h4 id="generate-model-classes-for-email-content-types">Generate model classes for email content types</h4>
+<p>Start by <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generating model classes</a> for the email <a href="/documentation/developers-and-admins/development/content-types">content types</a> that you use with Email Builder.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+cd my/Xperience/app/root
+dotnet run --no-build -- --kxp-codegen --type "EmailContentTypes"
+</code></pre>
+</div>
+
+<p>The generated classes provide easy-to-use representations of email content types, with strongly-typed properties for all fields.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Storing generated email classes</strong></p>
+<p>For smaller projects, you can store both your Email Builder components and generated email model classes directly within the main Xperience project.</p>
+<p>However, in many cases Email Builder components may be placed in a dedicated <a href="https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class" target="_blank">Razor class library</a> (RCL). Your generated content type models need to be accessible in both the Email Builder component RCL and your main Xperience project.</p>
+<p>We recommend creating another separate <em>Class library</em> project for storing all generated model classes, and then referencing this project from all of your RCLs and projects. The model class project must have <a href="/documentation/developers-and-admins/customization/integrate-custom-code#enable-class-discovery">class discovery</a> enabled – add the <code>[assembly: CMS.AssemblyDiscoverable]</code> attribute to a class, for example <em>Properties/AssemblyInfo.cs</em>.</p>
+</div>
+
+<h4 id="get-email-field-values">Get email field values</h4>
+<ol type="1">
+<li>In the code of your Email Builder component, obtain an instance of the <code>IEmailContextAccessor</code> service (using dependency injection).</li>
+<li>Call <code>IEmailContextAccessor.GetContext</code> to obtain an <code>EmailContext</code> object.</li>
+<li>Override the component’s <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/lifecycle#component-initialization-oninitializedasync" target="_blank">OnInitializedAsync</a> method, and call <code>EmailContext.GetEmail&lt;T&gt;</code>. Replace the generic parameter with the type of the <a href="#generate-model-classes-for-email-content-types">generated class</a> representing the appropriate email content type.
+<ul>
+<li>To identify the content type of the current email, access the <code>EmailContext.ContentTypeName</code> property, which returns the content type’s code name.</li>
+</ul>
+</li>
+<li>Get the values of the email’s fields from the properties of the returned generated class.
+<ul>
+<li>When using any object populated in <code>OnInitializedAsync</code> (e.g., the email object returned by <code>GetEmail&lt;T&gt;</code>) within the component’s markup, always include the <code>?.</code> <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#null-conditional-operators--and-" target="_blank">null-conditional operator</a>. Otherwise you will encounter errors, as components are asynchronously rendered for the first time before the initialization is complete.</li>
+<li>Consider the type of content that you are rendering. For example, fields with the <em>Rich text (HTML)</em> data type return a string containing raw HTML values, which you need to render as a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#raw-html" target="_blank">MarkupString</a>.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Access email fields in an Email Builder component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+
+@* Renders the rich text content from the email's 'Content' field *@
+&lt;mj-text&gt;
+    @((MarkupString)Email?.Content)
+&lt;/mj-text&gt;
+
+@* Renders an image based on an asset linked in the 'BannerLogo' field *@
+&lt;mj-image src="@BannerLogo?.ImageFile.Url" alt="@BannerLogo?.ImageShortDescription" width="@BannerLogo?.ImageFile.Metadata.Width"&gt;
+&lt;/mj-image&gt;
+
+@code {
+    private EmailContext _emailContext;
+
+    // Property storing the EmailContext object
+    protected EmailContext EmailContext =&gt; _emailContext ??= EmailContextAccessor.GetContext();
+
+    // Properties storing instances of model classes representing the email and linked content items
+    protected Generated.Models.Email Email;
+    protected Generated.Models.Image BannerLogo;
+
+    [Inject]
+    public IEmailContextAccessor EmailContextAccessor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Gets an instance of a generated model class representing the current email
+        Email = await EmailContext.GetEmail&lt;Generated.Models.Email&gt;();
+        // Gets the content item linked in the email's 'BannerLogo' field
+        BannerLogo = Email.BannerLogo.FirstOrDefault();
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="email-metadata">Email metadata</h3>
+<p>To get the metadata of the specific <a href="/documentation/business-users/digital-marketing/emails">email</a> where a component is being used, obtain an instance of the <code>IEmailContextAccessor</code> service (using dependency injection) and call its <code>GetContext</code> method. This returns an <code>EmailContext</code> object, with properties holding the data of the current email:</p>
+<ul>
+<li>
+<code>LanguageName</code> – the <a href="/documentation/developers-and-admins/configuration/languages">language</a> of the email containing the widget.</li>
+<li>
+<code>EmailChannelId</code> – the ID of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>.</li>
+<li>
+<code>ContentTypeName</code> – the code name of the <a href="/documentation/developers-and-admins/development/content-types">content type</a> used for the email containing the widget.</li>
+</ul>
+<h3 id="recipient-context">Recipient context</h3>
+<p>You can perform basic personalization of emails by adding the email recipient’s attributes (<em>First name</em>, <em>Last name</em> or <em>Email</em>) into component content.</p>
+<p>Obtain an instance of the <code>IEmailRecipientContextAccessor</code> service (using dependency injection) and call its <code>GetContext</code> method. This returns an <code>EmailRecipientContext</code> object with properties holding the current email recipient’s attributes, as well as the <code>ContactGuid</code> identifier of the related <a href="/documentation/business-users/digital-marketing/contact-management">contact</a>.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Access recipient context in an Email Builder component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using CMS.EmailMarketing
+
+&lt;mj-text&gt;
+    @* Inserts the recipient's first name into the component's content *@
+    Hello @Recipient.FirstName,
+&lt;/mj-text&gt;
+
+@code {
+    private EmailRecipientContext _recipient;
+
+    // Property storing the EmailRecipientContext object
+    protected EmailRecipientContext Recipient =&gt; _recipient ??= RecipientContextAccessor.GetContext();
+
+    [Inject]
+    public IEmailRecipientContextAccessor RecipientContextAccessor { get; set; }
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Recipient context in the Email Builder and Preview modes</strong></p>
+<p>When editing or viewing emails in the Xperience administration in <em>Email Builder</em> or <em>Preview</em> modes, recipient context values are resolved for a fake recipient named <em>John Doe</em>.</p>
+</div>
+
+<h3 id="regular-email-unsubscription-links">Regular email unsubscription links</h3>
+<p>When developing <a href="#templates">Email Builder templates</a> for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a>, you need to provide a link that allows recipients to unsubscribe. Typically, such links are placed into the email footer, which is a fixed part of the email template’s content.</p>
+<p>To get the unsubscription URL for the email’s recipient, obtain an instance of the <code>IEmailRecipientContextAccessor</code> service (using dependency injection), call its <code>GetContext</code> method, and access the <code>UnsubscriptionUrl</code> property of the returned <code>EmailRecipientContext</code> object. The provided unsubscription URL is based on the unsubscribe settings of the <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers#create-recipient-lists">recipient list</a> to which the resulting emails are sent.</p>
+<p>To ensure that tracking of clicked link <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">email statistics</a> is disabled for the unsubscription link, you need to manually add the <code>data-click-tracking="false"</code> attribute to the link’s <code>&lt;a&gt;</code> tag.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Add an unsubscription link to an Email Builder template</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using CMS.EmailMarketing
+
+&lt;mj-text&gt;
+    If you'd rather not receive future emails, &lt;a href="@Recipient.UnsubscriptionUrl" data-click-tracking="false"&gt;unsubscribe here&lt;/a&gt;.
+&lt;/mj-text&gt;
+
+@code {
+    private EmailRecipientContext _recipient;
+
+    [Inject]
+    private IEmailRecipientContextAccessor RecipientContextAccessor { get; set; }
+
+    protected EmailRecipientContext Recipient =&gt; _recipient ??= RecipientContextAccessor.GetContext();
+}
+</code></pre>
+</div>
+
+<h3 id="commerce-order-context">Commerce order context</h3>
+<p>When developing Email Builder components for <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses#configure-notifications-for-order-statuses">customer order notification emails</a>, you need to access data from the order for which the notification is being sent.</p>
+<ol type="1">
+<li>Obtain an instance of the <code>IEmailBuilderOrderContextAccessor</code> service (using dependency injection).</li>
+<li>Get the ID of the related order the via the <code>Context.OrderId</code> property of the accessor service.</li>
+<li>Use the order ID and the Xperience <a href="/documentation/developers-and-admins/api/database-table-api">Info and provider API</a> to retrieve the order’s data, for example <code>OrderInfo</code> for the order and its properties, and <code>OrderItemInfo</code> for the purchased items.</li>
+<li>Populate a model with the required order data and display it within the component’s markup.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Handle order context in preview modes</strong></p>
+<p>The Email Builder order context is only available when sending notification emails for a real order to actual customers. When the email is viewed in various preview modes, <code>IEmailBuilderOrderContextAccessor.Context</code> returns a <code>null</code> value. This includes <em>Preview</em> and <em>Email Builder</em> mode in the administration UI, and draft emails.</p>
+<p>To avoid errors in preview modes, add conditions around all order context logic using the <a href="#email-preview-mode">Email preview mode API</a>.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Accessing order data in a component’s code-behind</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using CMS.Commerce;
+using Kentico.EmailBuilder.Web.Mvc;
+
+[Inject]
+private IEmailContextAccessor EmailContextAccessor { get; set; } = default!;
+
+[Inject]
+private IEmailBuilderOrderContextAccessor OrderContextAccessor { get; set; } = default!;
+
+[Inject]
+private IInfoProvider&lt;OrderInfo&gt; OrderInfoProvider { get; set; } = default!;
+
+[Inject]
+private IInfoProvider&lt;OrderItemInfo&gt; OrderItemInfoProvider { get; set; } = default!;
+
+
+protected override async Task OnInitializedAsync()
+{
+    // Only accesses the order context for actual emails
+    // Note that the order context is null in preview modes
+    if (!EmailContextAccessor.GetContext().IsPreview)
+    {
+        // Gets the ID of the related order from the order context
+        int orderId = OrderContextAccessor.Context.OrderId;
+
+        // Gets the OrderInfo object holding the order data
+        OrderInfo order = await OrderInfoProvider.GetAsync(orderId);
+
+        // Gets values from the order's properties, for example the grand total
+        decimal? orderGrandTotal = order?.OrderGrandTotal;
+
+        // Gets a collection of order items (purchased products)
+        IEnumerable&lt;OrderItemInfo&gt; orderItems = await OrderItemInfoProvider.Get()
+                    .WhereEquals(nameof(OrderItemInfo.OrderItemOrderID), orderId)
+                    .GetEnumerableTypedResultAsync();
+
+        // Populate a model for the component containing the required order data
+        // ...
+    }
+    else
+    {
+        // We recommend populating a model for the component with sample order data for preview modes
+        // ...
+    }
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

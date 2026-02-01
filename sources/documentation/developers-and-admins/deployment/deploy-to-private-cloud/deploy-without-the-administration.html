@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Deploy without the administration</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>Deployment without the Xperience by Kentico administration is currently not supported when <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploying to SaaS</a>. The scenario described on this page applies only to <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud deployments</a>.</p>
+</div>
+
+<p>Xperience and all related dependencies are installed via <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">NuGet packages</a>. The installed packages dictate the features available to each project. However, not all packages are required for Xperience sites to run in production environments.</p>
+<p>The Xperience administration interface (installed via the <strong>Kentico.Xperience.Admin</strong> NuGet package) and all related customizations can be removed when publishing to production. In these types of environments, you can have:</p>
+<ul>
+<li>One Xperience instance <strong>with</strong> the administration interface. Access to this instance is restricted only to authorized users (i.e., placed behind a firewall or on a private network). This is where content editors and other users work with the system.
+<ul>
+<li>
+<strong>Note</strong>: Do not remove any code that is part of your project’s live site implementation or presentation logic (controllers, views, etc.) from the administration instance. Even though the instance is not intended for live visitors, such logic is required by certain administration features, such as the <a href="/documentation/business-users/website-content#preview">preview mode</a> for website channel pages.</li>
+</ul>
+</li>
+<li>Another Xperience instance <strong>without</strong> the administration interface. This is the instance with which regular live site visitors interact.</li>
+<li>Both instances <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">connect to the same database</a>.</li>
+</ul>
+
+<table>
+<tr>
+<td>
+<p>Advantages</p>
+</td>
+<td>
+<ul>
+<li>
+<strong>Increased security</strong> – removing the administration from public-facing sites reduces the attack surface available to malicious actors.</li>
+<li>
+<strong>Improved performance</strong> – removing the administration reduces application overhead, which is beneficial for sites with significant traffic. For example, the administration registers a separate middleware pipeline for user authentication, which is unnecessary for the live site.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Disadvantages</p>
+</td>
+<td>
+<ul>
+<li>
+<strong>Deployment complexity</strong> – preparing a separate instance without the administration and its dependencies increases the complexity of your environment and adds extra steps to your deployment process.</li>
+</ul>
+</td>
+</tr>
+</table>
+
+<p>In the most basic scenario, you can set up and deploy Xperience without the administration manually:</p>
+<ol type="1">
+<li>Create a separate copy of your Xperience application.</li>
+<li>Uninstall the <strong>Kentico.Xperience.Admin</strong> NuGet package and remove any custom code intended only for the administration.</li>
+<li>Deploy both applications – the original to an environment with restricted access and the new copy without the administration to production.</li>
+</ol>
+<p>However, in most cases, we recommend that you integrate the separation into an automated publishing script or pipeline.</p>
+<h2 id="sample-automated-separation-process">Sample automated separation process</h2>
+<p>This section outlines an approach that modifies the application’s build process to remove the <strong>Kentico.Xperience.Admin</strong> NuGet package and all related dependencies, including custom code intended only for the administration. The demonstrated approach is suitable for use in publishing scripts or automation pipelines.</p>
+<ol type="1">
+<li>
+<p>Edit your Xperience application’s .csproj file and add a new <code>AdminAttached</code> <a href="https://docs.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild" target="_blank">MSBuild property</a>:</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Xperience application’s .csproj file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;PropertyGroup&gt;
+     &lt;TargetFramework&gt; &lt;!-- ... --&gt; &lt;/TargetFramework&gt;
+     &lt;RootNamespace&gt; &lt;!-- ... --&gt; &lt;/RootNamespace&gt;
+     &lt;!-- Defines an MSBuild property that defaults to true 
+          if not explicitly passed to MSBuild as a parameter --&gt;
+     &lt;AdminAttached Condition="'$(AdminAttached)' == ''"&gt;true&lt;/AdminAttached&gt;  
+ &lt;/PropertyGroup&gt;
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Add the following condition to the <code>Kentico.Xperience.AspNetCore.Admin</code> package reference using the <code>Condition</code> attribute:</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Xperience application’s .csproj file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;ItemGroup&gt;
+     ...
+     &lt;!-- If the specified condition evaluates to true (true by default), the project maintains this package reference --&gt;
+     &lt;PackageReference Include="kentico.xperience.admin" Version="..." Condition="'$(AdminAttached)' == 'true'" /&gt;
+ &lt;/ItemGroup&gt;
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Follow a similar process to remove any custom code when <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">customizing the administration interface</a> or some of its <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">components</a>. Assuming your code follows best practices for admin UI customization outlined in <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI customization model overview</a>, your administration-related code is located in isolated assemblies/NuGet packages, making the process straightforward. Repeatedly add the <code>Condition</code> attribute to all relevant references:</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Xperience application’s .csproj file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;!-- Project assembly references --&gt;
+ &lt;ItemGroup&gt;
+     ...
+     &lt;ProjectReference Include="..\Acme.Web.AdminCustomCode.csproj" Condition="'$(AdminAttached)' == 'true'" /&gt;
+ &lt;/ItemGroup&gt;  
+
+ &lt;!-- Project package references --&gt;
+ &lt;ItemGroup&gt;
+     ...
+     &lt;PackageReference Include="Emca.Web.AdminCustomCode" Version="..." Condition="'$(AdminAttached)' == 'true'" /&gt;
+ &lt;/ItemGroup&gt;
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>If you also need to make specific code outside dedicated assemblies run only when the administration is attached, declare a conditional compilation constant and use it as required:</p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Xperience application's .csproj file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ &lt;PropertyGroup Condition="'$(AdminAttached)' == 'true'"&gt;
+     &lt;DefineConstants&gt;$(DefineConstants);ADMIN_ATTACHED&lt;/DefineConstants&gt;
+ &lt;/PropertyGroup&gt;
+ </code></pre>
+</div>
+</div>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ADMIN_ATTACHED usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ #if ADMIN_ATTACHED
+     // Surrounded code only compiles when administration dependencies are present
+ #endif
+ </code></pre>
+</div>
+</div>
+You can also invert this condition to run code only when the administration is detached. However, <strong>do not</strong> use such conditions to remove your project’s live site implementation or presentation logic from the administration instance. Such logic is required by certain administration features, such as the <a href="/documentation/business-users/website-content#preview">preview mode</a> for website channel pages.
+</div>
+</li>
+<li>
+<p>When you need to publish the project without admin UI packages and dependencies, pass <code>AdminAttached=false</code> as a parameter to MSBuild:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ dotnet publish -c Release -p:AdminAttached=false --output &lt;OUTPUT_DIRECTORY&gt;
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The output directory now contains the published application minus the dependencies marked by the <code>AdminAttached</code> condition.</p>
+
+</body>
+</html>

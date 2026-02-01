@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Continuous Integration</title>
+</head>
+<body>
+<p>Xperience provides a <a href="https://en.wikipedia.org/wiki/Continuous_integration" target="_blank">Continuous Integration</a> feature (CI) that allows you to serialize the data of objects from the database into XML files on the file system. You can then add the files to a <a href="https://en.wikipedia.org/wiki/Revision_control" target="_blank">source control system</a> (for example <a href="https://azure.microsoft.com/en-us/services/devops/server/" target="_blank">Azure DevOps</a> or <a href="https://git-scm.com/" target="_blank">Git</a>) and use them to synchronize database data between team members. The system ensures that the XML data of matching objects is always identical and consistent (including element and attribute order), even when serialized on different instances of Xperience.</p>
+<p>The system stores the XML files containing the serialized data of objects in the project’s <strong>App_Data\CIRepository</strong> folder.</p>
+<p>Continuous Integration actions are performed via the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/" target="_blank">.NET command-line interface</a> (included with the .NET SDK).</p>
+<h2 id="continuous-integration-overview">Continuous Integration overview</h2>
+<p>CI is usable in environments with <strong>multiple development instances</strong> (each with its own project files and database) and a <strong>source control system</strong> that provides change management and version control for files.</p>
+<p>To start developing projects using CI:</p>
+<ol type="1">
+<li>
+<p>Set up your development environment and enable CI.</p>
+<ul>
+<li><a href="#prepare-the-development-environment">Prepare the development environment</a></li>
+<li><a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">Exclude objects from CI/CD</a></li>
+</ul>
+</li>
+<li>
+<p>Establish a process for transferring objects back into the database from the repository XML files.</p>
+<ul>
+<li><a href="#restore-repository-files-to-the-database">Restore repository files to the database</a></li>
+<li>Synchronize database changes not managed by CI using <a href="/documentation/developers-and-admins/ci-cd/ci-cd-database-migration-scripts">migration scripts</a>.</li>
+</ul>
+</li>
+<li><p>Begin development.</p></li>
+</ol>
+<h3 id="recommended-usage-and-limitations">Recommended usage and limitations</h3>
+<p>Continuous Integration is designed to allow synchronization and version control of database data <strong><em>during development</em></strong>.</p>
+<p>CI has a <strong><em>negative impact on the application’s performance</em></strong>. The impact is not significant for development instances with a low number of users, but the feature should <strong><em>not be enabled on production deployments</em></strong>.</p>
+<p>CI only tracks object changes made through the administration interface or API. Changes made directly in the database or by external tools that modify the database are not tracked. After making such changes, you need to manually serialize all objects to synchronize the database with the CI repository.</p>
+<p>You <strong><em>cannot</em></strong> reliably use CI in environments where the repository folder is located on a <strong><em>shared location</em></strong> (multiple Xperience instances with separate databases connected to the same file repository). Common examples of shared file systems are external storage providers, such as Microsoft Azure Blob storage or Amazon S3.</p>
+<p>CI does not support all types of data available in Xperience. Certain object types represent live production data or are otherwise strictly related to specific Xperience instances. Such data is not included in CI, because synchronization in a development environment is not required or intended. For example, contacts representing visitors or data records submitted via forms are not supported by CI. See <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">Reference - CI/CD object types</a> for detailed information.</p>
+<h2 id="prepare-the-development-environment">Prepare the development environment</h2>
+<p>Before you can use Continuous Integration, you need to set up Xperience instances for your development team.</p>
+<p>Start by preparing an initial instance:</p>
+<ol type="1">
+<li>If using Git for Windows as your source control solution, consider enabling long paths support: see <a href="#long-paths-support-in-git-for-windows">Long paths support in Git for Windows</a>.</li>
+<li>Either <a href="/documentation/developers-and-admins/installation">install</a> a new instance of Xperience or select an existing instance as a starting point.</li>
+<li>Enable CI on the given instance (see <a href="#enable-continuous-integration">Enable Continuous Integration</a> for details).</li>
+<li>Create a backup of the instance’s database.</li>
+<li>Add the <strong><em>entire</em></strong> Xperience solution to your source control (adding only the CI repositoryfolder may lead to problems and is not recommended).</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Source control ignore rules</strong></p>
+<p>Certain source control systems may have ignore rules, such as <em>gitignore</em>, which can unintentionally exclude files or folders used in the CI/CD repository (for example, the <em>*.class</em> and <em>*.user</em> file and folder extensions).</p>
+<p>Such rules may prevent your environment from working correctly. We recommend that you evaluate ignore rules for the repository and disable them as required.</p>
+</div>
+
+<p>To add development instances into your environment, perform the following steps for each instance:</p>
+<ol type="1">
+<li>Connect to the source control from the development machine and load the latest version of the solution files onto the local file system.
+<ul>
+<li>Decide how to handle source control for the project’s configuration file (<em>appsettings.json</em> by default). Each development machine needs to have a connection string to a different database, but you may want to synchronize other parts of the configuration.</li>
+</ul>
+</li>
+<li>Create (restore) a copy of the initial database on your SQL server.</li>
+<li>Connect the instance to the new copy of the database by setting the appropriate connection string in the project’s configuration file.</li>
+</ol>
+<p>After you complete the process, all development machines will contain their own Xperience project files connected to a separate copy of the database. You can start using your source control system to synchronize project files between the instances. CI serializes database data onto the file system and you can include it in your source control, just like any other files.</p>
+
+<div>
+
+</div>
+<div>
+<p>The process described above ensures that objects have identical GUID values (globally unique identifiers) across your entire development environment. If you perform a separate database installation for each development instance, you will need to manually resolve a large number of GUID conflicts when synchronizing data through CI.</p>
+</div>
+
+<p>If you need to add further instances later after development with CI starts, use the same process. However, you need to make sure the database is synchronized with the rest of the development environment. Use one of the following approaches:</p>
+<ul>
+<li><p>Maintain a central database connected to the mainline source control and always create an up-to-date backup for new developers.<br>
+– OR –</p></li>
+<li>
+<p>Use the original database backup and then get the latest data:</p>
+<ol type="1">
+<li>Restore the current object status from the CI repository into the database. See <a href="#restore-repository-files-to-the-database">Restore repository files to the database</a>.</li>
+<li>Manually transfer changes made to the data of any object types not supported by CI (maintain documentation of such changes).</li>
+</ol>
+</li>
+</ul>
+<h3 id="enable-continuous-integration">Enable Continuous Integration</h3>
+<p>To start using Continuous Integration on an Xperience instance:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application in the administration interface.</li>
+<li>Navigate to the <strong>Synchronization →</strong> <strong>Continuous Integration</strong>.</li>
+<li>Select the <strong>Enable Continuous Integration</strong> checkbox.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+<li>
+<a href="#store-object-data-to-the-repository">Store all object data to the Continuous Integration repository</a>.</li>
+</ol>
+<p>The project’s <strong>App_Data\CIRepository</strong> folder now contains XML files storing the serialized data of all supported objects from the database. The system also tracks create, update and delete operations for the given objects and automatically transfers the changes to the serialized data on the file system.</p>
+<h3 id="configure-instances-to-synchronize-macros">Configure instances to synchronize macros</h3>
+<p>To ensure that <a href="/documentation/developers-and-admins/configuration/macro-expressions">macro expressions</a> work correctly when synchronizing objects using Continuous Integration, all development instances must use the same hash salt value.</p>
+<p>If your development instances do not all start with the same configuration file (<em>appsettings.json</em> by default), you need to set a matching value for the <code>CMSHashStringSalt</code> key on all instances. The best option is the hash salt from the starting instance that you used to create your initial database backup. You can use any string as the value, but the salt should be random and at least 16 characters long. For example, a randomly generated <a href="https://en.wikipedia.org/wiki/GUID" target="_blank">GUID</a> is a strong salt:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSHashStringSalt": "e68b9ad6-a461-4707-8e3e-ece73f03dd02",
+
+</code></pre>
+</div>
+
+<p>The salt value is used as part of the input for the hash function that creates the security <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">signatures of macros</a>. Having the same hash salt value on all instances is necessary to ensure that macro signatures are valid when transferring data between instances.</p>
+<p>The best option is to set the hash salt value before you start development. Changing the salt causes all current hash values to become invalid.</p>
+<p></p>
+<h3 id="long-paths-support-in-git-for-windows">Long paths support in Git for Windows</h3>
+<p>Due to certain limitations present in Windows APIs, Git for Windows cannot by default work with paths longer than 260 characters.</p>
+<p>The CI/CD solution names filesystem objects using database entity names as defined in Xperience. Depending on your naming conventions, you may encounter objects whose filesystem path to the serialized representation exceeds the 260 character limit.</p>
+<p>Git for Windows will have issues working with such files and it will be unable to recreate the affected files for other users cloning the repository. To correct this behavior, all developers must deliberately opt-in for long paths support via the following command, which enables long paths support in all local git repositories:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Enable core.longpaths support</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+git config --global core.longpaths true
+</code></pre>
+</div>
+
+<p>Note that this configuration is distinct from the <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry#registry-setting-to-enable-long-paths" target="_blank">LongPathsEnabled</a> Windows registry key, which enables long paths support across the entire system.</p>
+<h2 id="store-object-data-to-the-repository">Store object data to the repository</h2>
+<p>Use the following steps to store all supported objects from the database to the Continuous Integration repository:</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to your Xperience project’s root directory.</p></li>
+<li>
+<p>Use <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> to execute the <code>--kxp-ci-store</code> command:</p>
+<ul>
+<li>
+<p>If your project is up-to-date and rebuilt, run the command with the <code>--no-build</code> parameter. This option saves time and avoids an unnecessary project build before the store operation.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  dotnet run --no-build --kxp-ci-store
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>When the process completes, the CI repository contains XML files with the serialized data of all supported objects from the database. Objects are stored from the database specified by the <code>CMSConnectionString</code> in the application’s configuration file (<em>appsettings.json</em> by default).</p>
+<p></p>
+<h2 id="restore-repository-files-to-the-database">Restore repository files to the database</h2>
+
+<div>
+
+</div>
+<div>
+<p>The restore action <strong><em>deletes</em></strong> any supported objects in the database that do not exist as files in the Continuous Integration repository. Before you run the restore process, make sure the repository contains the required state of your object data.</p>
+<p>To avoid loss of local data, you need to maintain the file system repository as a full image of your database – serialize all objects to the file system at the start of development and leave CI enabled. You then need to merge the file content of the repository when loading data from another team member or the central source control.</p>
+</div>
+
+<p>To ensure that the restore process works correctly, you need to <strong><em>stop your Xperience application before running the restore process</em></strong>. If you always rebuild your solution before restoring, the application stops and starts automatically.</p>
+<p>If the application runs during the restore action, you may encounter the following problems:</p>
+<ul>
+<li>Deadlocks or data inconsistencies if changes occur while data is being restored from the files</li>
+<li>Outdated content in the application’s cache if you restore without restarting (can cause inconsistencies in displayed content or the administration)</li>
+</ul>
+<p>Perform the following steps to transfer objects from the CI repository to the database:</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to your Xperience project’s root directory.</p></li>
+<li>
+<p>Use <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> to execute the <code>--kxp-ci-restore</code> command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --kxp-ci-restore
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The action deserializes the objects stored in the CI repository and creates, overwrites or removes corresponding data in the database. Objects are restored to the database specified by the <code>CMSConnectionString</code> in the application’s configuration file (<em>appsettings.json</em> by default).</p>
+<h2 id="ci-development-best-practices">CI development best practices</h2>
+<p>This section contains best practices and tips for developing projects with a source control and the Xperience Continuous Integration feature.</p>
+<h3 id="track-create-and-delete-operations">Track create and delete operations</h3>
+<p>When you add a new object or delete an existing one in Xperience, the system creates or removes the corresponding XML files. You may need to perform additional actions to correctly track such changes, depending on the type of your source control repository.</p>
+<p>For example with <strong>Git</strong>, files representing new objects appear as <em>Untracked</em> changes. You need to <em>Add</em> the files before you can <em>Commit</em> and <em>Push</em> them to a shared repository.</p>
+<h3 id="object-identifiers">Object identifiers</h3>
+<p>Identifiers are values that CI uses to determine the names and locations of files representing objects in the repository folder:</p>
+<ul>
+<li>In most cases, objects use their <strong>code name</strong> as the identifier.</li>
+<li>Object types that do not have a suitable code name use other values (a notable example are pages, which use their <em>alias path</em> as the primary identifier).</li>
+<li>Identifiers may also include values of related objects, such as the code name of the parent object, the name of the related channel, etc.</li>
+</ul>
+<p>Avoid making changes to object identifiers if possible, particularly for objects that have a large number of child objects or affect the identity of other objects (such as channels). This also includes operations that change the identifier indirectly, for example moving a child object under a different parent.</p>
+<p>When an object’s identifier changes, CI <strong><em>deletes</em></strong> the file representing the object in the file system and creates a new one based on the new identifier. This causes a <strong><em>loss of the file’s version history</em></strong> in the source control and makes it difficult to merge changes made to the same object by other developers.</p>
+<h3 id="commit-changes">Commit changes</h3>
+<p>When committing changes to your source control, we strongly recommend including <strong>all</strong> detected file changes in the CI repository folder. It may not be obvious which files correspond to specific changes made in the Xperience administration. Certain objects are represented by multiple files and changes may also affect related objects or relationships between objects.</p>
+<p>To learn more about how objects are represented, see the following pages:</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/ci-cd/ci-cd-repository-structure">CI/CD repository structure</a></li>
+<li><a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">Reference - CI/CD object types</a></li>
+</ul>
+<h3 id="undo-changes">Undo changes</h3>
+<p>We do not recommend undoing changes that create new CI repository files. Undoing changes may lead to inconsistencies between the state of the file system repository and the database. You can instead delete the given object in the Xperience administration, which also makes the corresponding changes in the file system.</p>
+<p>If you undo a delete or modify operation and revert an XML file to its previous state, you then need to <a href="#restore-repository-files-to-the-database">restore the objects into the database</a> to reverse the object changes in Xperience.</p>
+<h3 id="get-new-versions-of-the-repository-content">Get new versions of the repository content</h3>
+<p>Whenever you load (pull) a different version of any files in the CI repository folder from your source control, you need to:</p>
+<ol type="1">
+<li>Merge any files that conflict with your instance’s local versions. See also: <a href="#resolve-conflicts">Resolving object conflicts</a>
+</li>
+<li>
+<a href="#restore-repository-files-to-the-database">Restore the objects into your database</a>.</li>
+</ol>
+<p>The restore operation ensures that your instance’s database is consistent with the file system repository. If you continue working on the instance without performing the restore operation, changes to local data may overwrite the new versions of the files that you loaded from the source control.</p>
+<h3 id="resolve-conflicts">Resolve conflicts</h3>
+<p>You may encounter object conflicts when pulling or committing CI repository files. Conflicts happen if your local folder and the opposing folder contain a file with the same name, but different content. File names are based on unique identifiers of objects (in most cases the object’s code name).</p>
+<p><strong>Planned conflicts</strong> can occur if you need to create <strong><em>the same object</em></strong> across your entire development environment. For example, multiple developers may create a website channel with the same name when starting development. Even if the objects have completely identical values for all configurable properties, a conflict will occur during synchronization, because the object’s GUID (globally unique identifier) value is different for each developer.</p>
+<p>The best solution is to have one developer create the object and commit the resulting XML files to the central source control. Other developers then load the XML files from the source control and <a href="#restore-repository-files-to-the-database">restore the object</a> to their local database. This approach completely avoids object conflicts and file merging.</p>
+<p>If you cannot avoid an object conflict and need to merge XML files, always use the GUID value that is already committed to the source control and replace your local GUID. Do NOT push your local GUID values to the source control – this could cause conflicts for all other developers in your environment.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>:</p>
+<ul>
+<li>The XML elements and attributes used in the CI repository are <strong><em>case sensitive</em></strong>. Make sure you preserve the letter case if you edit the XML content when merging files.</li>
+<li>If you change an object’s GUID during conflict resolution and then <a href="#restore-repository-files-to-the-database">restore the object</a> to your database, you may need to manually fix broken references on your local development instance. For example, object and page fields may reference files via the GUID of the selected file.</li>
+</ul>
+</div>
+
+<p><strong>Unplanned conflicts</strong> occur if developers unintentionally create <strong><em>different objects</em></strong> of the same type with matching identifiers (typically code names) and then synchronize through the source control. In such cases, you need to contact the developer who committed the conflicting XML file and one of you must delete and recreate the object with a different identifier (or rename the identifier values). We strongly recommend changing the local object that is not committed to the source control yet, which prevents potential conflicts for other developers.</p>
+<h3 id="delete-and-recreate-objects">Delete and recreate objects</h3>
+<p>If you delete an object and then create a new object of the same type with an identical <a href="#object-identifiers">identifier</a>, you may encounter errors when restoring the CI data. For example, such problems can occur if you delete a <em>/Home</em> page, and then create a new /<em>Home</em> page with a different content type.</p>
+<p>The CI restore operation deletes objects only if an XML file with a matching identifier is not found in the CI repository. This means that the system cannot differentiate between “delete and recreate” actions and standard update actions. Errors can occur when restoring “recreated” objects, because the original object is not properly deleted together with its dependencies (child objects or bindings, other referenced objects).</p>
+<p>To work around this problem, run the CI restore in multiple steps:</p>
+<ol type="1">
+<li>Delete the object.</li>
+<li>Commit the changes to your source control and inform other developers to pull and restore the CI data.</li>
+<li>Recreate the object once the delete action is properly shared across your entire development environment.</li>
+<li>Commit your changes again.</li>
+</ol>
+<h2 id="update-projects-that-use-continuous-integration">Update projects that use Continuous Integration</h2>
+<p>If you need to apply an <a href="/documentation/developers-and-admins/installation/update-xperience-by-kentico-projects">update</a> to an instance that has CI enabled, use the following procedure:</p>
+<ol type="1">
+<li>
+<p><a href="#restore-repository-files-to-the-database">Restore objects from the Continuous Integration repository to your database</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>You can skip the restore if you are sure that your database is synchronized with the current status of your repository folder.</p>
+</div>
+</li>
+<li><p>Disable CI (e.g., using the <a href="#enable-continuous-integration">settings</a> in the Xperience administration).</p></li>
+<li><p>Apply the update.</p></li>
+<li><p>Re-enable CI.</p></li>
+<li><p>If you use the <code>&lt;IncludedObjectTypes&gt;</code> element in your CI <em>repository.config</em> file to <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">filter object types</a>, check <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">Reference - CI/CD object types</a> for any new object types introduced by the update. Add any new object types that you wish to include in CI.</p></li>
+<li><p><a href="#store-object-data-to-the-repository">Store object data to the repository</a> to recreate the serialized content.</p></li>
+</ol>
+<p>This approach ensures that your CI repository folder contains all object changes made by the update and that the serialization process itself runs according to the new version.</p>
+<p>You need to apply the update separately for each development instance. After one developer commits the new changes to the source control, other developers CANNOT commit or load changes until they apply the update to their own instance.</p>
+<p>For major updates, it may be more efficient to only update one instance and then set up your environment again according to the process described in <a href="#prepare-the-development-environment">Prepare the development environment</a>.</p>
+<h2 id="custom-repository-location">Custom repository location</h2>
+<p>After you set up and enable CI, the system serializes database data into XML and stores the results on the file system. By default, the files are created in the project’s <strong>App_Data\CIRepository</strong> folder.</p>
+<p>If your development environment requires a different location for the CI repository, set the <code>CMSCIRepositoryPath</code>  key in your project’s configuration file (<em>appsettings.json</em> by default). The key’s value must be an absolute or relative path of a folder on a local drive, or a network location for which the application has sufficient permissions, for example:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSCIRepositoryPath": "C:\\ExternalSourceControl\\CIRepository",
+
+</code></pre>
+</div>
+
+<p>When serializing object data to the file system or <a href="#restore-repository-files-to-the-database">restoring data</a> back to the database, the system now uses the specified folder as the root of the CI repository. You can add the folder into your source control system.</p>
+<p>You can use the key to set a shared CI repository.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Recommended repository location</strong></p>
+<p>We recommend keeping your CI repository in your Xperience project’s <em>App_Data</em> folder and having the entire solution included within your source control. This setup allows you to easily synchronize all types of related project files together with the database data tracked by CI.</p>
+<p>If you decide to change the CI repository location, do NOT use the new folder as the root of your overall source control repository. Always add it as a subfolder under a different root folder. CI <strong>deletes all folders</strong> within the repository when storing all objects. If the folder is the root of your source control repository, you may encounter errors or other problems when using source control systems that utilize custom files or folders in the root.</p>
+</div>
+
+<h2 id="character-encoding-for-repository-files">Character encoding for repository files</h2>
+<p>By default, Continuous Integration generates non-binary files in the repository folder using <a href="https://en.wikipedia.org/wiki/UTF-8" target="_blank">UTF-8</a> character encoding.</p>
+<p>If you need to use a different encoding type for the repository files (for example due to requirements of a file comparison tool), add the <code>CMSCIEncoding</code> key to your project’s configuration file (<em>appsettings.json</em> by default). For example:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSCIEncoding": "utf-16",
+
+</code></pre>
+</div>
+
+<p>The <code>CMSCIEncoding</code> key supports values matching the encoding names listed in the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding" target="_blank">Encoding Class</a> article.</p>
+
+<div>
+
+</div>
+<div>
+<p>Changing the value of the <code>CMSCIEncoding</code> key does not update the encoding type of existing files in the CI repository folder. To fully update the encoding of the repository content, you need to:</p>
+<ul>
+<li>Run complete serialization for all objects.</li>
+<li>Manually update the encoding type of your <em>repository.config</em> file.</li>
+</ul>
+</div>
+
+
+</body>
+</html>

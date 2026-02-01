@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form Builder</title>
+</head>
+<body>
+<p>The Xperience Form Builder offers an intuitive graphical editor that allows content creators and marketers to <a href="/documentation/business-users/digital-marketing/forms">compose online forms</a>. It is available on the <strong>Form Builder</strong> tab of the <strong>Forms</strong> application when editing a form.</p>
+<p></p>
+<h2 id="displaying-forms">Displaying forms</h2>
+<p>Forms created in the Form Builder can be displayed on the website in the following ways:</p>
+<ul>
+<li>Content editors can <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">place</a> the forms onto the live site as widgets using the <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder</a>.</li>
+<li>Developers can add forms directly into the views of pages by <a href="/documentation/developers-and-admins/development/builders/page-builder/render-widgets-in-code">rendering</a> the <em>Form</em> widget.</li>
+</ul>
+<h2 id="form-builder-components">Form Builder components</h2>
+<p>The Form Builder framework consists of a number of component types, each contributing specific functionality.</p>
+<section id="form-sections">
+<h4>Form sections</h4>
+<p><a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">Form sections</a> drive the overall layout of forms. They represent reusable pieces of markup that can store any number of form zones – areas where content creators place form fields. Sections are fully customizable, and as a developer, you have absolute freedom in the way you set each section’s layout. Form sections can be implemented with <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections/form-section-properties">properties</a>, which allow content editors to adjust the content or behavior of the sections using configuration dialogs in the Form Builder interface.</p>
+<p>See <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">Form sections</a> to learn how to implement and customize form sections.</p>
+</section>
+<section id="form-components">
+<h4>Form components</h4>
+<p>The main building blocks of forms are <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form components</a> – instances of components represent individual form fields. The implementation of form components consists of two classes, one facilitating the front-end functionality, the other encapsulating the state as configured via the Form Builder’s properties panel, and a corresponding partial view, providing the component’s visual elements.</p>
+<p>Natively, Xperience contains a set of form components available for use instantly, without the need of any custom development on your part. See <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">Reference - Form Builder components</a> for a comprehensive list. You can also implement form components suited for your specific scenarios. See <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">Form components</a> for more information and a general overview.</p>
+</section>
+<section id="validation-rules">
+<h4>Validation rules</h4>
+<p>Validation rules enforce constraints on form field inputs. For example, you can limit the maximum allowed text length or the highest number a user can enter into a field. Editors can <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#field-validation">add validation rules</a> when configuring individual fields in the Form Builder UI.</p>
+<p>Learn how to implement custom validation rules in <a href="/documentation/developers-and-admins/development/builders/form-builder/form-builder-validation-rules">Form Builder validation rules</a>.</p>
+</section>
+<p>Components need to be registered under a unique <em>Identifier,</em> with a <em>Name</em> that is displayed in the Form Builder interface.</p>
+<h2 id="form-builder-utilities">Form Builder utilities</h2>
+<p>The system provides a set of extension methods and ASP.NET Core <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helpers</a> designed to facilitate development of new Form Builder components. To easily access these extension methods in the code of your views, edit your project’s <strong>Views\ViewImports.cshtml</strong> file and:</p>
+<ul>
+<li>add the <code>Kentico.Forms.Web.Mvc</code> namespace</li>
+<li>add the Tag Helpers from the <code>Kentico.Content.Web.Mvc</code> namespace</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>ViewImports.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Forms.Web.Mvc
+
+...
+
+@addTagHelper *, Kentico.Content.Web.Mvc
+
+</code></pre>
+</div>
+
+<p>Alternatively, you can add these directly in the code of individual views.</p>
+
+</body>
+</html>

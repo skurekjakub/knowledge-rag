@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Administration domain configuration</title>
+</head>
+<body>
+<p>The Xperience by Kentico <a href="/documentation/administration-interface-basics">administration interface</a> is a web application that can be accessed in a browser by adding the <strong>/admin</strong> path after the domain where the application is deployed. When you add one or more <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a>, the administration is also available on all of the configured website channel domains.</p>
+<p>However, even though delivering content through websites is one of the main purposes of Xperience by Kentico, it is not a website-centered product and does not require website channels to function. All channel types are optional. Xperience by Kentico can run as a content management and digital marketing platform even before you configure any channels, and it is possible to serve content through <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email</a> or <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a> without a website.</p>
+<p>We recommend separating the administration from your website channels by using a <strong>dedicated domain to access the administration</strong>. For example, you can have website channels running on the <em>domain1.com</em> and <em>domain2.com</em> domains, and use a shared <strong>admin.domain.com</strong> domain to manage both websites, as well as features that are not website-related.</p>
+<p><a href="#set-up-an-administration-domain-redirect">Set up a domain redirect</a> to ensure that all users consistently access the administration on the dedicated domain.</p>
+<p>To further secure access to your project’s administration, you can consider deploying one Xperience instance for the administration and another separate instance <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">without the administration</a> to serve your live websites to visitors.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Administration domains for SaaS deployments</strong></p>
+<p>When using <a href="/documentation/developers-and-admins/saas/saas-overview">Xperience by Kentico SaaS</a>, you currently cannot set a custom administration domain.</p>
+<p>However, every <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deployment environment</a> has a default system domain that you can use to access the administration in format: <em>&lt;environment&gt;-&lt;project_code_name&gt;.xperience-sites.com</em></p>
+<p>To access the project’s administration UI, append <em>/admin</em> to the default domain URL.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Administration domains in local environments</strong></p>
+<p>When setting up <a href="/documentation/developers-and-admins/development/website-development-basics/set-up-local-hosting">local hosting</a>, you can use <em>localhost</em> with different port numbers to set up multiple domains for your website channels and administration (for example using the <a href="https://learn.microsoft.com/aspnet/core/fundamentals/environments#development-and-launchsettingsjson" target="_blank">launchSettings.json file</a> for the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel" target="_blank">Kestrel</a> web server).</p>
+</div>
+
+<h2 id="benefits-of-a-dedicated-administration-domain">Benefits of a dedicated administration domain</h2>
+<p>Using a dedicated administration domain provides the following advantages:</p>
+<ul>
+<li>The administration is always consistently accessed through a single domain. This reduces confusion, and prevents administrators, content editors and marketers from assuming that the administration only affects their “current” website.</li>
+<li>Easier setup of single sign-on (SSO) for the administration when using <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-external-authentication">external authentication</a> options.</li>
+<li>Simpler configuration of <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank">Cross-origin resource sharing (CORS)</a> for <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a> features or for integrations with third-party applications or services.</li>
+<li>Readiness for future expansion of your project. Any configuration or integrations that rely on the domain of the administration do not need to be adjusted to support newly added channels with other domains.</li>
+<li>You have a clearly defined domain that is suitable for all administration-related purposes, such as the <a href="/documentation/developers-and-admins/configuration/notifications#configure-domains-for-notifications">service domain</a> used for notifications.</li>
+</ul>
+<h2 id="set-up-an-administration-domain-redirect">Set up an administration domain redirect</h2>
+<ol type="1">
+<li><p>Open your Xperience solution in Visual Studio.</p></li>
+<li>
+<p>Choose a way to configure the dedicated administration domain for the application, for example, using <a href="https://learn.microsoft.com/aspnet/core/fundamentals/configuration/" target="_blank">ASP.NET Core configuration providers</a>. The following code snippets show how to set up the configuration via the <em>appsettings.json</em> file, together with a matching options class.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ {
+     ...
+
+     "CMSHashStringSalt": "93c8cba7-0837-4358-9862-0483f046bcc9",
+     "AdminRedirectOptions": {
+         "RedirectDomain": "admin.domain.com"
+     }
+ }
+ </code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Options class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ public class AdminRedirectOptions
+ {
+     public string RedirectDomain { get; set; }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Perform a redirect to the configured administration domain for all requests with the <strong>/admin</strong> URL path. For example, use the <a href="https://learn.microsoft.com/aspnet/core/fundamentals/url-rewriting" target="_blank">ASP.NET URL rewriting Middleware</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ var builder = WebApplication.CreateBuilder(args);
+
+ // ...
+
+ // Loads the administration redirect domain (AdminRedirectOptions) from a configuration file section
+ builder.Services.Configure&lt;AdminRedirectOptions&gt;(builder.Configuration.GetSection("AdminRedirectOptions"));
+
+ // ...
+
+ var app = builder.Build();
+
+ app.InitKentico();
+
+ app.UseStaticFiles();
+ app.UseCookiePolicy();
+ app.UseAuthentication();
+
+ // Configures the URL rewriting options
+ var rewriteOptions = new RewriteOptions()
+     .Add(context =&gt;
+     {
+         var httpContext = context.HttpContext;
+         var request = httpContext.Request;
+
+         // Checks if the URL path starts with '/admin'
+         if (request.Path.StartsWithSegments("/admin", StringComparison.OrdinalIgnoreCase))
+         {
+             // Gets the redirect domain for the administration
+             string adminDomain = httpContext.RequestServices
+                 .GetRequiredService&lt;IOptions&lt;AdminRedirectOptions&gt;&gt;().Value.RedirectDomain;
+
+             // Checks if the current host is not already the administration domain
+             if (!adminDomain.Equals(request.Host.ToString(), StringComparison.OrdinalIgnoreCase))
+             {
+                 // Redirects the request to the new domain
+                 httpContext.Response.Redirect($"//{adminDomain}{request.Path}{request.QueryString}", permanent: false);
+                 context.Result = RuleResult.EndResponse;
+             }
+         }
+     });
+
+ // Adds the URL rewriting middleware to the request pipeline using the configured RewriteOptions
+ app.UseRewriter(rewriteOptions);
+
+ app.UseKentico();
+
+ // ...
+ </code></pre>
+</div>
+</li>
+<li><p>Save the changes and rebuild your solution.</p></li>
+</ol>
+<p>When a user now accesses the application on any domain with a URL path starting with <strong>/admin</strong>, the system automatically redirects them to the correct administration domain.</p>
+
+</body>
+</html>

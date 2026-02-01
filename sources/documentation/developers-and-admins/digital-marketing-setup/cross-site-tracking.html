@@ -1,0 +1,1005 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Cross-site tracking</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preview feature</strong></p>
+<p>The cross-site tracking feature is currently in preview mode. Expect the feature to be updated and modified significantly in upcoming versions, including breaking changes.</p>
+<p>What should you do with this feature?</p>
+<ul>
+<li>
+<strong>DO</strong> try out this feature, for example, using the sample <em>Dancing Goat</em> <a href="/documentation/developers-and-admins/installation">project template</a> or other demo sites.</li>
+<li>
+<strong>DO</strong> feel free to share your feedback with the Kentico <a href="https://roadmap.kentico.com/" target="_blank">Product team</a>.</li>
+<li>
+<strong>DON’T</strong> use this feature in a production environment or invest heavily into development based on the current state.</li>
+</ul>
+</div>
+
+<p>Websites running as channels in Xperience by Kentico can <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">track visitors as contacts</a> and <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">log their activities</a>. Cross-site tracking allows you extend these features to other websites that you own. The feature can be used with websites on any version of Xperience, as well as sites running completely without Xperience.</p>
+<p>For example, you can utilize cross-site tracking for the following types of websites:</p>
+<ul>
+<li>Microsites that support your main Xperience website.</li>
+<li>Related sites running on an older version of Xperience that you cannot or do not wish to upgrade.</li>
+<li>In general, any interconnected site that shares visitors with your Xperience website.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>To use cross-site tracking, you must have at least one site managed as a <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> in Xperience. Every external site that you wish to track needs to be registered in the system, and linked to a <strong>specific website channel</strong>.</p>
+<p>Your main Xperience website and all external sites must:</p>
+<ul>
+<li>Run on <strong>HTTPS</strong> with valid trusted certificates.</li>
+<li>Have unique domain names, <strong>without an application path</strong> or <strong>port number</strong>. This is necessary to allow external sites to communicate with logging endpoints in the main application, and ensure <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing" target="_blank">Cross-origin resource sharing</a> for logging requests.</li>
+</ul>
+<p>Cross-site tracking relies on <a href="https://en.wikipedia.org/wiki/HTTP_cookie#Privacy_and_third-party_cookies" target="_blank">third-party cookies</a>. As a result, tracking on external sites may not work for a significant number of visitors. Even if a visitor gives consent to be tracked, their browser may be configured to block third-party cookies. For optimal cross-site tracking coverage, run your external sites on <strong>subdomains</strong> of the main Xperience website (for example, <em>domain.com</em> for the main site and <em>shop.domain.com</em> for an external site).</p>
+<p>To comply with <a href="/documentation/developers-and-admins/data-protection">personal data protection</a> policies that apply to most website, you need to prepare a tracking <a href="/documentation/developers-and-admins/data-protection/consent-management">consent</a>, and implement functionality on your external sites to allow visitors to give consent agreements.</p>
+<h2 id="how-cross-site-tracking-works">How cross-site tracking works</h2>
+<p>Cross-site tracking is performed through client-side scripts, which communicate with the Xperience application hosting the main website via designated endpoints. The scripts are added to tracked sites by copying an initial snippet from the Xperience administration, and then need to be extended by web developers to provide consent functionality and logging of activities beyond basic page visits.</p>
+<p>The following table summarizes how contacts are created and tracked, assuming that visitors have given consent to be tracked:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Visitor journey</p>
+</td>
+<td>
+<p>Contact tracking</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Main site → External site</p>
+</td>
+<td>
+<p>When a new visitor arrives on the main Xperience website, the system stores the contact in the <strong>CurrentContact</strong> browser cookie.</p>
+<p>If the visitor later opens a tracked external site, the same cookie is used to track the contact and converted to third-party mode.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>External site → Main site</p>
+</td>
+<td>
+<p>If a new visitor arrives on a tracked external site without first visiting the main Xperience website, a new contact is created and stored in the <strong>CrossSiteContact</strong> third-party cookie.</p>
+<p>If the visitor later goes to the main website, the <em>CrossSiteContact</em> cookie is replaced by the standard <em>CurrentContact</em> cookie. The visitor is tracked as a single contact, which merges all data available from both the main and external site.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Multiple external sites</p>
+</td>
+<td colspan="1">
+<p>If you have multiple tracked external sites, visitors are tracked as separate contacts for every external site. This means that a single visitor is represented by multiple contacts, each with their own activities and consent agreements.</p>
+<p>The system merges the contacts and the collected data if the visitor goes to the main Xperience website.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Identify contacts from external sites</strong></p>
+<p>If you need to detect or segment contacts who were tracked on an external site, set up a <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> with the <strong>Contact has visited a page with a specific URL in the last X days</strong> condition, and use the external site’s domain name as the URL value.</p>
+<p>When viewing the activity logs in the Xperience <strong>Contact management</strong> application (both the overall log and the logs for individual contacts), activities from external sites appear with the <strong>Cross-site activity flag</strong> and the name of the external site.</p>
+</div>
+
+<h2 id="set-up-cross-site-tracking">Set up cross-site tracking</h2>
+<ol type="1">
+<li><a href="#enable-the-cross-site-tracking-feature">Enable the cross-site tracking feature for your Xperience application</a></li>
+<li><a href="#manage-tracked-sites">Register external sites that you wish to track in Xperience</a></li>
+<li><a href="#add-the-tracking-snippet">Add a tracking snippet to the tracked sites</a></li>
+</ol>
+<h3 id="enable-the-cross-site-tracking-feature">Enable the cross-site tracking feature</h3>
+<p>To start tracking contacts and activities on external sites, you need to enable the cross-site tracking feature for the application hosting your main Xperience website. The feature registers endpoints that receive and process cross-site tracking requests.</p>
+<ol type="1">
+<li><p>Open your project in Visual Studio and edit the <strong>Program.cs</strong> file.</p></li>
+<li><p><a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/enable-application-features">Enable</a> the activity tracking feature by calling the <code>UseCrossSiteTracking</code> method of the <code>IFeaturesBuilder</code> delegate (pass the delegate as an argument to <code>AddKentico</code>).</p></li>
+<li><p>Create a <code>CrossSiteTrackingOptions</code> object and populate its <code>ConsentSettings</code> property with an <code>IEnumerable</code> collection of <code>CrossSiteTrackingConsentOptions</code> objects.</p></li>
+<li>
+<p>Add a <code>CrossSiteTrackingConsentOptions</code> object for every website channel that you wish to link with one or more tracked external sites. For each object, set the following properties:</p>
+<ul>
+<li>
+<code>WebsiteChannelName</code> – the code name of the <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> that you use to manage your main site in Xperience.</li>
+<li>
+<code>ConsentName</code> – the code name of the <a href="/documentation/developers-and-admins/data-protection/consent-management">consent</a> required for contacts to be tracked on external sites. Assign the same <a href="/documentation/developers-and-admins/data-protection/consent-development">consent that you use for contact tracking</a> on your main site.</li>
+<li>
+<code>AgreeCookieLevel</code> – the <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> set for visitors who accept the cross-site tracking consent on an external site. To allow tracking, set the <em>Visitor</em> cookie level or higher.</li>
+</ul>
+</li>
+<li>
+<p>Pass the <code>CrossSiteTrackingOptions</code> object as the parameter of the <code>UseCrossSiteTracking</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.CrossSiteTracking.Web.Mvc;
+ using Kentico.OnlineMarketing.Web.Mvc;
+ using Kentico.Web.Mvc;
+
+ var builder = WebApplication.CreateBuilder(args);  
+
+ ...
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     features.UseCrossSiteTracking(new CrossSiteTrackingOptions
+     {
+         // Sets the consent and cookie level options for cross-site tracking
+         ConsentSettings = new []
+         {
+             // Add cross-site tracking options for individual website channels
+             new CrossSiteTrackingConsentOptions
+             {
+                 WebsiteChannelName = "WebsiteChannel1",
+                 ConsentName = "TrackingConsentCodeName",
+                 AgreeCookieLevel = CookieLevel.Visitor.Level                
+             },
+             new CrossSiteTrackingConsentOptions
+             {
+                 WebsiteChannelName = "WebsiteChannel2",
+                 ConsentName = "TrackingConsentCodeName",
+                 AgreeCookieLevel = CookieLevel.Visitor.Level
+             }
+         }
+     });
+ });
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Enabling the <code>UseCrossSiteTracking</code> feature registers endpoints that allow the application to process contact and activity tracking requests from external sites.</p>
+<h3 id="manage-tracked-sites">Manage tracked sites</h3>
+<p>You need to register all external websites that you wish to cover by the cross-site tracking functionality:</p>
+<ol type="1">
+<li>Open the <strong>Cross-site tracking</strong> application in the Xperience administration.</li>
+<li>Select <strong>New tracked website</strong>.</li>
+<li>Fill in the tracked site’s properties:
+<ul>
+<li><p><strong>Tracked website name</strong> – the name of the site displayed in the Xperience administration.</p></li>
+<li><p><em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</p></li>
+<li><p><strong>Tracked website URL</strong> – the base URL of the tracked website. Enter a valid URL using the <strong>HTTPS</strong> scheme, without a URL path component or trailing slash. For example: <em>https://sub.domain.com</em></p></li>
+<li><p><strong>Description</strong> – allows you to add information about the tracked site. Only displayed to other editors in the Xperience administration.</p></li>
+<li>
+<p><strong>Website channel</strong> – select the <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> representing the main Xperience website to which the external site will be linked.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>What is the purpose of the linked website channel?</strong></p>
+<p>All cross-site tracking requests from the external site will be sent to endpoints on the domain of the selected website channel.</p>
+<p>Additionally, cookies that store contact data are shared only between the external site and the main Xperience site that is linked. Having the correct website channel selected is necessary to ensure that contacts moving from the external site to the main site (or vice versa) are recognized correctly and merged if required.</p>
+</div>
+</li>
+<li><p><strong>Enabled</strong> – indicates if contact and activity tracking is active for the site. Can be disabled or enabled at any time.</p></li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The system generates and displays a <strong>Code snippet</strong>, which you need to add to the HTML code of pages on the tracked site.</p>
+<h3 id="add-the-tracking-snippet">Add the tracking snippet</h3>
+<p>Cross-site tracking works through client scripts that send logging requests from external sites. You need to add a code snippet containing the required scripts to every tracked website:</p>
+<ol type="1">
+<li>Open the <strong>Cross-site tracking</strong> application in the Xperience administration.</li>
+<li>Select the <a href="#manage-tracked-sites">tracked site</a>.</li>
+<li>
+<strong>Copy</strong> the <strong>Code snippet</strong> displayed for the tracked site.</li>
+<li>Paste the snippet into the <code>&lt;head&gt;</code> tag of the tracked site’s HTML code.
+<ul>
+<li>Place the script into a code section or layout that is shared by all pages that you wish to track.</li>
+<li>If you are pasting the tracking snippet into a JavaScript application with specific syntax requirements (e.g., NextJS), you may need to adjust the script. For example, replace <code>\</code> (backslash) with <code>\\</code> (double backslash) within quotes or a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals" target="_blank">template literal</a>.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Domain name in the tracking snippet</strong></p>
+<p>The tracking snippet contains the domain of the <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> linked to the tracked site.</p>
+<p>If your website channel’s domain changes or if you deploy your sites to multiple environments running on different domains (QA, Staging, Production, etc.), you need to refresh the snippet in the <em>Cross-site tracking</em> application, and copy it again to the tracked site’s code.</p>
+</div>
+
+<p>The scripts included in the initial tracking snippet start logging the site’s contacts and their <strong>Page visit</strong> activities. You can find the resulting data in the <strong>Contact management</strong> application within the Xperience application. Activities logged from external sites appear with the <strong>Cross-site activity</strong> flag and the name of the external site.</p>
+<p></p>
+<p>Continue by extending the scripts according to your tracking requirements. Provide <a href="#implement-tracking-consent">consent functionality</a> and implement <a href="#log-cross-site-activities">logging of additional activities</a> to utilize all the cross site tracking capabilities.</p>
+<h2 id="implement-tracking-consent">Implement tracking consent</h2>
+<p>To comply with <a href="/documentation/developers-and-admins/data-protection">personal data protection</a> policies that apply to most websites, you need to prepare a consent and allow visitors to give consent agreements.</p>
+<ol type="1">
+<li>Create a tracking consent or adjust an existing one in the Xperience <strong>Data protection</strong> application.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/data-protection/consent-management">Consent management</a> for more information.</li>
+<li>Use the <strong>same tracking</strong> <strong>consent</strong> for both your main Xperience site and all external sites.</li>
+<li>Make sure the consent text describes tracking and personal data usage for both your main site and all external sites.</li>
+</ul>
+</li>
+<li>Verify that the prepared tracking consent is assigned via <code>CrossSiteTrackingConsentOptions</code> when <a href="#enable-the-cross-site-tracking-feature">enabling the cross-site tracking feature</a> for your Xperience application.</li>
+</ol>
+<p>This configuration ensures that tracking consent agreements and the corresponding <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> are shared and automatically set when visitors from an external site go to your main site. Likewise, if a visitor revokes their tracking consent agreement on any of the sites, tracking is disabled everywhere, and the visitor’s selected cookie level is lowered to the site’s default.</p>
+<h3 id="consent-management-on-external-sites">Consent management on external sites</h3>
+<p>After preparing a tracking consent for your sites, extend the scripts in the <a href="#add-the-tracking-snippet">initial tracking snippet</a> and build an interface to allow visitors to manage their consent agreements.</p>
+<p>Consent functionality can be implemented by calling the following functions in your scripts:</p>
+<ul>
+<li>
+<p>Set the default tracking options:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  kxt('consentdefault', {
+      // Enables or disables logging of contacts and their activities by all Xperience scripts on the external site
+      allow_tracking: false, 
+      // Enables or disables collection of contact data via the 'Data input' activity on the external site
+      allow_datainput: false
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Update the tracking options – overrides the default tracking options for subsequent scripts called within the request:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  kxt('updateconsent', {
+      allow_tracking: true,
+      allow_datainput: true
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Get the text of consents from Xperience:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  kxt('consentdata', {
+      codeName: 'TrackingConsentCodeName',
+      languageName: 'en', // Code name of the language in which you want to load the consent texts
+      callback: consentData =&gt; {
+          var consentShortText = consentData.shortText;
+          var consentFullText = consentData.fullText;
+      }
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Check whether the current contact has given a consent agreement:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  kxt('consentcontactstatus', {
+      codeName: 'TrackingConsentCodeName',
+      callback: consentStatus =&gt; {
+          if (consentStatus.isAgreed) {
+              ...
+          }
+      }
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Add a consent agreement for the current contact:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  kxt('consentagree', {
+      codeName: 'TrackingConsentCodeName', 
+      callback: () =&gt; {
+          kxt('updateconsent', {
+              allow_tracking: true,
+              allow_datainput: true
+          });
+          ...
+      }
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Revoke a consent agreement for the current contact:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  kxt('consentrevoke', {
+      codeName: 'TrackingConsentCodeName', 
+      callback: () =&gt; {
+          kxt('updateconsent', {
+              allow_tracking: false,
+              allow_datainput: false
+          });
+          ...
+      }
+  });
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>The following steps outline the general process for setting up tracking consent on external sites:</p>
+<ol type="1">
+<li>Disable all tracking by default.
+<ul>
+<li>Only enable tracking by default if you are certain that you do not need to comply with any data protection regulations.</li>
+</ul>
+</li>
+<li>Display an interface (e.g. a banner with buttons) that allows visitors to read the consent text, and give or revoke tracking consent agreements.</li>
+<li>Check whether the current contact has given an agreement with the tracking consent.
+<ul>
+<li>The most basic option is to check during the processing of every request, before calling any cross-site tracking logging scripts.</li>
+<li>You can use a third-party consent management tool to collect consent agreements, store them in a more persistent way, and check their status. Such consent tools can be centralized and shared by all your sites.</li>
+</ul>
+</li>
+<li>If the contact has agreed to be tracked, enable tracking via the <code>kxt('updateconsent')</code> function.</li>
+<li>
+<a href="#handle-error-states">Handle error states</a> to provide information and a better user experience to visitors in cases where a problem occurs with the consent functionality.</li>
+</ol>
+<p>Adjust and expand the process based on your requirements and available tools.</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>Basic example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;head&gt;
+    ...
+    &lt;script type="text/javascript"&gt;
+        (function (w, d, s, e, n) {
+            w.XperienceTrackerName = n;
+            w[n] = w[n] || function () {
+                (w[n].q = w[n].q || []).push(arguments);
+            };
+            var scriptElement = d.createElement(s);
+            var scriptSection = d.getElementsByTagName(s)[0];
+            scriptElement.async = 1;
+            scriptElement.src = e.replace(/\/+$/, '') + '/Kentico.Resource/CrossSiteTracking/Logger.js';
+            scriptSection.parentNode.insertBefore(scriptElement, scriptSection);
+            w[n]('init', { mainSiteUrl: e, document: d, window: w });
+        })(window, document, 'script', 'https://domain.com', 'kxt');
+
+        // Disables all tracking by default
+        kxt('consentdefault', {
+            allow_tracking: false,
+            allow_datainput: false
+        });
+
+        // Retrieves and displays the consent text
+        kxt('consentdata', {
+            codeName: 'TrackingConsentCodeName',
+            languageName: 'en',
+            callback: consentData =&gt; {
+                document.getElementById('lblConsentText').innerHTML = consentData.shortText;
+            }
+        });
+
+        // Enables tracking if the current contact has agreed with the consent
+        kxt('consentcontactstatus', {
+            codeName: 'TrackingConsentCodeName',
+            callback: consentStatus =&gt; {
+                if (consentStatus.isAgreed) {
+                    kxt('updateconsent', {
+                        allow_tracking: true,
+                        allow_datainput: true
+                    });
+                }
+            }
+        });
+
+    // Logs a page visit activity (if tracking is enabled for the current contact)
+    kxt('pagevisit');
+
+    // Click handler that creates a consent agreement for the current contact
+    var trackingConsentAgree = function trackingConsentAgree() {    
+        kxt('consentagree', {
+            codeName: 'TrackingConsentCodeName', 
+            callback: () =&gt; {
+                // Enables tracking for any subsequent logging scripts
+                kxt('updateconsent', {
+                    allow_tracking: true,
+                    allow_datainput: true
+                });
+            }
+        });
+    }
+
+    // Click handler that revokes the tracking consent agreement for the current contact
+    var trackingConsentRevoke = function trackingConsentRevoke() {  
+        kxt('consentrevoke', {
+            codeName: 'TrackingConsentCodeName', 
+            callback: () =&gt; {
+                // Disables tracking for any subsequent logging scripts 
+                kxt('updateconsent', {
+                    allow_tracking: false,
+                    allow_datainput: false
+                });
+            }
+        });
+    }
+  &lt;/script&gt;
+&lt;/head&gt;
+
+...
+
+&lt;label id="lblConsentText"&gt;&lt;/label&gt;
+&lt;button id="btnConsentAgree" onclick="trackingConsentAgree();"&gt;Agree to be tracked&lt;/button&gt;
+&lt;button id="btnConsentRevoke" onclick="trackingConsentRevoke();"&gt;Revoke tracking consent&lt;/button&gt;
+
+</code></pre>
+</div>
+
+<h2 id="log-cross-site-activities">Log cross-site activities</h2>
+<p>Cross-site tracking allows you to log the following types of <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">activities</a> on external sites:</p>
+<ul>
+<li>
+<p><strong>Page visit</strong> (logging included in the <a href="#add-the-tracking-snippet">initial tracking snippet</a>)</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Logs a page visit activity for the current page
+  kxt('pagevisit');
+
+  // Logs a page visit with customized activity properties
+  kxt('pagevisit', {
+      title: 'Custom page title',
+  persona: admin, developer
+      url: 'https://custom.url/',
+      referrer: 'https://custom-referrer.url/'
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p><strong>Click</strong> – represents a “click” action performed by the visitor. For example, log this activity within the click handler of a button or CTA link that you wish to track.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Logs a click activity
+  kxt('click', {
+      // Set a unique label for every click target, so you can identify the activities in Xperience
+      // The maximum label length is 250 characters
+      label: 'Home page CTA button'
+  });
+
+  // Logs a click with customized activity properties
+  kxt('click', {
+      label: 'Home page CTA button',
+      url: 'https://custom.url/',
+      referrer: 'https://custom-referrer.url/'
+  });
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p><strong>Custom activities</strong> – you can log any <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activities</a> defined in your main Xperience application. The title of the logged activity in Xperience is the name of the custom activity type with the logged <code>value</code> as a suffix.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Logs a custom activity
+  kxt('customactivity', {
+      // The 'type' parameter must match the code name of the custom activity type
+      type: 'custom_loan_calculator',
+      value: 'value'
+  });
+
+  // Logs a custom activity with customized properties
+  kxt('customactivity', {
+      type: 'custom_loan_calculator',
+      value: 'value',
+      url: 'https://custom.url/',
+      referrer: 'https://custom-referrer.url/'
+  });
+
+  </code></pre>
+</div>
+</li>
+<li><p><strong>Data input</strong> – see the section below for details.</p></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>You can optionally add <a href="#handle-error-states">error state handling</a> to your activity logging calls. This allows you to record data for debugging and auditing purposes, or otherwise adjust your web application when a problem occurs while logging cross-site activities.</p>
+</div>
+
+<h3 id="data-input">Data input</h3>
+<p>The <em>Data input</em> activity allows you to update the data of <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> using information submitted by visitors via HTML form inputs.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Consent requirements</strong></p>
+<p>To update contact data through <em>Data input</em> activities, the <a href="#consent-management-on-external-sites">consent tracking options</a> for the current request must have the <code>allow_datainput</code> option set to <code>true</code>.</p>
+<p>The consent tracking options allow you to separately control consent for general activity logging (<code>allow_tracking</code>) and personal data processing (<code>allow_datainput</code>).</p>
+</div>
+
+<p>Before collecting contact data through a form, you need to map individual form inputs to Xperience contact fields. The mappings determine where individual form input values are saved for the contact.</p>
+<p>The following contact fields are available:</p>
+<ul>
+<li>
+<strong>ContactEmail</strong>
+<ul>
+<li>Note: For security reasons, the <em>Data input</em> activity cannot be used to change a contact’s existing email value. If the contact already has an email address stored in Xperience that doesn’t match the new email value, the <em>Data input</em> activity and all related field updates are performed for a different contact. Either an existing contact that matches the submitted email value is used, or a new contact is created.</li>
+</ul>
+</li>
+<li><strong>ContactFirstName</strong></li>
+<li><strong>ContactMiddleName</strong></li>
+<li><strong>ContactLastName</strong></li>
+<li><strong>ContactBirthday</strong></li>
+<li>
+<strong>ContactMobilePhone</strong> (<em>Private phone</em> in the <em>Contact management</em> application)</li>
+<li><strong>ContactBusinessPhone</strong></li>
+<li><strong>ContactCompanyName</strong></li>
+<li><strong>ContactJobTitle</strong></li>
+<li><strong>ContactAddress1</strong></li>
+<li><strong>ContactCity</strong></li>
+<li><strong>ContactZIP</strong></li>
+<li>
+<strong>ContactCountry</strong> (accepts <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3" target="_blank">3 letter ISO country codes</a>)</li>
+<li>
+<strong>ContactState</strong> (accepts 2 letter state codes, currently only <a href="https://en.wikipedia.org/wiki/List_of_U.S._state_and_territory_abbreviations" target="_blank">USA state codes (ANSI)</a> are supported)</li>
+<li><strong>ContactNotes</strong></li>
+</ul>
+<p>To perform the mapping, call <code>kxt('configurecontactfieldmapping')</code> directly after the tracking snippet initialization script, and provide a dictionary matching the names of form inputs to contact fields. The mappings are shared for all data input activities and forms processed within the given request.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Maps form inputs to contact fields
+kxt('configurecontactfieldmapping', {
+    FirstName: 'ContactFirstName',
+    LastName: 'ContactLastName',
+    EmailAddress: 'ContactEmail'
+});
+
+...
+
+&lt;form&gt;
+    &lt;input type="text" name="FirstName" /&gt;
+    &lt;input type="text" name="LastName" /&gt;
+    &lt;input type="text" name="EmailAddress" /&gt;
+    ...
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>Once your field mappings are configured, log the activity by calling <code>kxt('datainput')</code>, for example in the submit handler of a form:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Logs a Data input activity
+kxt('datainput', {
+    // Specify the HTML DOM object of the form element from which data is collected
+    formElement: document.getElementById('formElement'),
+    // Set a unique label, so you can identify the activities in Xperience
+    // The maximum label length is 250 characters
+    label: 'Personal data form'
+});
+
+// Logs a Data input with customized activity properties
+kxt('datainput', {
+    formElement: document.getElementById('formElement'),
+    label: 'Personal data form',
+    url: 'https://custom.url/',
+    referrer: 'https://custom-referrer.url/'
+});
+
+// Logs a Data input activity with customized values for contact fields
+// If required, you can post-process the submitted form values or manually specify your own values
+// Specify contact fields and values using the 'fields' parameter, instead of setting the 'formElement'
+// This usage does NOT require or use the configured mapping of form inputs to contact fields
+kxt('datainput', {
+    fields: [
+        { fieldName: 'ContactFirstName', value: 'John' },
+        { fieldName: 'ContactLastName', value: 'Smith' },
+        { fieldName: 'ContactCountry', value: 'USA' },
+        { fieldName: 'ContactNotes', value: 'This is a VIP customer.' }
+    ],
+    label: 'Personal data form'
+});
+
+</code></pre>
+</div>
+
+<p>You can view the collected contact data in the Xperience <strong>Contact management</strong> application and use it to build <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> conditions.</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;head&gt;
+    ...
+    &lt;script type="text/javascript"&gt;
+        (function (w, d, s, e, n) {
+            w.XperienceTrackerName = n;
+            w[n] = w[n] || function () {
+                (w[n].q = w[n].q || []).push(arguments);
+            };
+            var scriptElement = d.createElement(s);
+            var scriptSection = d.getElementsByTagName(s)[0];
+            scriptElement.async = 1;
+            scriptElement.src = e.replace(/\/+$/, '') + '/Kentico.Resource/CrossSiteTracking/Logger.js';
+            scriptSection.parentNode.insertBefore(scriptElement, scriptSection);
+            w[n]('init', { mainSiteUrl: e, document: d, window: w });
+        })(window, document, 'script', 'https://domain.com', 'kxt');
+
+        // Maps form inputs to contact fields
+        kxt('configurecontactfieldmapping', {
+            FirstName: 'ContactFirstName',
+            LastName: 'ContactLastName',
+            EmailAddress: 'ContactEmail'
+        });
+
+        ...
+
+        // Form submit handler that logs the Data input activity and updates the contact's fields
+        var handleFormSubmit = function handleFormSubmit(event) {
+            kxt('datainput', {
+                formElement: document.getElementById('formElement'),
+                label: 'Personal data form'
+            });
+        }
+   &lt;/script&gt;
+&lt;/head&gt;
+
+...
+
+&lt;form id="formElement" method="post" onsubmit="handleFormSubmit()" &gt;
+    &lt;input type="text" name="FirstName" /&gt;
+    &lt;input type="text" name="LastName" /&gt;
+    &lt;input type="text" name="EmailAddress" /&gt;
+    &lt;input type="submit" name="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<h2 id="handle-error-states">Handle error states</h2>
+<p>Most of the <code>kxt</code> cross-site tracking functions used for <a href="#consent-management-on-external-sites">consent management</a> and <a href="#log-cross-site-activities">activity logging</a> provide an optional <code>onerror</code> callback.</p>
+<p>By handling <code>onerror</code> callbacks, you can display information and offer a better user experience to visitors in cases where an error or other problem prevents the cross-site tracking functionality from working. For example, a common scenario is when the visitor’s browser blocks third-party cookies.</p>
+<p>The <code>onerror</code> callbacks have an <code>error</code> argument holding the following data:</p>
+<ul>
+<li>
+<code>type</code> – one of the following values:
+<ul>
+<li>
+<code>error_bad_response</code> – when the cross-site tracking request returns an unsuccessful response (HTTP status outside the 200-299 range).</li>
+<li>
+<code>error_cookies_blocked</code> – when the visitor’s browser blocks cookies required for cross-site tracking.</li>
+<li>
+<code>error_other</code> – when another unexpected error occurs during the processing of the cross-site tracking request.</li>
+</ul>
+</li>
+<li>
+<code>detail</code> – contains the full HTTP response object that was returned with an error state (for Bad response errors) or text describing the error reason (for other errors).</li>
+</ul>
+<p>When the <code>onerror</code> callback is triggered, the function does not execute its standard <code>callback</code>.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Enables tracking if the current contact has agreed with the consent
+kxt('consentcontactstatus', {
+    codeName: 'TrackingConsentCodeName',
+    callback: consentStatus =&gt; {
+        if (consentStatus.isAgreed) {
+            kxt('updateconsent', {
+                allow_tracking: true,
+                allow_datainput: true
+            });
+        }
+    },
+    // Displays a warning message or logs a console error if the consent status cannot be checked
+    'onerror': (error) =&gt; {
+        if (error.type === 'error_bad_response') {
+            error.detail.text().then(text =&gt; console.log('Bad response:', error.detail, 'response body:', text));
+        }
+        if (error.type === 'error_cookies_blocked') {
+            document.getElementById('lblConsentWarning').innerHTML = 'Your browser currently blocks cookies and you cannot give tracking consent.';
+        }
+        if (error.type === 'error_other') {
+            console.log('Unexpected error:', error.detail);
+        }
+    }
+});
+
+// Click handler that creates a consent agreement for the current contact
+var trackingConsentAgree = function trackingConsentAgree() {    
+    kxt('consentagree', {
+        codeName: 'TrackingConsentCodeName', 
+        callback: () =&gt; {
+            // Enables tracking for any subsequent logging scripts
+            kxt('updateconsent', {
+                allow_tracking: true,
+                allow_datainput: true
+            });
+        },
+        // Displays a warning message and/or logs a console error if the consent agreement cannot be created
+        'onerror': (error) =&gt; {
+            if (error.type === 'error_bad_response') {
+                error.detail.text().then(text =&gt; console.log('Bad response:', error.detail, 'response body:', text));
+                document.getElementById('lblConsentWarning').innerHTML = 'An error occurred while processing your tracking consent agreement.'; 
+            }
+            if (error.type === 'error_cookies_blocked') {
+                document.getElementById('lblConsentWarning').innerHTML = 'Your browser currently blocks cookies and you cannot give tracking consent.';
+            }
+            if (error.type === 'error_other') {
+                console.log('Unexpected error:', error.detail);
+                document.getElementById('lblConsentWarning').innerHTML = 'An error occurred while processing your tracking consent agreement.';  
+            }
+        }
+    });
+}
+
+</code></pre>
+</div>
+
+<h2 id="avoid-tracking-script-conflicts">Avoid tracking script conflicts</h2>
+<p>If you encounter script conflicts with the <code>kxt</code> cross-site tracking function (for example when using custom or third-party JavaScript libraries), you can rename the function within the parameters of the tracking snippet initialization script:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+(function (w, d, s, e, n) {
+    w.XperienceTrackerName = n;
+    w[n] = w[n] || function () {
+        (w[n].q = w[n].q || []).push(arguments);
+    };
+    var scriptElement = d.createElement(s);
+    var scriptSection = d.getElementsByTagName(s)[0];
+    scriptElement.async = 1;
+    scriptElement.src = e.replace(/\/+$/, '') + '/Kentico.Resource/CrossSiteTracking/Logger.js';
+    scriptSection.parentNode.insertBefore(scriptElement, scriptSection);
+    w[n]('init', { mainSiteUrl: e, document: d, window: w });
+})(window, document, 'script', 'https://domain.com', 'customtracker'); // Changes the tracking function name to 'customtracker'
+
+// Disables all tracking by default
+customtracker('consentdefault', {
+    allow_tracking: false,
+    allow_datainput: false
+});
+
+... 
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

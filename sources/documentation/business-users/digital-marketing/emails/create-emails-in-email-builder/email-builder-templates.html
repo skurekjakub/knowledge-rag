@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email Builder templates</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>Email templates for <a href="/documentation/developers-and-admins/development/builders/email-builder">Email Builder</a> set the overall design and layout for emails, and contain fixed content, such as a header and footer. Templates are prepared by your project’s developers and assigned by editors when creating new emails. Editors can also switch to a different template for existing emails.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisites and limitations</strong></p>
+<p>Your project’s developers need to set up the <a href="/documentation/developers-and-admins/development/builders/email-builder#enable-the-email-builder-feature">Email Builder</a> feature and prepare <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a>. Email Builder becomes available if you select an Email Builder template when creating your email.</p>
+<p>Currently, Email Builder is only available for emails with the <em>Automation</em>, <em>Regular</em> and <em>Order status change</em> <a href="/documentation/business-users/digital-marketing/emails#email-purposes">purposes</a>.</p>
+</div>
+
+<h2 id="email-builder-template-types">Email Builder template types</h2>
+<p>Two types of Email Builder templates are available:</p>
+<ul>
+<li>
+<strong>Default email templates</strong> – determine an email’s layout and design. The <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder content</a> of an email is empty when a default template is initially assigned. Default templates first need to be created by your project’s developers.</li>
+<li>
+<strong>Preset email templates</strong> – can be saved from emails that were created using another Email Builder template. A <em>preset email template</em> uses the original template’s layout and design, but additionally stores a snapshot of the email’s current <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder content</a>. Preset templates can then be used as a starting point for new emails. The Email Builder content in emails created using preset templates can be freely adjusted without impacting other emails – all modifications only affect the current email (there is no logical connection between the content of emails created with the same template).</li>
+</ul>
+<h2 id="create-emails-based-on-email-templates">Create emails based on email templates</h2>
+<p>See <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Create emails in Email Builder</a> to learn how to create emails with Email Builder templates.</p>
+<p>After creating an email from an Email Builder template editors can save their email as a <em>preset email template</em> along with the Email Builder content created in their email. See <a href="#save-emails-as-preset-email-templates">Save emails as preset email templates</a>.</p>
+<h2 id="configure-email-templates">Configure email templates</h2>
+<p>Some Email Builder templates may have properties that you can configure to adjust the email’s appearance or content. The available configuration options depend on the implementation prepared by the project’s developers.</p>
+<ol type="1">
+<li>Open an email based on a template and select the <strong>Email Builder</strong> view mode.</li>
+<li>Click the orange configure button () located in the bottom-left corner of the view.<br>
+</li>
+<li>Configure any available properties in the dialog.<br>
+</li>
+<li>
+<strong>Apply</strong> the changes.</li>
+</ol>
+<p>The configured properties now apply to the template for the given email. Any other emails that use the same template have their own separate property configuration.</p>
+<h2 id="change-templates-of-existing-emails">Change templates of existing emails</h2>
+<p>You can change the email template of an existing email, provided there is more than one Email Builder template available for the given email.</p>
+<ol type="1">
+<li><p>Open an email in an email channel application and select the <strong>Email Builder</strong> view mode.</p></li>
+<li><p>Click the orange change template button (<i></i>) located in the bottom-left corner of the view.<br>
+</p></li>
+<li>
+<p>Select one of the available email templates.<br>
+</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preserving Email Builder content when changing <em>default</em> email templates</strong></p>
+When changing from a <em>default</em> email template, you have the option to <em>Keep current widgets and sections if possible</em>. This option allows you to preserve widgets and sections from the current template if the new template contains editable areas with matching identifiers. Otherwise, Email Builder content from the current email is discarded. If you’re unsure about the expected behavior on your site, consult your site’s administrators.
+</div>
+</li>
+<li><p><strong>Apply</strong> the changes.</p></li>
+</ol>
+<p>The email now uses the selected template. </p>
+<h2 id="save-emails-as-preset-email-templates">Save emails as preset email templates</h2>
+<p>If you want to reuse Email Builder content, such as the layout of sections or content of widgets, you can save template-based emails as preset templates.</p>
+<ol type="1">
+<li>Create or edit an email based on a template.</li>
+<li>Edit the email and add desired content in the <strong>Email Builder</strong> view mode.</li>
+<li>
+<strong>Save</strong> your changes and select <strong>Save as preset template</strong>. A new dialog window opens.<br>
+</li>
+<li>Fill in the template’s fields:
+<ul>
+<li>
+<strong>Name</strong> – display name of the template.</li>
+<li>
+<strong>Description</strong> – you can add a detailed description, which is displayed as a tooltip in the template selector.</li>
+<li>
+<strong>Icon</strong> – icon under which the template is displayed in the administration.<br>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the preset template.</li>
+</ol>
+<p>You now have a preset template that you can select when creating new emails that support the original default template. Such emails automatically start with the Email Builder content stored within the preset template and can be further adjusted. Changes made in the content of one email <strong>do not</strong> affect the content of other emails that use the same preset email template.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preset email templates do not store structured content</strong></p>
+<p>Content stored in the fields of an email is not included when saving an email as a preset template.</p>
+</div>
+
+<h2 id="manage-preset-email-templates">Manage preset email templates</h2>
+<p>You can see a list of your saved templates in the <strong>Preset email templates</strong> tab of the <strong>Preset templates</strong> application.</p>
+<p></p>
+<p>The tab displays a listing with the names and descriptions of individual preset email templates. It also displays the base default templates from which the preset templates are derived.</p>
+<h3 id="edit-preset-email-templates">Edit preset email templates</h3>
+<p>Direct editing of preset email templates is not currently supported. In order to change a template, you need to <a href="#delete-preset-email-templates">delete</a> it and <a href="#save-emails-as-preset-email-templates">save</a> it again.</p>
+<h3 id="delete-preset-email-templates">Delete preset email templates</h3>
+<p>To delete a saved preset template:</p>
+<ol type="1">
+<li>Open the <strong>Preset templates</strong> application.</li>
+<li>Open the <strong>Preset email templates</strong> tab.</li>
+<li>
+<strong>Delete</strong> () the template.</li>
+</ol>
+<p>You have now successfully deleted the email template. Note, that this has no impact on the emails created from the template.</p>
+
+</body>
+</html>

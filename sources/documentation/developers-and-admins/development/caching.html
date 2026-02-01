@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Caching</title>
+</head>
+<body>
+<p>A cache stores data so that future requests for that data can be served faster. Correctly using caching can significantly improve the performance of your website.</p>
+<p>Caching the content of web pages provides two primary benefits:</p>
+<ul>
+<li>Quicker data loading (retrieving data from the cache avoids communication with slower storage spaces, such as the website’s SQL database and file system)</li>
+<li>Reduction of unnecessary page processing on repeated requests</li>
+</ul>
+<p>The built-in caching mechanisms of Xperience work primarily on the server side and utilize the application’s memory to store data. The system saves data into the cache under <strong>cache keys</strong>. Cache keys have unique names that exactly identify the cached content. Each key stores the cached data itself (depending on the type of the cache), as well as other information such as the expiration time or <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">dependencies</a>.</p>
+<h2 id="clear-the-cache">Clear the cache</h2>
+<p>To remove all server-side cached content from the Xperience application’s memory:</p>
+<ol type="1">
+<li>Open the <strong>System</strong> application in the Xperience administration.</li>
+<li>In the <strong>Overview → Memory statistics</strong>, select <strong>Clear cache</strong>.</li>
+</ol>
+
+</body>
+</html>

@@ -1,0 +1,1715 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Admin UI form components</title>
+</head>
+<body>
+<p>This page lists all <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form components</a> that are available in new installations of Xperience. For details on programmatically configuring these components in component configuration dialogs, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>.</p>
+<p>Form component attributes are located in the</p>
+<ul>
+<li><code>Kentico.Xperience.Admin.Base.FormAnnotations</code></li>
+<li><code>Kentico.Xperience.Admin.Content.FormAnnotations</code></li>
+<li><code>Kentico.Xperience.Admin.DigitalMarketing.FormAnnotations</code></li>
+</ul>
+<p>namespaces.</p>
+<ul>
+<li>
+<a href="#selectors">Selectors</a>
+<ul>
+<li><a href="#combined-content-selector">Combined content selector</a></li>
+<li><a href="#content-item-folder-selector">Content item folder selector</a></li>
+<li><a href="#email-selector">Email selector</a></li>
+<li><a href="#object-selector">Object selector</a></li>
+<li><a href="#page-selector">Page selector</a></li>
+<li><a href="#url-selector">URL selector</a></li>
+<li><a href="#smart-folder-selector">Smart folder selector</a></li>
+<li><a href="#tag-selector">Tag selector</a></li>
+<li><a href="#general-selector">General selector</a></li>
+</ul>
+</li>
+<li>
+<a href="#components">Components</a>
+<ul>
+<li><a href="#checkbox">Checkbox</a></li>
+<li><a href="#code-editor">Code editor</a></li>
+<li><a href="#dropdown-selector">Dropdown selector</a></li>
+<li><a href="#date-input">Date input</a></li>
+<li><a href="#date-and-time-input">Date and time input</a></li>
+<li><a href="#date-and-time-with-label">Date and time with label</a></li>
+<li><a href="#decimal-number-input">Decimal number input</a></li>
+<li><a href="#link">Link</a></li>
+<li><a href="#number-input">Number input</a></li>
+<li><a href="#number-with-label">Number with label</a></li>
+<li><a href="#password">Password</a></li>
+<li><a href="#rich-text-editor">Rich text editor</a></li>
+<li><a href="#radio-group-component">Radio group component</a></li>
+<li><a href="#text-area">Text area</a></li>
+<li><a href="#text-input">Text input</a></li>
+<li><a href="#text-with-label">Text with label</a></li>
+<li><a href="#extension-selector">Extension selector</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="selectors">Selectors</h2>
+<h3 id="combined-content-selector">Combined content selector</h3>
+<p><strong>Field data type</strong>: Pages and reusable content<br>
+<strong>C# data type</strong>: IEnumerable&lt;ContentItemReference&gt;<br>
+<strong>Form component attribute</strong>: ContentItemSelectorComponent</p>
+<p>Enables users to select and associate content items from the <a href="/documentation/business-users/content-hub">content hub</a> and pages from the <a href="/documentation/business-users/website-content">content tree of any website channel</a>, depending on the configuration.</p>
+<p>When used as an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a>, returns a collection of <code>ContentItemReference</code> objects that contain GUIDs of the selected content items.</p>
+<h4 id="configuration-properties">Configuration properties</h4>
+<ul>
+<li>
+<strong>Content item scoping</strong> – The selector offers multiple ways to scope the set of content items available for selection.
+<ul>
+<li>
+<a href="#CiSelectorCTName">ContentTypeName</a> – the code name of the content type. Scopes the selector to offer items of the given content type.</li>
+<li>
+<a href="#CiSelectorCTNameMultiple">ContentTypeNames[]</a> – an array of content type code names. Scopes the selector to offer items of the given content types.</li>
+<li>
+<a href="#CiSelectorCTFilter">IContentTypesFilter implementation</a> – an implementation of the <code>IContentTypesFilter</code> interface that scopes the offered items to those whose content type is allowed by the filter.</li>
+<li>
+<a href="#CiSelectorReusable">IReusableFieldSchemasFilter implementation</a> – an implementation of the <code>IReusableFieldSchemasFilter</code> interface that scopes the offered items to those whose content type uses one of the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>.</li>
+</ul>
+</li>
+<li>
+<strong>AllowContentItemCreation</strong> – determines whether the selector displays a button that allows users to create new content items. True by default.
+<ul>
+<li>This options is not supported when scoping the selection using reusable field schemas.</li>
+</ul>
+</li>
+<li>
+<strong>DefaultViewMode</strong> – sets the selector’s default view mode. Use the values from the <code>ContentItemSelectorViewMode</code> enum:
+<ul>
+<li>
+<code>Auto</code> – selected based on the content type displayed in the selector (List for standard items, Grid for images or other assets).</li>
+<li>
+<code>Grid</code> – a gallery showing thumbnail images for the selectable content items (assets).</li>
+<li>
+<code>List</code> – a list of content items.</li>
+</ul>
+</li>
+<li>
+<strong>MaximumItems</strong> – sets the maximum number of selectable items. If not specified, the number is not limited.</li>
+<li>
+<strong>MinimumItems</strong> – sets the minimum number of selectable items. If not specified, the number is not limited.</li>
+</ul>
+<h4 id="content-type-based-scoping-and-retrieval">Content type-based scoping and retrieval </h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Scope the selection using content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the combined content selector as the property's editing component
+// Enables selection from content items of the 'Coffee' content type
+[ContentItemSelectorComponent(Coffee.CONTENT_TYPE_NAME, Label = "Selected products", Order = 1)]
+public IEnumerable&lt;ContentItemReference&gt; SelectedProducts { get; set; } = new List&lt;ContentItemReference&gt;();
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve selection scoped to content type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class ContentItemSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public ContentItemSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets the GUIDs from the annotated property
+        var coffeeGuids = model?.Properties?.SelectedProducts.Select(i =&gt; i.Identifier).ToList();
+
+        // Retrieves the data of the selected content type
+        IEnumerable&lt;Coffee&gt; result = await contentRetriever.RetrieveContentByGuids&lt;Coffee&gt;(coffeeGuids,
+            new RetrieveContentParameters 
+            { 
+                LinkedItemsMaxLevel = 1 
+            });
+
+         // Custom logic...
+
+        return View("...");
+    }
+}
+</code></pre>
+</div>
+
+<h4 id="content-type-based-scoping-and-retrieval-for-multiple-content-types">Content type-based scoping and retrieval for multiple content types </h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Scope the selection using content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the combined content selector as the property's editing component
+// Enables selection from content items of 'Coffee' and 'Grinder' content types
+[ContentItemSelectorComponent(new string[] { Coffee.CONTENT_TYPE_NAME, Grinder.CONTENT_TYPE_NAME },
+                                             Label = "Selected products",
+                                             Order = 1)]
+public IEnumerable&lt;ContentItemReference&gt; SelectedProducts { get; set; } = new List&lt;ContentItemReference&gt;();
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve selection scoped to multiple content types</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class ContentItemSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public ContentItemSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets the GUIDs from the annotated property
+        var productGuids = model?.Properties?.SelectedProducts.Select(i =&gt; i.Identifier).ToList();
+
+        // Retrieves the data of selected content items
+        // Use RetrieveContentOfContentTypesByGuids method for multiple content types
+        var contentTypes = new[] { Coffee.CONTENT_TYPE_NAME, Grinder.CONTENT_TYPE_NAME };
+        IEnumerable&lt;IContentItemFieldsSource&gt; result = await contentRetriever.RetrieveContentOfContentTypesByGuids&lt;IContentItemFieldsSource&gt;(
+            contentTypes,
+            productGuids,
+            new RetrieveContentOfContentTypesParameters 
+            { 
+                LinkedItemsMaxLevel = 1 
+            }
+        );
+
+        // Iterates over selected items as typed objects
+        foreach (var item in result)
+        {
+            if (item is Coffee coffee)
+            {
+                // Handle coffee data
+            }
+            if (item is Grinder grinder)
+            {
+                // Handle grinder data
+            }
+        }
+
+        return View("...");
+    }
+}
+</code></pre>
+</div>
+
+<h4 id="content-type-based-scoping-and-retrieval-for-multiple-content-types-using-icontenttypesfilter">Content type-based scoping and retrieval for multiple content types using ‘IContentTypesFilter’ </h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Scope the selection using ‘IContentTypesFilter’</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the combined content selector as the property's editing component
+// Enables selection from content items whose content types are allowed by the filter
+[ContentItemSelectorComponent(typeof(GalleryFilter), Label = "Selected assets", Order = 1)]
+public IEnumerable&lt;ContentItemReference&gt; AssetsToDisplay { get; set; } = new List&lt;ContentItemReference&gt;();
+
+// Filters the set of content items available in the selector
+// to content types that have a field of the 'ContentItemAsset' type
+public class GalleryFilter : IContentTypesFilter
+{
+    public IEnumerable&lt;Guid&gt; AllowedContentTypeIdentifiers =&gt; DataClassInfoProvider
+        .GetClasses()
+        .WhereEquals(nameof(DataClassInfo.ClassType), ClassType.CONTENT_TYPE)
+        .WhereEquals(nameof(DataClassInfo.ClassContentTypeType), ClassContentTypeType.REUSABLE)
+        .GetEnumerableTypedResult()
+        .Where(x =&gt; FormHelper
+            .GetFormInfo(x.ClassName, false)
+            .GetFields(true, false, includeDummyFields: false)
+            .Any(y =&gt; y.DataType.Equals(FieldDataType.ContentItemAsset))
+            )
+        .Select(x =&gt; x.ClassGUID)
+        .ToList();
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve selection scoped to types allowed by ‘IContentTypesFilter’</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class ContentItemSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public ContentItemSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets the GUIDs from the annotated property
+        var assetsToDisplayGuids = model?.Properties?.AssetsToDisplay.Select(i =&gt; i.Identifier).ToList();
+
+        // Gets the names of content types allowed by the filter
+        var filter = new GalleryFilter();
+        var contentTypeNames = DataClassInfoProvider
+                        .GetClasses()
+            .WhereIn(nameof(DataClassInfo.ClassGUID), filter.AllowedContentTypeIdentifiers)
+            .Select(x =&gt; x.ClassName)
+            .ToList();
+
+        // Retrieves data of the selected content items
+        IEnumerable&lt;IContentItemFieldsSource&gt; result = await contentRetriever.
+            RetrieveContentOfContentTypesByGuids&lt;IContentItemFieldsSource&gt;(
+                contentTypeNames,
+                assetsToDisplayGuids,
+                new RetrieveContentOfContentTypesParameters 
+                { 
+                    LinkedItemsMaxLevel = 1 
+                }
+            );
+
+        // Iterates over selected items as typed objects. 'Image' and 'Video'
+        // are generated model classes representing content types that contain
+        // a content item asset field.
+        foreach (var item in result)
+        {
+            if (item is Image image)
+            {
+                // Handle image data
+            }
+            if (item is Video video)
+            {
+                // Handle video data
+            }
+        }
+
+        return View("...");
+    }
+}
+</code></pre>
+</div>
+
+<h4 id="reusable-field-schema-based-scoping-and-retrieval">Reusable field schema-based scoping and retrieval </h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Scope the selection using reusable field schemas</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the combined content selector as the property's editing component
+// Enables selection from content items whose content type uses the 'ProductFields' schema
+[ContentItemSelectorComponent(typeof(ProductCardSchemaFilter), Label = "Selected products", Order = 1)]
+public IEnumerable&lt;ContentItemReference&gt; SelectedProducts { get; set; } = new List&lt;ContentItemReference&gt;();
+
+// Filters the set of content items available in the selector
+// to content types that use the 'ProductFields' reusable field schema
+public class ProductCardSchemaFilter : IReusableFieldSchemasFilter
+{
+    IEnumerable&lt;string&gt; IReusableFieldSchemasFilter.AllowedSchemaNames =&gt; new List&lt;string&gt; { IProductFields.REUSABLE_FIELD_SCHEMA_NAME };
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve selection scoped to reusable field schema</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class ContentItemSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public ContentItemSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets the GUIDs from the annotated property
+        var selectedProductGuids = model?.Properties?.SelectedProducts.Select(i =&gt; i.Identifier).ToList();
+
+        // Retrieves the selected data using reusable field schema filtering
+        var schemaNames = new[] { IProductFields.REUSABLE_FIELD_SCHEMA_NAME };
+        IEnumerable&lt;IProductFields&gt; result = await contentRetriever.RetrieveContentOfReusableSchemasByGuids&lt;IProductFields&gt;(
+            schemaNames,
+            selectedProductGuids,
+            new RetrieveContentOfReusableSchemasParameters
+            {
+                LinkedItemsMaxLevel = 1
+            }
+        );
+
+         // Custom logic...
+
+        return View("...");
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="content-item-folder-selector">Content item folder selector</h3>
+<p><strong>C# data type</strong>: Int32<br>
+<strong>Form component attribute</strong>: ContentFolderSelectorComponent</p>
+<p>Enables users to select a <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folder</a>. Typically, this selector is used to set the location of reusable content items. Smart folders are <strong>not</strong> available in the selector.</p>
+<p>Returns the ID of the selected folder.</p>
+<h4 id="configuration-properties-1">Configuration properties</h4>
+<ul>
+<li>
+<strong>DisabledFolderIdsFilter</strong> – optionally allows you to specify which folders are disabled for selection. Create a filter class that implements the <code>IContentFolderIdsFilter</code> interface and assign its type into the property.</li>
+<li>
+<strong>Inline</strong> – by default, the selector displays a text field showing the path of the currently selected folder, and a <em>Select</em> button that opens a dialog window with a tree where users can choose the folder. If the <em>Inline</em> property is set to <em>true</em>, only the folder selection tree is displayed directly after the field’s label.</li>
+<li>
+<strong>RootName</strong> – overrides the name displayed for the root node in the selector’s folder tree. If not specified the default <em>Root</em> name is used.</li>
+<li>
+<strong>WorkspaceName</strong> – specifies the name of the workspace for which folders should be listed. If not specified, the <em>KenticoDefault</em> name is used.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in a model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the content folder selector as the property's editing component
+[ContentFolderSelectorComponent(Label = "Location", Inline = true, Order = 1, WorkspaceName = "MyWorkspace")]
+public int ContentItemFolderId { get; set; }
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Content folder selector with a disabled folder ID filter</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the content folder selector as the property's editing component
+[ContentFolderSelectorComponent(DisabledFolderIdsFilter = typeof(DisabledContentFoldersFilter), Label = "Location", Order = 1)]
+public int ContentItemFolderId { get; set; }
+
+// ...
+
+// Specifies folders that are disabled for selection
+public class DisabledContentFoldersFilter : IContentFolderIdsFilter
+{
+    private readonly IInfoProvider&lt;ContentFolderInfo&gt; contentFolderInfoProvider;
+    
+    public DisabledContentFoldersFilter(IInfoProvider&lt;ContentFolderInfo&gt; contentFolderInfoProvider)
+    {            
+        this.contentFolderInfoProvider = contentFolderInfoProvider;
+    }
+
+    public IEnumerable&lt;int&gt; FolderIds
+    {
+        get
+        {
+            // Gets a folder with the 'Unselectable' code name
+            ContentFolderInfo folder = contentFolderInfoProvider.Get("Unselectable");
+
+            return new List&lt;int&gt; { folder.ContentFolderID };
+        }
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="email-selector">Email selector</h3>
+<p><strong>Field data type</strong>: Emails (only available for the fields of <a href="/documentation/developers-and-admins/customization/object-types">module classes</a>, not in the field editor for content types)<br>
+<strong>C# data type</strong>: IEnumerable&lt;EmailRelatedItem&gt;<br>
+<strong>Form component attribute</strong>: EmailSelectorComponent</p>
+<p>Enables users to select <a href="/documentation/business-users/digital-marketing/emails">emails</a> from an email channel.</p>
+<p>When used as an editing component, returns a collection of <code>EmailRelatedItem</code> objects that point to the selected emails. Each <code>EmailRelatedItem</code> contains an <code>EmailGuid</code> property with the GUID identifier of the selected email’s configuration object (<code>EmailConfigurationInfo</code>).</p>
+<h4 id="configuration-properties-2">Configuration properties</h4>
+<ul>
+<li>
+<strong>MaximumEmails</strong> – sets the maximum number of selected emails. If not specified, the default value is 1 (single email selection). Setting the value to 0 means the number of selected emails is not limited.</li>
+<li>
+<strong>Sortable</strong> – enables or disables the ordering of the selected emails.</li>
+<li>Allowed email purposes – the following properties allow you to restrict the selection to emails with specific <a href="/documentation/business-users/digital-marketing/emails#email-purposes">email purposes</a>. Set the purpose using the string constants from <code>CMS.EmailLibrary.EmailPurposeOptions</code>.
+<ul>
+<li>
+<strong>AllowedEmailPurpose</strong> – string property that allows you to set one allowed email purpose.</li>
+<li>
+<strong>AllowedEmailPurposes</strong> – an array of strings for multiple allowed email purposes.</li>
+</ul>
+</li>
+<li>
+<strong>ForPreview</strong> – indicates whether the selector allows emails that do not have a published version yet (i.e., emails with the initial <em>Draft</em> status). False by default.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in a model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns the email selector as the property's editing component
+// Returns a collection of email items (objects that contain the GUIDs of selected emails)
+[EmailSelectorComponent(
+    AllowedEmailPurposes = new[] { EmailPurposeOptions.FORMAUTORESPONDER, EmailPurposeOptions.AUTOMATION },
+    Sortable = true,
+    MaximumEmails = 3)]
+public IEnumerable&lt;EmailRelatedItem&gt; Emails { get; set; } = new List&lt;EmailRelatedItem&gt;();
+
+</code></pre>
+</div>
+
+<h3 id="object-selector">Object selector</h3>
+
+<div>
+
+</div>
+<div>
+<p>This form component is currently usable only in Page or Form Builder, and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">model-based edit pages</a> or listing filter models in the Xperience administration.</p>
+</div>
+
+<p><strong>C# data type</strong>: IEnumerable&lt;ObjectRelatedItem&gt;<br>
+<strong>Form component attribute</strong>: ObjectSelectorComponent</p>
+<p>Enables users to select any object types from the Xperience database.</p>
+<p>Returns a collection of <code>ObjectRelatedItem</code> objects that represent the selected objects from the Xperience database. Each <code>ObjectRelatedItem</code> object contains an <code>ObjectGuid</code> or <code>ObjectCodeName</code> property (depending on the <code>IdentifyObjectByGuid</code> property) which contains the identifier of a selected object.</p>
+<h4 id="configuration-properties-3">Configuration properties</h4>
+<ul>
+<li>
+<strong>ObjectType</strong> – a string identifier that sets the code name of the object type listed in the selector.</li>
+<li>
+<strong>IdentifyObjectByGuid</strong> – a boolean property that indicates whether the returned object contains the GUID identifier of the selected object instead of the code name. By default, the option is disabled ( false ) and the returned object contains the object code name. It is recommended to identify objects by their code names for optimal performance.</li>
+<li>
+<strong>WhereConditionProviderType</strong> – a custom type that allows you to filter what data is available in the object selector using a custom Where condition. The specified condition class must implement the <code>IObjectSelectorWhereConditionProvider</code> interface and define its <code>Get</code> method. The <code>Get</code> method specifies the <em>where</em> condition applied to the data before the list of objects is shown to users.</li>
+<li>
+<strong>OrderBy</strong> – Defines a list of columns by which the data should be sorted, e.g., <code>["UserIsExternal", "UserName DESC"]</code>
+</li>
+<li>
+<strong>MaximumItems</strong> – sets the maximum number of selectable items (objects). If not specified, the default value is 1 (single object selection).
+<ul>
+<li>0 – no limit.</li>
+<li>
+<em>n</em> – at most <em>n</em> objects can be selected at once.</li>
+</ul>
+</li>
+<li>
+<strong>Placeholder</strong> – a string property that sets the placeholder text displayed before selecting any items.</li>
+</ul>
+<h4 id="example">Example</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in model classes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[ObjectSelectorComponent("cms.user", WhereConditionProviderType = typeof(ObjectWhere),
+                                     OrderBy = new string[] { "UserName DESC" })]
+public IEnumerable&lt;ObjectRelatedItem&gt; Users { get; set; } = new List&lt;ObjectRelatedItem&gt;();
+
+public class ObjectWhere : IObjectSelectorWhereConditionProvider
+{
+    // Where condition limiting the objects
+    public WhereCondition Get() =&gt; new WhereCondition().WhereStartsWith("UserName", "a");
+
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Selection retrieval</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class ObjectSelectorUsage : ViewComponent
+{
+    private readonly IUserInfoProvider userInfoProvider;
+
+    public ObjectSelectorUsage(IUserInfoProvider userInfoProvider)
+    {
+        this.userInfoProvider = userInfoProvider;
+    }
+
+    public IViewComponentResult Invoke(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Retrieves the guid of the selected user from the properties
+        Guid guid = model?.Properties?.Users?.FirstOrDefault()?.ObjectGuid ?? Guid.Empty;
+        // Retrieves the corresponding user object
+        var user = userInfoProvider.Get(guid);
+
+        // Custom logic...
+
+        return View("...");
+    }
+}
+
+</code></pre>
+</div>
+
+<h4 id="object-selector-variants">Object selector variants</h4>
+<p>In addition to the general object selector component, the system provides variant implementations for specific scenarios. See the following table for details:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Selector</p>
+</td>
+<td>
+<p>Component attribute</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Object code name selector</p>
+</td>
+<td>
+<p>ObjectCodeNameSelectorComponent</p>
+</td>
+<td>
+<p>Returns object code names directly instead of <code>ObjectRelatedItem</code> instances.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object GUID selector</p>
+</td>
+<td>
+<p>ObjectGuidSelectorComponent</p>
+</td>
+<td>
+<p>Returns object GUIDs directly instead of <code>ObjectRelatedItem</code>  instances.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object ID selector</p>
+</td>
+<td>
+<p>None, assignable only via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</p>
+</td>
+<td>
+<p>Returns the ID of a single selected object, as an <code>int</code> value.</p>
+</td>
+</tr>
+</table>
+
+<h3 id="page-selector">Page selector</h3>
+<p><strong>Field data type</strong>: Pages<br>
+<strong>C# data type</strong>: IEnumerable&lt;WebPageRelatedItem&gt;<br>
+<strong>Form component attribute</strong>: WebPageSelectorComponent</p>
+<p>Enables users to select <a href="/documentation/business-users/website-content">pages</a> from the content tree of a website channel.</p>
+<p>Returns a collection of <code>WebPageRelatedItem</code> objects that represent the selected pages. Each <code>WebPageRelatedItem</code> object contains a <code>WebPageGuid</code> property with the GUID of a selected page. You can use the GUIDs to <a href="/documentation/developers-and-admins/development/content-retrieval">retrieve</a> the selected pages and work with them in your custom components.</p>
+<h4 id="configuration-properties-4">Configuration properties</h4>
+<ul>
+<li>
+<strong>TreePath</strong> – limits the selection of pages to a subtree under a page identified by its tree path (e.g., <em>“/Products/Coffee-grinders”</em>). Only the specified page and its sub-pages can be selected. If not configured, users can select from the entire content tree of a selected website channel.</li>
+<li>
+<strong>MaximumPages</strong> – sets the maximum number of selectable pages. If not specified, the default value is 1 (single page selection).
+<ul>
+<li>0 – no limit.</li>
+<li>
+<em>n</em> – at most <em>n</em> pages can be selected at once.</li>
+</ul>
+</li>
+<li>
+<strong>Sortable</strong> – a boolean property that enables or disables ordering of the selected pages.</li>
+<li>
+<strong>ItemModifierType</strong> – a type that implements the <code>IWebPagePanelItemModifier</code> interface. Provides logic that allows you to disable individual pages offered by the selector based on a custom condition. See the code example below.</li>
+</ul>
+<h4 id="example-1">Example</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in model classes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns the page selector as the property's editing component
+// Returns a list of page selector items (web page GUIDs)
+[WebPageSelectorComponent(
+    TreePath = "/Articles",
+    MaximumPages = 5,
+    // Uses a system modifier that prevents selection of folders,
+    // and pages whose content type is not included in routing
+    ItemModifierType = typeof(WebPagesWithUrlWebPagePanelItemModifier))]
+public IEnumerable&lt;WebPageRelatedItem&gt; Pages { get; set; } = new List&lt;WebPageRelatedItem&gt;();
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Selection retrieval</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class PageSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public PageSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Retrieves the GUIDs of the selected pages from the 'Pages' property
+        List&lt;Guid&gt; webPageItemGuids = model?.Properties?.Pages?
+                                                    .Select(i =&gt; i.WebPageGuid)
+                                                    .ToList();
+
+        // Retrieves the data of the selected pages under a shared page interface.
+        // Uses the 'RetrieveAllPagesByGuids' method to get pages from all content types
+        // filtered by the GUIDs received from the selector.
+        IEnumerable&lt;IWebPageFieldsSource&gt; selectedPages =
+                await contentRetriever.RetrieveAllPagesByGuids&lt;IWebPageFieldsSource&gt;(
+                    webPageItemGuids);
+
+        // Custom logic...
+
+        return View("...");
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ItemModifierType example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class PagesWithUrlPagePanelItemModifier : IWebPagePanelItemModifier
+{
+    public WebPagePanelItem Modify(WebPagePanelItem pagePanelItem, WebPagePanelItemModifierParameters itemModifierParams)
+    {
+        // Disables selection of pages under a specific tree path
+        if (itemModifierParams.WebPageMetadata.TreePath.StartsWith("/Articles/Paywalled", StringComparison.InvariantCultureIgnoreCase))
+        {
+            pagePanelItem.SelectableOption.Selectable = false;
+            pagePanelItem.SelectableOption.UnselectableReason = "Cannot select pages under the '/Articles/Paywalled' section";
+        }
+
+        return pagePanelItem;
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="url-selector">URL selector</h3>
+
+<div>
+
+</div>
+<div>
+<p>This form component is currently usable only in Page or Form Builder, and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">model-based edit pages</a> or <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template#assign-filters-to-listing-pages">listing filter models</a> in the Xperience administration.</p>
+</div>
+
+<p><strong>C# data type:</strong> string<br>
+<strong>Form component attribute</strong>: UrlSelectorComponent</p>
+<p>Allows content editors to insert a URL to an external resource or select a page from the <a href="/documentation/business-users/website-content">content tree</a> of a website channel (the selector returns <a href="/documentation/business-users/website-content/manage-page-urls#select-the-canonical-url-of-pages">canonical URLs</a> of pages). When used outside of a <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>, the page selection functionality is disabled and URLs can only be inserted manually in text form.</p>
+<h4 id="example-2">Example</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in model classes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns the URL selector as the property's editing component
+// Returns a string containing the relative URL of the selected page
+[UrlSelectorComponent(Label = "Select a page")]
+public string PageUrl { get; set; }
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Selection retrieval</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class UrlSelectorUsage : ViewComponent
+{
+    private readonly IUserInfoProvider userInfoProvider;
+
+    public UrlSelectorUsage(IUserInfoProvider userInfoProvider)
+    {
+        this.userInfoProvider = userInfoProvider;
+    }
+
+    public IViewComponentResult Invoke(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Retrieves the selected page URLfrom the properties (of a widget properties class, for example)
+        string pageUrl = model?.Properties?.PageUrl ?? String.Empty;
+
+        // Custom logic...
+
+        return View("...");
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="smart-folder-selector">Smart folder selector</h3>
+<p><strong>Field data type</strong>: Smart folder<br>
+<strong>C# data type</strong>: SmartFolderReference<br>
+<strong>Form component attribute</strong>: SmartFolderSelectorComponent</p>
+<p>Enables users to select a <a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">smart folder</a>.</p>
+<p>Returns a <code>SmartFolderReference</code> object, which contains an <code>Identifier</code> property with the GUID of the selected smart folder. You can use the GUID to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-content-items-from-smart-folders">retrieve</a> the content items that match the filter condition of the selected smart folder.</p>
+<p>The selector optionally enables you to restrict which smart folders are available based on the content types allowed by the filter conditions of folders. Create a filter class that implements an appropriate filter interface, and assign its type into the corresponding property of the smart folder selector attribute:</p>
+<ul>
+<li>
+<strong>AllowedContentTypeIdentifiersFilter</strong> – scopes the selector to offer only smart folders that include at least one of the returned <a href="/documentation/developers-and-admins/development/content-types">content types</a> in their filter condition (as well as smart folders that don’t filter by content type at all). The filter type class must implement the <code>IContentTypesNameFilter</code> interface. See <a href="#example-with-content-type-scoping">Example with content type scoping</a>.</li>
+<li>
+<strong>AllowedReusableFieldSchemaIdentifiersFilter</strong> – scopes the selector to offer only smart folders that include at least one content type using one of the returned <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> in their filter condition (as well as smart folders that don’t filter by content type at all). The filter type class must implement the <code>IReusableFieldSchemasFilter</code> interface. See <a href="#example-with-reusable-field-schema-scoping">Example with reusable field schema scoping</a>.</li>
+</ul>
+<p>If you do not set either property, the selector allows all smart folders that have dynamic content delivery enabled.</p>
+<h4 id="example-with-content-type-scoping">Example with content type scoping</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Smart folder selector scoped to a content type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the smart folder selector as the property's editing component
+// Enables selection of smart folders that allow the 'Coffee' content type
+[SmartFolderSelectorComponent(AllowedContentTypeIdentifiersFilter = typeof(CoffeeContentTypeFilter), Label = "Coffee smart folder", Order = 1)]
+public SmartFolderReference SmartFolderWithCoffee { get; set; }
+
+// ...
+
+// Filters the smart folders available in the selector to those that allow the 'Coffee' content type
+public class CoffeeContentTypeFilter : IContentTypesNameFilter
+{
+    IEnumerable&lt;string&gt; IContentTypesNameFilter.AllowedContentTypeNames =&gt; new List&lt;string&gt; { Coffee.CONTENT_TYPE_NAME };
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieval of content items from the smart folder</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class SmartFolderSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public SmartFolderSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets the GUID from the annotated property
+        var selectedSmartFolderGuid = model?.Properties?.SmartFolderWithCoffee.Identifier ?? Guid.Empty;
+
+        // Retrieves 'Coffee' content items from the smart folder
+        IEnumerable&lt;Coffee&gt; result = await contentRetriever.RetrieveContent&lt;Coffee&gt;(
+            RetrieveContentParameters.Default,
+            query =&gt; query.InSmartFolder(selectedSmartFolderGuid),
+            new RetrievalCacheSettings($"{nameof(RetrieveContentQueryParameters.InSmartFolder)}|{selectedSmartFolderGuid}"));
+
+        // Custom logic...
+
+        return View("...");
+    }
+}
+</code></pre>
+</div>
+
+<h4 id="example-with-reusable-field-schema-scoping">Example with reusable field schema scoping</h4>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Smart folder selector scoped to a reusable field schema</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the smart folder selector as the property's editing component
+// Enables selection of smart folders that allow content types using the 'ProductFields' schema
+[SmartFolderSelectorComponent(AllowedReusableFieldSchemaIdentifiersFilter = typeof(ProductSchemaFilter), Label = "Product smart folder", Order = 1)]
+public SmartFolderReference SmartFolderWithProducts { get; set; }
+
+// ...
+
+// Filters the smart folders available in the selector to those that allow content types using the 'ProductFields' schema
+public class ProductSchemaFilter : IReusableFieldSchemasFilter
+{
+    IEnumerable&lt;string&gt; IReusableFieldSchemasFilter.AllowedSchemaNames =&gt; new List&lt;string&gt; { IProductFields.REUSABLE_FIELD_SCHEMA_NAME };
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieval of content items from the smart folder</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class SmartFolderSelectorUsage : ViewComponent
+{
+    private readonly IContentRetriever contentRetriever;
+
+    public SmartFolderSelectorUsage(IContentRetriever contentRetriever)
+    {
+        this.contentRetriever = contentRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets the GUID from the annotated property
+        var selectedSmartFolderGuid = model?.Properties?.SmartFolderWithProducts.Identifier ?? Guid.Empty;
+
+        // Retrieves product content items from the smart folder
+        IEnumerable&lt;IProductFields&gt; result = await contentRetriever.RetrieveContentOfReusableSchemas&lt;IProductFields&gt;(
+            new[] { IProductFields.REUSABLE_FIELD_SCHEMA_NAME },
+            RetrieveContentOfReusableSchemasParameters.Default,
+            query =&gt; query.InSmartFolder(selectedSmartFolderGuid),
+            new RetrievalCacheSettings(cacheItemNameSuffix:
+                $"{nameof(RetrieveContentQueryParameters.InSmartFolder)}|{selectedSmartFolderGuid}"));
+
+        // Custom logic...
+
+        return View("...");
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="tag-selector">Tag selector</h3>
+<p><strong>Field data type</strong>: Taxonomy<br>
+<strong>C# data type</strong>: IEnumerable&lt;TagReference&gt;<br>
+<strong>Form component attribute</strong>: TagSelectorComponent</p>
+<p>Enables users to select tags from <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomies</a> to associate them with the currently edited object.</p>
+<p>When used as an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a>, returns a collection of <code>TagReference</code> objects that contain GUIDs of the selected tags.</p>
+<h4 id="configuration-properties-5">Configuration properties</h4>
+<ul>
+<li>
+<strong>TaxonomyName</strong> – the code name of the taxonomy to offer the selection from.</li>
+<li>
+<strong>MinSelectedTagsCount</strong> – the minimum number of tags that need to be selected.</li>
+<li>
+<strong>MaxSelectedTagsCount</strong> – the maximum number of tags that can be selected.
+<ul>
+<li>0 – no limit.</li>
+<li>
+<em>n</em> – at most <em>n</em> tags can be selected at once.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in a model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns the tag selector as the property's editing component
+// Enables selection from the 'ItemCategory' taxonomy
+[TagSelectorComponent("ItemCategory", Label = "Category", Order = 1)]
+public IEnumerable&lt;TagReference&gt; Tags { get; set; }
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Selection retrieval</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class TagSelectorUsage : ViewComponent
+{
+    private readonly ITaxonomyRetriever taxonomyRetriever;
+
+    public TagSelectorUsage(ITaxonomyRetriever taxonomyRetriever)
+    {
+        this.taxonomyRetriever = taxonomyRetriever;
+    }
+
+    public async Task&lt;ViewViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; model)
+    {
+        // Gets identifiers of the selected tags from the annotated property
+        IEnumerable&lt;Guid&gt; tagIdentifiers = model?.Properties?.SelectedTags.Select(item =&gt; item.Identifier);
+
+        // Retrieves a collection of Tag object corresponding to the selected tags.
+        IEnumerable&lt;Tag&gt; tags = await taxonomyRetriever.RetrieveTags(tagIdentifiers, "en");
+
+        // Custom logic...
+
+        return View("...");
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="general-selector">General selector</h3>
+
+<div>
+
+</div>
+<div>
+<p>This form component is currently usable only in Page or Form Builder, and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">model-based edit pages</a> or listing filter models in the Xperience administration.</p>
+</div>
+
+<p><strong>C# data type</strong>: IEnumerable&lt;string&gt;<br>
+<strong>Form component attribute</strong>: GeneralSelectorComponent</p>
+<p>Allows users to select one or more items using a drop-down menu with a search bar. The items offered by the selector can be of any type, including external data outside of Xperience. Developers need to implement a data provider that loads and prepares the items displayed in the selector.</p>
+<p>The selector returns a collection of <em>string</em> objects, which contain the values of the selected items.</p>
+<h4 id="configuration-properties-6">Configuration properties</h4>
+<ul>
+<li>
+<p><strong>MaximumItems</strong> – sets the maximum number of selected items. If not specified, the default value is 0, which means the number of selected items is not limited.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Single general selector</strong></p>
+<p>If you only wish to allow selection of a single item, you can use the <code>SingleGeneralSelectorComponent</code> form component attribute instead. The single general selector works just like the general selector, but the returned data type is <code>string</code> and the <code>MaximumItems</code> configuration property is not available.</p>
+</div>
+</li>
+<li><p><strong>Placeholder</strong> – text displayed before an option is selected. E.g., “Choose an option”</p></li>
+<li><p><strong>DataProviderType</strong> – dynamic data source for the selector’s options.</p></li>
+</ul>
+<p>The general selector’s data source class must implement the <code>IGeneralSelectorDataProvider</code> interface and define the following methods:</p>
+<ul>
+<li>
+<strong>GetItemsAsync</strong> – provides the items available in the selector. The <code>searchTerm</code> parameter contains the text entered into the search box (empty when the selector is initially opened). The <code>pageIndex</code> parameter allows you to implement pagination for better performance when working with a very large number of items. To disable pagination, ignore the <code>pageIndex</code> parameter and set the <code>NextPageAvailable</code> property of the return object to false. The method must return a <code>PagedSelectListItems&lt;string&gt;</code> object, containing the selector’s options in its <code>Items</code> property, as an <code>IEnumerable&lt;ObjectSelectorListItem&lt;string&gt;</code> collection.</li>
+<li>
+<strong>GetSelectedItemsAsync</strong> – identifies which items are currently selected. Transforms an <code>IEnumerable&lt;string&gt;</code> collection with the values of the selected items into <code>ObjectSelectorListItem&lt;string&gt;</code> objects, which contain both the item values and the text displayed in the selector interface.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Performance considerations</strong></p>
+<p>If you wish to load and display a very large number of items in the general selector, we recommend using pagination and implementing <a href="/documentation/developers-and-admins/development/caching/data-caching">caching</a> in your data provider implementation.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assignment in model classes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assigns the General selector as the property's editing component
+[GeneralSelectorComponent(
+            dataProviderType : typeof(UserGeneralSelectorDataProvider),
+            Label = "Users",
+            Placeholder = "Choose a user")]
+public IEnumerable&lt;string&gt; UserOptions { get; set; }
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Data provider class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+using Kentico.Xperience.Admin.Base.Forms;
+
+using CMS.Membership;
+
+public class UserGeneralSelectorDataProvider : IGeneralSelectorDataProvider
+{
+    private readonly IUserInfoProvider userInfoProvider;
+
+    // Item representing an invalid selector option
+    private static ObjectSelectorListItem&lt;string&gt; InvalidItem =&gt; new ObjectSelectorListItem&lt;string&gt;() { IsValid = false };
+
+    public UserGeneralSelectorDataProvider(IUserInfoProvider userInfoProvider)
+    {
+        this.userInfoProvider = userInfoProvider;
+    }
+
+    // Returns items displayed in the general selector drop-down list
+    public Task&lt;PagedSelectListItems&lt;string&gt;&gt; GetItemsAsync(string searchTerm, int pageIndex, CancellationToken cancellationToken)
+    {
+        // Prepares a query for retrieving user objects
+        var itemQuery = userInfoProvider.Get();
+
+        // If a search term is entered, only loads users whose first name starts with the term
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            itemQuery.WhereStartsWith("FirstName", searchTerm);
+        }
+
+        // Ensures paging of items
+        itemQuery.Page(pageIndex, 20);
+
+        return Task.FromResult(new PagedSelectListItems&lt;string&gt;()
+        {
+            NextPageAvailable = itemQuery.NextPageAvailable,
+            // Retrieves the users and converts them into ObjectSelectorListItem&lt;string&gt; options
+            Items = itemQuery.GetEnumerableTypedResult()
+                             .Select(GetUserListItem)
+        });
+    }
+
+    // Returns ObjectSelectorListItem&lt;string&gt; options for all item values that are currently selected
+    public Task&lt;IEnumerable&lt;ObjectSelectorListItem&lt;string&gt;&gt;&gt; GetSelectedItemsAsync(IEnumerable&lt;string&gt; selectedValues, CancellationToken cancellationToken) =&gt;
+        Task.FromResult(selectedValues?.Select(v =&gt; GetSelectedItemByValue(v)) ?? Enumerable.Empty&lt;ObjectSelectorListItem&lt;string&gt;&gt;()
+    );
+
+    private ObjectSelectorListItem&lt;string&gt; GetSelectedItemByValue(string value)
+    {
+        // Gets the user with the selected user name (or an invalid item if the user is not found)
+        return GetUserListItem(userInfoProvider.Get(value)) ?? InvalidItem;
+    }
+
+    // Converts a user object (UserInfo) into an ObjectSelectorListItem&lt;string&gt; option
+    private ObjectSelectorListItem&lt;string&gt; GetUserListItem(UserInfo user)
+    {
+        return new ObjectSelectorListItem&lt;string&gt;()
+        {
+            Value = user.UserName,
+            Text = $"{user.FirstName} {user.LastName} ({user.UserName})",
+            IsValid = true
+        };
+    }
+}
+</code></pre>
+</div>
+
+<h2 id="components">Components</h2>
+<h3 id="checkbox">Checkbox</h3>
+<p><strong>Field data type</strong>: Boolean (Yes/No)<br>
+<strong>C# data type</strong>: bool<br>
+<strong>Form component attribute</strong>: CheckBoxComponent</p>
+<p>Checkbox field that saves a boolean value (true for a selected checkbox, false for a cleared checkbox).</p>
+<h3 id="code-editor">Code editor</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: CodeEditorComponent</p>
+<p>Provides a text editing area suitable for code, with support for syntax highlighting and line numbers.</p>
+<h4 id="configuration-properties-7">Configuration properties</h4>
+<ul>
+<li>
+<p><strong>Language</strong> – sets the language for the syntax highlighting applied by the editor. The following values are supported:</p>
+<ul>
+<li>css</li>
+<li>html</li>
+<li>javascript</li>
+<li>sql</li>
+<li>xml</li>
+</ul>
+</li>
+</ul>
+<h3 id="dropdown-selector">Dropdown selector</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: DropDownComponent</p>
+<p>Drop-down selector offering multiple options. Only one option can be selected.</p>
+<h4 id="configuration-properties-8">Configuration properties</h4>
+<ul>
+<li>
+<p><strong>Options</strong> – items must be specified one per line in the format:</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  1;One
+  2;Two
+
+  </code></pre>
+</div>
+
+<p>When configuring the component using the attribute, the options string must contain newline characters. For example for Windows:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  1;One\r\n2;Two
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p><strong>Options value separator</strong> – custom separator used between the value and text in the options. For example, if set to ‘-’, the options would be:</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  1-One
+  2-Two
+
+  </code></pre>
+</div>
+</li>
+<li><p><strong>Placeholder</strong> – text displayed before an option in the drop-down is selected. E.g., “Month”</p></li>
+<li>
+<p><strong>DataProviderType</strong> – dynamic data source for the component. The assigned type must implement the <code>IDropDownOptionsProvider</code> interface.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Threading.Tasks;
+
+  using CMS.Membership;
+
+  using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+  // Populates the selector with all users from the system
+  public class UsersDropdownOptionsProvider : IDropDownOptionsProvider
+  {
+      private readonly IUserInfoProvider userInfoProvider;
+
+      public UsersDropdownOptionsProvider(IUserInfoProvider userInfoProvider)
+      {
+          this.userInfoProvider = userInfoProvider;
+      }
+
+      public async Task&lt;IEnumerable&lt;DropDownOptionItem&gt;&gt; GetOptionItems()
+      {
+          return (await userInfoProvider.Get()
+                                        .GetEnumerableTypedResultAsync())
+                                        .Select(x =&gt; new DropDownOptionItem()
+                                        {
+                                            Value = x.UserID.ToString(),
+                                            Text = x.UserName
+                                        });
+      }
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="date-input">Date input</h3>
+<p><strong>Field data type</strong>: Date<br>
+<strong>C# data type</strong>: System.DateTime? (nullable)<br>
+<strong>Form component attribute</strong>: DateInputComponent</p>
+<p>Date selector.</p>
+<h4 id="remarks">Remarks</h4>
+<p>Annotating a non-nullable property results in the input being prepopulated with the minimum selectable date. If you want to display an empty input instead, use the following construction.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[DateInputComponent]
+// Use RequiredValidationRule to enforce user input
+[RequiredValidationRule]
+// Set the property as nullable
+public DateTime? Date { get; set; } = null;
+
+</code></pre>
+</div>
+
+<h3 id="date-and-time-input">Date and time input</h3>
+<p><strong>Field data type</strong>: Date and time<br>
+<strong>C# data type</strong>: System.DateTime? (nullable)<br>
+<strong>Form component attribute</strong>: DateTimeInputComponent</p>
+<p>Date and time selector.</p>
+<p>Time values in the selector’s UI are automatically converted and displayed in the local time zone of each user, based on browser and environment settings. For example: <em>9/30/2025 12:00 PM GMT+2</em>. The value stored into the field is always in the time zone of the server where the application is running.</p>
+<h4 id="remarks-1">Remarks</h4>
+<p>Annotating a non-nullable property results in the input being prepopulated with the minimum selectable date. If you want to display an empty input instead, use the following construction.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[DateTimeInputComponent]
+// Use RequiredValidationRule to enforce user input
+[RequiredValidationRule]
+// Set the property as nullable
+public DateTime? DateAndTime { get; set; } = null;
+
+</code></pre>
+</div>
+
+<h3 id="date-and-time-with-label">Date and time with label</h3>
+<p><strong>Field data type</strong>: Date and time<br>
+<strong>C# data type</strong>: System.DateTime? (nullable)<br>
+<strong>Form component attribute</strong>: DateTimeStringComponent</p>
+<p>Displays a read-only <code>DateTime</code> value.</p>
+<h3 id="decimal-number-input">Decimal number input</h3>
+<p><strong>Field data type</strong>: Decimal number<br>
+<strong>C# data type</strong>: Decimal? (nullable)<br>
+<strong>Form component attribute</strong>: DecimalNumberInputComponent</p>
+<p>Input field for entering decimal numbers.</p>
+<h3 id="link">Link</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: LinkComponent</p>
+<p>Displays a non-editable link within forms in the administration interface.</p>
+<h4 id="configuration-properties-9">Configuration properties</h4>
+<ul>
+<li>
+<strong>Text</strong> – the text displayed for the link in the form. If null or empty, the value of the link (the URL) is used instead.</li>
+<li>
+<strong>OpenInNewTab</strong> – a <em>boolean</em> property that indicates whether the link opens in a new browser tab. The default value is <em>true</em>.</li>
+</ul>
+<h3 id="number-input">Number input</h3>
+<p><strong>Field data type</strong>: Integer number<br>
+<strong>C# data type</strong>: Int32? (nullable)<br>
+<strong>Form component attribute</strong>: NumberInputComponent</p>
+<p>Text input field for entering whole (integer) numbers.</p>
+<h3 id="number-with-label">Number with label</h3>
+<p><strong>Field data type</strong>: Integer number<br>
+<strong>C# data type</strong>: Int32</p>
+<p>Used to display non-editable whole numbers together with a label for informational value.</p>
+<h3 id="password">Password</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: PasswordComponent</p>
+<p>Text input field that obscures user input.</p>
+<h4 id="configuration-properties-10">Configuration properties</h4>
+<ul>
+<li>
+<strong>IgnorePasswordPolicy</strong> – if set, disregards all password policy configuration when validating input.</li>
+<li>
+<strong>RequiredLength</strong> – the minimum length a password must be. Defaults to 8.</li>
+<li>
+<strong>RequiredUniqueChars</strong> – the minimum number of unique characters which a password must contain. Defaults to 1.</li>
+<li>
+<strong>RequireDigit</strong> – a flag indicating if passwords must contain a digit. Defaults to <code>true</code>.</li>
+<li>
+<strong>RequireNonAlphanumeric</strong> – a flag indicating if passwords must contain a non-alphanumeric character. Defaults to <code>true</code>.</li>
+<li>
+<strong>RequireUppercase</strong> – a flag indicating if passwords must contain an upper case ASCII character. Defaults to <code>true</code>.</li>
+<li>
+<strong>RequireLowercase</strong> – a flag indicating if passwords must contain a lower case ASCII character. Defaults to <code>true</code>.</li>
+</ul>
+<h3 id="rich-text-editor">Rich text editor</h3>
+<p><strong>Field data type</strong>: Rich text (HTML)<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: RichTextEditorComponent</p>
+<p>Allows users to enter HTML-enriched text using the <a href="/documentation/business-users/rich-text-editor">Rich text editor</a>.</p>
+<h4 id="configuration-properties-11">Configuration properties</h4>
+<ul>
+<li>
+<strong>ConfigurationName</strong> – the configuration to use for the editor. See <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">Rich text editor configuration</a>.</li>
+</ul>
+<h3 id="radio-group-component">Radio group component</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: RadioGroupComponent</p>
+<p>Allows single selection from a group of radio buttons.</p>
+<h4 id="configuration-properties-12">Configuration properties</h4>
+<ul>
+<li>
+<strong>Options</strong> – specifies each button in the radio group, one per line in the <code>value;label</code> format. For example: <code>1;One</code>.</li>
+<li>
+<strong>Options value separator</strong> – custom separator used between the value and label in the options. For example, if set to ‘-’, the options would be <code>1-One</code>.</li>
+<li>
+<strong>Inline</strong> – indicates whether the options are displayed in a horizontal layout on a single line. If false, options are displayed vertically on separate lines.</li>
+<li>
+<strong>AriaLabel</strong> – an accessibility label for the interactive element of the radio buttons. See <a href="https://developer.mozilla.org/docs/Web/Accessibility/ARIA/Attributes/aria-label" target="_blank">aria-label</a>.</li>
+</ul>
+<h3 id="text-area">Text area</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: TextAreaComponent</p>
+<p>Allows users to enter text into an area with adjustable size.</p>
+<h4 id="configuration-properties-13">Configuration properties</h4>
+<ul>
+<li>
+<strong>CopyButtonVisible</strong> – indicates whether a copy that enables users to copy the contents of the text area is visible.</li>
+<li>
+<strong>MaxRowsNumber</strong> – sets the maximum number of rows to which the area expands when text is added. If further rows added, the text area displays a scroll bar.</li>
+<li>
+<strong>MinRowsNumber</strong> – sets the minimum number of rows displayed in the text area (i.e., the area’s height).</li>
+<li>
+<strong>WatermarkText</strong> – placeholder displayed when the area is empty.</li>
+</ul>
+<h3 id="text-input">Text input</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: TextInputComponent</p>
+<p>Text input field.</p>
+<h3 id="text-with-label">Text with label</h3>
+<p><strong>Field data type</strong>: Text, Long text, Integer number<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: TextWithLabelComponent</p>
+<p>Used to display non-editable text together with a label for informational value.</p>
+<h3 id="extension-selector">Extension selector</h3>
+<p><strong>Field data type</strong>: Text, Long text<br>
+<strong>C# data type</strong>: string<br>
+<strong>Form component attribute</strong>: ExtensionSelectorComponent</p>
+<p>Allows you to specify a list of allowed extensions using a simple interface. Defaults to the list of system-wide allowed extensions specified in the <strong>Settings</strong> application: <strong>Content</strong> → <strong>Media</strong> → <strong>Media file allowed extensions</strong> setting.</p>
+<h4 id="configuration-properties-14">Configuration properties</h4>
+<ul>
+<li>
+<strong>AllowedExtensions</strong> – the semicolon-delimited list of allowed extensions.</li>
+</ul>
+
+</body>
+</html>

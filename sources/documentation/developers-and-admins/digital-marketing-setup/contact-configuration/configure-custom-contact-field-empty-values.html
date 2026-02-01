@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Configure custom contact field empty values</title>
+</head>
+<body>
+<p>If you have <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration#add-custom-fields-to-contacts">custom contact fields</a> that use a <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management#register-custom-data-types">custom data type</a> and wish to use these fields with the <em>Contact field value is empty</em> condition in <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> or <a href="/documentation/business-users/digital-marketing/automation#conditions">automation processes</a>, you need to define what value is considered as empty for the data type. Otherwise the condition will not be evaluated correctly. You can configure the empty value for individual data types by extending the <code>ContactFieldEmptyValueProvider</code> using the <a href="/documentation/developers-and-admins/customization/decorate-system-services">decorator pattern</a>. Additionally, you can change the empty values provided by the system for the default contact fields.</p>
+<h2 id="define-custom-empty-values">Define custom empty values</h2>
+<ol type="1">
+<li>Open your solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) with class discovery enabled to the solution, or re-use an existing assembly.</li>
+<li>Reference the project from your Xperience website project.</li>
+</ol>
+<p>Continue by implementing the custom class:</p>
+<ol type="1">
+<li>Create a new custom class. For example, name the class <code>CustomContactFieldEmptyValueProvider</code>.</li>
+<li>Make the class implement the <code>IContactFieldEmptyValueProvider</code> interface.</li>
+<li>Add the <code>Get</code> method:
+<ul>
+<li>Use the <a href="/documentation/developers-and-admins/customization/decorate-system-services#decorate-services-via-dependency-injection">decorator customization pattern</a> to call the default implementation of the <code>Get</code> method. This call returns a dictionary which maps the system data types to their empty value. Here, you can add the empty values of your custom data types or adjust the empty values of the system data types.</li>
+</ul>
+</li>
+<li>Register the implementation using the <code>RegisterImplementation</code> assembly attribute.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.ContactManagement;
+using CMS.DataEngine;
+
+[assembly: RegisterImplementation(typeof(IContactFieldEmptyValueProvider), typeof(CustomContactFieldEmptyValueProvider))]
+
+
+public class CustomContactFieldEmptyValueProvider : IContactFieldEmptyValueProvider
+{
+    // Stores the default implementation of the IContactFieldEmptyValueProvider service
+    private readonly IContactFieldEmptyValueProvider contactFieldEmptyValueProvider;
+
+    // Stores the empty string value as an object array
+    private static readonly object[] emptyString = { "" };
+
+    public CustomContactFieldEmptyValueProvider(IContactFieldEmptyValueProvider contactFieldEmptyValueProvider)
+    {
+        this.contactFieldEmptyValueProvider = contactFieldEmptyValueProvider;
+    }
+
+    // Allows you to make adjustments to the empty value dictionary
+    public Dictionary&lt;string, object[]&gt; Get()
+    {
+        // Calls the default IContactFieldEmptyValueProvider.Get implementation
+        var result = contactFieldEmptyValueProvider.Get();
+
+        // Sets a custom empty value for the custom data type with the "mydatatype" identifier
+        result.Add("mydatatype", emptyString);
+
+        // You can also rewrite the default empty values provided in the dictionary
+        // Access the identifiers of the system data types via constants in the FieldDataType class
+        result[FieldDataType.Text] = emptyString;
+
+        return result;
+    }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

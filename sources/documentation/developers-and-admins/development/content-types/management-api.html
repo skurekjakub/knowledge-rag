@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content type management API</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preview feature</strong></p>
+<p>The Xperience by Kentico management API and MCP server are currently in preview mode. Expect changes in the functionality, potentially including breaking changes.</p>
+<p>Feel free to try out the features, for example using the sample <em>Dancing Goat</em> <a href="/documentation/developers-and-admins/installation">project template</a>. You can share your feedback directly with the Kentico <a href="https://roadmap.kentico.com/" target="_blank">Product team</a>.</p>
+</div>
+
+<p>The Xperience by Kentico management API provides endpoints that allow retrieval and management (Create, Read, Update, Delete) of objects within the system. At this time, the API allows:</p>
+<ul>
+<li>Retrieval and management of <a href="/documentation/developers-and-admins/development/content-types">content types</a> and <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>
+</li>
+<li>Retrieval of information about <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a> and <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data types</a> for fields</li>
+</ul>
+<p>This enables automated <a href="/guides/architecture/content-modeling">content modeling</a> workflows, accelerates migration scenarios, and simplifies integration with external systems that need to manage your project’s content model.</p>
+<p>The management API is designed to be used via <strong>AI tools</strong>. Kentico provides a <a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank">Model Context Protocol (MCP)</a> server that allows AI clients to easily discover and use the tools provided by the API.</p>
+<h2 id="enable-the-management-api">Enable the management API</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Only for local development purposes</strong></p>
+<p>The management API is only intended for use on local development instances. It currently only provides basic authentication and no authorization options for various types of operations.</p>
+<p>Do <strong>not</strong> enable the management API for production deployments or other publicly available instances.</p>
+</div>
+
+<p>To enable the content management API for a development project:</p>
+<ol type="1">
+<li>Install the <a href="https://www.nuget.org/packages/Kentico.Xperience.ManagementApi" target="_blank">Kentico.Xperience.ManagementApi</a> NuGet package into your Xperience project.
+<ul>
+<li>Kentico.Xperience.ManagementApi is currently a <strong>prerelease</strong> package.</li>
+</ul>
+</li>
+<li>Adjust your application’s startup code in <em>Program.cs</em>:
+<ol type="1">
+<li>Call the <code>AddKenticoManagementApi()</code> extension method on your application’s service collection.
+<ul>
+<li>Adds controllers used by the management API. Also registers and configures services for authentication, authorization, <a href="https://swagger.io/tools/swagger-codegen/" target="_blank">Swagger generation</a>, and API versioning. If you already configure such services, place the <em>AddKenticoManagementApi()</em> call after your configuration. Most of the configuration is scoped only to the management API endpoints, but there are exceptions (see the method’s remarks in your IDE for details).</li>
+</ul>
+</li>
+<li>In the method’s <code>ManagementApiOptions</code> parameter, set the <code>Secret</code> property to a string with at least 32 characters.
+<ul>
+<li>The secret is required to authenticate all requests to the management API endpoints, and will be used in the configuration of your management API <a href="#management-api-mcp-server">MCP server</a>.</li>
+</ul>
+</li>
+<li>Add the following to the application’s <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects">middleware pipeline</a>:
+<ul>
+<li>
+<code>UseAuthentication()</code> – adds authentication middleware. Must be called <strong>before</strong> <em>UseKentico()</em>.</li>
+<li>
+<code>UseKenticoManagementApi()</code> – adds middleware required for the management API.</li>
+<li>
+<code>UseAuthorization()</code> – adds authorization middleware. Must be called <strong>after</strong> <em>UseKentico()</em>.</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Microsoft.AspNetCore.Builder;
+
+using Kentico.Xperience.ManagementApi;
+using Kentico.Web.Mvc;
+
+// ...
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ...
+
+// Only enables the management API in the local development environment
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddKenticoManagementApi(options =&gt; 
+    {
+       // Sets the secret required to authenticate all requests to the management API endpoints
+       // Must be at least 32 characters
+       options.Secret = "rrvpzpu18m5385tfw1h9j5luxton5vyv";
+    });
+}
+
+// ...
+
+var app = builder.Build();
+
+app.InitKentico();
+
+// ...
+
+// Adds authentication middleware
+app.UseAuthentication();
+
+if (builder.Environment.IsDevelopment())
+{
+    // Adds middleware required for the management API
+    app.UseKenticoManagementApi();
+}
+
+app.UseKentico();
+
+// Adds authorization middleware
+app.UseAuthorization();
+
+// Maps routes used by Xperience by Kentico feature
+app.Kentico().MapRoutes();
+</code></pre>
+</div>
+
+<h2 id="management-api-mcp-server">Management API MCP server</h2>
+<p>Kentico provides an <a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank">MCP</a> server that allows AI clients to easily discover and work with the management API. The MCP server is accessible to any IDE, agent, or tool that supports MCP.</p>
+<p>The server <strong>runs locally</strong> on your development machine, and automatically generates tools for using the available management API endpoints.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Node.js requirement</strong></p>
+<p>To use the management API MCP server, you must have a <a href="/documentation/developers-and-admins/installation/system-requirements#task-specific-requirements">supported version of Node.js</a> installed on your development machine.</p>
+</div>
+
+<p>To add the MCP server:</p>
+<ul>
+<li>Use the <a href="https://www.npmjs.com/package/@kentico/management-api-mcp" target="_blank">@kentico/management-api-mcp</a> npm package.</li>
+<li>Set the following environment variables in the server’s configuration:
+<ul>
+<li>
+<code>MANAGEMENT_API_URL</code> – the URL of your locally running Xperience application, followed by the <em>kentico-api/management</em> path.</li>
+<li>
+<code>MANAGEMENT_API_SECRET</code> – the secret configured when <a href="#enable-the-management-api">enabling the management API</a> for your application.</li>
+</ul>
+</li>
+</ul>
+<p>See the documentation of your IDE for detailed information:</p>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/copilot/customization/mcp-servers" target="_blank">Use MCP servers in VS Code</a></li>
+<li><a href="https://cursor.com/docs/context/mcp" target="_blank">MCP guide for Cursor</a></li>
+<li><a href="https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=visualstudio" target="_blank">Use MCP servers in Visual Studio</a></li>
+<li><a href="https://modelcontextprotocol.io/docs/develop/connect-local-servers" target="_blank">Connect to local MCP servers from Claude Desktop</a></li>
+</ul>
+<p>For example, to get the MCP server running in <a href="https://code.visualstudio.com/docs" target="_blank">VS Code</a>:</p>
+<ol type="1">
+<li><p>Edit the <code>mcp.json</code> file of your workspace (located in the project’s <em>.vscode</em> folder).</p></li>
+<li>
+<p>Add the following server configuration:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>mcp.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ {
+   "servers": {
+     "xperience-management-api": {
+       "type": "stdio",
+       "command": "npx",
+       "args": [
+         "@kentico/management-api-mcp@latest"
+       ],
+       "env": {
+         "MANAGEMENT_API_URL": "http://localhost:5001/kentico-api/management",
+         "MANAGEMENT_API_SECRET": "rrvpzpu18m5385tfw1h9j5luxton5vyv"
+       }
+     }
+   }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Adjust the environment variables for your project:</p>
+<ul>
+<li>
+<code>MANAGEMENT_API_URL</code> – change the port number to match the URL where your Xperience application is running.</li>
+<li>
+<code>MANAGEMENT_API_SECRET</code> – set the value to the secret configured when <a href="#enable-the-management-api">enabling the management API</a>.</li>
+</ul>
+</li>
+<li><p>Run your Xperience application. See <a href="/documentation/developers-and-admins/development/website-development-basics/set-up-local-hosting">Set up local hosting</a> for more information.</p></li>
+<li><p>Start the MCP server in your IDE.</p></li>
+</ol>
+<p>The server should now be running and your AI agent configuration should now show the MCP server and display the available tools.</p>
+<h3 id="example-prompts">Example prompts</h3>
+<p>Your AI agent will automatically use the MCP server’s tools when handling prompts related to content types and reusable field schemas. For example:</p>
+<ul>
+<li>“List all content types containing a field with the ‘Content item asset’ data type.”</li>
+<li>“Which content types use the ‘Product SKU’ reusable field schema?”</li>
+<li>“Create a new content type named ‘Coffee cup’ with fields ‘Size’, ‘Color’ and with the ‘Product SKU’ reusable field schema.”</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="certificate-issues">Certificate issues</h3>
+<p>In certain cases, you may encounter certificate related errors when using the MCP server with an application running under HTTPS (i.e., you have an HTTPS URL in the server’s <code>MANAGEMENT_API_URL</code> environment variable).</p>
+<p>To resolve the issue, try setting the <code>NODE_OPTIONS</code> environment variable to <code>--use-system-ca</code>.</p>
+
+</body>
+</html>

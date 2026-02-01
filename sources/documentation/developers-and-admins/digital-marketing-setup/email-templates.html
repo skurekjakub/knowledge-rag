@@ -1,0 +1,669 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email templates</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Email Builder templates</strong></p>
+<p>The system uses two different types of email templates – the macro-based email templates described on this page and <a href="/documentation/developers-and-admins/development/builders/email-builder">Email Builder</a> templates. Email Builder templates are prepared and registered by developers as Razor components within the project’s code.</p>
+<p>Both types of templates are offered when selecting a template for a new email.</p>
+</div>
+
+<p>Email templates define the overall layout of <a href="/documentation/business-users/digital-marketing/emails">emails</a> and add fixed content, such as a header or footer. You can reuse a single template for any number of emails. The template content is defined through HTML code and CSS styles. In many cases, the template code can be prepared in an external tool by a designer and then copied into Xperience. </p>
+<p>The basic template code needs to be extended by adding <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">macros</a>, which serve as placeholders for the fields of email <a href="/documentation/developers-and-admins/development/content-types">content types</a>, as well as system elements such as a regular email’s unsubscribe link URL.</p>
+<p>The following diagram shows the structure of a sample email, with the template including pieces of content loaded from individual email fields.</p>
+<p></p>
+<h2 id="email-content-types">Email content types</h2>
+<p>Before you start creating email templates, you need to have exact knowledge of your email <a href="/documentation/developers-and-admins/development/content-types">content types</a> and their fields, as well as any linked content types used within.</p>
+<p>Email templates display content from specific fields, so they are only compatible with <a href="/documentation/developers-and-admins/development/content-types">content types</a> containing these fields. For this reason, you need to configure which email templates are allowed for every email content type. You can assign templates when editing content types on the <strong>Allowed templates</strong> tab, or add allowed content types from the other side of the relationship when <a href="#create-email-templates">creating or editing</a> email templates.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Configuration of rich text fields for emails</strong></p>
+<p>When creating text fields for email content types using the <strong>Rich text editor</strong> form component, we recommend using an <strong>empty (unselected)</strong> value for the component’s <strong>Configuration name</strong> setting. This allows the system to dynamically load the editor configuration based on the current email’s <strong>Purpose</strong>, i.e., the <em>Email content</em> configuration for regular and confirmation emails, and <em>Email content (Form autoresponder)</em> for autoresponder emails.</p>
+<p>The <em>Email content (Form autoresponder)</em> editor configuration contains the additional <strong>Insert Double Opt-In Link</strong> toolbar button, which is only relevant for form autoresponder emails.</p>
+<p>If you wish to use a <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">custom editor configuration</a>, you may need to create a separate configuration and content type for each email purpose.</p>
+</div>
+
+<h2 id="create-email-templates">Create email templates</h2>
+<ol type="1">
+<li>Open the <strong>Email templates</strong> application in Xperience.</li>
+<li>Select <strong>New email template</strong>.</li>
+<li>Fill in the template properties:
+<ul>
+<li>
+<strong>Email template name</strong> – the name of the template displayed in Xperience (for example when selecting the template for an email).</li>
+<li>
+<em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</li>
+<li>
+<strong>Description</strong> – allows you to add information and comments about the template. Only displayed to other editors in the Xperience administration.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+<li>Write or copy the HTML and CSS code of your template into the <strong>Source code</strong> area.</li>
+<li>
+<strong>Save</strong> again.</li>
+<li>On the <strong>Allowed content types</strong> tab, <strong>Select content types</strong>.</li>
+<li>Use the checkboxes to allow compatible content types for the email template.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The basic template is now ready, but cannot yet display content from emails in Xperience. Continue by adding <a href="#email-template-macros">macros</a> into the template.</p>
+<p>You can assign the template when creating emails of allowed content types in email channel applications. You can reuse a template for any number of emails.</p>
+<h2 id="email-template-macros">Email template macros</h2>
+<p>Email templates must contain <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">macro expressions</a>, which serve as placeholders for various kinds of email content.</p>
+<p>The following macros are available for email system fields:</p>
+<ul>
+<li>
+<p><code>{% unsubscribeurl %}</code> – can be placed into templates for emails with the <em>Regular</em> purpose. Resolves into the unsubscribe URL based on the settings of the email using the template. Position the placeholder into the <code>href</code> attribute of a suitable link tag, for example within the footer of your email template. See <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Send regular emails to subscribers</a> for detailed information and instructions.</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>Unsubscribe link example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  &lt;p&gt;
+      If you'd rather not receive future emails, &lt;a href="{% unsubscribeurl %}"&gt;unsubscribe here&lt;/a&gt;.
+  &lt;/p&gt;
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p><code>{% previewtext %}</code> – resolves into the <em>Preview text</em> of emails that use the template. Most email clients display a content preview, showing the starting characters of the email’s body. Insert this placeholder after the template’s opening <code>&lt;body&gt;</code> tag. Adding a hidden preview text placeholder allows editors to control the preview text, without needing to adjust the visible email content and design.</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>Preview text placeholder example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  &lt;body&gt;
+  &lt;!-- HIDDEN PREVIEW TEXT --&gt;
+  &lt;div style="display: none; font-size: 1px; color: #ffffff; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;"&gt;
+     {% HTMLEncode(previewtext) %}
+  &lt;/div&gt;
+
+  ...
+
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="content-type-field-macros">Content type field macros</h3>
+<p>Add <code>{% fieldname %}</code> macros to position the content of individual <a href="/documentation/developers-and-admins/development/content-types">content type</a> fields. Use the exact <strong>Field name</strong> (not the <em>Field caption</em>). For most field data types, the macro returns the field’s value as text.</p>
+<h4 id="email-template-macro-reference">Email template macro reference</h4>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Field data type</p>
+</td>
+<td>
+<p>Macro information</p>
+</td>
+<td>
+<p>Example</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Basic data types (Text, Number, Date, etc.)</p>
+</td>
+<td>
+<p>Returns the field’s value as text.</p>
+</td>
+<td>
+<p><code>{% field %}</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Pages and reusable content</p>
+</td>
+<td>
+<p>Returns a collection of the selected content items and pages. Use iteration or indexing to get individual items. Access item fields via the <code>Data</code> macro.</p>
+<p>See: <a href="#linked-pages-and-content-items">Linked pages and content items</a></p>
+</td>
+<td>
+<p><code>{% emailfield[0].Data.itemfield %}</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Taxonomy</p>
+</td>
+<td>
+<p>Use the <code>Tags</code> macro to access the taxonomy tags selected in the field. Each tag then provides the following macro fields:</p>
+<ul>
+<li><code>Title</code></li>
+<li><code>Name</code></li>
+<li><code>Description</code></li>
+</ul>
+<p>See: <a href="#taxonomy-fields">Taxonomy fields</a></p>
+</td>
+<td>
+<p><code>{% field.Tags[0].Title %}</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Media files</p>
+</td>
+<td>
+<p>Returns a collection of <a href="/documentation/business-users/media-libraries">media file</a> objects. Use iteration or indexing to get individual objects. Access file properties via the following macros:</p>
+<ul>
+<li><code>Url</code></li>
+<li><code>Extension</code></li>
+<li><code>Name</code></li>
+</ul>
+</td>
+<td>
+<p><code>{% field[0].Name %}</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object code names</p>
+</td>
+<td>
+<p>Returns a collection of the selected object code names. Use iteration or indexing to get individual code names.</p>
+</td>
+<td>
+<p><code>{% field[0] %}</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object global identifiers</p>
+</td>
+<td>
+<p>Returns a collection of GUIDs for the selected objects. Use iteration or indexing to get individual GUID values.</p>
+</td>
+<td>
+<p><code>{% field[0] %}</code></p>
+</td>
+</tr>
+<tr>
+<td colspan="3">
+<p>Fields of linked content items</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content item asset</p>
+</td>
+<td>
+<p>Returns data about the file stored in the field. Access file properties via the following macros:</p>
+<ul>
+<li><code>Url</code></li>
+<li><code>Extension</code></li>
+<li><code>Name</code></li>
+</ul>
+<p><a href="/documentation/business-users/content-hub/content-item-assets#image-variants">Image variants</a> are currently not supported for emails.</p>
+<p>See: <a href="#content-item-assets-files">Content item assets (files)</a></p>
+</td>
+<td>
+<p><code>{% emailfield[0].Data.assetfield.Url %}</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Smart folder</p>
+</td>
+<td>
+<p>Currently not supported for emails.</p>
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Language-specific formatting</strong></p>
+<p>For fields with the <em>Date and time</em>, <em>Decimal number</em> or <em>Floating-point number</em> data type, the macro value is resolved according to the <strong>Formatting culture</strong> of the <a href="/documentation/developers-and-admins/configuration/languages">language</a> set for the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>.</p>
+<p><strong>Time values</strong></p>
+<p>The values of fields with the <em>Date and time</em> data type are always returned in the time zone of the server where the application is running.</p>
+</div>
+
+<h4 id="linked-pages-and-content-items">Linked pages and content items</h4>
+<p>Fields with the <strong>Pages and reusable content</strong> data type link to <a href="/documentation/business-users/content-hub">reusable content items</a> or <a href="/documentation/business-users/website-content">pages</a> of different content types and require additional handling. In this case, the field macro returns a <strong>collection</strong> of the selected items.</p>
+<p>Use <strong>iteration</strong> (loops) or <strong>indexing</strong> to get individual items. When processing linked content items, you can access the following macro fields:</p>
+<ul>
+<li>
+<code>Data</code> – content type fields of the linked item</li>
+<li>
+<code>Type</code> – content type of the linked item</li>
+<li>
+<em>(Only for pages)</em> <code>Url</code> – the absolute <a href="/documentation/business-users/website-content/manage-page-urls#select-the-canonical-url-of-pages">canonical URL</a> of the page, containing the main domain name assigned to the given <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">Macro syntax</a> and the example below for more details.</p>
+<p>Note that secured content items with the <strong>Requires authentication</strong> flag enabled are not included in emails. If you send an email containing secured items, the corresponding content will be missing.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Pages linked in field with the ‘Pages’ data type</strong></p>
+<p>Pages that are linked using the <strong>Page selector</strong> form component in fields of the <strong>Pages</strong> data type can be retrieved similarly to pages linked in fields with the <strong>Pages and reusable content</strong> data type. The important difference is that for pages linked in fields with the <strong>Pages</strong> data type you cannot access their content type <code>Data</code> fields. Only their <code>Url</code> and <code>Type</code> are available.</p>
+</div>
+
+<h4 id="content-item-assets-files">Content item assets (files)</h4>
+<p>When processing linked content items with a field that stores a file (<strong>Content item asset</strong> data type), you can access the file properties via the following macros:</p>
+<ul>
+<li>
+<code>Url</code> – the URL through which the file can be displayed or downloaded. Resolved based on the <strong>Email service domain</strong> set for the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>.</li>
+<li>
+<code>Extension</code> – the file extension with a leading dot character.</li>
+<li>
+<code>Name</code> – the file name, including the extension.</li>
+</ul>
+<p><strong>Example</strong></p>
+<p>The following example shows the field structure of an email content type:</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="2">
+<p>Email</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Field name</p>
+</td>
+<td>
+<p>Data type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EmailContent</p>
+</td>
+<td>
+<p>Rich text (HTML)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Signature</p>
+</td>
+<td>
+<p>Pages and reusable content (Signature)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>SocialMediaLinks</p>
+</td>
+<td>
+<p>Pages and reusable content (Social media link)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LinkedPages</p>
+</td>
+<td>
+<p>Pages and reusable content (Article page)</p>
+</td>
+</tr>
+</table>
+
+<p>several linked reusable content types:</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="2">
+<p>Signature</p>
+</td>
+<td colspan="2">
+<p>Social media link</p>
+</td>
+<td colspan="2">
+<p>Image</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Field name</p>
+</td>
+<td>
+<p>Data type</p>
+</td>
+<td>
+<p>Field name</p>
+</td>
+<td>
+<p>Data type</p>
+</td>
+<td>
+<p>Field name</p>
+</td>
+<td>
+<p>Data type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>SignatureText</p>
+</td>
+<td>
+<p>Text</p>
+</td>
+<td>
+<p>LinkTitle</p>
+</td>
+<td>
+<p>Text</p>
+</td>
+<td>
+<p>ImageFile</p>
+</td>
+<td>
+<p>Content item asset</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>SignatureImage</p>
+</td>
+<td>
+<p>Pages and reusable content (Image)</p>
+</td>
+<td>
+<p>LinkUrl</p>
+</td>
+<td>
+<p>Text</p>
+</td>
+<td>
+<p>ImageDescription</p>
+</td>
+<td>
+<p>Text</p>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td>
+</td>
+<td>
+<p>LinkImage</p>
+</td>
+<td>
+<p>Pages and reusable content (Image)</p>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+<p>and a linked page type:</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="2">
+<p>Article page</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Field name</p>
+</td>
+<td>
+<p>Data type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Title</p>
+</td>
+<td>
+<p>Text</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content</p>
+</td>
+<td>
+<p>Rich text (HTML)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Image</p>
+</td>
+<td>
+<p>Pages and reusable content (Image)</p>
+</td>
+</tr>
+</table>
+
+<p>The content types and fields described above could be displayed within an email template using the following HTML and macros:</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;table border="0" cellpadding="0" cellspacing="0" style="max-width: 500px;" width="100%"&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        {% EmailContent %}
+      &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        See the following related articles that might interest you:
+        {% foreach (page in LinkedPages) { %}
+          &lt;h2&gt;{% HTMLEncode(page.Data.Title) %}&lt;/h2&gt;
+          &lt;a href="{% HTMLEncode(page.Url) %}" target="_blank"&gt;
+            &lt;img src="{% HTMLEncode(page.Data.Image[0].Data.ImageFile.Url) %}"
+                 alt="{% HTMLEncode(page.Data.Title) %}"
+                 title="{% HTMLEncode(page.Data.Title) %}"
+                 loading="lazy"&gt;
+          &lt;/a&gt;
+          {% page.Data.Content %}
+        {% } %}
+      &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        {% HTMLEncode(Signature[0].Data.SignatureText) %}
+      &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        &lt;img src="{% HTMLEncode(Signature[0].Data.SignatureImage[0].Data.ImageFile.Url) %}"
+             alt="{% HTMLEncode(Signature[0].Data.SignatureImage[0].Data.ImageDescription) %}"
+             title="{% HTMLEncode(Signature[0].Data.SignatureImage[0].Data.ImageDescription) %}"
+             loading="lazy"&gt;
+      &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        {% foreach (link in SocialMediaLinks) { %}
+          &lt;a href="{% HTMLEncode(link.Data.LinkUrl) %}" target="_blank"&gt;
+            &lt;img src="{% HTMLEncode(link.Data.LinkImage[0].Data.ImageFile.Url) %}"
+                 alt="{% HTMLEncode(link.Data.LinkTitle) %}"
+                 title="{% HTMLEncode(link.Data.LinkTitle) %}"
+                 loading="lazy"&gt;
+          &lt;/a&gt;
+        {% } %}
+      &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+</code></pre>
+</div>
+
+<h4 id="taxonomy-fields">Taxonomy fields</h4>
+<p>When processing emails with a <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomy</a> tag selector field (<strong>Taxonomy</strong> field data type), you can access the collection of tags selected in the field via the <code>Tags</code> macro. Each tag item in the collection then provides the following macro fields:</p>
+<ul>
+<li>
+<code>Title</code> – the tag’s <em>Title</em> text.</li>
+<li>
+<code>Name</code> – the tag’s <em>Code name</em>.</li>
+<li>
+<code>Description</code> – the tag’s <em>Description</em> text.</li>
+</ul>
+
+<div>
+<p><strong>Tag translations</strong></p>
+<p>When resolving a tag’s <em>Title</em> or <em>Description</em>, the system uses the translation in the <a href="/documentation/developers-and-admins/configuration/languages">language</a> set for the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a> (if the translation is available for the tag).</p>
+</div>
+
+<p>For example, if an email has a <em>Products</em> field linking to product content items, which then have a <em>ProductTags</em> tag selector field, the tags could be displayed using the following email template code:</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{% foreach (product in Products) { %}
+  &lt;div class="product"&gt;
+    {% HTMLEncode(product.Data.ProductTitle) %}
+    {% foreach (tag in product.Data.ProductTags.Tags) { %}
+      &lt;div class="tag"&gt;{% HTMLEncode(tag.Title) %}&lt;/div&gt;
+    {% } %}
+  &lt;/div&gt;
+{% } %}
+
+</code></pre>
+</div>
+
+<h3 id="value-encoding">Value encoding</h3>
+<p>Field macros in email templates resolve the text of fields without encoding. This means that the code of email templates can be broken, for example if a field’s value contains certain HTML characters.</p>
+<p>To ensure that content is displayed correctly and securely in emails, enclose field macros into encoding methods:</p>
+<ul>
+<li>
+<p><code>HTMLEncode</code> – encodes HTML characters to corresponding <a href="https://www.w3schools.com/html/html_entities.asp" target="_blank">entities</a>.</p>
+<ul>
+<li>Use encoding to safely display HTML-like text.</li>
+<li>Do <strong>NOT</strong> HTML encode fields using the <strong>Rich text editor</strong> form component, which return HTML elements for formatting and advanced content.</li>
+</ul>
+</li>
+<li><p><code>UrlEncode</code> – performs <a href="https://www.w3schools.com/tags/ref_urlencode.ASP" target="_blank">URL encoding</a> of the specified text. For example, use URL encoding when you have a text field that you insert as part of a URL.</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>Examples</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;div&gt;
+   {% HTMLEncode(previewtext) %}
+&lt;/div&gt;
+
+&lt;a href="https://www.example.com/page?utm_content={% UrlEncode(UtmContent) %}"&gt;Link&lt;/a&gt;
+
+</code></pre>
+</div>
+
+<h2 id="delete-email-templates">Delete email templates</h2>
+<p>Templates that are not currently assigned to any emails can be deleted from the main listing in the <strong>Email templates</strong> application. If you wish to delete a template that is currently being used, you first need to edit the given emails your email channel applications and assign a different template.</p>
+
+<div>
+
+</div>
+<div>
+<p>Deleted emails can be restored from the <a href="/documentation/business-users/recycle_bin">recycle bin</a>. This is no longer possible when their template is deleted.</p>
+</div>
+
+
+</body>
+</html>

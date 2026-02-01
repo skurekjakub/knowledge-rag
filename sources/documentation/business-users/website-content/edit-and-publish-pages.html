@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit and publish pages</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Key points</strong></p>
+<p>You can:</p>
+<ul>
+<li>edit structured content of pages in the <strong>Content</strong> view mode.</li>
+<li>edit pages built with the Page Builder in the <strong>Page Builder</strong> view mode.</li>
+<li>edit, rename and publish pages only in the <em>Draft</em> step or a custom workflow step.</li>
+<li>unpublish <em>Published</em> pages.</li>
+</ul>
+</div>
+
+<h2 id="edit-content-of-structured-pages">Edit content of structured pages</h2>
+<p>Structured pages contain data stored within editable page fields. The fields depend on the specific content type. For instance, the fields can be used to store text, numbers, or images.</p>
+<p>To edit a structured page:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the page that you want to edit.</li>
+<li>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.
+<ul>
+<li><p>When a page is <em>Published</em> or <em>Scheduled</em>, select <strong>Edit page</strong> to move the page to the <em>Draft</em> step.<br>
+</p></li>
+<li><p>When a page is <em>Unpublished</em>, select <strong>Create new version</strong> to move the page to the <em>Draft</em> step.<br>
+</p></li>
+</ul>
+</li>
+<li>In the <strong>Content</strong> view mode, edit the fields of the page.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>Note that the changes are not visible on the live site until you <a href="#publish-pages">publish</a> the page.</p>
+<h2 id="edit-content-of-page-builder-pages">Edit content of Page Builder pages</h2>
+<p>See <a href="/documentation/business-users/website-content/widgets-and-page-builder">Widgets and Page Builder</a>.</p>
+<h2 id="add-tags-to-pages">Add tags to pages</h2>
+<p>Depending on the configuration of your project, pages may support taxonomies and tags.</p>
+<ol type="1">
+<li>
+<a href="#edit-content-of-structured-pages">Edit</a> a page that has a field with the tag selector.</li>
+<li>
+<strong>Select tags</strong> that describe the page.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p></p>
+<p>The selected tags are now stored with the page. Developers can use the information to <a href="/documentation/developers-and-admins/configuration/taxonomies#retrieve-content-items-with-specified-tags">display content based on tags</a>.</p>
+<h2 id="share-page-previews">Share page previews</h2>
+<p>If you need to share a page preview with external contributors before publishing, use a <a href="/documentation/business-users/website-content#shareable-preview-urls">shareable preview URL</a>.</p>
+<h2 id="publish-pages">Publish pages</h2>
+<p>Pages can be published under the following conditions:</p>
+<ul>
+<li>If the page’s content type is under <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a>, the page must be in the last step of the workflow, or you need to belong to a role with full control for the given workflow (this allows you to publish pages from any step).</li>
+<li>For pages that are not under workflow, the page must be in the <em>Draft</em> step.</li>
+</ul>
+<p>In order to publish a page:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the page that you want to publish.</li>
+<li>Make sure the page has the <em>Draft</em> status, or is in a <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a> from which you are allowed to publish the page.
+<ul>
+<li>If a page is <em>Unpublished</em>, select <strong>Create new version</strong> to move the page to the <em>Draft</em> step.<br>
+</li>
+</ul>
+</li>
+<li>Select <strong>Publish</strong>. For pages under workflow, select <strong>Change workflow step</strong> and choose the <strong>Schedule / Publish</strong> step.<br>
+</li>
+<li>Choose when you want to publish the page:
+<ul>
+<li><strong>Publish now</strong></li>
+<li>
+<strong>Schedule publish</strong> – select a date and time in the future. The system will automatically publish the page at the given time (see <a href="#scheduled-publishing">Scheduled publishing</a>).</li>
+</ul>
+</li>
+<li>Select <strong>Confirm</strong>.
+<ul>
+<li>If the page has fields or <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder widgets</a> linking to reusable content items or pages, the cascade publishing dialog opens. You can view all linked items that are currently not <em>Published</em>. Select any of the listed items to publish them together with the page. To learn more, see <a href="/documentation/business-users/content-hub/content-items#cascade-publishing">Cascade publishing</a>.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+Cascade publishing is only supported for reusable content items (managed in <em>Content hub</em>) and pages linked through the <em>Combined content selector</em> component. Pages linked through fields or widget properties using the <em>Page selector</em> component are not included in the cascade publishing dialog.
+</div>
+</li>
+</ol>
+<p>Once <em>Published</em>, the page is available on the live site.</p>
+<h3 id="scheduled-publishing">Scheduled publishing</h3>
+<p>When publishing pages, you can choose to postpone the publish action to a later time. Select the <strong>Schedule publish</strong> option while publishing, and then pick a date and time when you want the system to automatically publish the page.</p>
+<p></p>
+<p>When scheduling the publish of a page together with <a href="/documentation/business-users/content-hub/content-items#cascade-publishing">cascade publishing</a> of linked content items or pages, the selected linked items are scheduled to be published at the same time. This overwrites the publish time for any linked items that are already scheduled to be published.</p>
+<p>Once a page is <em>Scheduled</em>, it can no longer be edited (like a <em>Published</em> page). However, the page is not available on the live site until it actually becomes published.</p>
+<p>If you need to edit a scheduled page, you have the following options:</p>
+<ul>
+<li>Select the <strong>Edit page</strong> action – cancels the scheduled publish and moves the page to the first step in the page’s workflow cycle (<em>Draft</em>).</li>
+<li>Expand the <strong>Edit page</strong> menu and select <strong>Cancel scheduled publish</strong> – cancels the scheduled publish and moves the page to the final step in the page’s workflow cycle (<em>Draft</em> for pages without workflow).</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Scheduled publish timing</strong></p>
+<p>We cannot guarantee that pages and content items will be published exactly at the scheduled time. The system checks if there are items scheduled to be published once per minute. If there’s a significant volume of content scheduled to be published at the same time, there may be a delay before all items are published (up to several minutes when publishing many thousands of items).</p>
+<p>During the publishing process, <a href="/documentation/business-users/content-hub/content-items#publish-content-items">reusable content items</a> are always published <strong>before</strong> pages to ensure that content is displayed consistently.</p>
+</div>
+
+<h2 id="revert-changes">Revert changes</h2>
+<p>After creating a new version of a page, it goes through a new editing cycle with the <em>Draft</em> step and optionally other <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow steps</a>.</p>
+<p>At any time before the new version is published, you can revert the page back to the last <em>Published</em> status. All changes made in any workflow step will be lost.</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the page whose changes you want to revert.</li>
+<li>
+<strong>Revert to published</strong> the changes.</li>
+</ol>
+<p></p>
+<h2 id="unpublish-pages">Unpublish pages</h2>
+<p>An unpublished page is not available on the live site, but you can still access it from the administration. You can redirect visitors who try to reach the unpublished page to another page.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you unpublish a page targeted by redirects, the redirect configuration of this page can affect other pages. See section <a href="#unpublishing-or-deleting-pages-targeted-by-redirects">Unpublishing or deleting pages targeted by redirects</a> for details.</p>
+</div>
+
+<p>To unpublish a page (and thus remove it from the live site):</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the page that you want to unpublish.
+<ul>
+<li>You can only unpublish pages that are already <a href="#publish-pages">published</a> or <a href="#scheduled-publishing">scheduled to be published</a> in the future.</li>
+</ul>
+</li>
+<li>Expand the <strong>Edit page</strong> menu and select <strong>Unpublish options</strong>.<br>
+</li>
+<li>Choose when you want to unpublish the page:
+<ul>
+<li><strong>Unpublish now</strong></li>
+<li>
+<strong>Schedule unpublish</strong> – select a date and time in the future. If the page is scheduled to be published, the unpublish time must always be set <em>after the publish time</em>. The system will automatically unpublish the page at the given time.</li>
+</ul>
+</li>
+<li>Choose where to redirect visitors when they try to reach the unpublished page. Your options depend on the page’s language variants.
+<ul>
+<li>If a page variant in a fallback language is available, select one of the two options below:
+<ol type="a">
+<li><strong>Serve content in fallback language</strong></li>
+<li>
+<strong>Redirect to a page</strong>
+<ul>
+<li>If chosen, continue with <strong>Select existing page</strong>.</li>
+<li>Navigate to the target page for the redirect in the content tree on the left.</li>
+<li>Select the page in the list on the right.</li>
+<li>Confirm the configuration with the <strong>Select</strong> button.</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>If there’s no fallback available, you can:
+<ol type="a">
+<li>Create a redirect using <strong>Select existing page</strong>.
+<ul>
+<li>Navigate to the target page for the redirect in the content tree on the left.</li>
+<li>Select the page in the list on the right.</li>
+<li>Confirm the configuration with the <strong>Select</strong> button.</li>
+</ul>
+</li>
+<li>Leave the page without a redirect. Visitors will receive a <a href="https://en.wikipedia.org/wiki/HTTP_404" target="_blank">404 error</a> when they try to reach the unpublished page.</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>Select <strong>Confirm</strong>.</li>
+</ol>
+<p>Once a page is <em>Unpublished</em>, it is no longer available. Depending on the option you chose, visitors trying to access the page are either redirected, receive an error, or are served content in a fallback language.</p>
+<p>To edit or re-publish an unpublished page, you first need to select <strong>Create new version</strong>. This transitions the page back to the <em>Draft</em> workflow step.</p>
+<h3 id="change-scheduled-unpublish-options">Change scheduled unpublish options</h3>
+<p>If you wish to cancel scheduled unpublishing for a page, expand the <strong>Edit page</strong> menu and select <strong>Cancel scheduled unpublish</strong>. To change the unpublish date and time, use the same approach to cancel the scheduled unpublish and then schedule it again. When you cancel a scheduled unpublishing with a <a href="#scheduled-redirects">scheduled redirect</a>, the redirect is also canceled. Scheduled redirects can be edited on the <strong>URLs</strong> tab of the corresponding page.</p>
+
+<div>
+
+</div>
+<div>
+<p>For pages that have a scheduled unpublish time while they are still <a href="#scheduled-publishing">scheduled for publishing</a>, canceling the scheduled publish (or editing the page) also <strong>automatically cancels the scheduled unpublish</strong>.</p>
+</div>
+
+<h3 id="redirects-from-unpublished-and-deleted-pages">Redirects from unpublished and deleted pages</h3>
+<p>When you unpublish or delete a page, you can redirect visitors who try to access it to another page. Redirects can be used to ensure that visitors land on an alternative page and don’t get a <a href="https://en.wikipedia.org/wiki/HTTP_404" target="_blank">404 error</a>.</p>
+<p>All <a href="/documentation/business-users/website-content/manage-page-urls">URLs</a> (system URL, vanity URLs, former URLs) of the given page are redirected when a redirect is created.</p>
+<p>The table below shows options available when unpublishing or deleting a page.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+</td>
+<td>
+<p>Redirect set up</p>
+</td>
+<td>
+<p>No redirect set up</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Page with a fallback language variant</p>
+</td>
+<td>
+<p>Redirect to the target page</p>
+</td>
+<td>
+<p>Serve content in a fallback language</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page without a fallback language variant</p>
+</td>
+<td>
+<p>Redirect to the target page</p>
+</td>
+<td>
+<p>404 error</p>
+</td>
+</tr>
+</table>
+
+<h4 id="changing-redirects">Changing redirects</h4>
+The following table describes where you can change redirect configuration.
+
+<table>
+<thead>
+<tr>
+<td>
+</td>
+<td>
+<p>Redirects from unpublished pages</p>
+</td>
+<td>
+<p>Redirects from deleted pages</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Edit a redirect</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls#edit-redirects-from-unpublished-pages">URLs application and the URLs tab</a> corresponding to the page where the redirect is coming from</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls#edit-redirects-from-deleted-pages">URLs application</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Add a redirect</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls#add-redirects-from-unpublished-pages">URLs tab</a></p>
+</td>
+<td>
+<p>Not possible in the admin UI, redirects can be <a href="/documentation/developers-and-admins/development/routing/custom-redirects">added</a> by developers.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete a redirect</p>
+</td>
+<td>
+<p>Create a new version of the page and go through the workflow again.</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls#delete-redirects-from-deleted-pages">URLs application</a></p>
+</td>
+</tr>
+</table>
+
+<h4 id="unpublishing-or-deleting-pages-targeted-by-redirects">Unpublishing or deleting pages targeted by redirects</h4>
+<p>If a page that is targeted by a redirect is unpublished or deleted, the target of the original incoming redirect is automatically adjusted according to the option chosen when the page is unpublished/deleted. The table below shows what happens for each option that can be chosen.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Option chosen for the page targeted by a redirect</p>
+</td>
+<td>
+<p>Adjusted behavior of the incoming redirect</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Serve content in fallback language</p>
+</td>
+<td>
+<p>The target of the redirect stays the same, and the content in a fallback language is automatically served. This behavior can be disrupted by further actions, see <a href="#redirects-to-untranslated-pages">Redirects to untranslated pages</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Redirect</p>
+</td>
+<td>
+<p>The target of the incoming redirect is now the same as the target of the redirect from the newly unpublished/deleted page. The system doesn’t keep track of previous redirects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>No redirect</p>
+</td>
+<td>
+<p>The incoming redirect is deleted, and visitors get a 404 error. Deleted redirects from deleted pages cannot be added again via the admin UI. These redirects can be added only via code, for example by developers.</p>
+</td>
+</tr>
+</table>
+
+<p>Former URLs are automatically updated according to the changes that occur.</p>
+<p>Redirects that target pages that are scheduled to be unpublished are adjusted when the page they are targeting is unpublished. Until then, they keep their original configurations.</p>
+<h4 id="republishing-pages">Republishing pages</h4>
+<p>Redirects from unpublished/deleted pages reflect the final target of the redirect. If a page targeted by redirects is unpublished, redirected to another page, and later published again, the redirects that originally targeted this page will keep their last target and won’t be rolled back.</p>
+<p>For example, a page called <em>Christmas sale</em> was unpublished and redirected to a page called <em>January sale</em>. Later, the page <em>January sale</em> was also unpublished and redirected to the <em>Home</em> page. Both <em>Christmas sale</em> and <em>January sale</em> now redirect to the <em>Home</em> page. The page <em>Christmas sale</em> is no longer redirected to the page <em>January sale</em>. If the <em>January sale</em> page is published again, the <em>Christmas sale</em> page is still redirected to the <em>Home</em> page.</p>
+<h4 id="redirects-to-untranslated-pages">Redirects to untranslated pages</h4>
+<p>When a redirect is created to an untranslated page, visitors are automatically served a fallback language variant of this page if available. If no fallback language variant is available, visitors receive a 404 error. This applies even if the last fallback variant of the page was unpublished or deleted with a redirect.</p>
+<p>If a redirect targeting an untranslated page is created and the page is later translated, visitors accessing the page via the redirect will be served the translated variant.</p>
+<h4 id="scheduled-redirects">Scheduled redirects</h4>
+<p>When a page is scheduled to be unpublished, you can also create a redirect. The redirect is scheduled and applied once the page is unpublished. The scheduled redirect is not listed as a <a href="/documentation/business-users/website-content/manage-page-urls#former-urls">former URL</a> in the URLs application until the page is unpublished. The scheduled redirect can be edited only on the <strong>URLs</strong> tab of the corresponding page. If the scheduled unpublishing is canceled, the scheduled redirect is also canceled.</p>
+<p>A page can have an active redirect and a scheduled redirect. This can happen in the following situation: A page was unpublished with a redirect. Subsequently, the page was scheduled to be published and then scheduled to be unpublished again with a new scheduled redirect. The <strong>Redirect</strong> section on the <strong>URLs</strong> tab shows only the active redirect. The scheduled redirect can’t be edited in this situation. You need to cancel the scheduled unpublishing and then schedule the unpublishing with a new redirect configuration.</p>
+<h4 id="unpublishing-or-deleting-the-home-page">Unpublishing or deleting the home page</h4>
+
+<div>
+
+</div>
+<div>
+<p>Unpublishing or deleting a home page can cause problems if not handled properly. Make sure that you’re aware of all consequences before proceeding with this action.</p>
+</div>
+
+<p>If you want unpublish or delete your current home page and create a redirect to a new one, you also need to <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/enable-content-tree-based-routing#optional-routing-configuration">configure</a> the new home page. If you create a redirect without configuring the new home page, the root domain will be inaccessible, and visitors will receive a 404 error.</p>
+<h2 id="rename-pages">Rename pages</h2>
+<p>To rename a page:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>Navigate to the web page you want to rename.</li>
+<li>In the <strong>Content</strong> view mode, select the edit () button next to the page name.</li>
+<li>Enter the new name and <strong>Save</strong> the changes.</li>
+</ol>
+<p></p>
+<p>The change of the page name is immediately reflected in the page tree.</p>
+<h2 id="move-pages">Move pages</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Possible side-effects of moving pages</strong></p>
+<p>Depending on how your website is implemented, page structure and order in the content tree can represent more than a simple visual structure within the website channel application. Also, moving pages may affect what you and other editors are <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">allowed to do with them</a>.</p>
+<p>Consult with your website administrator if you are not sure about how moving pages in the content tree reflects on your website.</p>
+</div>
+
+<p>To move or reorder pages in the content tree:</p>
+<ol type="1">
+<li><p>Open a website channel application.</p></li>
+<li><p>In the content tree, select the page you want to move. The drag handle icon () is displayed next to the page name.</p></li>
+<li>
+<p>Drag the page to the desired location. To move a page under a different parent page, hover over the dropzone to the left of the new parent page:</p>
+<p></p>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>After moving or reordering pages, the changes are immediately saved and reflected on the live site.</p>
+</div>
+
+<h2 id="restore-previous-versions-of-pages">Restore previous versions of pages</h2>
+<p>See <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">Content versioning</a> for more information. You can restore previously published versions of pages only when versioning is <a href="/documentation/developers-and-admins/configuration/content-versioning-configuration">configured</a>.</p>
+<h2 id="change-urls-of-pages">Change URLs of pages</h2>
+<p>See <a href="/documentation/business-users/website-content/manage-page-urls">Manage page URLs</a>.</p>
+
+</body>
+</html>

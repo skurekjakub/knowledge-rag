@@ -1,0 +1,377 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Handle object events</title>
+</head>
+<body>
+<p>Objects include all data structures used within Xperience, such as user accounts, taxonomies, contacts, or setting keys. By handling events that occur during the lifecycle of objects, you can add custom functionality to almost any part of the system. In the API, objects are represented by <a href="/documentation/developers-and-admins/api/database-table-api">Info classes</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Within the context of event handling, objects do NOT include <a href="/documentation/business-users/content-hub/content-items">content items</a>, <a href="/documentation/business-users/website-content">website channel pages</a>, <a href="/documentation/business-users/digital-marketing/emails">emails</a> or <a href="/documentation/business-users/headless-content">headless items</a>.</p>
+<p>Use the <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events#contentitemevents">ContentItemEvents</a>, <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events#webpageevents">WebPageEvents</a> or <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events#headlessitemevents">HeadlessItemEvents</a> classes to assign handlers for events triggered for this type of content.</p>
+</div>
+
+<h2 id="object-event-handlers-with-async-support">Object event handlers with async support</h2>
+<p>For the most common object events that occur before or after an object is created, updated or deleted, you can implement handlers with support for both synchronous and asynchronous code. These handlers also allow you to use standard constructor dependency injection to get instances of required API services.</p>
+<p>To add an object event handler, create a class implementing the <code>IInfoObjectEventHandler</code> interface, with a generic event class parameter that determines which event type is handled. You can modify the event class with an <a href="/documentation/developers-and-admins/api/database-table-api">Info class</a> generic parameter to choose a specific object type to handle. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Class declaration for a "before update" event handler for admin user objects (UserInfo)
+public class UserBeforeUpdateHandler : IInfoObjectEventHandler&lt;InfoObjectBeforeUpdateEvent&lt;UserInfo&gt;&gt;
+</code></pre>
+</div>
+
+<p>Omit the second generic parameter if you wish to handle the event for all types of objects in the system.</p>
+<p>The following event classes are available for the first generic parameter:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Before handler</p>
+</td>
+<td>
+<p>After handler</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Insert</p>
+</td>
+<td>
+<p>Occurs when a new object is created.</p>
+</td>
+<td>
+<p><code>InfoObjectBeforeInsertEvent</code></p>
+</td>
+<td>
+<p><code>InfoObjectAfterInsertEvent</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Update</p>
+</td>
+<td>
+<p>Occurs when the data of an existing object is updated.</p>
+</td>
+<td>
+<p><code>InfoObjectBeforeUpdateEvent</code></p>
+</td>
+<td>
+<p><code>InfoObjectAfterUpdateEvent</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete</p>
+</td>
+<td>
+<p>Occurs when an object is deleted.</p>
+</td>
+<td>
+<p><code>InfoObjectBeforeDeleteEvent</code></p>
+</td>
+<td>
+<p><code>InfoObjectAfterDeleteEvent</code></p>
+</td>
+</tr>
+</table>
+
+<p><code>Before</code> events are triggered before the given action’s result is saved in the database, <code>After</code> events occur after the action successfully completes and is saved.</p>
+<p>For every event handler, you need to implement <strong>both</strong> of the following methods:</p>
+<ul>
+<li>
+<code>Handle</code> – invoked when the event is triggered by a synchronous operation, such as the <code>Set</code> method of the corresponding <a href="/documentation/developers-and-admins/api/database-table-api#info-class-managers">InfoProvider API</a>.</li>
+<li>
+<code>HandleAsync</code> – invoked when the event is triggered by an async operation, such as the <code>SetAsync</code> method of the corresponding <a href="/documentation/developers-and-admins/api/database-table-api#info-class-managers">InfoProvider API</a>.</li>
+</ul>
+<p>The methods provide an <code>infoObjectEvent</code> parameter of the corresponding event class, which you can use to access the Info object related to the event. In many cases, your implementations of the methods will share code, which you can extract into private methods. See the <a href="#example">Example</a> to learn more.</p>
+<h3 id="register-object-event-handlers">Register object event handlers</h3>
+<p>Event handlers for object events must be registered in your application’s service collection by calling the <code>AddInfoObjectEventHandler</code> extension method for <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" target="_blank">IServiceCollection</a>. For example, you can create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module with initialization code</a> and access <code>IServiceCollection</code> in the <code>OnPreInit</code> override.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register an event handler</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+using CMS.Core;
+using CMS.DataEngine;
+
+using CMS.ContentEngine;
+
+[assembly: RegisterModule(typeof(ObjectEventModule))]
+
+public class ObjectEventModule : Module
+{
+    public ObjectEventModule() : base(nameof(ObjectEventModule))
+    {
+    }
+
+    // OnPreInit allows you to access IServiceCollection via ModulePreInitParameters
+    protected override void OnPreInit(ModulePreInitParameters parameters)
+    {
+        base.OnPreInit(parameters);
+
+        // Registers an object event handler
+        parameters.Services.AddInfoObjectEventHandler&lt;InfoObjectBeforeUpdateEvent&lt;UserInfo&gt;, UserBeforeUpdateHandler&gt;();
+    }    
+}
+</code></pre>
+</div>
+
+<h3 id="example">Example</h3>
+<p>The following example demonstrates how to use event handlers to customize the behavior of a specific type of object.</p>
+<p>The sample code extends the functionality of <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomies</a> by adding a handler for the “after insert” event of <code>TaxonomyInfo</code>. This event occurs when a taxonomy is created. The custom logic automatically adds a default initial tag for every taxonomy.</p>
+<ol type="1">
+<li><p>Open your Xperience solution in Visual Studio.</p></li>
+<li><p>Add a new class <a href="/documentation/developers-and-admins/customization/integrate-custom-code">within a custom assembly</a> (<em>Class Library</em> project) referenced by your project.</p></li>
+<li><p>Make the class implement <code>IInfoObjectEventHandler&lt;InfoObjectAfterInsertEvent&lt;TaxonomyInfo&gt;&gt;</code>.</p></li>
+<li>
+<p>Define the <code>Handle</code> and <code>HandleAsync</code> methods:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using System.Threading.Tasks;
+ using System.Threading;
+
+ using CMS.DataEngine;
+ using CMS.ContentEngine;
+
+ // Event handler triggered after a new taxonomy object is created
+ // Creates a default initial tag for every new taxonomy
+ public class TaxonomyInitialTagHandler : IInfoObjectEventHandler&lt;InfoObjectAfterInsertEvent&lt;TaxonomyInfo&gt;&gt;
+ {
+     private readonly IInfoProvider&lt;TagInfo&gt; tagInfoProvider;
+
+     // Uses constructor dependency injection to get instances of required services
+     public TaxonomyInitialTagHandler(IInfoProvider&lt;TagInfo&gt; tagInfoProvider)
+     {
+         this.tagInfoProvider = tagInfoProvider;
+     }
+
+     // Invoked by the synchronous Set operation
+     public void Handle(InfoObjectAfterInsertEvent&lt;TaxonomyInfo&gt; infoObjectEvent)
+     {
+         TaxonomyInfo taxonomy = infoObjectEvent.InfoObject;
+
+         TagInfo tag = PrepareTag(taxonomy.TaxonomyID);
+
+         // Creates the tag under the taxonomy for which the event was triggered
+         tagInfoProvider.Set(tag);
+     }
+
+     // Invoked by the asynchronous SetAsync operation
+     public async Task HandleAsync(InfoObjectAfterInsertEvent&lt;TaxonomyInfo&gt; infoObjectEvent, CancellationToken cancellationToken)
+     {
+         TaxonomyInfo taxonomy = infoObjectEvent.InfoObject;
+
+         TagInfo tag = PrepareTag(taxonomy.TaxonomyID);
+
+         // Asynchronously creates the tag under the taxonomy for which the event was triggered
+         await tagInfoProvider.SetAsync(tag);
+     }
+
+     // Prepares a tag object under the specified taxonomy
+     private TagInfo PrepareTag(int taxonomyId)
+     {
+         return new TagInfo
+         {
+             TagTaxonomyID = taxonomyId,
+             TagOrder = 1,
+             TagName = "InitialTag",
+             TagTitle = "Initial tag",
+             TagDescription = "This initial tag was created automatically by an event handler."
+         };
+     }
+ }
+ </code></pre>
+</div>
+</li>
+<li><p>Create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">module class</a> in your custom assembly and override the <code>OnPreInit</code> method.</p></li>
+<li>
+<p>Register the event handler by calling the <code>AddInfoObjectEventHandler</code> extension method for <code>IServiceCollection</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS;
+ using CMS.Core;
+ using CMS.DataEngine;
+
+ using CMS.ContentEngine;
+
+ [assembly: RegisterModule(typeof(ObjectEventModule))]
+
+ public class ObjectEventModule : Module
+ {
+     public ObjectEventModule() : base(nameof(ObjectEventModule))
+     {
+     }
+
+     // OnPreInit allows you to access IServiceCollection via ModulePreInitParameters
+     protected override void OnPreInit(ModulePreInitParameters parameters)
+     {
+         base.OnPreInit(parameters);
+
+         // Registers the event handler
+         parameters.Services.AddInfoObjectEventHandler&lt;InfoObjectAfterInsertEvent&lt;TaxonomyInfo&gt;, TaxonomyInitialTagHandler&gt;();
+     }    
+ }
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>To try out the functionality of the custom event handler, create a new taxonomy:</p>
+<ol type="1">
+<li>Open the <strong>Taxonomy</strong> application in the Xperience administration.</li>
+<li>Select <strong>New taxonomy</strong>.</li>
+<li>Enter a <strong>Taxonomy name</strong>.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The new taxonomy is created and the registered event handler automatically creates the <em>Initial tag</em>.</p>
+<h3 id="pass-state-between-before-and-after-events">Pass state between before and after events</h3>
+<p>The system allows you to pass custom state information from the <code>Before</code> handler to the <code>After</code> handler of an object event. Use the <code>State</code> property of the corresponding event class, which is available as the parameter of your handler’s <code>Handle</code> and <code>HandleAsync</code> methods.</p>
+<p>The <code>State</code> property (<code>EventStateStore</code>) provides a key-value store, which you can manage using the <code>SetValue&lt;TValue&gt;</code> and <code>TryGetValue&lt;TValue&gt;</code> methods. State values stored in <code>Before</code> handlers are available for retrieval in <code>After</code> handlers.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Set state in Before event handlers</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public void Handle(InfoObjectBeforeInsertEvent&lt;TaxonomyInfo&gt; infoObjectEvent)
+{
+    // Stores a value under the "TagTitle" key
+    infoObjectEvent.State.SetValue&lt;string&gt;("TagTitle", "Initial tag");
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Get state in After event handlers</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public void Handle(InfoObjectAfterInsertEvent&lt;TaxonomyInfo&gt; infoObjectEvent)
+{
+    // Gets the State value stored under the "TagTitle" key in the before event
+    string tagTitle;
+    infoObjectEvent.State.TryGetValue&lt;string&gt;("TagTitle", out tagTitle);
+    
+    //...
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Unique State key values</strong></p>
+<p>The values of keys stored in the <code>State</code> property are shared across all handlers registered for a given event class.</p>
+<ul>
+<li>For example, all registered <code>InfoObjectAfterInsertEvent&lt;UserInfo&gt;</code> handlers use the same state pool.</li>
+<li>Handlers for specific object types have their own separate state. For example, <code>InfoObjectBeforeInsertEvent&lt;UserInfo&gt;</code> and <code>InfoObjectBeforeInsertEvent&lt;TaxonomyInfo&gt;</code> handlers do not share state.</li>
+<li>Handlers that target all object types (without a generic parameter) share state with all object-type-specific handlers. For example, state keys added in <code>InfoObjectBeforeUpdateEvent</code> handlers are available in <code>InfoObjectAfterUpdateEvent&lt;UserInfo&gt;</code> handlers.</li>
+</ul>
+<p>Make sure you use sufficiently unique keys to avoid overwriting data between different handlers.</p>
+</div>
+
+<h2 id="legacy-object-event-handlers">Legacy object event handlers</h2>
+<p>In most cases, we recommend using <a href="#object-event-handlers-with-async-support">handlers with async support</a> for object events (<em>Insert</em>, <em>Update</em>, <em>Delete</em>).</p>
+<p>However, the system also continues to support the following classes that provide access to legacy object <a href="/documentation/developers-and-admins/customization/handle-global-events">event handling</a>:</p>
+<ul>
+<li>
+<code>ObjectEvents</code> – events triggered for all object types</li>
+<li>
+<strong>&lt;name&gt;Info.TYPEINFO.Events</strong> – events triggered only for a specific object type, for example: <code>UserInfo.TYPEINFO.Events</code>
+</li>
+</ul>
+<p>See the <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events#objectevents">ObjectEvents reference</a> for detailed information.</p>
+<p>These events are triggered for both synchronous and async operations with the corresponding objects.</p>
+
+</body>
+</html>

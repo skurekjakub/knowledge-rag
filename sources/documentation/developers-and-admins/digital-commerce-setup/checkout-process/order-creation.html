@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Create orders</title>
+</head>
+<body>
+<p>The system provides a streamlined way to create orders from shopping cart data using <code>IOrderCreationService</code>. The API automates the entire order creation workflow, including customer management, price calculation, and order persistence.</p>
+<p><code>IOrderCreationService</code> handles the complete order creation process. The API:</p>
+<ol type="1">
+<li>
+<strong>Manages customers and addresses</strong> – Creates or updates customer records and their addresses based on the order data.</li>
+<li>
+<strong>Calculates prices</strong> – Integrates with the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation API</a> to calculate order totals, taxes, and shipping costs.</li>
+<li>
+<strong>Creates order records</strong> – Generates and persists the order, order items, and order addresses in the database.</li>
+<li>
+<strong>Sends notifications</strong> – Triggers external and internal order notifications for corresponding order states.</li>
+</ol>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>The order creation API uses the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation API</a> internally to calculate order totals, taxes, and shipping costs. Before implementing order creation, you must implement the mandatory components for price calculation:</p>
+<ul>
+<li>
+<strong>Product data retriever</strong> (<code>IProductDataRetriever&lt;ProductIdentifier, ProductData&gt;</code>) – provides product information and pricing data from your product catalog.</li>
+<li>
+<strong>Tax calculation step</strong> (<code>ITaxPriceCalculationStep</code>) – calculates applicable taxes (the default implementation does not add any taxes).</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">Implement price calculation</a> for complete implementation details and examples.</p>
+
+<div>
+
+</div>
+<div>
+<p>Without a properly configured price calculation service, the order creation process cannot calculate order totals and will fail when you attempt to create an order.</p>
+</div>
+
+<h2 id="quick-start">Quick start</h2>
+<p>This example shows the minimal required setup to use the API:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Checkout controller</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Minimal example showing basic order creation.
+/// &lt;/summary&gt;
+public class CheckoutControllerSample : Controller
+{
+    private readonly IOrderCreationService&lt;OrderData, PriceCalculationRequest, PriceCalculationResult, AddressDto&gt; orderCreationService;
+    private readonly UserManager&lt;ApplicationUser&gt; userManager;
+
+    public CheckoutControllerSample(
+        IOrderCreationService&lt;OrderData, PriceCalculationRequest, PriceCalculationResult, AddressDto&gt; orderCreationService,
+        UserManager&lt;ApplicationUser&gt; userManager)
+    {
+        this.orderCreationService = orderCreationService;
+        this.userManager = userManager;
+    }
+
+    public async Task&lt;IActionResult&gt; CreateOrder(CancellationToken cancellationToken)
+    {
+        // Prepare order data from your checkout form
+        var orderData = new OrderData
+        {
+            // Gets the authenticated user, if one exists for the current order
+            MemberId = (await userManager.GetUserAsync(User))?.Id ?? 0,
+            // Ensure a unique order ID
+            OrderNumber = "ORD-2026-0001",
+            // Gets the rest of the order data from the request
+            LanguageName = "en",
+            BillingAddress = new AddressDto
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john@example.com",
+                Line1 = "123 Main St",
+                City = "New York",
+                Zip = "10001",
+                CountryID = 1,
+                StateID = 1
+            },
+            // Uses the billing address for shipping
+            ShippingAddress = null,
+            // Passed to IPriceCalculationService to calculate order totals
+            OrderItems = new[]
+            {
+                new OrderItem
+                {
+                    ProductIdentifier = new ProductIdentifier { Identifier = 123 },
+                    Quantity = 2
+                }
+            }
+        };
+
+        // Creates the order
+        int orderId = await orderCreationService.CreateOrder(orderData, cancellationToken);
+
+        // Redirects users to a confirmation page
+        return RedirectToAction("Confirmation", new { orderId });
+    }
+}</code></pre>
+</div>
+
+<p>The service automatically:</p>
+<ul>
+<li>Creates or retrieves the appropriate customer object.</li>
+<li>Calculates final order prices using <code>IPriceCalculationService</code>.</li>
+<li>Creates the order and all related entities.</li>
+<li>Sends order confirmation <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses#configure-notifications-for-order-statuses">notifications</a>.</li>
+</ul>
+<h2 id="key-concepts">Key concepts</h2>
+<h3 id="order-creation-flow">Order creation flow</h3>
+<p>When you call <code>CreateOrder</code>, the service executes the following steps in order:</p>
+<ol type="1">
+<li>
+<strong>Validation</strong> – validates that order data contains required fields (billing address, at least one order item).</li>
+<li>
+<strong>Customer creation</strong> – creates or retrieves customer entities based on member ID or email address.</li>
+<li>
+<strong>Customer address creation</strong> – creates missing customer addresses (with duplicate detection).</li>
+<li>
+<strong>Price calculation</strong> – calculates order totals using the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation API</a>.</li>
+<li>
+<strong>Order entity creation</strong> – creates the order, order addresses, and order items in a database transaction.</li>
+<li>
+<strong>Notification</strong> – sends order confirmation <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses#configure-notifications-for-order-statuses">notifications</a>.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Transaction scope</strong></p>
+<p>Only order entities (<code>OrderInfo</code>, <code>OrderAddress</code>, <code>OrderItem</code>) are created within a database transaction. If order creation fails, these entities are rolled back.</p>
+<p>Customer entities (<code>CustomerInfo</code>, <code>CustomerAddressInfo</code>) are persisted outside the transaction. If order creation fails after customer entities are created, those customer records remain in the database even though no order is created.</p>
+</div>
+
+<p></p>
+<h3 id="order-data-model">Order data model</h3>
+<p>Order data is represented by the <code>IOrderData</code> interface and its implementation <code>OrderData</code>. It contains:</p>
+<ul>
+<li>
+<strong>Customer information</strong> – Member ID (for authenticated users).</li>
+<li>
+<strong>Order items</strong> – Products and quantities using <code>IOrderItem&lt;ProductIdentifier&gt;</code>.</li>
+<li>
+<strong>Addresses</strong> – Billing and shipping addresses as <code>AddressDto</code> objects.</li>
+<li>
+<strong>Payment and shipping</strong> – Selected payment and shipping method IDs.</li>
+<li>
+<strong>Language</strong> – Language name for product data localization.</li>
+<li>
+<strong>Order number</strong> – Unique identifier for the order.</li>
+<li>
+<strong>Coupon codes</strong> – Any <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/coupon-codes">discount codes</a> applied by the customer.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic order data structure</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Example showing how to construct order data with all common fields.
+/// &lt;/summary&gt;
+public class OrderDataExample
+{
+    public OrderData CreateOrderData(int currentMemberId)
+    {
+        var orderData = new OrderData
+        {
+            MemberId = currentMemberId,
+            OrderNumber = "ORD-2024-0001",
+            LanguageName = "en",
+            BillingAddress = new AddressDto
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john@example.com",
+                Line1 = "123 Main St",
+                City = "New York",
+                Zip = "10001",
+                CountryID = 1,
+                StateID = 1
+            },
+            ShippingAddress = new AddressDto
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john@example.com",
+                Line1 = "456 Elm St",
+                City = "Boston",
+                Zip = "02101",
+                CountryID = 1,
+                StateID = 2
+            },
+            PaymentMethodId = 1,
+            ShippingMethodId = 2,
+            // Include any coupon codes entered by the customer
+            CouponCodes = new[] { "WINTER20" },
+            OrderItems = new[]
+            {
+                new OrderItem
+                {
+                    ProductIdentifier = new ProductIdentifier { Identifier = 123 },
+                    Quantity = 2
+                }
+            }
+        };
+
+        return orderData;
+    }
+}</code></pre>
+</div>
+
+<h3 id="address-handling">Address handling</h3>
+<p>Addresses are represented by the <code>AddressDto</code> record, which includes:</p>
+<ul>
+<li>Contact information – First name, last name, company, email, phone</li>
+<li>Location details – Address lines, city, postal code, country, and state</li>
+</ul>
+<p>The service automatically:</p>
+<ul>
+<li>Creates customer addresses if they don’t already exist</li>
+<li>Compares addresses to avoid duplicates (case-insensitive comparison, including <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/customize-order-creation#address-mapping">custom fields</a>)</li>
+<li>Uses shipping address data as primary source for customer information when available</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Notes</strong></p>
+<p>The shipping address is optional. If <code>ShippingAddress</code> is <code>null</code>, the service assumes the billing address should be used for both billing and shipping purposes. Only the billing address will be created as an order address in this case.</p>
+<p><strong>Address comparison logic</strong>: The service uses case-insensitive, trimmed comparison when checking for duplicate customer addresses. For example, “123 Main St” and “123 MAIN ST” are considered the same address.</p>
+</div>
+
+<h3 id="customer-management">Customer management</h3>
+<p>The service handles both <a href="/documentation/business-users/members">authenticated</a> and anonymous users:</p>
+<ul>
+<li>
+<strong>Authenticated users (members)</strong> – Retrieves existing customer records by <a href="/documentation/business-users/members">member</a> ID or creates new ones if the member doesn’t have a customer record yet.</li>
+<li>
+<strong>Anonymous users (guests)</strong> – Looks up existing customers by email address from the order data, or creates a new customer record if no match is found.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Customer data updates</strong></p>
+<p>When an existing customer is found (by member ID or email), the service uses the existing customer record without updating customer information fields (such as first name, last name, email, or phone). Customer data is only populated when creating a new customer record.</p>
+<p>If you need to update customer information during order creation, implement a custom <code>ICustomerInfoMapper&lt;TOrderData&gt;</code> to modify the customer record before it’s used in the order. See <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/customize-order-creation#customer-information-mapping">Order creation customization</a>.</p>
+</div>
+
+<p>Customer addresses are stored separately and reused across orders when they match existing addresses.</p>
+<h3 id="price-calculation-integration">Price calculation integration</h3>
+<p>The order creation API uses <code>IPriceCalculationService</code> to compute order totals. You can customize the price calculation by:</p>
+<ul>
+<li>Implementing <code>IPriceCalculationRequestMapper&lt;TPriceCalculationRequest, TOrderData&gt;</code> to add custom data to calculation requests.</li>
+<li>Using custom calculation steps to modify pricing logic.</li>
+</ul>
+<p>For more information on price calculation, see <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">Price calculation</a>.</p>
+<h3 id="promotion-handling">Promotion handling</h3>
+<p>The order creation service automatically persists promotion information calculated during price calculation:</p>
+<ul>
+<li>
+<strong>Catalog promotions</strong> – Product-level discounts calculated during price calculation are saved as <code>OrderPromotionInfo</code> records linked to specific order items.</li>
+<li>
+<strong>Promotion candidates</strong> – The selected promotion candidate (with <code>Applied = true</code>) is extracted from the price calculation result and stored with the order.</li>
+<li>
+<strong>Discount amounts</strong> – The <code>UnitPriceDiscountAmount</code> from the promotion candidate is multiplied by item quantity and stored in <code>OrderPromotionDiscountAmount</code>.</li>
+</ul>
+<p>You don’t need to manually handle promotion data during order creation – the service extracts it from the <code>IPriceCalculationResult</code> and creates appropriate order promotion records.</p>
+<p>For information on implementing catalog discount rules, see <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">Implement catalog discounts</a>.</p>
+<h2 id="create-orders">Create orders</h2>
+<p>To use the service in your checkout process:</p>
+<ol type="1">
+<li>Inject <code>IOrderCreationService&lt;TOrderData, TPriceCalculationRequest, TPriceCalculationResult, TAddressDto&gt;</code> into your controller or service.</li>
+<li>Prepare the <code>OrderData</code> object with cart items, addresses, and selected methods.</li>
+<li>Call <code>CreateOrder</code> to process the order.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Basic order creation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Complete example with address mapping and helper methods.
+/// &lt;/summary&gt;
+public class CheckoutControllerFullExample : Controller
+{
+    private readonly IOrderCreationService&lt;OrderData, PriceCalculationRequest,
+        PriceCalculationResult, AddressDto&gt; orderCreationService;
+
+    public CheckoutControllerFullExample(
+        IOrderCreationService&lt;OrderData, PriceCalculationRequest,
+            PriceCalculationResult, AddressDto&gt; orderCreationService)
+    {
+        this.orderCreationService = orderCreationService;
+    }
+
+    public async Task&lt;IActionResult&gt; ConfirmOrder(
+        CustomerViewModel customer,
+        CustomerAddressViewModel billingAddress,
+        ShippingAddressViewModel shippingAddress,
+        int paymentMethodId,
+        int shippingMethodId,
+        CancellationToken cancellationToken)
+    {
+        // Retrieve shopping cart items (implementation depends on your cart model)
+        var cartItems = await GetShoppingCartItems(cancellationToken);
+
+        // Prepare order data
+        var orderData = new OrderData
+        {
+            MemberId = GetMemberId(), // 0 for anonymous users
+            OrderNumber = await GenerateOrderNumber(cancellationToken),
+            LanguageName = GetCurrentLanguage(),
+            BillingAddress = MapToAddressDto(billingAddress, customer),
+            ShippingAddress = shippingAddress.IsSameAsBilling
+                ? null
+                : MapToAddressDto(shippingAddress, customer),
+            PaymentMethodId = paymentMethodId,
+            ShippingMethodId = shippingMethodId,
+            OrderItems = cartItems.Select(item =&gt; new OrderItem
+            {
+                ProductIdentifier = item.ProductIdentifier,
+                Quantity = item.Quantity
+            })
+        };
+
+        // Create the order
+        int orderId = await orderCreationService.CreateOrder(orderData, cancellationToken);
+
+        // Clear the shopping cart and redirect to confirmation page
+        await ClearShoppingCart(cancellationToken);
+
+        return RedirectToAction("OrderConfirmation", new { orderId });
+    }
+
+    // Helper methods (simplified for documentation)
+    private Task&lt;IEnumerable&lt;CartItemPlaceholder&gt;&gt; GetShoppingCartItems(CancellationToken cancellationToken) =&gt;
+        Task.FromResult(Enumerable.Empty&lt;CartItemPlaceholder&gt;());
+
+    private Task&lt;string&gt; GenerateOrderNumber(CancellationToken cancellationToken) =&gt;
+        Task.FromResult("ORD-2024-0001");
+
+    private string GetCurrentLanguage() =&gt; "en";
+
+    private int GetMemberId() =&gt; User.Identity?.IsAuthenticated == true ? 1 : 0;
+
+    private Task ClearShoppingCart(CancellationToken cancellationToken) =&gt; Task.CompletedTask;
+
+    private AddressDto MapToAddressDto(
+        CustomerAddressViewModel address,
+        CustomerViewModel customer)
+    {
+        return new AddressDto
+        {
+            FirstName = customer.FirstName,
+            LastName = customer.LastName,
+            Company = customer.Company,
+            Email = customer.Email,
+            Phone = customer.PhoneNumber,
+            Line1 = address.Line1,
+            Line2 = address.Line2,
+            City = address.City,
+            Zip = address.PostalCode,
+            CountryID = address.CountryId,
+            StateID = address.StateId
+        };
+    }
+}</code></pre>
+</div>
+
+<p>You have successfully created orders from shopping cart data. Customer records, addresses, and order items are persisted in the database, and order confirmation notifications are sent.</p>
+<h2 id="customization">Customization</h2>
+<p>The order creation service provides mapper interfaces to extend orders, customers, addresses, and order items with <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">custom fields</a>. You can also customize how data is mapped before persistence or integrate with external systems during order creation.</p>
+<p>Common customization scenarios include:</p>
+<ul>
+<li>Adding loyalty points or customer tier information to customer records</li>
+<li>Storing promotional campaign codes or gift messages with orders</li>
+<li>Including delivery instructions or geocoding data on addresses</li>
+<li>Recording product configurations or warranty selections on order items</li>
+<li>Passing custom data to the price calculation service</li>
+</ul>
+<p>For detailed implementation examples and best practices, see <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/customize-order-creation">Order creation customization</a>.</p>
+
+</body>
+</html>

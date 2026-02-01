@@ -1,0 +1,392 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI page permission checks</title>
+</head>
+<body>
+<p>This page covers how to add permissions to applications and evaluate them within UI pages using the <a href="/documentation/developers-and-admins/configuration/users/role-management">role-based access control model</a>.</p>
+<h2 id="add-and-evaluate-permissions-for-applications">Add and evaluate permissions for applications</h2>
+<h3 id="define-the-set-of-application-permissions">Define the set of application permissions</h3>
+<p>Each application in the admin UI needs to declare the set of permissions it actively evaluates. This set is reflected when assigning permissions to roles via the <strong>Role management</strong> application. Define the permissions by decorating <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-application-pages">UI application pages</a> with the <code>UIPermission</code> attribute and specifying permission names. The system’s default application permissions (<em>VIEW</em>, <em>CREATE</em>, <em>DELETE</em>, <em>UPDATE</em>) are accessible via the <code>SystemPermissions</code> class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add permissions to UI applications</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+
+// Adds the default application permissions to the 'OfficeManagement' application
+[UIPermission(SystemPermissions.VIEW)]
+[UIPermission(SystemPermissions.CREATE)]
+[UIPermission(SystemPermissions.DELETE)]
+[UIPermission(SystemPermissions.UPDATE)]
+// Adds a custom permission to the application
+// Permission semantics are implementation-dependent
+[UIPermission("Acme.HumanResources", "Human resources")]
+public class OfficeManagementApplication : ApplicationPage
+
+</code></pre>
+</div>
+
+<p>For applications without any permission requirements, use the <code>NoPermissionRequired</code> attribute. The attribute ensures global visibility and accessibility to all users, regardless of their roles or permissions.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+
+// Ensures global visibility and accessibility to all users, regardless of their roles or permissions 
+[NoPermissionRequired]
+public class OfficeManagementApplication : ApplicationPage
+
+</code></pre>
+</div>
+
+<h3 id="require-permissions-to-access-ui-pages">Require permissions to access UI pages</h3>
+<p>To place <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> behind permissions, use the <code>UIEvaluatePermission</code> attribute. This permission must be from the set defined for the corresponding application using the <code>UIPermission</code> attribute. Otherwise, you would be unable to assign this permission to roles via <strong>Role management</strong>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Place UI pages behind permissions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+
+// Only roles with the 'Human resources' permission can access this page
+[UIEvaluatePermission("Acme.HumanResources")]
+public class OpenPositionListing : ListingPage
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Permission evaluation in UI page templates</strong></p>
+<p>The following <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates">UI page templates</a> provided by the API by default contain permission checks:</p>
+<ul>
+<li>Listing pages – require VIEW to access.</li>
+<li>Create pages – require CREATE to access.</li>
+</ul>
+</div>
+
+<p>Roles without proper permissions attempting to access such pages receive a forbidden (HTTP 403) response.</p>
+<h3 id="evaluate-permissions-within-page-commands">Evaluate permissions within page commands</h3>
+<p>You can configure each <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">page command</a> to evaluate a single permission:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Page command permissions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Only roles with the 'CREATE' permission can call this command
+[PageCommand(Permission = SystemPermissions.CREATE)]
+public async Task&lt;ICommandResponse&lt;RowActionResult&gt;&gt; DoSomething()
+{
+    // Command logic
+}
+
+</code></pre>
+</div>
+
+<h3 id="propagate-permission-information-to-client-ui-templates">Propagate permission information to client UI templates</h3>
+<p>You might need to send information about a user’s permissions to the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">client UI template</a> to, for example, disable certain interactive elements. To check whether the current user has the required permissions, use <code>IUIPermissionEvaluator</code>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Send permission information to the client</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Threading.Tasks;
+
+using Kentico.Xperience.Admin.Base;
+
+public class HrPage : Page&lt;PageClientProperties&gt;
+{
+    private readonly IUIPermissionEvaluator permissionEvaluator;
+
+    public HrPage(IUIPermissionEvaluator permissionEvaluator)
+    {
+        this.permissionEvaluator = permissionEvaluator;
+    }
+
+    // Sends the required data to the client. 
+    // Based on this information, the logic within the template can, e.g., disable interactive elements
+    public override async Task&lt;PageClientProperties&gt; ConfigureTemplateProperties(PageClientProperties properties)
+    {
+        var permissionResult = await permissionEvaluator.Evaluate("Acme.HumanResources");
+
+        properties.HrPermission = permissionResult.Succeeded;
+
+        return properties;
+    }
+}
+
+public class PageClientProperties : TemplateClientProperties
+{
+    public bool HrPermission { get; set; }
+}
+
+</code></pre>
+</div>
+
+<h2 id="ui-permission-model-and-page-extenders">UI permission model and page extenders</h2>
+<p>If you need to add permissions to system pages or pages provided via third-party integrations where you cannot access the source code, you can do so via <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extenders</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Permission definition</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+// Adds a custom permission to the user listing page in the 'Users' application
+[UIPermission("Acme.Permission")]
+public class UserListExtender : PageExtender&lt;UserList&gt;
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>This applies only to application permissions that you can grant to roles via the <strong>Role management</strong> application. The <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a> of website channel applications cannot be extended.</p>
+</div>
+
+<p>After annotating the extender class as demonstrated in the example above, you can work with the added permission as if it was assigned directly to the application. The following example defines a new action on the users listing page from the <strong>Users</strong> application and places it behind the “<em>Acme.Permission</em>” permission.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Permission usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+[UIPermission("Acme.Permission")]
+public class UserListExtender : PageExtender&lt;UserList&gt;
+{
+    public override Task ConfigurePage()
+    {
+        ...
+        configuration.TableActions
+                    .AddCommand("Do something", nameof(DoSomething), Icons.ArrowsCrooked);
+        ...
+    }
+
+    [PageCommand(Permission = "Acme.Permission")]
+    public async Task&lt;ICommandResponse&lt;RowActionResult&gt;&gt; DoSomething()
+    {
+        // Command logic
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The added permission is now also assignable via the <strong>Role management</strong> application.</p>
+<p></p>
+<h2 id="add-and-evaluate-permissions-in-workspace-scoped-applications">Add and evaluate permissions in workspace-scoped applications</h2>
+<p>Applications scoped under <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspaces</a> use the workspace permission model, where permissions can be set for each workspace separately. This model allows you to control access to UI pages and commands in a workspace-scoped application based on workspace-specific permissions.</p>
+<h3 id="require-permissions-to-access-workspace-scoped-ui-pages">Require permissions to access workspace-scoped UI pages</h3>
+<p>To place <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> behind permissions of a given workspace, use the <code>WorkspaceEvaluatePermission</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Place UI pages behind permissions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+
+// Only roles with the 'Create' permission can access this page
+[WorkspaceEvaluatePermission(WorkspaceDataPermissions.CREATE)]
+public class CustomListing : ListingPage
+
+</code></pre>
+</div>
+
+<h3 id="evaluate-permissions-with-iworkspacepermissionevaluator">Evaluate permissions with IWorkspacePermissionEvaluator</h3>
+<p>Use the <code>IWorkspacePermissionEvaluator</code> to granularly evaluate the permissions for a given workspace specified by the <code>WorkspaceId</code>. You can retrieve the <code>WorkspaceId</code> using the <code>GetContentItemMetadata</code> method or directly from the URL of UI pages that use the <code>WorkspaceId</code> as a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#parameterized-url-slugs">parameter of a URL slug</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Use the IWorkspacePermissionEvaluator to evaluate permissions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+private readonly IWorkspacePermissionEvaluator workspacePermissionEvaluator;
+private readonly IContentItemManagerFactory contentItemManagerFactory;
+private readonly IAuthenticatedUserAccessor userAccessor;
+private readonly IContentQueryExecutor contentQueryExecutor;
+
+// Mandatory constructor providing instances of required services to the base class
+// Can be used to initialize additional dependencies via dependency injection
+public CustomPage(IWorkspacePermissionEvaluator workspacePermissionEvaluator,
+                  IContentItemManagerFactory contentItemManagerFactory,
+                  IAuthenticatedUserAccessor userAccessor,
+                  IContentQueryExecutor contentQueryExecutor)
+{
+}
+
+[PageCommand]
+public async Task&lt;ICommandResponse&gt; CommandHandler()
+{
+    // Gets the id of the item from which to retrieve the WorkspaceId
+    string STORE_CONTENT_TYPE = "Wonka.CandyStore";
+    ContentItemQueryBuilder builder =
+            new ContentItemQueryBuilder()
+                    .ForContentType(STORE_CONTENT_TYPE, q =&gt;
+                    {
+                        q.TopN(1)
+                            .Where(w =&gt; w.WhereEquals("StoreName", "Prague-Hradcany"));
+                    });
+
+    var itemId = await contentQueryExecutor
+                    .GetResult&lt;int&gt;(builder, rowData =&gt;
+                    {
+                        var contentItemId = rowData.ContentItemID;
+                        return contentItemId;
+                    });
+
+    var id = itemId.FirstOrDefault();
+
+    // Gets the current user in the administration
+    var user = await userAccessor.Get();
+
+    // Creates an instance of the manager class facilitating content item operations
+    var manager = contentItemManagerFactory.Create(user.UserID);
+
+    // Retrieves ContentItemMetadata of a given content item
+    var metadata = await manager.GetContentItemMetadata(id, CancellationToken.None);
+
+    // Evaluates a given permission for the current user and the workspace specified by the WorkspaceId acquired from ContentItemMetadata
+    // The Succeeded boolean property of IWorkspacePermissionEvaluator indicates the result of the evaluation
+    if ((await workspacePermissionEvaluator.Evaluate(WorkspaceDataPermissions.VIEW, typeof(ContentHubApplication), metadata.WorkspaceId)).Succeeded)
+    {
+        // ...
+    }
+
+    // ...
+
+    return Response();
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

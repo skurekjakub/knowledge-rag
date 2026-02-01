@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page template properties</title>
+</head>
+<body>
+<p>When developing <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">page templates</a>, you can define properties that allow content editors to adjust the template appearance or behavior directly through the administration interface. Content editors can set the page template properties via a configuration dialog and the changes are then reflected on the website.</p>
+<p>The page template can be shared by any number of pages, but each page has its own separate configuration of the available template properties.</p>
+<p>Follow these steps to develop properties for a page template:</p>
+<ol type="1">
+<li><a href="#create-property-models">Create a model class that defines the page template properties</a></li>
+<li><a href="#define-the-configuration-dialog">Define the configuration dialog to allow content editors to modify the properties</a></li>
+<li><a href="#handle-properties-in-page-template-code">Handle the properties in the page template’s code</a></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced page template example</strong></p>
+<p>See the <a href="/guides/development/page-builder/create-versatile-templates-part-1">Create versatile page templates</a> guide for a detailed step-by-step walkthrough showing how to create a complex page template, including handling of template properties and page fields.</p>
+</div>
+
+<h2 id="create-property-models">Create property models</h2>
+<p>The properties of a page template must be defined within a model class that implements the <code>IPageTemplateProperties</code> interface (available in the <code>Kentico.PageBuilder.Web.Mvc.PageTemplates</code> namespace).</p>
+<p>Specify each page template property by creating a corresponding property in the model class. You can also set default values for the properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Defining a property</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class LandingPageProperties : IPageTemplateProperties
+{
+    // Defines a property and sets its default value
+    public bool ShowTitle{ get; set; } = true;
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>You can use the <code>Newtonsoft.Json.JsonIgnore</code> attribute to exclude dynamically computed page template properties from database serialization.</p>
+</div>
+
+<p>We recommend storing page template property models in the <em>~/PageTemplates/&lt;TemplateName&gt;</em> folder.</p>
+<h2 id="define-the-configuration-dialog">Define the configuration dialog</h2>
+<p>The configuration dialog provides a simple way for content editors to set values for page template properties via the Xperience administration. In the properties model class, you need to define <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> for page template properties which you want to make editable in the configuration dialog. You can use the system’s <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">default UI form components</a> or develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom UI form components</a>.</p>
+<ol type="1">
+<li><p>Edit the page template’s property model class in your live site project.</p></li>
+<li>
+<p>Define the visual interface of the configuration dialog using the desired form component attributes:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Setting an editing component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ [CheckBoxComponent(Order = 0, Label = "Show title")]
+ public bool ShowTitle{ get; set; } = true;
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Users can now click the <strong>Configure</strong> () icon when <a href="/documentation/business-users/website-content/page-templates">working with the given page template in the administration interface</a>. This opens the page template properties dialog, and the configured property values affect the appearance and functionality of the edited page on the website. Every page using the template has its own separate configuration of the template’s properties.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editing components with links to content items</strong></p>
+<p>If you decorate any page template property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a> ), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the property.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced options</strong></p>
+<ul>
+<li>You can add dynamic visibility conditions that restrict how and when properties are displayed in the template configuration dialog.</li>
+<li>You can also assign validation rules to help users provide relevant information.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/builder-component-properties-visibility-and-validation">Builder component properties visibility and validation</a> for an overview.</p>
+</div>
+
+<h2 id="handle-properties-in-page-template-code">Handle properties in page template code</h2>
+<p>To access the template’s properties, the template’s view must use the generic <code>TemplateViewModel&lt;TPropertiesType&gt;</code> class as its model, where the generic type parameter needs to match the model class registered for the template. The system ensures the property values configured for the currently processed template. Access the property values via the model’s <code>Properties</code> member. The member returns an object of the property model class registered for the page template.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@model TemplateViewModel&lt;LandingPageProperties&gt;
+
+@* Accesses the template's properties (LandingPageProperties in this example) *@
+@Model.Properties.ShowTitle
+
+</code></pre>
+</div>
+
+<h3 id="access-page-template-properties-in-post-actions">Access page template properties in POST actions</h3>
+<p>Basic POST requests do not by default contain page template properties data. To access the properties of a template during POST actions (in the <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder#handle-post-actions">controller class</a> handling POST requests), you first need to include the properties into the data submitted by the corresponding HTML form in the template’s output. Call the <code>Html.Kentico().ComponentPropertiesData</code> extension method (or its <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper</a> equivalent) within the given <code>form</code> tag in your template’s view.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Content.Web.Mvc
+
+...
+
+&lt;form asp-controller="PageTemplatePostController" asp-action="HandlePost" method="post"&gt;
+    ...
+
+    @Html.Kentico().ComponentPropertiesData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden field that persists the template’s current properties configuration.</p>
+<p>On the server, access the template’s properties in the corresponding controller class via the <code>IPageBuilderTemplatePropertiesRetriever</code> service and its <code>Retrieve&lt;TPropertiesType&gt;</code> method. Specify the template’s properties class as the method’s generic parameter: </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Controller class handling the request</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Contains an instance of the IPageBuilderTemplatePropertiesRetriever service (e.g., obtained via dependency injection)
+private readonly IPageBuilderTemplatePropertiesRetriever pageTemplatePropertiesRetriever;
+
+// Gets the properties of the widget as a strongly typed object 
+LandingPageProperties properties = pageTemplatePropertiesRetriever.Retrieve&lt;LandingPageProperties&gt;();
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

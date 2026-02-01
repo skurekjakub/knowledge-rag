@@ -1,0 +1,731 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email configuration</title>
+</head>
+<body>
+<p>Some Xperience by Kentico features utilize emails, for example, <a href="/documentation/business-users/digital-marketing/emails">digital marketing emails</a> or when <a href="/documentation/developers-and-admins/configuration/users/user-management#reset-password">resetting a user password</a>.</p>
+<p>To allow Xperience to send emails, you need to set up one or more of the following options:</p>
+<ul>
+<li>an external <a href="#smtp-servers">SMTP server</a>
+</li>
+<li>
+<a href="#sendgrid-integration">SendGrid integration</a> (the only option supported when <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploying to the SaaS environment</a>)</li>
+<li>a <a href="/documentation/developers-and-admins/customization/email-customization">custom email client</a> that utilizes a different third-party mailout service (e.g., MailChimp)</li>
+</ul>
+<p>Xperience then processes sent emails with an <strong>email queue</strong> stored in the database and relays the emails to a designated email server. To <strong>manage an email queue</strong> from the Xperience administration – monitor the email queue, resend failed emails, etc. – use the <a href="/documentation/business-users/email-queue">Email queue</a> application.</p>
+
+<div>
+
+</div>
+<div>
+<p>See <a href="#email-queue-configuration">Email queue configuration</a> for information about the email queue processing and the available configuration options.</p>
+</div>
+
+<p>If your project needs to handle a very large number of emails, you can <strong>offload the email queue processing from the main web application</strong>. See <a href="#external-mailout">External mailout</a>.</p>
+<h2 id="smtp-servers">SMTP servers</h2>
+<p>Use the following process to connect external SMTP servers to your Xperience application. You can configure the SMTP settings separately for individual <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>, as well as system emails and <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> that do not belong under a specific channel (e.g., <a href="/documentation/developers-and-admins/configuration/users">user</a> registration, password reset emails). Depending on your preferences and project requirements, you can use different SMTP servers, share the same server, or combine SMTP servers with <a href="#self-managed-sendgrid-integration">SendGrid accounts</a>.</p>
+<ol type="1">
+<li>Open your Xperience project in Visual Studio and edit the <strong>Program.cs</strong> file.</li>
+<li>Call one or more of the following methods for <code>IServiceCollection</code> when building the web application:
+<ul>
+<li>
+<code>AddXperienceSystemSmtp</code> – SMTP configuration for system emails and <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> that do not belong under a specific email channel.</li>
+<li>
+<code>AddXperienceChannelSmtp</code> – SMTP configuration for a specific <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>. Specify the <strong>code name</strong> of the email channel as the method’s parameter.</li>
+<li>
+<code>AddXperienceSmtp</code> – fallback SMTP configuration for system emails, <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> and all email channels without their own dedicated configuration.</li>
+</ul>
+</li>
+<li>For each method, configure the SMTP connection using the <code>Server</code> property of the method’s <code>SmtpOptions</code> parameter. The underlying <code>SmtpServer</code> type provides the following properties:
+<ul>
+<li>
+<code>Host</code> – the hostname of the SMTP server (domain name or IP address). Enter <em>localhost</em> to use a server provided by your local machine.</li>
+<li>
+<code>Port</code> – the port number used by the server (typically 587).</li>
+<li>
+<code>UserName</code> – if the server requires authentication, specify the user name.</li>
+<li>
+<code>Password</code> – if the server requires authentication, specify the password for the user name.</li>
+</ul>
+</li>
+<li>(Optional) Set the encoding properties of the <code>SmtpOptions</code> parameter:
+<ul>
+<li>
+<code>Encoding</code> – sets the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding" target="_blank">System.Text.Encoding</a> applied to the subject and body of sent emails. The default is <code>UTF8</code>.</li>
+<li>
+<code>TransferEncoding</code> – sets the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.mime.transferencoding?view=net-6.0" target="_blank">System.Net.Mime.TransferEncoding</a> used when sending emails. The default is <code>Base64</code>.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Net.Mime;
+using System.Text;
+
+using CMS.EmailEngine;
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Configures email sending using an SMTP server for system emails
+builder.Services.AddXperienceSystemSmtp(options =&gt;
+{
+    options.Server = new SmtpServer { Host = "smtp.server1.com", Port = 587 };
+    options.Encoding = Encoding.UTF8;
+    options.TransferEncoding = TransferEncoding.QuotedPrintable;
+});
+// Configures email sending using an SMTP server for the 'AcmeEmailChannel' email channel
+builder.Services.AddXperienceChannelSmtp("AcmeEmailChannel", options =&gt;
+{
+    options.Server = new SmtpServer { Host = "smtp.server2.com", Port = 587 };
+});
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>SMTP server options in configuration files</strong></p>
+<p>You can use ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a> to separate the SMTP server details from the application’s startup code to a configuration source (e.g., the default <em>appsettings.json</em> file). This allows you to make runtime changes to the SMTP server configuration without needing to adjust and redeploy the code or restart the application (depending on the specifics of your selected configuration source).</p>
+<p>For system email SMTP configurations added via <code>AddXperienceSystemSmtp</code>, call the <code>ConfigureSystemSmtpOptions</code> method.</p>
+<p>For email channel-specific SMTP configurations added via <code>AddXperienceChannelSmtp</code>, call the .NET <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.optionsconfigurationservicecollectionextensions.configure" target="_blank">Configure</a> method. The <strong>name</strong> of the options instance must match the code name of the email channel.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Program.cs WebApplicationBuilder configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Loads the SmtpOptions configuration from configuration file sections
+builder.Services.ConfigureSystemSmtpOptions(builder.Configuration.GetSection("SystemSmtpOptions"));
+builder.Services.Configure&lt;SmtpOptions&gt;("AcmeEmailChannel", builder.Configuration.GetSection("AcmeSmtpOptions"));
+
+</code></pre>
+</div>
+</div>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Example - appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+   "SystemSmtpOptions": {
+    "Server" : {
+      "Host": "smtp.server1.com",
+      "Port": 587
+    }
+  }, 
+  "AcmeSmtpOptions": {
+    "Server" : {
+      "Host": "smtp.server2.com",
+      "Port": 587
+    }
+  },
+  ...
+}
+
+</code></pre>
+</div>
+</div>
+</div>
+
+<p>The system now relays emails to the connected SMTP servers. You can set <strong>sender addresses</strong> individually for each Xperience feature that sends emails, see <a href="#configurable-sender-email-addresses">Configurable sender email addresses</a>.</p>
+<p>To test whether your SMTP servers are correctly configured, see <a href="#test-email-sending">Test email sending</a>. To <a href="/documentation/business-users/email-queue">monitor emails</a> ready for mailout, use the <strong>Email queue</strong> application in the Xperience administration.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>SMTP connection restrictions on Microsoft Azure</strong></p>
+<p>If your application is hosted on Microsoft Azure, emails may fail to send from Xperience due to SMTP connection restrictions on the side of Azure.</p>
+<p>To resolve such issues, read and follow the recommendations in the <a href="https://docs.microsoft.com/en-us/azure/virtual-network/troubleshoot-outbound-smtp-connectivity" target="_blank">Troubleshoot outbound SMTP connectivity problems in Azure</a> article.</p>
+</div>
+
+<h3 id="bounced-email-tracking-with-smtp-servers">Bounced email tracking with SMTP servers</h3>
+<p>If you send emails using an SMTP server, and wish to track bounced emails and email delivery rates, you need to additionally configure a POP3 connection to a dedicated bounce mailbox. For more information, see <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">Set up email tracking</a>.</p>
+<h2 id="sendgrid-integration">SendGrid integration</h2>
+<p>Xperience provides a client for sending email using the <a href="https://sendgrid.com/" target="_blank">Twilio SendGrid</a> email platform.</p>
+<p>When <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploying to the SaaS environment</a>, Xperience provides the required SendGrid accounts and configuration – see <a href="#Emailconfiguration-EnableManagedSendGrid">managed SendGrid integration</a>.</p>
+<p>For <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> Xperience deployments, you can use a <a href="#self-managed-sendgrid-integration">self-managed SendGrid instance</a>.</p>
+<h3 id="managed-sendgrid-integration">Managed SendGrid integration</h3>
+<p>Xperience applications deployed to the SaaS environment integrate Twilio SendGrid for sending emails. Kentico manages the SendGrid accounts with the required API keys and configuration as part of all <a href="/documentation/developers-and-admins/saas/saas-service-plans">service plans</a>.</p>
+<h4 id="enable-managed-sendgrid-integration">Enable managed SendGrid integration</h4>
+<p>Perform the following steps before <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploying</a> your project to the SaaS environment:</p>
+
+<div>
+
+</div>
+<div>
+<p>If you are using the provided <a href="/documentation/developers-and-admins/installation#install-project-templates-package">.NET project templates</a> (<code>kentico-xperience-mvc</code> or <code>kentico-xperience-sample-mvc</code> ), the required method is called by default for all SaaS deployment environments.</p>
+</div>
+
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio and edit the <strong>Program.cs</strong> file.</p></li>
+<li>
+<p>Call <code>WebApplicationBuilder.Services.AddXperienceCloudSendGrid</code> when building the web application. Use <a href="/documentation/developers-and-admins/configuration/saas-configuration#environment-identification-extension-methods">environment identification extension methods</a> to enable SendGrid only for selected environments.</p>
+
+<div>
+
+</div>
+<div>
+<p>SendGrid does not work in the local development environment. Use other email services for local development, for example, <a href="https://github.com/ChangemakerStudios/Papercut-SMTP" target="_blank">Papercut SMTP server</a>. See <a href="#smtp-servers">SMTP servers</a> on how to connect the Xperience application with an external SMTP server.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Enabling SendGrid integration for SaaS deployment environments</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Cloud;
+
+ ...
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ ...
+
+ if (builder.Environment.IsQa() ||
+     builder.Environment.IsUat() ||
+     builder.Environment.IsEnvironment(CloudEnvironments.Custom) ||
+     builder.Environment.IsEnvironment(CloudEnvironments.Staging) ||
+     builder.Environment.IsProduction())
+ {
+     builder.Services.AddXperienceCloudSendGrid(builder.Configuration);
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>After you deploy your application to the SaaS environment, the system relays emails to SendGrid. Emails are considered as successfully sent when SendGrid accepts them. The actual delivery is not guaranteed by Xperience and relies on SendGrid. </p>
+<p>The domain used in sender addresses depends on the type of the sent email:</p>
+<ul>
+<li>
+<strong>Email channels</strong> – initially use an automatically generated default domain, but you can <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">configure your own custom domains</a> in Xperience Portal.
+<ul>
+<li>This includes all <a href="/documentation/business-users/digital-marketing/emails">emails</a> created in the UI of a website channel application. These emails use the channel’s <em>Sending domain</em>, and are associated with your website’s branding and identity. The channel domain needs to be verified in SendGrid, which ensures that the email is sent from a legitimate source and is recognized as coming from your brand.</li>
+</ul>
+</li>
+<li>
+<strong>Notifications and system emails</strong> (e.g., <a href="/documentation/developers-and-admins/configuration/users/user-management#invite-users">user invitation</a>, password reset) – always use a default sending domain in format: <em>&lt;environment&gt;-&lt;project_name&gt;.xperience-sites.com</em>
+<ul>
+<li>This includes <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> for administration users and any other emails that are not created in the UI of a website channel. The system sending domain is automatically generated and pre-verified. Since this domain is already configured in Kentico’s SaaS environment, no additional configuration is required.</li>
+</ul>
+</li>
+</ul>
+<p>Once your configuration is complete, you can:</p>
+<ul>
+<li>
+<a href="#test-email-sending">Test whether the integration is correctly configured</a>.</li>
+<li>
+<a href="/documentation/business-users/email-queue">Monitor emails</a> using the <strong>Email queue</strong> application in the Xperience administration.</li>
+</ul>
+<h3 id="self-managed-sendgrid-integration">Self-managed SendGrid integration</h3>
+<p>Use the following process to set up SendGrid integration for <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> environments. You can configure the SendGrid settings separately for individual <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>, as well as system emails that do not belong under a specific channel (e.g., <a href="/documentation/developers-and-admins/configuration/users">user</a> registration, password reset emails). Depending on your preferences and project requirements, you can use different SendGrid accounts, share the same account, or combine SendGrid with other <a href="#smtp-servers">SMTP servers</a>.</p>
+<ol type="1">
+<li>Set up one or more <a href="https://sendgrid.com/" target="_blank">SendGrid accounts</a> with an Email API plan.</li>
+<li>Open your Xperience project in Visual Studio.</li>
+<li>Install the <strong>Kentico.Xperience.SendGrid</strong> NuGet package.</li>
+<li>Edit your application’s <strong>Program.cs</strong> file.</li>
+<li>Call one or more of the following methods for <code>IServiceCollection</code> when building the web application:
+<ul>
+<li>
+<code>AddXperienceSystemSendGrid</code> – SendGrid configuration for system emails and <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> that do not belong under a specific email channel.</li>
+<li>
+<code>AddXperienceChannelSendGrid</code> – SendGrid configuration for a specific <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>. Specify the <strong>code name</strong> of the email channel as the method’s parameter.</li>
+<li>
+<code>AddXperienceSendGrid</code> – fallback SendGrid configuration for system emails, <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> and all email channels without their own dedicated configuration.</li>
+</ul>
+</li>
+<li>For each method, set your <a href="https://docs.sendgrid.com/ui/account-and-settings/api-keys" target="_blank">SendGrid API Key</a> into the <code>ApiKey</code> property of the <code>SendGridClientOptions</code> parameter.
+<ul>
+<li>The SendGrid API Key must have the <strong>Full Access</strong> type and permissions.</li>
+<li>You can use ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a> to load the SendGrid API key from a configuration source, such as the default <em>appSettings.json</em> file or <a href="https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration" target="_blank">Azure Key Vault</a>.
+<ul>
+<li>For system email SendGrid configurations added via <code>AddXperienceSystemSendGrid</code>, call the <code>ConfigureSystemSendGridClientOptions</code> method.</li>
+<li>For email channel-specific SendGrid configurations added via <code>AddXperienceChannelSendGrid</code>, call the .NET <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.optionsconfigurationservicecollectionextensions.configure" target="_blank">Configure</a> method. The <strong>name</strong> of the options instance must match the code name of the email channel.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.EmailEngine;
+using Kentico.Xperience.SendGrid;
+
+using SendGrid;
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Configures email sending via SendGrid for system emails
+builder.Services.AddXperienceSystemSendGrid();
+// Configures email sending via SendGrid for the 'AcmeEmailChannel' email channel
+builder.Services.AddXperienceChannelSendGrid("AcmeEmailChannel");
+
+// Loads the SendGrid API keys from configuration file sections
+builder.Services.ConfigureSystemSendGridClientOptions(builder.Configuration.GetSection("SystemSendGridClientOptions"));
+builder.Services.Configure&lt;SendGridClientOptions&gt;("AcmeEmailChannel", builder.Configuration.GetSection("AcmeSendGridClientOptions")); 
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Example - appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "SystemSendGridClientOptions": {
+    "ApiKey" : "..."
+  }, 
+  "AcmeSendGridClientOptions": {
+    "ApiKey" : "..." 
+  },
+  ...
+}
+
+</code></pre>
+</div>
+
+<p>The system now relays emails to the specified SendGrid instances. The system consider emails successfully sent when SendGrid accepts them. The actual delivery is not guaranteed by Xperience and relies on SendGrid.</p>
+<p>To learn how to set email <strong>sender addresses</strong> suitable for your SendGrid account, configure individual Xperience features that send emails – see <a href="#configurable-sender-email-addresses">Configurable sender email addresses</a>.</p>
+<p>You can now <a href="#test-email-sending">test the email configuration</a>, and <a href="/documentation/business-users/email-queue">monitor emails</a> using the <strong>Email queue</strong> application in the Xperience administration.</p>
+<h2 id="configurable-sender-email-addresses">Configurable sender email addresses</h2>
+<h3 id="sender-email-address-for-private-cloud-environment">Sender email address for private cloud environment</h3>
+<p>The system allows you to configure the sender (From) email addresses used by various system features. See the following table for details:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Supported email address formats</strong></p>
+<p>The system supports all email address formats allowed by the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.mailaddress" target="_blank">System.Net.Mail.MailAddress</a> class. For example:</p>
+<ul>
+<li><code>user@host</code></li>
+<li><code>"display name" &lt;user@host&gt;</code></li>
+</ul>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Feature</p>
+</td>
+<td>
+<p>Default from address</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/custom-form-autoresponder-emails#custom-form-autoresponder-emails">Custom form autoresponder emails</a></p>
+</td>
+<td>
+<p><code>no-reply@localhost.local</code></p>
+</td>
+<td>
+<p>Custom emails for the <a href="/documentation/business-users/digital-marketing/forms">form</a> autoresponder. Sent automatically to every user who submits the form.</p>
+<p>The sender can be set in the <a href="/documentation/developers-and-admins/digital-marketing-setup/custom-form-autoresponder-emails">code that defines each custom email</a>. If the sender is not set directly, the default address reflects the <a href="#global-sending-domain-for-system-emails">global sending domain for system emails</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/notifications">Notifications</a></p>
+</td>
+<td>
+<p><code>no-reply@localhost.local</code></p>
+</td>
+<td>
+<p>Messages sent to Xperience administration users informing about various events, such as invitations or password reset requests.</p>
+<p>The sender can be configured individually for each notification, and reflects the <a href="#global-sending-domain-for-system-emails">global sending domain for system emails</a> if only the local part of the address is set.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails#create-emails">Emails</a></p>
+</td>
+<td>
+<p>none</p>
+</td>
+<td>
+<p>Email created within an <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a> use the sender configuration of the given channel.</p>
+</td>
+</tr>
+</table>
+
+<h4 id="global-sending-domain-for-system-emails">Global sending domain for system emails</h4>
+<p>You can configure the sending domain for all <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> and other system emails that are not created under a specific email channel (e.g., <a href="/documentation/developers-and-admins/configuration/users/user-management#invite-users">user invitation</a>, password reset) via the <code>SystemEmailOptions</code> class.</p>
+<p>The specified domain is used when sending system emails and <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> if only the local part of the sender address is set (e.g., via the <em>Notifications</em> application).</p>
+<p>For example:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.Development.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "SystemEmailOptions": {
+    "SendingDomain": "localhost.com"
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "SystemEmailOptions": {
+    "SendingDomain": "maindomain.com"
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Configure sending domain for transactional emails</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = WebApplication.CreateBuilder(args);
+
+...
+
+builder.Services.Configure&lt;SystemEmailOptions&gt;(builder.Configuration.GetSection("SystemEmailOptions"));
+
+</code></pre>
+</div>
+
+<h3 id="custom-system-email-domains-in-the-saas-environment">Custom system email domains in the SaaS environment</h3>
+<p>You can customize the system email domains for applications <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed in the SaaS environment</a>:</p>
+<ol type="1">
+<li>Open the <strong>Channels and Domains → System domains</strong> application in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> with a <strong>Tenant administrator</strong> or <strong>DevOps Engineer</strong> role.</li>
+<li>Select the <strong>Replace</strong> (<i></i>) action for the domain you wish to customize. You can choose the Email sending or the Email service domain.
+<ul>
+<li>Email sending domain is used to send emails that are not created under a specific email channel. Not to be confused with the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">email channel sending domain</a>.</li>
+<li>Email service domain is used as the base for various system URLs in the channel’s emails, such as subscription/unsubscription URLs.</li>
+</ul>
+</li>
+<li>Enter the new <strong>Domain name</strong> and select <strong>Create</strong>. A domain name cannot be assigned to both a system domain and a channel domain.</li>
+<li>Copy the displayed DNS records from Xperience Portal to your DNS registrar.</li>
+<li>After the settings are successfully registered with your DNS registrar, confirm the DNS configuration. This triggers a DNS validation process that takes a few minutes to finish.
+<ul>
+<li>If the DNS validation fails, double-check your DNS settings and select <strong>Revalidate</strong> (<i></i>) to restart the validation.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Each SaaS environment can only have one active Email sending and one Email service domain for system emails. By configuring and successfully validating a new domain, the existing Email sending or Email service domain will be replaced by the newly configured one.</p>
+</div>
+
+<p>To configure domains for email channels in the SaaS environment, see <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">Email channels in the SaaS environment</a>.</p>
+<h2 id="email-queue-configuration">Email queue configuration</h2>
+<p>Emails created by the Xperience application are initially placed into an email queue and stored in the database. The queue reduces the risk of losing emails due to errors, allows manual resending, and can also be used to archive sent emails. Users can <a href="/documentation/business-users/email-queue">work with the email queue</a> in the <strong>Email queue</strong> application of the Xperience administration. After you configure one or more email clients (<a href="#smtp-servers">SMTP server</a> or <a href="#sendgrid-integration">SendGrid integration</a>), the system starts processing emails from the queue.</p>
+<p>Xperience runs an ongoing process that automatically manages the email queue:</p>
+<ul>
+<li>The process checks the queue for new emails at <strong>regular intervals</strong>.</li>
+<li>New emails in the queue are loaded in pre-defined <strong>batches</strong> and relayed to the configured email client.</li>
+<li>The process continues loading and sending batches until all items in the queue are mailed out.</li>
+<li>By default, successfully sent emails are deleted from the queue. You can configure <strong>archiving</strong> of successfully sent emails for a specific number of days.</li>
+<li>If delivery to the email client fails, the email remains in the queue until it is handled manually – either deleted or successfully re-sent later.</li>
+</ul>
+<p>You can <strong>adjust the email queue configuration</strong> by changing the following options:</p>
+<ol type="1">
+<li>Open your Xperience project in Visual Studio and edit the <strong>Program.cs</strong> file.</li>
+<li>Call the <code>Configure&lt;EmailQueueOptions&gt;</code> method for <code>IServiceCollection</code> when building the web application (using <code>WebApplicationBuilder</code>).</li>
+<li>The <code>EmailQueueOptions</code> type provides the following properties:
+<ul>
+<li>
+<code>ArchiveDuration</code> – sets the number of days for which successfully sent emails are archived. The default value is 0, which completely disables archiving. Archived emails can be viewed on the <strong>Sent emails</strong> tab in the Xperience <strong>Email queue</strong> application.</li>
+<li>
+<code>DeleteBatchSize</code> – sets the number of archived emails that are deleted in a single batch when the system periodically cleans archived emails older than the <em>ArchiveDuration</em>. The default value is 2000. You can adjust the value to optimize performance on projects that archive a large number of emails.</li>
+<li>
+<code>BatchSize</code> – sets the number of emails loaded from the email queue in a single batch. The default value is 100. You can adjust the batch size to optimize email sending performance based on the parameters of your web server and database.</li>
+<li>
+<code>LoadInterval</code> – sets the interval between checks for new emails to be sent from the queue. The value is in milliseconds and the default is 60000 (one minute).</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.EmailEngine;
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Configures how the system processes the email queue
+builder.Services.Configure&lt;EmailQueueOptions&gt;(options =&gt;
+{
+    options.ArchiveDuration = 5;
+    options.DeleteBatchSize = 5000;
+    options.BatchSize = 500;
+    options.LoadInterval = 30000;
+});
+
+</code></pre>
+</div>
+
+<h2 id="test-email-sending">Test email sending</h2>
+<p>If you wish to test or debug email sending, we recommend setting up a local SMTP client, such as <a href="https://github.com/ChangemakerStudios/Papercut-SMTP" target="_blank">Papercut SMTP</a>. To verify that email sending from Xperience works correctly, send a test email.</p>
+<h3 id="system-emails">System emails</h3>
+<p>To test the email client configured for <strong>system emails</strong>:</p>
+<ol type="1">
+<li><p>Open the <strong>Email queue</strong> application in the Xperience administration.</p></li>
+<li><p>On the <strong>Email queue</strong> tab, select <strong>Send test email</strong>.</p></li>
+<li>
+<p>Fill in the email fields.</p>
+
+<div>
+
+</div>
+<div>
+When using SendGrid, use a verified <strong>domain address</strong>.
+</div>
+</li>
+<li><p>Select <strong>Send test email</strong>.</p></li>
+<li><p>Check the recipient’s mailbox (or your virtual email viewer).</p></li>
+</ol>
+<p>These test emails bypass the queue and are sent directly to the currently configured system email client.</p>
+<h3 id="channel-emails">Channel emails</h3>
+<p>To test the email client configured for individual <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>:</p>
+<ol type="1">
+<li>Open the email channel application in Xperience.</li>
+<li>Create a testing <a href="/documentation/business-users/digital-marketing/emails">email</a>.</li>
+<li>Expand the action menu in the upper right of the view and select <strong>Send draft</strong>.</li>
+<li>Send a draft email to an address where you can check the email’s delivery.</li>
+</ol>
+<h2 id="external-mailout">External mailout</h2>
+
+<div>
+
+</div>
+<div>
+<p>External mailout configuration is only supported for <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud environments</a>.</p>
+</div>
+
+<p>If your project needs to handle a very large number of emails, you may wish to offload email sending away from your main Xperience web application. This avoids potential performance impacts of email sending on the live site.</p>
+<h3 id="main-web-application">Main web application</h3>
+<p>To set up your main Xperience web application (live site) for external mailout:</p>
+<ol type="1">
+<li>
+<p>Open the application’s <strong>Program.cs</strong> file and remove any configuration related to email sending:</p>
+<ul>
+<li>Email client registration (e.g., <a href="#smtp-servers">SMTP server</a> or <a href="#sendgrid-integration">SendGrid</a>)</li>
+<li>
+<a href="#email-queue-configuration">Email queue configuration</a> (<code>EmailQueueOptions</code>)</li>
+</ul>
+</li>
+<li><p>Call the <code>Configure&lt;EmailServiceOptions&gt;</code> method for <code>IServiceCollection</code> when building the web application (using <code>WebApplicationBuilder</code>).</p></li>
+<li>
+<p>Set the <code>MailOutIsExternal</code> property of <code>EmailServiceOptions</code> to <code>true</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using CMS.EmailEngine;
+
+ ...
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ ...
+
+ builder.Services.Configure&lt;EmailServiceOptions&gt;(options =&gt;
+ {
+     options.MailoutIsExternal = true;
+ });
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The application now only adds emails to the queue. Loading of mails from the queue and the mailing itself needs to be handled by a separate application.</p>
+<p>With the <code>MailOutIsExternal</code> property enabled, parts of the Xperience administration that rely on email sending remain active, even though the application itself does not have an email client configured. In this scenario, it is not possible to send test emails from the Xperience <strong>Email queue</strong> application (test emails bypass the queue, so they cannot be processed by an external mailout application).</p>
+<h3 id="mailout-application">Mailout application</h3>
+<p>External mailout can be handled either by a separate instance of Xperience, or a custom application that <a href="/documentation/developers-and-admins/api/use-the-xperience-by-kentico-api-externally">uses the Xperience API externally</a>.</p>
+<ol type="1">
+<li>Ensure that the mailout application connects to the same database as your main Xperience web application.
+<ul>
+<li>By default, this is determined by the <code>CMSConnectionString</code> in the <strong>appsettings.json</strong> configuration file.</li>
+</ul>
+</li>
+<li>In the application’s startup class, add any required email configuration:
+<ul>
+<li>Email client registration (e.g., <a href="#smtp-servers">SMTP server</a> or <a href="#sendgrid-integration">SendGrid</a>)</li>
+<li>
+<a href="#email-queue-configuration">Email queue configuration</a> (<code>EmailQueueOptions</code>)</li>
+</ul>
+</li>
+</ol>
+<p>The mailout application now processes the email queue, which is shared with your main web application.</p>
+
+</body>
+</html>

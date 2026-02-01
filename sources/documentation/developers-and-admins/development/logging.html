@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Logging</title>
+</head>
+<body>
+<p>Xperience by Kentico provides logging functionality that helps monitor application behavior and diagnose issues. The logging implementation is based on <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging" target="_blank">.NET logging</a>.</p>
+<p>Data is logged from all Xperience modules and features, and developers can use logging within any custom code or components. You can access or visualize the resulting logs in various ways:</p>
+<ul>
+<li>The built-in <a href="#xperience-event-log">Xperience event log</a>
+</li>
+<li>Command line output when running Xperience as a web application</li>
+<li>Any external tool or framework compatible with .NET logging (<a href="https://serilog.net/" target="_blank">Serilog</a>, <a href="https://nlog-project.org/" target="_blank">NLog</a>, <a href="https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/overview" target="_blank">Aspire dashboard</a>, etc.)</li>
+</ul>
+<h2 id="xperience-event-log">Xperience event log</h2>
+<p>Xperience provides a built-in <code>XperienceEventLog</code> logging provider, which captures system events and errors. The logged data can be viewed directly within the Xperience administration in the <a href="/documentation/developers-and-admins/configuration/event-log">Event log</a> application. This allows developers and administrators to quickly identify and resolve application issues without requiring external tools or third-party services.</p>
+<p></p>
+<p>Logged events are stored in the Xperience database. In case of a database outage, the system buffers all logged events in-memory until the database is available. When logging in custom code, you do not need to buffer or check for database availability.</p>
+<h2 id="configure-logging">Configure logging</h2>
+<p>Logging can be adjusted via standard <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging#configure-logging" target="_blank">.NET logging configuration</a> in your Xperience project’s <em>appsettings.json</em> file. This allows you to increase or decrease the verbosity of logged data, filter specific events, etc. See <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?#log-level" target="_blank">Log level</a> to learn more about the available severity and verbosity levels of logged data.</p>
+<p>The <a href="#xperience-event-log">Xperience event log</a> is represented by the <code>XperienceEventLog</code> logging provider. By default, this provider captures the following logs:</p>
+<ul>
+<li>Events with a log level of <code>Warning</code> or higher originating from any application code (including custom).</li>
+<li>Events with a log level of <code>Information</code> or higher originating from the Xperience libraries (<code>CMS</code> and <code>Kentico</code> logging categories).</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Events with the <code>Information</code> or lower level originating from custom code are not included unless you add configuration for your event categories. See <a href="#logging-in-custom-code">Logging in custom code</a>.</p>
+</div>
+
+<p>Adjust the configuration if you wish to change or filter which logs appear in the system’s event log (or your own logging providers). You can target events logged from specific Xperience libraries and features by adding configuration for the corresponding namespace.</p>
+<p>For example, the configuration shown below for the <code>XperienceEventLog</code> provider does the following:</p>
+<ul>
+<li>Increases logging verbosity to include the <code>Debug</code> level for events originating from loggers in the <code>CMS.ContentSynchronization</code> namespace.</li>
+<li>Includes events with a <code>Debug</code> or higher level that are logged with a category starting with <code>Acme</code> (i.e., the output of loggers used in classes from a custom <code>Acme.*</code> namespace).</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    },
+    "XperienceEventLog": {
+      "LogLevel": {
+        "Default": "Warning", 
+        "Kentico": "Information",
+        "CMS": "Information",
+        "CMS.ContentSynchronization": "Debug",
+        "Acme" : "Debug",
+        "Microsoft.AspNetCore.Server.Kestrel": "None"
+      }
+    }
+  },  
+</code></pre>
+</div>
+
+<h2 id="logging-in-custom-code">Logging in custom code</h2>
+<p>To perform logging in your custom modules, components or other code:</p>
+<ol type="1">
+<li>Obtain an instance of <code>ILogger&lt;TCategoryName&gt;</code> using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a>.
+<ul>
+<li>The <code>TCategoryName</code> generic sets the category for all events created via this logger. The fully qualified name of the specified type is used. The category also determines the <strong>Source</strong> value for events in the <a href="#xperience-event-log">Xperience event log</a>.</li>
+</ul>
+</li>
+<li>Call one of the available <code>Log*</code> methods to log an event with a corresponding log level.
+<ul>
+<li>To set the <strong>Event code</strong> value for events in the <a href="#xperience-event-log">Xperience event log</a>, include the <code>EventId</code> parameter in the call and set its <code>name</code>.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Logging examples</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Microsoft.Extensions.Logging;
+
+using CMS.Core;
+
+namespace Acme;
+
+public class CustomComponent {
+
+    private readonly ILogger&lt;CustomComponent&gt; logger;
+
+    // Gets an ILogger instance using constructor DI
+    // In this example, the logging category is "Acme.CustomComponent"
+    public CustomComponent(ILogger&lt;CustomComponent&gt; logger)
+    {
+        this.logger = logger;
+    }
+
+    // ...
+
+    // The Trace, Debug and Information log levels appear as the 'Info' event type in the Xperience event log
+    // By default, events with these log levels are not written to the Xperience event log
+    // Can be included by setting the corresponding log level for your event categories in the 'XperienceEventLog' logging provider (appsettings.json)
+    logger.LogTrace("Trace level event description.");
+    logger.LogDebug("Debug level event description.");
+    logger.LogInformation("Information level event description.");
+    // The Warning log level appears as the 'Warning' event type
+    logger.LogWarning("Warning event description.");
+    // The Error and Critical log levels appear as the 'Error' event type
+    logger.LogError("Error event description.");
+    logger.LogCritical("Critical event description");
+
+    // Logs an event with a specific event code via the 'name' value of an EventId object
+    // If the EventId parameter is omitted, the event Source is used as the event code
+    // The 'id' value of the EventId object is not used by the Xperience event log, but may affect other logging providers
+    logger.LogInformation(new EventId(0, "APIEXAMPLE INFO"), "Information event description.");
+
+    // Logs an event (error) with exception details
+    logger.LogError(new EventId(0, "APIEXAMPLE EXCEPTION"), new Exception(), "Exception event description.");
+}
+</code></pre>
+</div>
+
+<p>Logged events appear in the Xperience event log (depending on your <a href="#configure-logging">logging configuration</a> and the used log level) and any other logging providers configured for your application.</p>
+<p>You can use the <code>LogWithIntervalPolicy</code> method to ensure that events are logged only once during the application’s lifetime or a specified time interval. This can be useful to limit the frequency of events that could otherwise flood your log.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Logging policy that ensures the event is logged only once during the application's lifetime
+// The system checks whether the event has already been logged based on the identifier of the 'OnlyOnce' method
+logger.LogWithIntervalPolicy(LoggingIntervalPolicy.OnlyOnce("api-example-once-per-lifetime"),
+    log =&gt; log.LogInformation("Event logged only once."));
+
+// Logging policy that ensures the event is logged at most once over a specified time interval (5 minutes in this case)
+// The system checks whether the event has already been logged based on the identifier of the 'OncePerPeriod' method
+logger.LogWithIntervalPolicy(LoggingIntervalPolicy.OncePerPeriod("api-example-once-per-5-minutes", TimeSpan.FromMinutes(5)),
+    log =&gt; log.LogInformation("Event logged at most once every 5 minutes."));
+</code></pre>
+</div>
+
+<h2 id="customize-event-logging">Customize event logging</h2>
+<p>You can customize event logging by:</p>
+<ul>
+<li>
+<a href="#handle-event-log-events">Handling system</a> events – customize event information, limit which types of events the system logs, or execute any custom logic when an event gets written to the Xperience event log.</li>
+<li>
+<a href="#custom-logging-providers">Adding custom logging providers</a> – specify additional logging destinations, e.g., dedicated files, third-party logging tools or frameworks, visualization tools, etc.</li>
+<li>
+<a href="#add-or-remove-the-xperience-event-logging-provider">Adding or removing the Xperience event logging provider</a> – in advanced scenarios, you may wish to manually control whether the default Xperience event logging provider is enabled for the application.</li>
+</ul>
+<h3 id="handle-event-log-events">Handle event log events</h3>
+<p>You can use event handling to customize how the system writes records into its <a href="/documentation/developers-and-admins/configuration/event-log">event log</a>.</p>
+<p>The system raises the following types of logging events:</p>
+<ul>
+<li>
+<code>EventLogEvents.LogEvent.Before</code> – allows you to customize the data logged for events or cancel logging for certain types of events.</li>
+<li>
+<code>EventLogEvents.LogEvent.After</code> – allows you to perform custom actions after events are successfully logged.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Handlers only affect the built-in event log</strong></p>
+<p>Event handlers for <code>EventLogEvents.LogEvent</code>only affect how events are written to the built-in Xperience event log, not log entries created via <code>ILogger</code> in general (e.g., when viewing events in external tools).</p>
+<p><strong>Performance considerations</strong></p>
+<p>Performing demanding operations during event logging can negatively impact the project’s performance (particularly on websites under heavy load where a large volume of logging can occur).</p>
+</div>
+
+<h4 id="example">Example</h4>
+<p>The following example demonstrates how to disable logging for events of a specific type and modify the <em>Description</em> text for certain events.</p>
+<ol type="1">
+<li>Open your Xperience solution in a suitable IDE (e.g., Visual Studio).</li>
+<li>Create a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom module class</a>.</li>
+<li>Override the module’s <code>OnInit</code> method and assign a handler method to <code>EventLogEvents.LogEvent.Before</code>.</li>
+<li>Perform the required actions within the handler method.
+<ul>
+<li>Access the data of the logged event through the <code>Event</code> property of the handler’s <code>LogEventArgs</code> parameter.</li>
+<li>To cancel the logging of an event, call the <code>Cancel</code> method of the handler’s <code>LogEventArgs</code> parameter.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+
+using CMS.DataEngine;
+using CMS.EventLog;
+using CMS.Base;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(EventLogCustomization))]
+
+public class EventLogCustomization : Module
+{
+    // Module class constructor, the system registers the module under the name "EventLogCustomization"
+    public EventLogCustomization()
+        : base("EventLogCustomization")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Assigns a handler to the LogEvent.Before event
+        EventLogEvents.LogEvent.Before += LogEvent_Before;
+    }
+
+    private void LogEvent_Before(object sender, LogEventArgs e)
+    {
+        // Gets an object representing the event that is being logged
+        EventLogInfo eventLogRecord = e.Event;
+
+        // Cancels logging for events with the "CREATEOBJ" or "UPDATEOBJ" event codes.
+        // Disables event log records notifying about the creation or update of objects in the system,
+        // but still allows events related to object deletion.
+        string eventCode = eventLogRecord.EventCode;
+        if (String.Equals(eventCode, "CREATEOBJ", StringComparison.OrdinalIgnoreCase) || String.Equals(eventCode, "UPDATEOBJ", StringComparison.OrdinalIgnoreCase))
+        {
+            e.Cancel();
+        }
+
+        // Adds a custom message to the Description field for events of the Information type
+        if (String.Equals(eventLogRecord.EventType, EventType.INFORMATION, StringComparison.OrdinalIgnoreCase))
+        {
+            eventLogRecord.EventDescription += " Custom message";
+        }
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="custom-logging-providers">Custom logging providers</h3>
+<p>The .NET logging framework allows you to add other logging providers in addition to the <a href="#xperience-event-log">Xperience event log</a>. Logging providers store and display logged data, and may provide additional features, such as sematic (structured) logging or advanced visualization.</p>
+<p>For more information, see the .NET documentation:</p>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging-providers" target="_blank">Logging providers</a></li>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging-providers#third-party-logging-providers" target="_blank">Third-party logging providers</a></li>
+</ul>
+<h4 id="example-1">Example</h4>
+<p>The following example demonstrates how to set up <a href="https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/overview" target="_blank">Aspire dashboard</a> to receive log data from Xperience. Aspire dashboard allows you to monitor and debug your applications in a central location, including telemetry data from sources outside of Xperience.</p>
+<p>Start by setting up an Aspire AppHost:</p>
+<ol type="1">
+<li>Open your Xperience solution in Visual Studio (or another suitable IDE).</li>
+<li>Add a new project to the solution with the <strong>Aspire AppHost</strong> project template.</li>
+<li>Add a project reference from the Aspire project to your Xperience project.</li>
+<li>Adjust the Aspire project’s <strong>AppHost.cs</strong> file:
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>AppHost.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ var builder = DistributedApplication.CreateBuilder(args);
+
+ // Adds your Xperience project to the Aspire AppHost
+ // Replace the project type and name with values matching your Xperience project
+ var xperienceProject = builder.AddProject&lt;Projects.ProjectName&gt;("XperienceProject");
+
+ builder.Build().Run();
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Aspire dashboard receives log data using <a href="https://opentelemetry.io/docs/specs/otlp/" target="_blank">OpenTelemetry Protocol (OTLP)</a>. Continue by adding an OpenTelemetry logger and OTLP exporter to your Xperience project:</p>
+<ol type="1">
+<li>Install the following NuGet packages into your Xperience project:
+<ul>
+<li><a href="https://www.nuget.org/packages/OpenTelemetry" target="_blank">OpenTelemetry</a></li>
+<li><a href="https://www.nuget.org/packages/OpenTelemetry.Exporter.OpenTelemetryProtocol" target="_blank">OpenTelemetry.Exporter.OpenTelemetryProtocol</a></li>
+</ul>
+</li>
+<li>Call the <code>AddLogging</code> extension method with the <code>AddOtlpExporter</code> option on the project’s service collection:
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Microsoft.Extensions.Logging;
+ using OpenTelemetry.Logs;
+
+ // ...
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ // ...
+
+ builder.Services.AddLogging(logging =&gt;
+ {
+     logging.AddOpenTelemetry(options =&gt;
+     {
+         options.IncludeFormattedMessage = true;
+         options.IncludeScopes = true;
+         options.ParseStateValues = true;
+         options.AddOtlpExporter();
+     });
+ });
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>When you run the Aspire application (e.g., <code>dotnet run</code> from the folder where you added the project), the Aspire dashboard launches in a browser. This also automatically starts your Xperience application. You can view logs from Xperience (and any other applications added to the Aspire AppHost) on the dashboard.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Aspire dashboard standalone mode</strong></p>
+<p>You can also run Aspire dashboard as a Docker image in <a href="https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/standalone" target="_blank">Standalone mode</a>.</p>
+</div>
+
+<h3 id="add-or-remove-the-xperience-event-logging-provider">Add or remove the Xperience event logging provider</h3>
+<p>The logging provider for the <a href="#xperience-event-log">Xperience event log</a> is enabled by default as part of the <code>InitKentico</code> call in the project’s <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects">middleware pipeline</a>.</p>
+<p>If you are developing a fully custom logging implementation for your project, you can remove the Xperience event logging provider by calling the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggingbuilderextensions.clearproviders" target="_blank">ClearProviders</a> extension method before you add your own logging providers.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Application Insights for SaaS projects</strong></p>
+<p>Disabling the Xperience event logging provider also affects the <a href="/documentation/developers-and-admins/configuration/saas-configuration#enable-microsoft-application-insights-integration">Microsoft Application Insights integration</a> for <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS projects</a>. The <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#event-log-and-exceptions">Event log report</a> in the Xperience Portal <strong>Monitoring</strong> application will stop receiving data.</p>
+</div>
+
+<p>If your implementation clears logging providers, but you also wish to enable the Xperience event logging provider, call the <code>AddXperienceLogging</code> method for your application’s service collection.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+using CMS.EventLog;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// ...
+
+services.AddLogging(builder =&gt; {
+       // Removes all logging providers
+       builder.ClearProviders();
+       
+       // Add your custom providers
+   });
+
+// Manually adds the Xperience event logging provider
+builder.Services.AddXperienceLogging();
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Filtering Xperience events from your logging providers</strong></p>
+<p>If you do not wish to include events logged from the Xperience libraries in your logging providers, adjust your project’s <a href="#configure-logging">logging configuration</a> to filter out events with the <code>CMS</code> or <code>Kentico</code> category prefixes.</p>
+</div>
+
+
+</body>
+</html>

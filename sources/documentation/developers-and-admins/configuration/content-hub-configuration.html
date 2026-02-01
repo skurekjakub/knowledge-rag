@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content hub configuration</title>
+</head>
+<body>
+<p>The <a href="/documentation/business-users/content-hub">content hub</a> is a centralized location where you can manage and distribute your content. It provides a way for content editors to create, store, manage, and publish content across multiple channels.</p>
+<p>This page covers content hub configuration options you can use to customize your project:</p>
+<ul>
+<li><a href="#enable-content-hub-folders">Enable content hub folders</a></li>
+<li><a href="#customize-maximum-file-upload-size-and-chunk-size">Customize maximum file upload size and chunk size</a></li>
+<li><a href="#customize-supported-file-types">Customize supported file types</a></li>
+</ul>
+<h2 id="enable-content-hub-folders">Enable content hub folders</h2>
+<p>The content hub provides <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> that allow editors to organize and efficiently navigate through reusable content items. The following types of folders are available:</p>
+<ul>
+<li>
+<strong>Smart folders</strong> – each smart folder is based on a filtering condition, such as “items modified in the last 7 days”, “items with the <em>Acme</em> tag”, etc. The condition is evaluated dynamically, so items move in and out of smart folders as their fields and metadata change. A single content item can belong into any number of smart folders. Smart folders can be used to organize content items in the administration interface, and also to dynamically control content delivery and filter content in your channels (e.g., on the live website). Smart folders are <strong>always enabled</strong>.</li>
+<li>
+<strong>Content folders</strong> – a folder hierarchy for cataloging content items in the administration interface. Content items are placed into folders manually, and each item can only be located in one folder. The purpose of content folders is only to help organize content items in the administration, and they cannot be used to control content delivery. Administrators choose whether content hub folders are enabled for a project.</li>
+</ul>
+<p></p>
+<p>To enable or disable <strong>content folders</strong>:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application in the administration interface.</li>
+<li>Navigate to the <strong>Content → Content hub</strong> category.</li>
+<li>Select or clear the <strong>Enable content hub folders</strong> checkbox.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>When content folders are enabled:</p>
+<ul>
+<li>Users can create and manage content folders in the <em>Content hub</em> application.</li>
+<li>Users select a folder location when creating new content items.</li>
+<li>Users can move content items between folders.</li>
+<li>The folder structure appears in the <em>Content hub</em> application and content item selectors throughout the system, and helps users navigate through the list of items.</li>
+</ul>
+<p>If content folders are disabled, content items appear in a flat list. However, smart folders are always available, and can be used to filter items.</p>
+
+<div>
+
+</div>
+<div>
+<p>You can disable the content folders feature even if there are existing folders. In this case, content items appear in a flat list, but the system remembers the folder structure. If you re-enable the setting at a later time, the folders are fully recovered.</p>
+</div>
+
+<h2 id="customize-maximum-file-upload-size-and-chunk-size">Customize maximum file upload size and chunk size</h2>
+<p>The system allows you to configure the maximum size of a single <a href="/documentation/business-users/content-hub/content-item-assets">file</a> that is allowed in the <a href="/documentation/business-users/content-hub">content hub</a> and the size of chunks that large files are broken into during chunk upload.</p>
+<p>The default values are:</p>
+<ul>
+<li>100 MB maximum file size</li>
+<li>10 MB chunk size</li>
+</ul>
+<p>The maximum supported size for a single file is 2 GB (<code>2147483648L</code>).</p>
+<p>To customize the values:</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio and edit the <strong>Program.cs</strong> file.</p></li>
+<li>
+<p>Call the <code>Configure&lt;FileUploadOptions&gt;</code> method of the <code>IServiceColletion</code> and specify the <code>FileUploadOptions</code> properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using CMS.Base.Configuration;
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ builder.Services.Configure&lt;FileUploadOptions&gt;(options =&gt;
+ {
+     // Sets the maximum file size to 500 MB
+     options.MaxFileSize = 524288000L;
+     // Sets the chunk size to 20 MB
+     options.ChunkSize = 20971520;
+ });
+
+ </code></pre>
+</div>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Chunk upload</strong></p>
+<p>Chunk upload is a process of uploading large files to a server in smaller pieces, or chunks, rather than all at once. This is a useful technique for uploading very large files, such as high-resolution videos or large software packages, where the file size may exceed the user’s available bandwidth.</p>
+<p>Chunk upload works by breaking a large file into smaller pieces and uploading them one at a time. Once all the chunks have been uploaded, the server can reassemble them into the original file.</p>
+</div>
+
+<h2 id="customize-supported-file-types">Customize supported file types</h2>
+<p>The <a href="/documentation/business-users/content-hub/content-item-assets">content hub</a> supports the following types of images by default: <strong>bmp</strong>, <strong>gif</strong>, <strong>png</strong>, <strong>jpg</strong>, <strong>jpeg</strong>, <strong>tiff</strong>, <strong>tif</strong>, <strong>webp</strong>, <strong>avif</strong>. The system supports images only up to 16,000 pixels in either dimension. For <a href="/documentation/developers-and-admins/development/content-types#automatically-optimize-image-assets">image optimization</a> and <a href="/documentation/developers-and-admins/development/content-types#configure-image-variants">image variants</a>, only the following subset of image types is supported: <strong>png</strong>, <strong>jpg</strong>, <strong>jpeg</strong>, <strong>webp</strong>, <strong>avif</strong>.</p>
+<p>Support for <strong>svg</strong> images can be enabled after considering the <a href="#support-for-svg-images">potential security impacts</a>.</p>
+<p>The system detects audio and video files based on their <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types" target="_blank">MIME type</a> (audio types starting with the <em>audio/</em> prefix and video types starting with the <em>video/</em> prefix). For successfully detecting audio and video file types, the system renders appropriate HTML5 markup. The types of files that can be previewed or played depend on the web browser (modern HTML5 web browsers typically support one or more of the <strong>ogg</strong>, <strong>mp4</strong>, or <strong>webm</strong> video codecs, and <strong>mp3</strong>, <strong>wav</strong>, or <strong>ogg</strong> audio codecs).</p>
+<p>All other file types (e.g., <strong>docx</strong>, <strong>pdf</strong>, <strong>odt</strong>, vector graphic formats) are recognized as documents. You can still store them in the content hub and link them to content items.</p>
+<p>If you want to configure the system to allow the upload of a custom file type into the content hub, you need to:</p>
+<ol type="1">
+<li>
+<a href="#customize-allowed-extensions">Enable the custom extensions</a> to be uploaded to the content hub.</li>
+<li>(<em>Optional</em>) If you want to use the custom extension as an image file, you need to configure the system to <a href="#specify-image-file-types">recognize the extension as an image file</a>.</li>
+</ol>
+<h3 id="customize-allowed-extensions">Customize allowed extensions</h3>
+<p>To customize the set of file types that can be uploaded into the content hub:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Navigate to the <strong>Content → Assets</strong> category.</li>
+<li>Add the selected file extensions into the <strong>Asset allowed extensions</strong> setting in the <strong>Security</strong> section (separated by semicolons).</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Setting shared with media libraries</strong></p>
+<p>The <strong>Asset allowed extensions</strong> setting is shared with <a href="/documentation/developers-and-admins/configuration/media-library-configuration">media libraries</a>. Changing the value of the setting also limits file types that can be uploaded to the media libraries.</p>
+</div>
+
+<h3 id="specify-image-file-types">Specify image file types</h3>
+<p>By default, the system can recognize and process any media type if you have the right player for the given file type. Custom file types can be recognized as image files via configuration keys. However, by specifying allowed file types, you disable the automatic detection and support for media file types other than those explicitly added via your configuration.</p>
+<p>To allow media files of specified types to be recognized as image files, add the <code>CMSImageExtensions</code> key to your application’s configuration file (<em>appsettings.json</em> by default).</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+"CMSImageExtensions": "bmp;gif;ico;png;wmf;jpg;jpeg;tiff;tif;webp;svg;avif;jfif;jfi;jif;jpe;dib"
+</code></pre>
+</div>
+
+<p>Files of the specified types are now recognized as image files and will be, for example, offered in the <em>Insert image</em> dialog of the rich text editor.</p>
+<h3 id="support-for-svg-images">Support for SVG images</h3>
+<p>Although the <a href="https://en.wikipedia.org/wiki/SVG" target="_blank">SVG</a> vector format for images is supported for content hub assets, it is not allowed by default. SVG images may host scripts or CSS and can pose a security risk. If you wish to use the SVG image format, you need to manually <a href="#customize-allowed-extensions">enable support for the extension</a>.</p>
+<p>The system does <strong>not</strong> perform sanitization of SVG images when they are <a href="/documentation/business-users/content-hub/content-item-assets">uploaded</a>. This means that SVG files stored in the content hub may potentially contain malicious content. The system protects against these risks by adding a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP" target="_blank">CSP header</a> to all responses that serve files through the system’s endpoints (<em>/getContentAsset</em>, etc.). This header prevents execution of inline scripts.</p>
+<p>If your project uses custom endpoints or other functionality to serve images, you need to provide your own security measures.</p>
+
+<div>
+
+</div>
+<div>
+<p>When displaying SVG images in custom HTML, always use the <code>&lt;img&gt;</code> element and its <code>src</code> attribute, rather than including the SVG code directly in the HTML.</p>
+</div>
+
+<p>Also consider additional security measures for SVG images if you have files mapped to external storage providers, such as <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure storage</a> or <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>. If files in external storage are accessed outside of Xperience endpoints, the system cannot provide any protection, and security depends on the features of the given storage provider.</p>
+<h3 id="override-csp-when-displaying-content-through-iframe">Override CSP when displaying content through iframe</h3>
+<p>When using the <code>iframe</code> tag to display content inline, it can be blocked by the external <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP" target="_blank">Content Security Policy</a> directive <code>default-src 'none'</code>, which is enforced by the system. This concerns any type of content and file formats. To override this directive, you can implement <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects">custom middleware</a>, which is demonstrated in the example below. The example below shows an implementation of custom middleware that overrides this directive for videos in an mp4 format uploaded to Content hub.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>CSPMiddleware.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class CSPMiddleware
+ {
+     private readonly RequestDelegate next;
+
+     public CSPMiddleware(RequestDelegate next)
+     {
+         this.next = next;
+     }
+
+
+     public async Task InvokeAsync(HttpContext context)
+     {
+        // ContentItemAssetConstants.CONTENT_ASSET_URL_PATH_PREFIX is used
+        // to obtain the URL path prefix for endpoint serving content item assets.
+         if (context.Request.Path.StartsWithSegments($"/{ContentItemAssetConstants.CONTENT_ASSET_URL_PATH_PREFIX}"))
+         {
+             context.Response.OnStarting(() =&gt;
+             {
+                 var contentType = context.Response.Headers["Content-Type"];
+
+                 // Checks whether the content is an mp4 video. The IsVideo method is used to detect videos
+                 // when the page is reloaded because the content type header is a part of the response only 
+                 // when the page is loaded for the first time.
+                 if (contentType.Equals("video/mp4") || IsVideo(context.Response.Headers.ContentDisposition))
+                 {
+                    // Sets the video to be displayed inline
+                     context.Response.Headers.ContentDisposition = "inline";
+
+                     // Changes the directive
+                     context.Response.Headers.ContentSecurityPolicy = "media-src 'self'";
+
+                 }
+
+                 return Task.CompletedTask;
+             });
+         }
+
+         await next?.Invoke(context);
+     }
+
+
+    private static bool IsVideo(StringValues contentDisposition)
+    {
+        var headerValue = ContentDispositionHeaderValue.Parse(contentDisposition);
+        var successfullyParsed = new FileExtensionContentTypeProvider().TryGetContentType(headerValue.FileName, out var contentType);
+    
+        if (!successfullyParsed)
+        {
+            return false;
+        }
+    
+        return contentType.Equals("video/mp4");
+    }
+ }
+</code></pre>
+</div>
+
+<p>Register the middleware in <code>Program.cs</code>. The middleware can be registered at any point in the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/" target="_blank">middleware pipeline</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+app.UseMiddleware&lt;CSPMiddleware&gt;();
+</code></pre>
+</div>
+
+
+</body>
+</html>

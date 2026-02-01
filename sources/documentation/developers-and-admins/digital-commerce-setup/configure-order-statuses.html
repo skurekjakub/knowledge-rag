@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Order statuses</title>
+</head>
+<body>
+<p>Order statuses represent stages in the lifecycle of <a href="/documentation/business-users/manage-commerce-stores">orders</a> created by your store’s customers (<em>New</em>, <em>Payment received</em>, <em>Shipped</em>, <em>Delivered</em>, etc.).</p>
+<h2 id="create-order-statuses">Create order statuses</h2>
+<ol type="1">
+<li>Navigate to the <strong>Commerce configuration</strong> application.</li>
+<li>Select <strong>New order status</strong>.</li>
+<li>Fill in the required fields.
+<ul>
+<li>
+<strong>Order status name</strong> – the display name of the status.</li>
+<li>
+<strong>Notify users / the customer when the order reaches this status</strong> – specifies whether the system sends email notifications when an order is moved to this status (or when the order is created for the first order status). Notifications can be sent internally to selected users, or externally to the customer who created the order. See <a href="#configure-notifications-for-order-statuses">Configure notifications for order statuses</a>.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+<li>Drag the order status to the appropriate position within your desired order lifecycle.</li>
+</ol>
+<h2 id="configure-notifications-for-order-statuses">Configure notifications for order statuses</h2>
+<p>You can set up two types of notifications about order status changes:</p>
+<ul>
+<li>
+<strong>Customer</strong> – sent to the customer who created the order</li>
+<li>
+<strong>Internal</strong> – sent to selected <a href="/documentation/developers-and-admins/configuration/users/user-management">users</a> (staff)</li>
+</ul>
+<h3 id="create-customer-notification-emails">Create customer notification emails</h3>
+<p>Customer order notifications are based on <a href="/documentation/business-users/digital-marketing/emails">emails</a> in <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Dedicated commerce email channel</strong></p>
+<p>If possible, we recommend setting up a separate dedicated email channel for your commerce-related emails. This allows you to:</p>
+<ul>
+<li>Use a different sending domain than your other email communication. This protects your commerce email sender’s reputation from being affected by other emails (e.g., marketing newsletters).</li>
+<li>Set up a separate <a href="/documentation/developers-and-admins/configuration/email-configuration">email client</a> for sending commerce-related emails. This ensures that order notifications are not delayed by other email operations, for example when a newsletter is being sent to a very large number of recipients.</li>
+</ul>
+</div>
+
+<p>You can create any number of customer notification emails and use a different one for every order status.</p>
+<ol type="1">
+<li>Create an <a href="/documentation/business-users/digital-marketing/emails">email</a>.
+<ul>
+<li>Set the <strong>Email purpose</strong> to <em>Order status change</em>.</li>
+</ul>
+</li>
+<li>Prepare the email’s content:
+<ul>
+<li>You can fill in the email’s subject, preview text and other content fields in the <strong>Content</strong> view mode. Use <a href="/documentation/business-users/digital-marketing/emails#personalize-emails-with-dynamic-text">dynamic text placeholders</a> to add information about the related order.<br>
+</li>
+<li>If using an Email Builder template, you can compose the email’s content using configurable components in the <strong>Email Builder</strong> view mode. For detailed information, see <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Create emails in Email Builder</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Publish</strong> the email.
+<ul>
+<li>See <a href="/documentation/business-users/digital-marketing/emails#email-lifecycle">Email lifecycle</a> to learn more.</li>
+</ul>
+</li>
+</ol>
+<h3 id="set-internal-notification-content">Set internal notification content</h3>
+<p>The system uses a single notification template for internal order notifications. To define the content:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Make sure that the <a href="/documentation/developers-and-admins/configuration/notifications#configure-domains-for-notifications">service domain for notifications</a> is set up in your project. For projects deployed in the Xperience by Kentico <a href="/documentation/developers-and-admins/saas">SaaS environment</a>, the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">service domain</a> is configured automatically.</p>
+</div>
+
+<ol type="1">
+<li>Navigate to the <strong>Notifications</strong> application.</li>
+<li>Select the <strong>Commerce order</strong> default notification and <a href="/documentation/developers-and-admins/configuration/notifications#edit-default-notifications">edit the email content</a>.
+<ul>
+<li>You can use <a href="/documentation/developers-and-admins/configuration/notifications#notification-content-placeholders">content placeholders</a> to include information about the order.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<h3 id="enable-notifications-for-order-statuses">Enable notifications for order statuses</h3>
+<p>Now you need to enable the notification for individual order statuses:</p>
+<ol type="1">
+<li>Navigate to the <strong>Commerce configuration</strong> application.</li>
+<li>Select an order status for which you want the system to send notifications.</li>
+<li>If you wish to enable internal notifications:
+<ol type="1">
+<li>Select the <strong>Notify users when the order reaches this status</strong> checkbox.</li>
+<li>Select <strong>Recipients</strong> – users who you want to receive the notification whenever an order is <a href="/documentation/business-users/manage-commerce-stores#change-order-status">moved</a> to this status.
+<ul>
+<li>Only users who have access to the <strong>Orders</strong> application can be selected.</li>
+<li>If a user is selected and later loses the access to the <strong>Orders</strong> application, they will still receive order notifications, but will not be able to view the orders.</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>If you wish to enable customer notifications:
+<ol type="1">
+<li>Select the <strong>Notify the customer when the order reaches this status</strong> checkbox.</li>
+<li>Select an <a href="/documentation/business-users/digital-marketing/emails">email</a> with the <em>Order status change</em> purpose from an email channel.</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<h3 id="send-notifications-for-new-orders">Send notifications for new orders</h3>
+<p>Order notifications (both for customers and internal) are automatically sent when <a href="/documentation/business-users/manage-commerce-stores#change-order-status">moving</a> existing orders between order statuses. If you want the system to send notifications when a new order is created, you need to call the <code>SendNotification</code> method of the <code>IOrderNotificationService</code> service when <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process#create-orders-from-shopping-carts">creating the order</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Send notifications on order creation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="17"><code>
+// An instance of IOrderNotificationService can be retrieved using dependency injection
+private readonly IOrderNotificationService orderNotificationService;
+
+// Creates a new order object
+var order = new OrderInfo()
+{
+    // Create and populate the order object
+    // ...
+};
+
+// Create and populate the order address (OrderAddressInfo) and order items (OrderItemInfo)
+// ...
+
+try
+{
+    // Sends notifications about the created order (both for customers and internal)
+    await orderNotificationService.SendNotification(order.OrderID, cancellationToken);
+}
+catch (OrderNotificationSendException ex)
+{
+    // We strongly recommend using a logger service (e.g., ILogger) to detect errors that could occur when sending order notifications
+    logger.LogError(ex, "Failed to send notification for order ID {OrderID}", order.OrderID);
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

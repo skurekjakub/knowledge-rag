@@ -1,0 +1,633 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Personal data collection</title>
+</head>
+<body>
+<p>To comply with the requirements of personal data regulations, such as the <a href="/documentation/developers-and-admins/data-protection/gdpr-compliance">GDPR</a>, you need to provide a way for administrators (data protection officers) to collect personal data stored within the system. This is necessary to resolve personal data queries from data subjects, and requests to transfer personal data to another system or application.</p>
+<p>Xperience does not provide any personal data collection functionality by default. This requires exact knowledge of how your project gathers, processes and stores personal data. You need to implement the data collection based on the specifics of your project and the nature of the legal requirements that you wish to fulfill.</p>
+<p>Use the following process to develop the personal data collection:</p>
+
+<div>
+
+</div>
+<div>
+<p>The interfaces, registers and other related classes that you need to implement personal data collection are available in the <code>CMS.DataProtection</code> namespace of the Xperience API.</p>
+</div>
+
+<ol type="1">
+<li><p>Open your Xperience solution in Visual Studio.</p></li>
+<li><p><a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) to your solution or re-use an existing one.</p></li>
+<li>
+<p>Create custom classes that implement collector interfaces:</p>
+<ul>
+<li>
+<a href="#identity-collectors">Identity collectors</a> – map real-world identifiers, such as email addresses or names, to corresponding Xperience objects that represent data subjects.</li>
+<li>
+<a href="#data-collectors">Data collectors</a> – process the objects added by identity collectors, retrieve related personal data, and format the results into a string containing either human-readable text or machine-readable data (such as JSON or XML).</li>
+</ul>
+</li>
+<li>
+<p>Register your collector implementations <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">on application startup</a>. Place the code within a module’s <code>OnInit</code> method.</p>
+<ul>
+<li>You can register any number of collectors.</li>
+<li>To register identity collectors, call the <code>IdentityCollectorRegister.Instance.Add</code>  method. The registration order is significant – the identities added by a collector can be accessed by identity collectors that are registered after.</li>
+<li>To register data collectors, call the <code>PersonalDataCollectorRegister.Instance.Add</code>  method.</li>
+</ul>
+</li>
+</ol>
+<p>The registered collectors allow users to search for personal data in the <strong>Data protection</strong> application. To give users the option to delete the collected data from the system (or specific parts of it), you also need to implement erasure functionality – see <a href="/documentation/developers-and-admins/data-protection/personal-data-erasure">Personal data erasure</a>.</p>
+<h2 id="identity-collectors">Identity collectors</h2>
+<p>When searching for personal data in the <strong>Data protection</strong> application, users submit real-world identifiers of data subjects (email addresses). To collect personal data, you first need to create <em>Identity collectors</em> that convert these identifiers into Xperience objects representing matching data subjects, such as <a href="/documentation/developers-and-admins/configuration/users/user-management">users</a> (<em>UserInfo</em>) or <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> (<em>ContactInfo</em>).</p>
+<p>Identity collectors are classes that implement the <code>IIdentityCollector</code> interface. Every implementation must contain the <code>Collect</code>  method, which processes the following parameters:</p>
+<ul>
+<li>
+<code>IDictionary&lt;string, object&gt;</code> – a dictionary holding the submitted identifiers and other filtering parameters. The identifier input provides an email address value, which is available under the <code>email</code>  key.</li>
+<li>
+<code>List&lt;BaseInfo&gt;</code> – a list of Xperience objects representing data subjects. Contains all objects added by previously registered <code>IIdentityCollector</code> implementations.</li>
+</ul>
+<p>To create your own <code>IIdentityCollector</code> implementations:</p>
+<ol type="1">
+<li>Use the <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery API</a> to load Xperience objects (instances of <em>Info</em> classes) that match the submitted identifier values (available in the <code>Collect</code>  method’s first parameter).</li>
+<li>Add the retrieved objects to the list of identity objects (the <code>Collect</code> method’s second parameter).</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>See the <a href="#example-contact-data-collectors">Example – Contact data collectors</a> section to view a code example.</p>
+</div>
+
+<p>The data of the objects retrieved by identity collectors needs to be processed into suitable text by data collectors.</p>
+<h2 id="data-collectors">Data collectors</h2>
+<p>After you implement <a href="#identity-collectors">Identity collectors</a>, you need to create <em>Data collectors</em>. These collectors retrieve personal data related to the identity objects provided by the registered identity collectors, and process the results into a suitable format. We recommend creating separate data collectors for different object types, depending on the types of personal data that you process in your project.</p>
+<p>Data collectors are classes that implement the <code>IPersonalDataCollector</code> interface. Every implementation must contain the <code>Collect</code> method.</p>
+<ul>
+<li><p>The method’s <code>IEnumerable&lt;BaseInfo&gt;</code> parameter provides the identity objects added by your <code>IIdentityCollector</code> implementations. You can convert the <code>BaseInfo</code> objects to specific types, such as <code>UserInfo</code>, <code>ContactInfo</code>, etc.</p></li>
+<li>
+<p>The method’s second parameter is a string that specifies the requested output format. By default, the following fixed values are used for the output format:</p>
+<ul>
+<li>
+<code>machine</code> – when searching for data on the <em>Data portability</em> tab of the <em>Data protection</em> application. The value is available in the API under the <code>PersonalDataFormat.MACHINE_READABLE</code> constant. By default, the system assumes that machine-readable data is in XML format and adds a  <code>&lt;PersonalData&gt;</code>  root tag around the final output. To return data in another format, such as <a href="http://www.json.org/" target="_blank">JSON</a> , you need to <a href="#customize-the-data-output">Customize the data output</a> .</li>
+<li>
+<code>human</code>  – when searching for data on the <em>Right to access</em> and <em>Right to be forgotten</em> tabs in the <em>Data protection</em> application. The value is available in the API under the <code>PersonalDataFormat.HUMAN_READABLE</code>  constant.</li>
+</ul>
+</li>
+</ul>
+<p>To create your own <code>IPersonalDataCollector</code>  implementations:</p>
+<ol type="1">
+<li><p>Collect all required personal data related to the provided identity objects.</p></li>
+<li>
+<p>Format the data into a string.</p>
+
+<div>
+
+</div>
+<div>
+<p>We recommend creating a dedicated writer class for every required output format. You can reuse the API of a general writer class to build the personal data string for different types of objects.</p>
+<p>You may also need to define transformation functions that convert internally stored values into more understandable equivalents. For example, the system uses integer values for some fields that have a fixed set of possible options.</p>
+</div>
+</li>
+<li><p>Return a <code>PersonalDataCollectorResult</code> object in the <code>Collect</code> method, with the resulting personal data string assigned into the <code>Text</code> property.</p></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>See the <a href="#example-contact-data-collectors">Example – Contact data collectors</a> section to view a code example.</p>
+</div>
+
+<p>The text provided by registered data collectors is displayed when searching for personal data in the <strong>Data protection</strong> application.</p>
+<h3 id="customize-the-data-output">Customize the data output</h3>
+<p>By default, the overall data returned by the collection process is composed according to the registration order of your data collectors (starting from the first to the last). Additionally, the system assumes that machine-readable data is in XML format and adds a  <code>&lt;PersonalData&gt;</code>  root tag around the final output of all data collectors.</p>
+<p>If your data collectors return machine-readable data in another format, such as <a href="https://www.json.org/" target="_blank">JSON</a>, or you wish to otherwise adjust the data composition process:</p>
+<ol type="1">
+<li>Open your Xperience solution in Visual Studio.</li>
+<li>Create a custom class that inherits from <code>PersonalDataHelper</code> (available in the <code>CMS.DataProtection</code> namespace).</li>
+<li>Override the <code>JoinPersonalDataInternal</code> method of the helper class:
+<ul>
+<li>The method’s <code>IEnumerable&lt;string&gt;</code> parameter provides a collection of personal data strings added by your registered <code>IPersonalDataCollector</code>  implementations.</li>
+<li>The method’s second parameter is a string that specifies the requested output format.</li>
+<li>Compose the final data output according to your custom requirements and return it as a string.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/customize-system-providers/register-custom-providers">Register</a> your helper class implementation using the <code>RegisterCustomHelper</code> assembly attribute.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+
+using CMS;
+using CMS.DataProtection;
+
+// Registers the CustomPersonalDataHelper class to replace the default PersonalDataHelper
+[assembly: RegisterCustomHelper(typeof(CustomPersonalDataHelper))]
+
+public class CustomPersonalDataHelper : PersonalDataHelper
+{
+    // Customizes the output of personal data in machine-readable format
+    // Replaces the default &lt;PersonalData&gt; XML root tag with curly brackets for JSON data
+    protected override string JoinPersonalDataInternal(IEnumerable&lt;string&gt; personalData, string outputFormat)
+    {
+        // Performs custom handling for personal data in machine-readable format
+        if (outputFormat.Equals(PersonalDataFormat.MACHINE_READABLE, StringComparison.OrdinalIgnoreCase))
+        {
+            string indentation = "  ";
+            string indentedNewLine = Environment.NewLine + indentation;
+
+            var resultBuilder = new StringBuilder();
+
+            // Adds the opening bracket to the result
+            resultBuilder.AppendLine("{");
+            resultBuilder.Append(indentation);
+
+            // Updates all new line characters in the returned personal data to include the added indentation
+            var modifiedPersonalData = personalData.Select(data =&gt; data.Replace(Environment.NewLine, indentedNewLine));
+
+            // Adds the data provided by all registered personal data collectors
+            resultBuilder.AppendLine(String.Join(indentedNewLine, modifiedPersonalData));
+
+            // Adds the closing bracket to the result
+            resultBuilder.Append("}");
+
+            return resultBuilder.ToString();
+        }
+
+        // Runs the default method for human-readable or undefined output formats
+        return base.JoinPersonalDataInternal(personalData, outputFormat);
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The system now uses your custom data joining implementation when displaying results in the <strong>Data protection</strong> application.</p>
+<h2 id="example-contact-data-collectors">Example – Contact data collectors</h2>
+<p>The following example demonstrates how to implement personal data collection for basic <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> data. The sample collectors work with the email address identifier that users can submit in the <strong>Data protection</strong> application, and produce personal data output in plain text or XML format.</p>
+
+<div>
+
+</div>
+<div>
+<p>This example only shows the basic implementation concepts and collects a very limited set of personal data. You can find more extensive code examples in the Dancing Goat sample site. <a href="/documentation/developers-and-admins/installation">Install</a> the Dancing Goat project and view the files in the <strong>DataProtectionSamples</strong> folder.</p>
+<p>Keep in mind that you always need to adjust your own implementation based on the personal data processing used by your project and the legal requirements that you wish to fulfill.</p>
+</div>
+
+<p>Start by <a href="/documentation/developers-and-admins/customization/integrate-custom-code">adding a custom assembly</a> (<em>Class Library</em> project) with discovery enabled to your solution. Add your collector implementations and other related classes under the custom project.</p>
+<ul>
+<li><a href="#create-the-identity-collector">Create the identity collector</a></li>
+<li><a href="#implement-writer-classes">Implement writer classes</a></li>
+<li><a href="#create-the-data-collector">Create the data collector</a></li>
+<li><a href="#register-the-collectors">Register the collectors</a></li>
+</ul>
+<h3 id="create-the-identity-collector">Create the identity collector</h3>
+<p>To create an identity collector for contacts, add a new class implementing the <code>IIdentityCollector</code>  interface under the custom project:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using CMS.DataEngine;
+using CMS.DataProtection;
+using CMS.ContactManagement;
+
+public class ContactIdentityCollector : IIdentityCollector
+{
+    // Stores an instance of the service for managing contacts
+    private readonly IInfoProvider&lt;ContactInfo&gt; contactInfoProvider;
+
+    public ContactIdentityCollector(IInfoProvider&lt;ContactInfo&gt; contactInfoProvider)
+    {
+        this.contactInfoProvider = contactInfoProvider;
+    }
+
+    public void Collect(IDictionary&lt;string, object&gt; dataSubjectFilter, List&lt;BaseInfo&gt; identities)
+    {
+        // Does nothing if the identifier inputs do not contain the "email" key or if its value is empty
+        if (!dataSubjectFilter.ContainsKey("email"))
+        {
+            return;
+        }
+        string? email = dataSubjectFilter["email"] as string;
+        if (String.IsNullOrWhiteSpace(email))
+        {
+            return;
+        }
+
+        // Finds contacts with a matching email address
+        List&lt;ContactInfo&gt; contacts = contactInfoProvider.Get()
+                                            .WhereEquals(nameof(ContactInfo.ContactEmail), email)
+                                            .ToList();
+
+        // Adds the matching contact objects to the list of collected identities
+        identities.AddRange(contacts);
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The collector loads all contact objects (<code>ContactInfo</code> ) that match the submitted email address identifier, and adds them to the list of collected identities.</p>
+<h3 id="implement-writer-classes">Implement writer classes</h3>
+<p>Continue by creating writer classes that convert Xperience objects into the required output formats (plain text and XML in this example).</p>
+<p>For plain text, add the following writer class under the custom project:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+using CMS.DataEngine;
+
+public class TextPersonalDataWriter
+{
+    private readonly StringBuilder stringBuilder;
+    private int indentationLevel;
+
+    public TextPersonalDataWriter()
+    {
+        stringBuilder = new StringBuilder();
+        indentationLevel = 0;
+    }
+
+    // Writes horizontal tabs based on the current indentation level
+    private void Indent()
+    {
+        stringBuilder.Append('\t', indentationLevel);
+    }
+
+    // Writes text representing a new section of data, and increases the indentation level
+    public void WriteStartSection(string sectionName)
+    {
+        Indent();
+
+        stringBuilder.AppendLine(sectionName + ": ");
+        indentationLevel++;
+    }
+
+    // Writes the specified columns of an Xperience object (BaseInfo) and their values
+    public void WriteObject(BaseInfo baseInfo, List&lt;Tuple&lt;string, string&gt;&gt; columns)
+    {
+        foreach (var column in columns)
+        {
+            // Gets the name of the current column
+            string columnName = column.Item1;
+            // Gets a user-friendly name for the current column
+            string columnDisplayName = column.Item2;
+
+            // Filters out identifier columns from the human-readable text data
+            if (columnName.Equals(baseInfo.TypeInfo.IDColumn, StringComparison.Ordinal) || 
+                columnName.Equals(baseInfo.TypeInfo.GUIDColumn, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            // Gets the value of the current column for the given object
+            object value = baseInfo.GetValue(columnName);
+
+            if (value != null)
+            {
+                Indent();
+                stringBuilder.AppendFormat("{0}: ", columnDisplayName);
+                stringBuilder.Append(value);
+                stringBuilder.AppendLine();
+            }
+        }
+    }
+
+    // "Closes" a text section by reducing the indentation level
+    public void WriteEndSection()
+    {
+        indentationLevel--;
+    }
+
+    // Gets a string containing the writer's overall text
+    public string GetResult()
+    {
+        return stringBuilder.ToString();
+    }
+}
+
+</code></pre>
+</div>
+
+<p>For machine-readable data in XML format, add the following writer class under the custom project. The sample XML writer is an <a href="https://docs.microsoft.com/en-us/dotnet/api/system.idisposable" target="_blank">IDisposable</a> implementation that uses the standard .NET <a href="https://docs.microsoft.com/en-us/dotnet/api/system.xml.xmlwriter" target="_blank">XmlWriter</a> class to create the required output.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Xml;
+
+using CMS.DataEngine;
+using CMS.Helpers;
+
+public class XmlPersonalDataWriter : IDisposable
+{
+    private readonly StringBuilder stringBuilder;
+    private readonly XmlWriter xmlWriter;
+
+    public XmlPersonalDataWriter()
+    {
+        stringBuilder = new StringBuilder();
+        xmlWriter = XmlWriter.Create(stringBuilder, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true });
+    }
+
+    // Writes an opening XML tag with a specified name
+    public void WriteStartSection(string sectionName)
+    {
+        // Replaces period characters in object names with underscores
+        sectionName = sectionName.Replace('.', '_');
+
+        xmlWriter.WriteStartElement(sectionName);
+    }
+
+    // Writes XML tags representing the specified columns of an Xperience object (BaseInfo) and their values
+    public void WriteObject(BaseInfo baseInfo, List&lt;string&gt; columns)
+    {
+        foreach (string column in columns)
+        {
+            object value = baseInfo.GetValue(column);
+
+            if (value != null)
+            {
+                xmlWriter.WriteStartElement(column);
+                xmlWriter.WriteValue(XmlHelper.ConvertToString(value));
+                xmlWriter.WriteEndElement();
+            }
+        }
+    }
+
+    // Writes a closing XML tag for the most recent open tag
+    public void WriteEndSection()
+    {
+        xmlWriter.WriteEndElement();
+    }
+
+    // Gets a string containing the writer's overall XML data
+    public string GetResult()
+    {
+        xmlWriter.Flush();
+
+        return stringBuilder.ToString();
+    }
+
+    // Releases all resources used by the current XmlPersonalDataWriter instance
+    public void Dispose()
+    {
+        xmlWriter.Dispose();
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="create-the-data-collector">Create the data collector</h3>
+<p>To create a data collector for contacts, add a class implementing the <code>IPersonalDataCollector</code>  interface under the custom project:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using CMS.ContactManagement;
+using CMS.DataEngine;
+using CMS.DataProtection;
+
+public class ContactDataCollector : IPersonalDataCollector
+{
+    // Prepares a list of contact columns to be included in the personal data
+    // Every Tuple contains a column name, and user-friendly description of its content
+    private readonly List&lt;Tuple&lt;string, string&gt;&gt; contactColumns = new List&lt;Tuple&lt;string, string&gt;&gt; {
+        Tuple.Create("ContactFirstName", "First name"),
+        Tuple.Create("ContactMiddleName", "Middle name"),
+        Tuple.Create("ContactLastName", "Last name"),
+        Tuple.Create("ContactJobTitle", "Job title"),
+        Tuple.Create("ContactAddress1", "Address"),
+        Tuple.Create("ContactCity", "City"),
+        Tuple.Create("ContactZIP", "ZIP"),
+        Tuple.Create("ContactMobilePhone", "Mobile phone"),
+        Tuple.Create("ContactBusinessPhone", "Business phone"),
+        Tuple.Create("ContactEmail", "Email"),
+        Tuple.Create("ContactBirthday", "Birthday"),
+        Tuple.Create("ContactGender", "Gender"),
+        Tuple.Create("ContactNotes", "Notes"),
+        Tuple.Create("ContactGUID", "GUID"),
+        Tuple.Create("ContactLastModified", "Last modified"),
+        Tuple.Create("ContactCreated", "Created"),
+        Tuple.Create("ContactCampaign", "Campaign"),
+        Tuple.Create("ContactCompanyName", "Company name")
+    };    
+
+    public PersonalDataCollectorResult Collect(IEnumerable&lt;BaseInfo&gt; identities, string outputFormat)
+    {
+        // Gets a list of all contact objects added by registered IIdentityCollector implementations
+        List&lt;ContactInfo&gt; contacts = identities.OfType&lt;ContactInfo&gt;().ToList();
+
+        // Uses a writer class to create the personal data, in either XML format or as human-readable text
+        string contactData = null;
+        if (contacts.Any())
+        {
+            switch (outputFormat.ToLowerInvariant())
+            {
+                case PersonalDataFormat.MACHINE_READABLE:
+                    contactData = GetXmlContactData(contacts);
+                    break;
+                case PersonalDataFormat.HUMAN_READABLE:
+                default:
+                    contactData = GetTextContactData(contacts);
+                    break;
+            }
+        }
+
+        return new PersonalDataCollectorResult
+        {
+            Text = contactData
+        };
+    }
+
+    private string GetXmlContactData(List&lt;ContactInfo&gt; contacts)
+    {
+        using (var writer = new XmlPersonalDataWriter())
+        {
+            // Wraps the contact data into a &lt;OnlineMarketingData&gt; tag
+            writer.WriteStartSection("OnlineMarketingData");
+
+            foreach (ContactInfo contact in contacts)
+            {
+                // Writes a tag representing a contact object
+                writer.WriteStartSection(ContactInfo.OBJECT_TYPE);
+                // Writes tags for the contact's personal data columns and their values
+                writer.WriteObject(contact, contactColumns.Select(t =&gt; t.Item1).ToList());
+                // Closes the contact object tag
+                writer.WriteEndSection();
+            }
+
+            // Closes the &lt;OnlineMarketingData&gt; tag
+            writer.WriteEndSection();
+
+            return writer.GetResult();
+        }
+    }
+
+    private string GetTextContactData(List&lt;ContactInfo&gt; contacts)
+    {
+        var writer = new TextPersonalDataWriter();
+
+        writer.WriteStartSection("On-line marketing data");
+
+        foreach (ContactInfo contact in contacts)
+        {
+            writer.WriteStartSection("Contact");
+            // Writes user-friendly descriptions of the contact's personal data columns and their values
+            writer.WriteObject(contact, contactColumns);
+            writer.WriteEndSection();
+        }
+
+        return writer.GetResult();
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The sample data collector processes the contact objects provided by the identity collector, and then uses the writer classes to create personal data text in the requested output format.</p>
+<h3 id="register-the-collectors">Register the collectors</h3>
+<p>To register the identity and data collectors, run the required initialization code <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">on application startup</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.DataEngine;
+using CMS.DataProtection;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(CustomDataProtectionModule))]
+
+internal class CustomDataProtectionModule : Module
+{
+    // Module class constructor, the system registers the module under the name "CustomDataProtection"
+    public CustomDataProtectionModule()
+        : base("CustomDataProtection")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Adds the ContactIdentityCollector to the collection of registered identity collectors
+        IdentityCollectorRegister.Instance.Add(new ContactIdentityCollector());
+
+        // Adds the ContactDataCollector to the collection of registered personal data collectors
+        PersonalDataCollectorRegister.Instance.Add(new ContactDataCollector());
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Save all changes and <strong>Rebuild</strong> the custom project.</p>
+<p>You can now search for the email addresses of contacts on the <strong>Data portability</strong> and <strong>Right to access</strong> tabs in the <strong>Data protection</strong> application. If matching contacts exist in the system, the registered collectors return their data in XML or plain text format.</p>
+<p></p>
+
+</body>
+</html>

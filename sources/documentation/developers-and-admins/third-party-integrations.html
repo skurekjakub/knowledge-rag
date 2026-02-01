@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Third-party integrations</title>
+</head>
+<body>
+
+<div>
+<p><strong>SendGrid</strong></p>
+<p>Xperience provides a client for sending mail using the <a href="https://sendgrid.com/" target="_blank">Twilio SendGrid</a> email platform.</p>
+<p>See <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a> to learn more.</p>
+</div>
+
+
+<div>
+<p><strong>Microsoft Application Insights for SaaS deployments</strong></p>
+<p>For projects <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed to the SaaS environment</a>, Xperience integrates <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core" target="_blank">Application Insights for ASP.NET Core applications</a> to enable monitoring and aggregation of metrics for your website:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/configuration/event-log">Xperience Event logs</a> (Errors and warnings only)</li>
+<li>.NET exceptions and errors</li>
+<li>(<em>Optional</em>) <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/usage-overview" target="_blank">Client-side telemetry</a>
+</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/configuration/saas-configuration#DeploytotheSaaSenvironment-EnableAppInsights">Microsoft Application Insights integration</a>.</p>
+</div>
+
+
+<div>
+<p><strong>Cloudflare CDN for SaaS deployments</strong></p>
+<p>For projects <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed to the SaaS environment</a>, Xperience integrates <a href="https://www.cloudflare.com/learning/cdn/what-is-a-cdn/" target="_blank">Cloudflare CDN</a>. The CDN integration ensures better application performance and availability by distributing the network load across data centers and by caching website resources.</p>
+<p>See <a href="/documentation/developers-and-admins/configuration/saas-configuration#cloudflare-cdn">Cloudflare CDN</a>.</p>
+</div>
+
+
+<div>
+<p><strong>Third-party authentication providers</strong></p>
+<p>Xperience by Kentico supports authentication via external identity managers. The support differs slightly between the administration interface and the live site.</p>
+<p><strong>Admin UI</strong></p>
+<p>The Xperience admin UI supports any OAuth/OIDC-compliant identity provider. See <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-external-authentication">Administration - External authentication</a> for more details.</p>
+<p><strong>Live site</strong></p>
+<p>Xperience by Kentico live sites use <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity" target="_blank">ASP.NET Identity</a> to manage user accounts. When implementing external authentication for Xperience projects, you can choose from the providers supported by Identity, such as Facebook, Twitter, Google, and other OAuth/OIDC-compliant platforms. See <a href="/documentation/developers-and-admins/development/registration-and-authentication/external-authentication">External authentication</a> for more details.</p>
+</div>
+
+<h2 id="external-packages">External packages</h2>
+<p><strong>Package compatibility</strong>: External packages may not be immediately updated to support the latest version of Xperience by Kentico. Refer to the information in the GitHub readme files of individual packages.</p>
+<p><strong>Support and feedback</strong>: To report problems or provide feedback on an external package, create a GitHub issue in the package’s repository. If you want to report a vulnerability, consult the <a href="https://github.com/Kentico/.github/blob/main/SECURITY.md" target="_blank">Kentico open source security policy</a>.</p>
+
+<div>
+<p><strong>Disqus</strong></p>
+<p>Xperience provides a module that integrates with the <a href="https://disqus.com/" target="_blank">Disqus</a> comment platform. The module contains a <em>Disqus comments</em> widget that provides the option to add a comment section to any page on your website. Disqus also offers advanced moderation tools, analytics, and monetization options. </p>
+<p>The integration is provided through the following NuGet package:</p>
+<ul>
+<li><a href="https://www.nuget.org/packages/Kentico.Xperience.Disqus.Widget" target="_blank">Kentico.Xperience.Disqus.Widget</a></li>
+</ul>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-disqus" target="_blank">Xperience by Kentico Disqus</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Algolia</strong></p>
+<p>An external module that allows you to create <a href="https://www.algolia.com/products/search-and-discovery/hosted-search-api/" target="_blank">Algolia search indexes</a> and index Page content types in the Xperience content tree using a code-first approach. The integration also enables you to provide a search interface on the live site using .NET API, JavaScript API, or the <a href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/" target="_blank">InstantSearch.js</a> JavaScript library.</p>
+<p>The integration is provided through the following NuGet package:</p>
+<ul>
+<li><a href="https://www.nuget.org/packages/Kentico.Xperience.Algolia" target="_blank">Kentico.Xperience.Algolia</a></li>
+</ul>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-algolia" target="_blank">Algolia Search Integration</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Lucene</strong></p>
+<p>An external module that integrates Xperience with the latest 4.8 beta version of <a href="https://github.com/apache/lucenenet" target="_blank">Lucene.NET</a>, enabling auto-indexing of content in Xperience based on application-local, code-defined search indexes, and search results retrieval.</p>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-lucene" target="_blank">Xperience by Kentico Lucene</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>CRM</strong></p>
+<p>An external module (a starter kit) that simplifies the integration of Xperience by Kentico with CRM software. The module also contains two packages that directly integrate Xperience by Kentico with <a href="https://www.microsoft.com/en-us/dynamics-365/products/sales" target="_blank">Microsoft Dynamics 365 Sales</a> and <a href="https://www.salesforce.com/eu/products/sales-cloud/" target="_blank">Salesforce Sales Cloud</a> CRM.</p>
+<p>The integration enables:</p>
+<ul>
+<li>Sending <a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">form submissions</a> from Xperience to the connected CRM as Leads.</li>
+<li>Bi-directional synchronization between <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> in Xperience and Leads or Contacts in the connected CRM.</li>
+<li>Checking synchronization status in the Xperience administration.</li>
+</ul>
+<p>The starter kit and two integrations are distributed as NuGet packages.</p>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-crm" target="_blank">Xperience by Kentico CRM</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Tag Manager</strong></p>
+<p>An external module that allows marketers and editors to author and embed custom tags or code snippets into website channels. The module supports several types of code snippets out-of-the-box including:</p>
+<ul>
+<li>
+<a href="https://tagmanager.google.com/" target="_blank">Google Tag Manager</a> – lets you implement front-end services, marketing and tracking tags on a website.</li>
+<li>
+<a href="https://analytics.google.com/" target="_blank">Google Analytics 4</a> – lets you track users on your website.</li>
+<li>
+<a href="https://vwo.com/" target="_blank">VWO A/B Testing</a> – lets you optimize digital experiences and maximize conversions using a specialized suite of tools.</li>
+<li>
+<a href="https://www.intercom.com/" target="_blank">Intercom Messenger</a> – lets you communicate with customers live through your website.</li>
+<li>
+<a href="https://clarity.microsoft.com/" target="_blank">Microsoft Clarity</a> – lets you record user sessions, generate heatmaps, scrollmaps and further analyze your website users.</li>
+</ul>
+<p>The module is distributed as a NuGet package.</p>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-tag-manager" target="_blank">Xperience by Kentico Tag Manager</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Azure AI Search</strong></p>
+<p>An external module that enables you to create <a href="https://azure.microsoft.com/en-us/products/ai-services/ai-search" target="_blank">Azure AI Search</a> indexes for the content of <a href="/documentation/business-users/website-content">pages</a> from a website channel’s content tree using a code-first approach. The module is distributed as a NuGet package.</p>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-azure-ai-search" target="_blank">Xperience by Kentico Azure Search</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Zapier</strong></p>
+<p>An external module that enables you to create <a href="https://zapier.com/workflows" target="_blank">automated workflows</a>, or “Zaps”, that can trigger actions across different platforms based on events that occur in Xperience by Kentico. For example, you can trigger actions in Zapier when a new <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> is created or a content item’s <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a> step changes. In the other direction, you can set up actions in Xperience that are triggered by “Zaps” from other applications – store external data as a <a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">form submission</a> or change the workflow step of a content item.</p>
+<p>This integration empowers users to streamline repetitive tasks, synchronize data, and improve productivity without requiring any coding knowledge.</p>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-zapier" target="_blank">Xperience by Kentico Zapier</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Shopify</strong></p>
+<p>Allows you to connect your Shopify store with an Xperience by Kentico application using <a href="https://shopify.dev/docs/api/storefront" target="_blank">Shopify Storefront</a> and <a href="https://shopify.dev/docs/api/admin" target="_blank">Shopify Admin</a> APIs. The integration provides synchronization of products and e-commerce actions between the two platforms. Implemented features provide users with the options to:</p>
+<ul>
+<li>Add, update and remove products in the shopping cart</li>
+<li>Manage discount coupons</li>
+<li>Proceed to checkout directly on the Shopify store page</li>
+</ul>
+<p>The integration is provided through the following NuGet packages:</p>
+<ul>
+<li><a href="https://www.nuget.org/packages/Kentico.Xperience.Shopify" target="_blank">Kentico.Xperience.Shopify</a></li>
+<li><a href="https://www.nuget.org/packages/Kentico.Xperience.Shopify.Rcl" target="_blank">Kentico.Xperience.Shopify.Rcl</a></li>
+</ul>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-shopify" target="_blank">Xperience by Kentico Shopify integration</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>Kentico Xperience 13 E-commerce</strong></p>
+<p>Allows you to connect a <a href="/13/e-commerce-features">Kentico Xperience 13 store</a> with an Xperience by Kentico application. The integration is primarily intended to enable migration of existing Kentico Xperience 13 E-Commerce projects to Xperience by Kentico. The following e-commerce scenarios are supported:</p>
+<ul>
+<li>Synchronization of products from Kentico Xperience 13 to content items and website channel pages in Xperience by Kentico</li>
+<li>Listing products on website channel pages based on parameters, product categories, prices and inventory</li>
+<li>Currency selection</li>
+<li>Implementation of a shopping cart, including order creation</li>
+<li>Listing of orders in the administration</li>
+<li>Listing of orders on the live site for the current customer</li>
+<li>Updates of existing orders</li>
+</ul>
+<p>The integration is provided through the following NuGet packages:</p>
+<ul>
+<li>
+<a href="https://www.nuget.org/packages/Kentico.Xperience.StoreApi" target="_blank">Kentico.Xperience.StoreApi</a> – installed into the <em>Kentico Xperience 13 live site</em> application.</li>
+<li>
+<a href="https://www.nuget.org/packages/Kentico.Xperience.K13Ecommerce" target="_blank">Kentico.Xperience.K13Ecommerce</a> – installed into the <em>Xperience by Kentico</em> application.</li>
+<li>
+<a href="https://www.nuget.org/packages/Kentico.Xperience.Store.Rcl" target="_blank">Kentico.Xperience.Store.Rcl</a> – installed into the <em>Xperience by Kentico</em> application.</li>
+</ul>
+<p>For more information and detailed instructions, see the <a href="https://github.com/Kentico/xperience-by-kentico-k13ecommerce" target="_blank">Xperience by Kentico - Kentico Xperience 13 E-commerce</a> GitHub repository.</p>
+</div>
+
+
+<div>
+<p><strong>MiniProfiler</strong></p>
+<p>An external module that integrates Xperience by Kentico applications with <a href="https://miniprofiler.com/" target="_blank">MiniProfiler</a>. This integration allows developers to optimize database queries and reduce load times.</p>
+<p>For more information, see the <a href="https://github.com/Kentico/xperience-by-kentico-miniprofiler" target="_blank">Xperience by Kentico MiniProfiler</a> GitHub repository.</p>
+</div>
+
+
+</body>
+</html>

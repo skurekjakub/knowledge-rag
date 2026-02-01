@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form sections</title>
+</head>
+<body>
+<p>The layout of forms composed via the Xperience <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> is based on elements called <strong>sections</strong>. Each form section defines a block of HTML code containing one or more zones. These zones can then hold any number of form fields (based on <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form components</a>).</p>
+<p>When <a href="/documentation/business-users/digital-marketing/forms">creating forms in the Form Builder interface</a> of the <em>Forms</em> application, editors first add or adjust the sections, and then add individual fields into the resulting zones.</p>
+<p>The system provides a <strong>Default</strong> form section that organizes fields in a basic single-column layout (one zone). The default section is automatically added to new forms, and in cases where an editor removes the last section from a form. If you wish to use more advanced layouts for fields in your forms, you need to develop and register your own form sections.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Form submit button</strong></p>
+<p>The submit button of a form is rendered after the last section (when <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">displaying forms</a> on the website using the <em>Form</em> widget). If you need to adjust the position of the submit button, use appropriate CSS styling in your site’s stylesheet.</p>
+</div>
+
+<h2 id="develop-form-sections">Develop form sections</h2>
+<p>Form sections are implemented as either:</p>
+<ul>
+<li>a partial view that contains form zones<br>
+– OR –</li>
+<li>an ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component</a>. Recommended for more complex sections that require non-trivial interactions with the application’s business layer.</li>
+</ul>
+<p><strong>Note</strong>: Form sections are designed to be used in the global scope and their code files must be placed in the application root of your Core project (not in an <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Area</a>). Creating sections in Areas may lead to unexpected behavior.</p>
+<p>In both cases, you can develop sections with properties, which allow editors to adjust the section content or behavior directly in the Form Builder interface. For sections with configurable properties, you need to create an additional model class that represents the section properties. For information about this more advanced scenario, see <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections/form-section-properties">Form section properties</a>.</p>
+<h3 id="implement-form-section-views">Implement form section views</h3>
+<p>Create partial views with the required formatting. Use the <code>HtmlHelper.Kentico().FormZoneAsync()</code> extension method to add zones where form fields can be placed. Alternatively, you can use the equivalent <code>&lt;form-zone /&gt;</code> <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper</a> element.</p>
+<p>We recommend placing form section view files into your project’s <em>~/Components/FormSections</em> folder. Add a subfolder for specific sections that consist of multiple files.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - form section view</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Web.Mvc
+@using Kentico.Forms.Web.Mvc
+
+&lt;div&gt;
+    &lt;div style="float:left; width:50%;"&gt;
+        @await Html.Kentico().FormZoneAsync()
+    &lt;/div&gt;
+    &lt;div style="float:left; width:50%;"&gt;
+        @await Html.Kentico().FormZoneAsync()
+    &lt;/div&gt;
+    &lt;div style="clear:both;" /&gt;
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<p>When a user <a href="/documentation/business-users/digital-marketing/forms">changes the section type</a> in the Form Builder interface, components (form fields) are moved to the new section’s zones automatically based on the order in which the zones are specified in the section code. This may require additional work from editors to get the desired form layout. To ensure that form components are moved to correct zones when the section type is changed:</p>
+<ol type="1">
+<li>Add an identifier to each zone.</li>
+<li>Use the same identifier for corresponding zones within all of your form sections.</li>
+</ol>
+<p>When a section type is changed, the system moves form components to matching named zones.</p>
+<p></p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - Named form zone</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@await Html.Kentico().FormZoneAsync("main-zone")
+
+</code></pre>
+</div>
+
+<h3 id="implement-form-section-view-components">Implement form section view components</h3>
+<p>The basic implementation of a section consists of only a partial view (and possibly a <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections/form-section-properties">properties</a> class). If you need additional advanced logic (for example to execute operations not suitable for views), you can develop sections based on ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view components</a>. Such sections consist of a view component class and the corresponding partial view it renders.</p>
+<p>Use the following process to implement sections based on a view component:</p>
+<ol type="1">
+<li>
+<p>Create a <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component class</a> for the section.</p>
+<ul>
+<li>We recommend storing form section view components in the <em>~/Components/FormSections/&lt;SectionName&gt;</em> folder together with other files required by the section.</li>
+</ul>
+</li>
+<li>
+<p>Implement the component’s <code>Invoke</code> or <code>InvokeAsync</code>  method (both synchronous and asynchronous approaches are supported, this choice depends solely on your requirements).</p>
+<ul>
+<li><p>The system invokes the view component when the section is inserted via the Form B</p></li>
+<li>
+<p>uilder. For sections with <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections/form-section-properties">custom properties</a>, you must declare the <code>FormSectionViewModel</code>  parameter with the section’s properties class as the <strong>generic parameter</strong> .</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // The signature of a view component's InvokeAsync method for sections without custom properties
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync()
+
+  // The signature of a view component's InvokeAsync method for sections with custom properties
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync(FormSectionViewModel&lt;TSectionPropertiesClass&gt; sectionProperties)
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>Create view model classes to pass any required data to the partial view. For sections with properties, you can directly pass the <code>FormSectionViewModel</code> .</p>
+<ul>
+<li>We recommend storing section models in the <em>~/Components/FormSections/&lt;SectionName&gt;</em> folder together with other files required by the section.</li>
+</ul>
+</li>
+<li><p>Prepare the <a href="#implement-form-section-views">partial view</a> that defines the section’s layout.</p></li>
+<li>
+<p>In the return statement of the view component’s <code>Invoke</code>  method, add the full relative path to the section’s partial view.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Microsoft.AspNetCore.Mvc;
+ using System.Threading.Tasks;
+
+ using Kentico.Forms.Web.Mvc;
+
+ public class MySectionViewComponent : ViewComponent
+ {   
+     public Task&lt;IViewComponentResult&gt; Invoke(FormSectionViewModel&lt;MySectionProperties&gt; sectionProperties)
+     {
+         return View("~/Components/FormSections/MySection/_MySection.cshtml", sectionProperties);      
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+<li><p><a href="#register-form-sections">Register the section</a> into the system.</p></li>
+</ol>
+<p>When the section is inserted using the Form Builder, the system invokes the corresponding view component and renders its partial view. Using this approach, you can decouple business and view-layer code, maintaining separation of concerns.</p>
+<h2 id="register-form-sections">Register form sections</h2>
+<p>Every section needs to be registered before it becomes available in the Form Builder. Register sections by adding the <code>RegisterFormSection</code> assembly attribute (available in the <code>Kentico.Forms.Web.Mvc</code> namespace).</p>
+<p>To register sections represented as a single view file without an additional business logic class, we recommend adding the assembly attributes to a dedicated code file. For example, you can create a class named <code>FormBuilderComponentRegister</code> in your project and use it to register your form sections. Specify the following attribute parameters:</p>
+<ul>
+<li>
+<code>Identifier</code> – a <em>string</em> identifier of the form section. We recommend using sufficiently unique identifiers to avoid potential conflicts with other third-party sections, for example using a company name prefix.</li>
+<li>
+<code>Name</code> – the display name of the form section. Displayed when <a href="/documentation/business-users/digital-marketing/forms">selecting sections</a> in the Form Builder interface.</li>
+<li>
+<code>CustomViewName</code> – specifies the name and location of the view that defines the section’s output. If not set, the system searches for a corresponding <code>_&lt;Identifier&gt;.cshtml</code> view in the <em>~/Views/Shared/Sections</em> folder (any period characters ‘.’ in the identifier are replaced by underscores ‘_’).</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+[assembly: RegisterFormSection("LearningKit.FormSections.ThreeColumns",  
+                                "Three columns",
+                                customViewName: "~/Components/FormSections/ThreeColumns/_ThreeColumns.cshtml",
+                                Description = "Organizes fields into three equal-width columns side-by-side.", 
+                                IconClass = "icon-l-cols-3")]
+
+</code></pre>
+</div>
+
+<p>For <a href="#implement-form-section-view-components">sections based on a view component</a> , you can add the assembly attribute directly into the view component code file. In this case, specify the following attribute parameters:</p>
+<ul>
+<li>
+<code>Identifier</code>   <em>–</em> a  <em>string</em> identifier of the form section. We recommend using sufficiently unique identifiers to avoid potential conflicts with other third-party sections, for example using a company name prefix.</li>
+<li>
+<code>ViewComponentType</code> – the <code>System.Type</code>  of the section’s view component class.</li>
+<li>
+<code>Name</code>  – the name of the form section. Displayed when <a href="/documentation/business-users/digital-marketing/forms">selecting sections</a> in the Form Builder interface.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+[assembly: RegisterFormSection("LearningKit.FormSections.MySection",
+                                typeof(MySectionViewComponent),
+                                "My section",
+                                PropertiesType = typeof(MySectionProperties),
+                                Description = "Organizes fields into a section with a configurable title.", 
+                                IconClass = "icon-square")]
+
+</code></pre>
+</div>
+
+<p>When registering any type of section, you can also set the following attribute properties:</p>
+<ul>
+<li>
+<code>PropertiesType</code> – required for <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections/form-section-properties">sections with properties</a>. Specifies the <code>System.Type</code> of the section’s property model class.</li>
+<li>(Optional) <code>Description</code> – a description of the form section. Displayed as a tooltip when selecting sections the Form Builder interface.</li>
+<li>(Optional) <code>IconClass</code> – the font-icon assigned to the form section. Displayed when selecting sections the Form Builder interface. For a list of font icons available by default in the system, see the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">Icon list</a> .</li>
+</ul>
+<p>The section is now available in the <a href="/documentation/business-users/digital-marketing/forms">Form Builder interface</a>.</p>
+<h2 id="add-scripts-and-styles-for-form-sections">Add scripts and styles for form sections</h2>
+<p>To add JavaScript and CSS styles required by your form sections, we recommend placing script and stylesheet files into sub-folders under:</p>
+<ul>
+<li>
+<strong><em>~/wwwroot/FormBuilder/Public/&lt;SectionName&gt;</em></strong> – scripts and styles intended for the live site.</li>
+<li>
+<strong><em>~/wwwroot/FormBuilder/Admin/&lt;SectionName&gt;</em></strong>– scripts and styles intended for the administration interface (when working with the section in the Fage Builder editing interface). Note that the system already attempts to enforce a unified look and feel for components rendered in the Form Builder interface. See <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">Form components</a> and the <code>GetEditorHtmlAttributes</code> extension method.</li>
+</ul>
+<p>You can use sub-folders that match the identifiers of individual components, or a <em>Shared</em> sub-folder for assets used by multiple components. Note that this recommendation only applies when using the default configuration of the bundling support provided by Xperience and may be different for your project. See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>CSS notes</strong></p>
+<ul>
+<li>Only use the specified directories to add <strong>basic styles</strong> that are required for the section to render correctly. Any <strong>site-specific styles</strong> that finalize the live site design should be handled separately within the given site’s main stylesheet.</li>
+<li>To avoid potential conflicts between styles from other third-party components, we recommend adding a unique prefix to your CSS classes and identifiers (e.g., <code>#CompanyName-mid-button</code>), or use similar measures to ensure their uniqueness.</li>
+</ul>
+</div>
+
+<h3 id="initialize-component-scripts">Initialize component scripts</h3>
+<p>In many cases, you will need to initialize your scripts from the views of form sections (for example if you need to call a function on page load or register an event listener). For most types of page or element events, you can use <a href="https://www.w3schools.com/tags/ref_eventattributes.asp" target="_blank">HTML Event Attributes</a> of elements in your views.</p>
+<p>For scripts that you want to run on page load, you need to consider the following:</p>
+<ul>
+<li>The bundles containing your main scripts are added at the end of the HTML document’s body tag, so they are not available in the section code during the page load process. A solution is to run the initialization script during the <a href="https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded" target="_blank">DOMContentLoaded</a> event.</li>
+<li>Components may be added dynamically after the page is loaded. In this case, the <em>DOMContentLoaded</em> event has already occurred and will not fire again.</li>
+</ul>
+<p>For example, the following script demonstrates how to reliably call a custom function on page load:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+if (document.readyState === "loading") {
+    // Calls the function during the 'DOMContentLoaded' event, after the HTML document has been completely loaded
+    document.addEventListener("DOMContentLoaded", function () {
+        customFunction();
+    });
+} else { 
+    // Calls the function directly in cases where the component is rendered dynamically after 'DOMContentLoaded' has occurred
+    customFunction();
+}
+
+</code></pre>
+</div>
+
+<p>This approach ensures that the initialization script runs correctly when the form section is displayed on the live site, as well as in the Form Builder interface.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: Apart from initialization code, avoid linking or executing scripts directly within form section views – this could lead to duplicated scripts for forms that contain multiple sections of the same type, or on pages with multiple forms.</p>
+</div>
+
+
+</body>
+</html>

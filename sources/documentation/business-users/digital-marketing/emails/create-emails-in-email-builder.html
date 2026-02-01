@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Create emails in Email Builder</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>Email Builder is a user-friendly interface that allows you to compose emails using configurable components prepared by developers.</p>
+<p></p>
+<p>See <a href="/documentation/business-users/digital-marketing/emails">Emails</a> to learn how to work with emails in general. Information, such as the description of the <a href="/documentation/business-users/digital-marketing/emails#email-lifecycle">Email lifecycle</a> and instructions for <a href="/documentation/business-users/digital-marketing/emails#send-draft-emails">Sending draft emails</a> or <a href="/documentation/business-users/digital-marketing/emails#clone-emails">Cloning emails</a>, applies even when using Email Builder.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisites and limitations</strong></p>
+<p>Your project’s developers need to set up the <a href="/documentation/developers-and-admins/development/builders/email-builder#enable-the-email-builder-feature">Email Builder</a> feature and prepare <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a>. Email Builder becomes available if you select an Email Builder template when creating your email.</p>
+<p>Currently, Email Builder is only available for emails with the <em>Automation</em>, <em>Regular</em> and <em>Order status change</em> <a href="/documentation/business-users/digital-marketing/emails#email-purposes">purposes</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Email appearance in Email Builder mode</strong></p>
+<p>In some cases, there may be differences in the appearance and styling of Email Builder components when they are viewed in the <em>Email Builder</em> mode. Switch to <strong>Preview</strong> mode to get an accurate reference for how recipients will see the email.</p>
+</div>
+
+<h2 id="email-builder-components">Email Builder components</h2>
+<p>Emails created in Email Builder consist of components that fit together in the following way:</p>
+<p></p>
+<ul>
+<li>
+<strong>Email template</strong> – the top-level component that sets the email’s overall design, as well as any fixed content, such as a header and footer. You select the template when initially creating the email. Some templates may have properties that you can <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates#configure-email-templates">configure</a> to adjust the email’s appearance or content. See <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder/email-builder-templates">Email Builder templates</a> for more information.</li>
+<li>
+<strong>Sections</strong> – sections set a layout for email content, typically with one or more columns. You can add or remove sections, but each editable area in the template must always contain at least one section. Sections contain one or more widget zones. See <a href="#adjust-the-email-layout-using-sections">Adjust the email layout using sections</a> to learn how to work with sections.
+<ul>
+<li>
+<strong>Widget zones</strong> – places where you can add widgets. Each zone can contain any number of widgets (depending on the design of the template and section).</li>
+</ul>
+</li>
+<li>
+<strong>Widgets</strong> – reusable components that represent individual pieces of email content, such as text, images, CTA links, etc. See <a href="#add-content-using-widgets">Add content using widgets</a> to learn how to work with widgets.</li>
+</ul>
+<h2 id="adjust-the-email-layout-using-sections">Adjust the email layout using sections</h2>
+<p>You can modify an email’s layout by adding, configuring or removing sections. Manage sections in the following way:</p>
+<ul>
+<li>
+<strong>Add sections</strong> – select a gray <em>plus</em> button located on the left side of an editable area to insert a new section. The list of available sections depends on the implementation of your project.</li>
+<li>
+<strong>Move sections</strong> – hover over a section and drag it by the  drag handle.</li>
+<li>
+<strong>Change section type</strong> (only displayed if multiple section types are available) – allows you to replace an existing section with a different section. Any widgets within the section remain, but may be automatically moved if the sections have different widget zones. Hover over the section you want to modify, select the <i></i> change section type button, and select the new section type you want to use.</li>
+<li>
+<strong>Configure sections</strong> (only displayed for configurable sections) – select the  configure button, edit the section properties in the configuration dialog, and select <em>Apply</em>. Check with your site’s developers for more information about the section types and their properties.</li>
+<li>
+<strong>Copy sections</strong> – hover over the section you want to copy and select the  copy button in the upper right corner of the section to copy a section with all widgets in the section.
+<ul>
+<li>You can paste the copied sections onto any email that uses Email Builder using the <em>Add section</em> button.</li>
+<li>A section can only be pasted into an editable area if all widgets in the copied section and the section itself are allowed in the area.</li>
+<li>The copy feature allows you to store up to 10 sections for 12 hours.</li>
+</ul>
+</li>
+<li>
+<strong>Delete sections</strong> – hover over the section you want to remove and select the <i></i> delete button in the upper right corner of the section.</li>
+</ul>
+<p></p>
+<p>Each section defines one or more zones, where you can add widgets.</p>
+<p>After making any changes in the email, do not forget to select the <strong>Save</strong> button. Changes made to the sections can be previewed in the <strong>Preview</strong> mode.</p>
+<h2 id="add-content-using-widgets">Add content using widgets</h2>
+<p>Widgets allow you to add individual pieces of email content, such as text, images, CTA links, etc. Manage widgets by interacting with the purple UI elements in Email Builder:</p>
+<ul>
+<li>
+<strong>Add widgets</strong> – select a purple <em>plus</em> button to insert a widget to the desired location. The list of available widgets depends on the implementation of your project.</li>
+<li>
+<strong>Move widgets</strong> – select a widget and drag it to a different position by its  handle or full header.</li>
+<li>
+<strong>Personalize widgets</strong> – select the <i></i> or <i></i> personalize button. See <a href="#personalize-widgets">Personalize widgets</a> to learn more.</li>
+<li>
+<strong>Configure widgets</strong> (only displayed for configurable widgets) – select the  configure button, edit the widget properties in the configuration dialog, and select <em>Apply</em>.
+<ul>
+<li>
+<strong>Note</strong>: Widget configuration options and property editors are implemented individually with each widget. For more information, visit your project’s documentation or contact your developers.</li>
+</ul>
+</li>
+<li>
+<strong>Copy widgets</strong> – hover over a widget you want to copy and select the  copy button in the upper right corner of the widget. You can then paste the copied widget on emails that use Email Builder via the <em>Add widget</em> functionality. This feature allows you to store up to 10 widgets for 12 hours.</li>
+<li>
+<strong>Delete widgets</strong> – select a widget you want to remove and select the <i></i> delete button in the upper right corner of the widget.</li>
+</ul>
+<p></p>
+<p>After making any changes in the email, do not forget to select the <strong>Save</strong> button. Changes made to the widgets can be previewed in the <strong>Preview</strong> mode.</p>
+<h3 id="personalize-widgets">Personalize widgets</h3>
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced license required</strong></p>
+<p>Widget personalization requires the Xperience by Kentico Advanced license tier.</p>
+</div>
+
+<p>Personalization allows you to send different email content based on the <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> to which individual recipients belong. This can help you provide more accurately targeted information and increase the effectiveness of your emails. For example, you can use personalization to adjust the email text or display additional relevant offers.</p>
+<p>Personalization works by creating multiple variants of <a href="#add-content-using-widgets">widgets</a>. Each variant can have its own configuration of properties or different content added through inline editors. When the system sends emails to individual recipients, the appropriate widget variants are used according to the recipient’s contact groups.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Your project’s developers need to prepare <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widgets">Email Builder widgets</a> that change their content based on their property configuration.</p>
+</div>
+
+<p>To personalize a widget:</p>
+<ol type="1">
+<li>Open an email channel application in Xperience.</li>
+<li>Select an email with an Email Builder template.</li>
+<li>Switch to the <strong>Email Builder</strong> view mode.</li>
+<li>Select the <strong>Personalize</strong> (<i></i>) button in the widget header, and select <strong>Is in contact group</strong>.<br>
+</li>
+<li>Enter a <strong>Variant name</strong> and choose the <strong>Contact groups</strong> to which recipients need to belong to get this variant of the widget.</li>
+<li>Select <strong>Apply</strong>.</li>
+<li>Modify the properties or content of the new widget variant. Consider the target audience when preparing the modified content.</li>
+<li>
+<strong>Save</strong> the email to confirm the personalization.</li>
+</ol>
+<p>The new personalization variant of your widget is now created. In the <em>Email Builder</em> view mode, you can switch between personalization variants of a widget by selecting the <strong>Personalize</strong> (<i></i>) button and choosing the desired variant.</p>
+<p></p>
+<p>You can add further variants to a personalized widget:</p>
+<ol type="1">
+<li>Select <strong>Personalize</strong> (<i></i>) in the widget header to open the variant list.</li>
+<li>Select <strong>Add variant</strong> under the list.</li>
+<li>Enter a <strong>Variant name</strong> and choose the <strong>Contact groups</strong> to which recipients need to belong to get this variant of the widget.</li>
+<li>Select <strong>Apply</strong>.</li>
+<li>Modify the properties or content of the new widget variant. Consider the target audience when preparing the modified content.</li>
+<li>
+<strong>Save</strong> the email to confirm the changes.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Priority of variants</strong></p>
+<p>Widget variants are evaluated from top to bottom according to their position in the variant list. The email uses the first variant for which the contact group condition is satisfied for the given recipient.</p>
+<p><strong>Recommended number of variants</strong></p>
+<p>You can create an unlimited number of variants for a single widget. However, for optimal displaying of the variant list, we do not recommend creating more than 10 variants per widget.</p>
+</div>
+
+<p>You can manage widget variants in the following ways by <strong>hovering</strong> over them in the variant list:</p>
+<ul>
+<li>Change the variant name or contact group condition via the <strong>Edit variant</strong> (<i></i>) button</li>
+<li>Adjust the priority of variants by dragging them using the <strong>Change priority</strong> (<i></i>) handle on the left of the list</li>
+<li>Remove variants via the <strong>Delete variant</strong> (<i></i>) button</li>
+</ul>
+<p>Remember that you need to <strong>Save</strong> the email to confirm any changes to widget variants.</p>
+
+</body>
+</html>

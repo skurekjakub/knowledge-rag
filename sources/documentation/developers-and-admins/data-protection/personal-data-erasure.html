@@ -1,0 +1,356 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Personal data erasure</title>
+</head>
+<body>
+<p>To comply with the requirements of personal data regulations, such as the <a href="/documentation/developers-and-admins/data-protection/gdpr-compliance">GDPR</a>, you need to provide a way for administrators (data protection officers) to erase personal data stored within the system. This is necessary to fulfill the “right to be forgotten” of your project’s visitors and members, i.e. when resolving requests to delete personal data for specific data subjects.</p>
+<p>By default, Xperience does not provide any functionality for erasing personal data. You need to implement the data erasure based on exact knowledge of your specific project, including the following factors:</p>
+<ul>
+<li>How the project gathers, processes, and stores personal data</li>
+<li>The nature of the legal requirements that you wish to fulfill</li>
+<li>Other legal considerations that allow or require the project’s owner to hold personal data (for example commerce records for accounting purposes, etc.)</li>
+</ul>
+<p>Depending on these requirements, your personal data erasure functionality may need to completely delete objects, clear values of individual object fields (columns), or perform anonymization of certain types of data while retaining others.</p>
+<p>Use the following process to develop the personal data erasure:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong>: Before you start implementing personal data erasure, you need to prepare functionality that identifies and collects the given data. For detailed information, see <a href="/documentation/developers-and-admins/data-protection/personal-data-collection">Personal data collection</a>.</p>
+</div>
+
+<ol type="1">
+<li><p>Open your Xperience solution in Visual Studio.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) with class discovery enabled to your solution or re-use an existing one.</p>
+<ul>
+<li>The project will include code that extends the Xperience administration, so you need to install the <strong>Kentico.Xperience.Admin</strong> NuGet package.</li>
+<li>To keep your custom assemblies clean, you can create a separate project for all code that requires the <em>Kentico.Xperience.Admin</em> package (the erasure dialog model and UI page extender in this scenario).</li>
+</ul>
+</li>
+<li><p>Create custom classes that perform the required delete actions – <em>Data erasers</em>. See the <a href="#create-data-erasers">Create data erasers</a> section for details.</p></li>
+<li>
+<p>Register your data eraser implementations <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">on application startup</a>. Place the registrations within a module’s <code>OnInit</code> method:</p>
+<ul>
+<li>You can register any number of data erasers.</li>
+<li>To register data erasers, call the <code>PersonalDataEraserRegister.Instance.Add</code> method (available in the <code>CMS.DataProtection</code> namespace). The system runs the delete actions defined within individual erasers according to the registration order (starting from the first data eraser to the last).</li>
+</ul>
+</li>
+<li><p>Create and register an erasure dialog model to define the options that users can configure when deleting personal data. See <a href="#define-the-eraser-configuration">Define the eraser configuration</a>.</p></li>
+</ol>
+<p>Users can now delete personal data on the <strong>Right to be forgotten</strong> tab of the <strong>Data protection</strong> application. The registered erasure dialog model defines the content of the configuration dialog where users choose which types of data are erased, and the data eraser implementations then perform the corresponding delete actions.</p>
+<h2 id="create-data-erasers">Create data erasers</h2>
+<p>When deleting personal data in the <strong>Data protection</strong> application, users first submit real-world identifiers to find the appropriate data within the system. The registered <em>Identity collectors</em> (see <a href="/documentation/developers-and-admins/data-protection/personal-data-collection">Personal data collection</a>) convert these identifiers into Xperience objects, and <em>Data collectors</em> return the related personal data. To allow users to delete the collected data, you need to create <em>Data erasers</em>.</p>
+<p>Data erasers are classes that implement the <code>IPersonalDataEraser</code> interface (available in the <code>CMS.DataProtection</code> namespace). Every implementation must contain the <code>Erase</code> method, which processes the following parameters:</p>
+<ul>
+<li>
+<code>IEnumerable&lt;BaseInfo&gt;</code> – provides the identity objects that were added by your <code>IIdentityCollector</code> implementations. You can convert the <code>BaseInfo</code> objects to specific types, such as <code>UserInfo</code> <em>,</em> <code>ContactInfo</code><em>,</em> etc.</li>
+<li>
+<code>IDictionary&lt;string, object&gt;</code> – a dictionary containing keys and values serialized from the erasure configuration dialog. See <a href="#define-the-eraser-configuration">Define the eraser configuration</a>.</li>
+</ul>
+<p>The code of the <code>Erase</code> method depends on your requirements. Based on the method’s parameters, you can completely delete objects, assign empty values to individual object fields (columns), or perform more complex anonymization of data.</p>
+<p>Use the <a href="/documentation/developers-and-admins/api/database-table-api">Provider API</a> to delete objects.</p>
+<p>Consider the parent-child relationships and other dependencies between objects. When you delete an object, all child objects and other objects that have a required dependency on the given object are also deleted. This may have an effect on the order in which you need to delete different types of objects within the Erase method, or even on the registration order of your <code>IPersonalDataEraser</code> implementations.</p>
+<h2 id="define-the-eraser-configuration">Define the eraser configuration</h2>
+<p>The <strong>Data protection</strong> application provides an interface where users can choose which types of personal data they want to erase, or set other configuration options.</p>
+<p>By default, the erasure dialog provides options with the following keys:</p>
+<ul>
+<li>DeleteContacts</li>
+<li>DeleteActivities</li>
+<li>DeleteSubmittedFormsActivities</li>
+<li>DeleteSubmittedFormsData</li>
+</ul>
+<p>The keys can be used to access values from the erasure dialog via the dictionary parameter of the <code>Erase</code> method in <a href="#create-data-erasers">data erasers</a>. All of the default options have values of the <code>bool</code> type.</p>
+<p>If you wish to change or extend the available configuration options, you need to create an erasure dialog model:</p>
+<ol type="1">
+<li>
+<p>Create a class that implements the <code>IDataErasureDialogModel</code> interface:</p>
+<ul>
+<li>Add properties for all configuration options that you wish to have in the erasure dialog.</li>
+<li>Define the configuration interface by assigning <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to the properties.</li>
+<li>Implement the <code>Validate</code> method which indicates whether the dialog’s input is valid.</li>
+</ul>
+</li>
+<li><p>Create and register a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">page extender</a> class that extends the <code>RightToBeforgotten</code> UI page.</p></li>
+<li><p>Within the extender, modify the page’s configuration and assign the erasure dialog model to the <code>Page.PageConfiguration.DataErasureDialogModel</code> configuration property.</p></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>For an example, see the <a href="#add-the-eraser-configuration">Add the eraser configuration</a> section below.</p>
+</div>
+
+<p>When deleting personal data on the <strong>Right to be forgotten</strong> tab in the <em>Data protection</em> application, users can now configure options based on the assigned erasure dialog model.</p>
+<h2 id="example-create-a-contact-data-eraser">Example – Create a contact data eraser</h2>
+<p>The following example demonstrates how to implement a personal data eraser for <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> and their logged <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a>. The sample eraser extends the example from the <a href="/documentation/developers-and-admins/data-protection/personal-data-collection">Personal data collection</a> page – the collectors find contact data based on an email address identifier, and the eraser allows users to delete the given contacts and/or their activities (on the <strong>Right to be forgotten</strong> tab of the <strong>Data protection</strong> application).</p>
+
+<div>
+
+</div>
+<div>
+<p>This example only shows the basic implementation concepts and deletes a very limited set of personal data. You can find more extensive code examples in the Dancing Goat sample site. <a href="/documentation/developers-and-admins/installation">Install</a> the Dancing Goat project and view the files in the <strong>DataProtectionSamples</strong> folder.</p>
+<p>Keep in mind that you always need to adjust your own implementation based on the personal data processing used by your project and the legal requirements that you wish to fulfill.</p>
+</div>
+
+<ul>
+<li><a href="#set-up-the-custom-project-and-data-collectors">Set up the custom project and data collectors</a></li>
+<li><a href="#create-the-data-eraser">Create the data eraser</a></li>
+<li><a href="#register-the-eraser">Register the eraser</a></li>
+<li><a href="#add-the-eraser-configuration">Add the eraser configuration</a></li>
+</ul>
+<h3 id="set-up-the-custom-project-and-data-collectors">Set up the custom project and data collectors</h3>
+<p>Before you can start creating the eraser, you need to implement data collection functionality.</p>
+<p>Recreate or reuse the entire custom project described in <a href="/documentation/developers-and-admins/data-protection/personal-data-collection#example-contact-data-collectors">Example - Contact data collectors</a>, including the <em>IIdentityCollector</em> and <em>IPersonalDataCollector</em> implementations, and the custom module class used for registration.</p>
+<p>Install the <strong>Kentico.Xperience.Admin</strong> NuGet package into this project (it will include code that extends the Xperience administration).</p>
+<h3 id="create-the-data-eraser">Create the data eraser</h3>
+<p>Add a new class implementing the <code>IPersonalDataEraser</code> interface under the custom project:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System.Collections.Generic;
+using System.Linq;
+
+using CMS.Activities;
+using CMS.ContactManagement;
+using CMS.DataEngine;
+using CMS.DataProtection;
+using CMS.Helpers;
+
+public class ContactDataEraser : IPersonalDataEraser
+{
+    // Stores instances of services for managing activities and contacts
+    private readonly IInfoProvider&lt;ActivityInfo&gt; activityInfoProvider;
+    private readonly IInfoProvider&lt;ContactInfo&gt; contactInfoProvider;
+
+    public ContactDataEraser(IInfoProvider&lt;ActivityInfo&gt; activityInfoProvider, IInfoProvider&lt;ContactInfo&gt; contactInfoProvider)
+    {
+        this.activityInfoProvider = activityInfoProvider;
+        this.contactInfoProvider = contactInfoProvider;
+    }
+
+    public void Erase(IEnumerable&lt;BaseInfo&gt; identities, IDictionary&lt;string, object&gt; configuration)
+    {
+        // Gets all contact objects added by registered IIdentityCollector implementations
+        var contacts = identities.OfType&lt;ContactInfo&gt;();
+
+        // Does nothing if no contacts were collected
+        if (!contacts.Any())
+        {
+            return;
+        }
+
+        // Gets a list of identifiers for the contacts
+        List&lt;int&gt; contactIds = contacts.Select(c =&gt; c.ContactID).ToList();
+
+        // Deletes the activities of the given contacts (if enabled in the configuration)
+        DeleteActivities(contactIds, configuration);
+
+        // Deletes the given contacts (if enabled in the configuration)
+        // Also automatically deletes activities of the given contacts (contacts are parent objects of activities)
+        DeleteContacts(contacts, configuration);
+    }
+
+    private void DeleteActivities(List&lt;int&gt; contactIds, IDictionary&lt;string, object&gt; configuration)
+    {
+        // Checks whether deletion of activities is enabled in the configuration options
+        object deleteActivities;
+        if (configuration.TryGetValue("DeleteActivities", out deleteActivities)
+            &amp;&amp; ValidationHelper.GetBoolean(deleteActivities, false))
+        {            
+            // Deletes the activities of the specified contacts
+            // The system may contain a very large number of activity records, so the example uses the BulkDelete API
+            activityInfoProvider.BulkDelete(new WhereCondition().WhereIn("ActivityContactID", contactIds));
+        }
+    }
+
+    private void DeleteContacts(IEnumerable&lt;ContactInfo&gt; contacts, IDictionary&lt;string, object&gt; configuration)
+    {
+        // Checks whether deletion of contacts is enabled in the configuration options
+        object deleteContacts;
+        if (configuration.TryGetValue("DeleteContacts", out deleteContacts)
+            &amp;&amp; ValidationHelper.GetBoolean(deleteContacts, false))
+        {
+            // Deletes the specified contacts
+            foreach (ContactInfo contact in contacts)
+            {
+                contactInfoProvider.Delete(contact);
+            }
+        }
+    }
+}
+</code></pre>
+</div>
+
+<p>The sample data eraser processes the contact objects provided by the registered identity collector (see <a href="/documentation/developers-and-admins/data-protection/personal-data-collection#example-contact-data-collectors">Example - Contact data collectors</a> for details). The eraser then deletes the contacts and/or their logged activities according to configuration options, which are supplied by users through the erasure configuration dialog.</p>
+<h3 id="register-the-eraser">Register the eraser</h3>
+<p>To register the personal data eraser, edit the <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">module class</a> under the custom project and expand the initialization code in the <code>OnInit</code> method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.DataEngine;
+using CMS.DataProtection;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(CustomDataProtectionModule))]
+
+internal class CustomDataProtectionModule : Module
+{
+    // Module class constructor, the system registers the module under the name "CustomDataProtection"
+    public CustomDataProtectionModule()
+        : base("CustomDataProtection")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Adds the ContactIdentityCollector to the collection of registered identity collectors
+        IdentityCollectorRegister.Instance.Add(new ContactIdentityCollector());
+
+        // Adds the ContactDataCollector to the collection of registered personal data collectors
+        PersonalDataCollectorRegister.Instance.Add(new ContactDataCollector());
+
+        // Adds the ContactDataEraser to the collection of registered personal data erasers
+        PersonalDataEraserRegister.Instance.Add(new ContactDataEraser());
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="add-the-eraser-configuration">Add the eraser configuration</h3>
+<p>Add a new class implementing the <code>IDataErasureDialogModel</code> interface. The erasure dialog model must contain properties that represent options available in the erasure configuration dialog.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Threading.Tasks;
+
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+using Kentico.Xperience.Admin.DigitalMarketing;
+
+public class CustomDataErasureDialogModel : IDataErasureDialogModel
+{
+    // Erasure dialog onfiguration properties and their editing components
+    [CheckBoxComponent(Label = "Delete contacts", Order = 1)]
+    public bool DeleteContacts { get; set; }
+
+    [CheckBoxComponent(Label = "Delete activities", Order = 2)]
+    public bool DeleteActivities { get; set; }
+
+    // Validates the output of the dialog
+    public virtual async Task&lt;ValidationResult&gt; Validate()
+    {
+        if (DeleteContacts || DeleteActivities)
+        {
+            return await ValidationResult.SuccessResult();
+        }
+
+        return new ValidationResult(isValid: false, errorMessage: "At least one item needs to be selected!");
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Create and register a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">page extender</a> that assigns your custom data erasure dialog model to the <code>RightToBeforgotten</code> UI page.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
+
+[assembly: PageExtender(typeof(RightToBeForgottenExtender))]
+
+public class RightToBeForgottenExtender : PageExtender&lt;RightToBeForgotten&gt;
+{
+    public override Task ConfigurePage()
+    {
+        // Assigns a custom erasure dialog model to the page configuration
+        Page.PageConfiguration.DataErasureDialogModel = new CustomDataErasureDialogModel();
+
+        return base.ConfigurePage();
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Save all changes and <strong>Rebuild</strong> the custom project.</p>
+<p>You can now delete personal data for contacts and their activities in the <strong>Data protection</strong> application. On the application’s <strong>Right to be forgotten</strong> tab, you can search for data based on an email addresses. If matching contacts exist in the system, the sample collectors display their data in plain text format, and you can click <strong>Select data to delete</strong> to open the eraser configuration dialog.</p>
+<p></p>
+<p>Submitting the dialog sends the collected data and selected configuration options to the registered eraser implementation, which performs the corresponding delete actions.</p>
+
+<div>
+
+</div>
+<div>
+<p>Contacts have a parent-child relationship with activities. If you delete a contact object, all of the activities logged for the given contact are also deleted automatically. However, the configuration dialog allows you to delete activities while retaining contacts.</p>
+</div>
+
+
+</body>
+</html>

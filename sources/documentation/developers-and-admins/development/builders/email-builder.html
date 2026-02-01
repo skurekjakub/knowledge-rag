@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email Builder</title>
+</head>
+<body>
+<p>Email Builder provides a user-friendly interface where non-technical users can create and edit email content using configurable components prepared by developers.</p>
+<p></p>
+<p>Emails created using the Email Builder consist of components, which are implemented using <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/" target="_blank">ASP.NET Blazor</a> as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">Razor components</a>. The markup of Email Builder components can either be standard HTML or use the <a href="https://documentation.mjml.io/#mjml-guides" target="_blank">MJML markup language</a> – a framework for easily creating responsive emails. For detailed information, see <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Develop Email Builder components</a>.</p>
+<p>To start using Email Builder:</p>
+<ol type="1">
+<li><p><a href="#enable-the-email-builder-feature">Enable the Email Builder feature</a></p></li>
+<li>
+<p>Develop and register <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a>:</p>
+<ul>
+<li>Templates (the overall email design and fixed content)</li>
+<li>Sections (layouts for placing widgets)</li>
+<li>Widgets (individual pieces of email content, such as text, images, CTA links, etc.)</li>
+</ul>
+</li>
+<li><p>Create <a href="/documentation/business-users/digital-marketing/emails">emails</a> using one of the registered Email Builder templates.</p></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Currently, Email Builder is only supported for emails with the <em>Regular</em>, <em>Automation</em> or <em>Order status change</em> <a href="/documentation/business-users/digital-marketing/emails#email-purposes">purposes</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Email Builder Starter Kit</strong></p>
+<p>The Email Builder Starter Kit provides a basic set of components, which greatly reduce the development time required to begin using Email Builder. The Starter Kit components allow users to easily create the most common types of email content. Developers can adjust or extend the components according to specific project requirements, or use them as examples when implementing custom components.</p>
+<p>The Starter Kit is available in the <a href="https://github.com/Kentico/xperience-by-kentico-email-builder-starter-kit" target="_blank">Xperience by Kentico Email Builder Starter Kit</a> GitHub repository. See the repository’s <em>README</em> file for detailed information and instructions.</p>
+</div>
+
+<h2 id="enable-the-email-builder-feature">Enable the Email Builder feature</h2>
+<p>To use Email Builder, you need to enable it as a feature in your Xperience project.</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio.</p></li>
+<li><p>Adjust your application’s startup class (<em>Program.cs</em>).</p></li>
+<li><p>Within <code>AddKentico</code>, call <code>UseEmailBuilder</code>.</p></li>
+<li>
+<p><a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">Configure</a> <code>EmailBuilderOptions</code> and set the <code>AllowedEmailContentTypeNames</code> property.</p>
+<ul>
+<li>Specify <a href="/documentation/developers-and-admins/development/content-types">content type</a> code names for the email content types where you wish to use Email Builder.</li>
+</ul>
+</li>
+<li>
+<p>Decide whether you wish to use <a href="https://documentation.mjml.io/#mjml-guides" target="_blank">MJML markup</a> for your Email Builder components.</p>
+<ul>
+<li>See our <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#mjml-markup">MJML markup</a> documentation for detailed information.</li>
+</ul>
+</li>
+<li>
+<p>Make sure your application’s service collection and middleware pipeline reflects the sample below.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="11-12,17-24,26-27"><code>
+ using Kentico.Web.Mvc;
+ using Kentico.EmailBuilder.Web.Mvc;
+ using Kentico.Xperience.Mjml;
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ // ... 
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     // Enables Email Builder
+     features.UseEmailBuilder();
+
+     // ...
+ });
+
+ builder.Services.Configure&lt;EmailBuilderOptions&gt;(options =&gt;
+ {
+     // Allows Email Builder for the 'Acme.Email' content type
+     options.AllowedEmailContentTypeNames = ["Acme.Email"];
+     // Replaces the default Email Builder section (only required when using MJML markup for components)
+     options.DefaultSectionIdentifier = "Acme.DefaultMjmlSection";
+     options.RegisterDefaultSection = false;
+ });
+
+ // (Optional) Enables MJML markup processing for Email Builder components
+ builder.Services.AddMjmlForEmails();
+
+ // ...
+
+ // Middleware pipeline configuration
+ WebApplication app = builder.Build();
+
+ app.InitKentico();
+ app.UseStaticFiles();
+
+ // ...
+
+ app.UseKentico();
+
+ // ...
+
+ app.Kentico().MapRoutes();
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The Email Builder feature is now enabled. You can now <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">develop Email Builder components</a>, assign builder-based email templates to new <a href="/documentation/business-users/digital-marketing/emails">emails</a> of the allowed content types, and start creating emails in the <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Email Builder visual interface</a>.</p>
+
+</body>
+</html>

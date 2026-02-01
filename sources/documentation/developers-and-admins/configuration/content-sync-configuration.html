@@ -1,0 +1,333 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content sync configuration</title>
+</head>
+<body>
+<p>Content synchronization allows users to easily transfer content from one instance of Xperience by Kentico to another.</p>
+<p>The purpose of content sync is to help manage content when using multiple environments. For example, a project’s developers may have a local <strong>Development</strong> instance, from which initial content is sent to a hosted <strong>Staging</strong> instance. The staging instance is accessible only by editors and other staff, who use it to prepare content updates. The final content is then synchronized during regular releases to a public-facing <strong>Production</strong> instance.</p>
+<p>This page describes how to set up and configure your applications to use content sync:</p>
+<ol type="1">
+<li><a href="#supported-topologies">Learn about the supported environment topologies</a></li>
+<li>Set up content sync connections between environments:
+<ul>
+<li><a href="#set-up-content-sync">Local environments and private cloud deployments</a></li>
+<li><a href="#content-sync-for-saas-environments">SaaS deployment environments</a></li>
+</ul>
+</li>
+<li><a href="#configure-xperience-for-content-sync">Configure Xperience features and data for content sync</a></li>
+</ol>
+<p>To learn how to synchronize content, see <a href="/documentation/business-users/content-sync">Content sync</a>.</p>
+<h2 id="supported-topologies">Supported topologies</h2>
+<p>Before you start <a href="#set-up-content-sync">setting up content sync</a>, it is important to understand which environment topologies are supported.</p>
+<p>The most basic usage of content sync consists of a connection between one <strong>source</strong> instance and one <strong>target</strong> instance. Such connections can be chained to additional instances – a target can be configured as the source for another instance. However, only strictly linear topologies are supported. For example:</p>
+<p></p>
+<h4 id="unsupported-topologies">Unsupported topologies</h4>
+<p>More complex topologies, for example with multiple branching target connections, loops, or bi-directional connections are not supported. The system does not strictly block content sync with unsupported topologies, but it may result in inconsistencies, errors or unintentionally overwritten content.</p>
+<p></p>
+<h2 id="set-up-content-sync">Set up content sync</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Instances connected via content sync must use <strong>exactly the same version</strong> of Xperience (including the hotfix version).</li>
+<li>Target instances must run on <strong>HTTPS</strong> with a valid trusted certificate.</li>
+<li>If using <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">auto-scaling</a> for a <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> project with content sync, the <strong>~/assets</strong> folder must be mapped to a shared storage location, such as <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob Storage</a> or <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>.</li>
+</ul>
+<h3 id="source-and-target-configuration">Source and target configuration</h3>
+<p>To set up an application as the source or target in a content sync connection, configure <code>ContentSynchronizationOptions</code> using the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options#the-options-pattern" target="_blank">.NET options pattern</a> (available in the <code>CMS.ContentSynchronization</code> namespace).</p>
+<p>The options are separated into <code>Source</code> and <code>Target</code> configuration. The following properties must be configured:</p>
+<ul>
+<li>
+<code>Enabled</code> – a bool value that enables the application as a source or target for content sync.</li>
+<li>
+<code>Secret</code> – a secret key containing at least 32 characters. The same secret must be configured for the source and target applications.</li>
+<li>
+<code>TargetUrl</code> – only available for the <code>Source</code> configuration. Specify the URL where the target application is running. Must be absolute, with the HTTPS scheme, without query or fragment components.</li>
+</ul>
+<p>Use <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments" target="_blank">environment-specific configuration</a> or <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.ihostenvironment" target="_blank">IHostEnvironment extension methods</a> to set the correct values for each application in your environment. To learn how to identify environments for <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS projects</a>, see <a href="/documentation/developers-and-admins/configuration/saas-configuration#environment-identification-extension-methods">Environment identification extension methods</a> or <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects#application-settings-for-different-saas-deployment-environments">Application settings for different SaaS deployment environments</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Content sync configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Microsoft.Extensions.Hosting;
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Configures the development environment as the content sync source
+if (builder.Environment.IsDevelopment())
+{    
+    builder.Services.Configure&lt;ContentSynchronizationOptions&gt;(options =&gt;
+    {
+        options.Source.Enabled = true;
+        options.Source.Secret = "147283795efb915cf7bcbe207678764e";
+        options.Source.TargetUrl = "https://productiondomain.com";
+    });
+}
+// Configures the production environment as the content sync target
+if (builder.Environment.IsProduction())
+{
+    builder.Services.Configure&lt;ContentSynchronizationOptions&gt;(options =&gt;
+    {
+        options.Target.Enabled = true;
+        options.Target.Secret = "147283795efb915cf7bcbe207678764e";
+    });
+}
+</code></pre>
+</div>
+
+<h2 id="content-sync-for-saas-environments">Content sync for SaaS environments</h2>
+<p>For <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS projects</a>, you do not need to configure content sync manually (except for local development environments).</p>
+<p><a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">SaaS deployment environments</a> have their content sync configuration done automatically based on <a href="#manage-synchronization-connections">Content synchronization connections</a> defined in Xperience Portal. However, the automatic configuration may be overridden by environment-specific configuration of <code>ContentSynchronizationOptions</code> as described in <a href="#source-and-target-configuration">Source and target configuration</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Xperience 30.5.0 or newer required</strong></p>
+<p>Content synchronization and <em>Staging</em> environments are only available if the deployed Xperience project uses version <strong>30.5.0</strong> or newer.</p>
+</div>
+
+<h3 id="content-staging-best-practices">Content staging best practices</h3>
+<p>You can use the content sync feature to transfer content from all types of environments, including non-production ones (local development, QA, UAT). This is a viable approach during development and for small projects. However, non-production environments do not provide sufficient performance, availability, and backup policies for projects with larger content editing teams.</p>
+<p>To set up a stable and robust environment for long-term editing and staging of content, add the optional <strong>Staging</strong> (STG) deployment environment to your <a href="/documentation/developers-and-admins/saas/saas-service-plans">service plan</a>.</p>
+<p>The <em>Staging</em> environment provides a platform where editors and other staff can prepare content, and then transfer it to the production environment using content sync. Staging environments are designed to be nearly identical to production environments in most aspects, such as performance, availability, backup policies, and the option to set <a href="/documentation/developers-and-admins/configuration/website-channel-management#manage-channel-domains-in-xperience-portal">custom domains</a>.</p>
+<h4 id="set-up-a-staging-environment">Set up a Staging environment</h4>
+<p>Use the following process to initialize a <em>Staging</em> deployment environment for an existing project:</p>
+<ol type="1">
+<li>Download an <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#restore-points-and-exports">export</a> of your production environment.</li>
+<li>Create a new <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#create-a-deployment-package">deployment package</a>.
+<ul>
+<li>Make sure that the package contains all required data by editing the <strong>$CDRepository/repository.config</strong> file (see <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">Configure CI/CD repositories</a>).</li>
+<li>If you are updating to version 30.5.0 or newer as part of this deployment, you must include the <code>cms.user</code> object type in the package and use the <code>CreateUpdate</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#configure-cd-restore-mode">restore mode</a> (<code>Create</code> is not sufficient).</li>
+</ul>
+</li>
+<li>Deploy the package through the available environments up to <em>Staging</em> (STG).</li>
+<li>Configure any required <a href="/documentation/developers-and-admins/configuration/website-channel-management#manage-channel-domains-in-xperience-portal">custom domains</a> for the staging environment.</li>
+</ol>
+<h3 id="manage-synchronization-connections">Manage synchronization connections</h3>
+<p>To use content sync for SaaS projects, you need to create synchronization connections between environments in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>:</p>
+
+<div>
+
+</div>
+<div>
+<p>The limitations described in <a href="#supported-topologies">Supported topologies</a> apply for content sync between SaaS environments. Only linear connection chains are supported, without multiple branching target connections, loops, or bi-directional connections.</p>
+<p>The connected environments must also be running exactly the same version of Xperience by Kentico.</p>
+</div>
+
+<ol type="1">
+<li>Open the <strong>Content synchronization</strong> application in Xperience Portal.</li>
+<li>Select <strong>Create new connection</strong>.</li>
+<li>Choose the <strong>Source</strong> and <strong>Target environment</strong>.
+<ul>
+<li>When setting up a <strong>LOCAL</strong> development environment as the source, see <a href="#add-connections-from-local-development-environments">Add connections from local development environments</a>.</li>
+</ul>
+</li>
+<li>Select <strong>Create</strong>.</li>
+</ol>
+<p></p>
+<p>After you create connections, select the <strong>Apply changes</strong> button in the information ribbon at the top of the interface. Applying these changes triggers a restart of the affected applications. You may need to manually refresh the current page for the <em>Apply changes</em> button to appear in the information ribbon.</p>
+<p>Once the connection becomes <strong>Active</strong>, content sync is configured for the given environments and users can start <a href="/documentation/business-users/content-sync">transferring content</a>.</p>
+<p>You can delete connections and apply the changes if you wish to disable content synchronization between the given environments.</p>
+<h3 id="add-connections-from-local-development-environments">Add connections from local development environments</h3>
+<p>When you create a <a href="#manage-synchronization-connections">content sync connection</a> with a <strong>LOCAL</strong> environment as the source, Xperience Portal displays <strong>Target URL</strong> and <strong>Connection secret</strong> values. Copy the values and use them in the <a href="#source-and-target-configuration">content sync configuration</a> of the application in your local development environment:</p>
+<ul>
+<li>Target URL → <code>ContentSynchronizationOptions.Source.TargetURL</code>
+</li>
+<li>Connection secret → <code>ContentSynchronizationOptions.Source.Secret</code>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The <strong>Connection secret</strong> value is not stored and cannot be displayed again in the future. If you lose the secret, you need to delete the connection and create a new one.</p>
+</div>
+
+<p>You need to ensure that the source configuration only applies to the local development environment. To learn how to identify environments for SaaS deployment environments, see <a href="/documentation/developers-and-admins/configuration/saas-configuration#environment-identification-extension-methods">Environment identification extension methods</a> or <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects#application-settings-for-different-saas-deployment-environments">Application settings for different SaaS deployment environments</a>.</p>
+<h2 id="configure-xperience-for-content-sync">Configure Xperience for content sync</h2>
+<p>To prepare your Xperience instances for content sync, configure the following features:</p>
+<ul>
+<li>Permissions
+<ul>
+<li>To synchronize content items, users need to have a role with the <strong>Synchronize</strong> <a href="/documentation/developers-and-admins/configuration/users/role-management">permission</a> assigned for the <strong>Content hub</strong> application and the appropriate <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspaces</a>.</li>
+<li>To synchronize website channel pages, users need to have a role with the <strong>Synchronize</strong> <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">permission for individual pages</a> or the <strong>Manage permissions</strong> permission for the website channel.</li>
+<li>To synchronize forms, users need to have a role with the <strong>Synchronize</strong> <a href="/documentation/developers-and-admins/configuration/users/role-management">permission</a> assigned for the <strong>Forms</strong> application.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/workflows">Workflows</a> – if you use workflows to control the lifecycle of your content, only set up and apply the workflow on the source instance where content is edited. Any workflow applied on target content sync instances is ignored, as content items and pages are always transferred with the <em>Published</em> or <em>Unpublished</em> status and a completed workflow cycle.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/content-hub-configuration#customize-supported-file-types">Allowed asset extensions</a> – instances connected using content synchronization must use the same set of allowed file extensions for content item assets.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/routing/configure-forbidden-url-characters#allow-the-slash-character-in-vanity-urls">Allowed slash character in page vanity URLs</a> – to ensure consistent page URL behavior, instances connected using content synchronization must have the same enabled/disabled status for the slash (‘/’) character in page vanity URLs.</li>
+<li>
+<a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">Content folders</a> – instances connected using content synchronization must have the same enabled/disabled status for content folders. See <a href="/documentation/developers-and-admins/configuration/content-hub-configuration#enable-content-hub-folders">Enable content hub folders</a>.</li>
+</ul>
+<h3 id="ensure-compatibility-between-instances">Ensure compatibility between instances</h3>
+<p>The following objects are required by content items and/or pages, but are <strong>not</strong> included in content synchronization:</p>
+<ul>
+<li>Channels that use the content (<a href="/documentation/developers-and-admins/configuration/website-channel-management">website</a>, <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email</a>, <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless</a>)</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Content types</a>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types/limit-the-pages-users-can-create">Page restrictions</a> for content types do not apply when restoring synchronized content on target instances.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types#configure-image-variants">Image variant definitions</a> for asset content types must also match between instances connected using content sync.</li>
+</ul>
+</li>
+<li><a href="/documentation/developers-and-admins/configuration/languages">Languages</a></li>
+<li><a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">Workspaces</a></li>
+</ul>
+<p>You need to ensure that all instances connected through content sync have exactly the same set of these objects. For example, an error will occur if you try to synchronize a content item for which an exactly matching <a href="/documentation/developers-and-admins/development/content-types">content type</a> is not available on the target.</p>
+<p>The compatibility of objects is calculated based on their GUID identifiers and all available data. It is not sufficient to manually recreate objects with the same code name (with the exception of <a href="/documentation/developers-and-admins/configuration/languages">languages</a>, which are only validated by their code name). When you update or add any of the required objects on the source server, you need to transfer them to the next environments using other deployment methods, i.e., <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-with-a-deployment-package">SaaS deployment via a deployment package</a> or <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Project code compatibility requirements</strong></p>
+<p>To enable synchronization of <a href="/documentation/business-users/website-content">website channel pages</a> and <a href="/documentation/business-users/digital-marketing/forms">forms</a>, you also need to deploy via <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-with-a-deployment-package">SaaS deployment package</a> or <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> to transfer all code components related to pages and forms.</p>
+<p>This includes page views, controllers, <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/set-up-content-tree-based-routing">routing configuration</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder components</a>, Form Builder <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">components</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">sections</a>, etc.</p>
+</div>
+
+<h3 id="synchronization-of-linked-content">Synchronization of linked content</h3>
+<p>Synchronization of linked content items, pages, and forms relies on the system’s usage tracking features:</p>
+<ul>
+<li><a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">Track usage of content items</a></li>
+<li><a href="/documentation/business-users/website-content/track-page-usages">Track page usages</a></li>
+<li><a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#track-usage-of-forms">Track usage of forms</a></li>
+</ul>
+<p>The limitations described for usage tracking also apply to content sync. Content items, pages or forms that are “linked” in an untracked manner are not automatically synchronized together with the linking item or page.</p>
+<p>If your Xperience by Kentico instance was updated from an older version, you need to manually run the following <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled tasks</a> to track the missing content item or form usages:</p>
+<ul>
+<li>
+<strong>Track missing content item usages</strong> scheduled task
+<ul>
+<li>Generates content item and page usage references when updating from a version older than <strong>29.3.0</strong>
+</li>
+</ul>
+</li>
+<li>
+<strong>Track missing object usages</strong> scheduled task
+<ul>
+<li>Generates form usage references when updating from a version older than <strong>30.11.0</strong>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="content-sync-internals">Content sync internals</h2>
+<p>When a target application receives content through content sync, the updates are not immediately applied. Every synchronization is represented and stored in the following way:</p>
+<ul>
+<li>Data and asset files stored in the project’s <code>~/assets/synchronizations</code> folder</li>
+<li>Synchronization task (stored in the <code>CMS_Synchronization</code> database table)</li>
+</ul>
+<p>The synchronizations are applied automatically by the <em>Content sync restoration</em> <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled task</a>, which runs every 30 seconds. During the restoration, content is created or updated using the Xperience API:</p>
+<ul>
+<li>All content operations are performed in the context of the <strong>kentico-system-service</strong> (“System service user”) internal <a href="/documentation/developers-and-admins/configuration/users">user</a> account. Permissions are not evaluated.</li>
+<li>If an error occurs during the restoration, any updates that affect published content are rolled back. In some cases, added or modified <em>Draft</em> versions of content may remain after a failed synchronization restoration.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/handle-global-events">Global events</a> are triggered for the changes. The API is called in multiple waves when restoring content:
+<ol type="1">
+<li>Content items and pages are first created or updated in the <em>Draft</em> status.</li>
+<li>Items and pages are published or unpublished (depending on the status of the synchronized content).</li>
+</ol>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events#workflow-events">Workflow events</a> are not triggered (having <a href="/documentation/developers-and-admins/configuration/workflows">workflows</a> applied on target content sync instance is not recommended)</li>
+</ul>
+<p>You can monitor synchronizations that recently occurred or are scheduled to take place in the <strong>Content synchronization</strong> application.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Synchronization cleanup</strong></p>
+<p>The <em>Content sync clean data</em> scheduled task automatically cleans up synchronizations once per day. During the cleanup, synchronizations with the <em>Failed</em> or <em>Completed</em> status are removed. In rare cases, a synchronization may get stuck in one of the other transitional statuses that occur during restoration. Such tasks are cleaned up if they are older than 24 hours.</p>
+</div>
+
+<h2 id="troubleshoot-content-sync">Troubleshoot content sync</h2>
+<p>If you encounter any issues or errors when using content sync, you can use the system’s <a href="/documentation/developers-and-admins/development/logging">logging</a> functionality to analyze the content sync process. Content sync provides structured logging data during all steps of the process, including content preparation and transfer on the source instance and content restoration on the target instance.</p>
+<p>To view the full content sync logs, your preferred logging provider must be <a href="/documentation/developers-and-admins/development/logging#configure-logging">configured</a> in the following way:</p>
+<ul>
+<li>
+<strong>Log level</strong>: <code>Debug</code> or higher</li>
+<li>
+<strong>Log categories</strong>:
+<ul>
+<li><code>CMS.ContentSynchronization</code></li>
+<li><code>CMS.Websites</code></li>
+<li>
+<code>CMS.ContentEngine</code><br>
+(for simplicity, you can adjust the configuration for all log categories starting with <code>CMS</code>)</li>
+</ul>
+</li>
+</ul>
+<p>The logs should help you identify the source of your issue, and can be helpful when describing the problem to <a href="https://xperience.io/services/support" target="_blank">Kentico support</a>.</p>
+<p>If your logging provider supports <a href="https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing" target="_blank">distributed tracing</a>, you can enable collection of content sync activities by adding the <code>Kentico.Xperience.ContentSynchronization</code> source to your tracing configuration. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Trace;
+
+// ...
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ...
+
+builder.Services.AddLogging(logging =&gt;
+{
+    logging.AddOpenTelemetry(options =&gt;
+    {
+        // ...
+    });
+});
+
+// Configures OpenTelemetry tracing
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t =&gt; t
+        // Adds the source for content sync activities
+        .AddSource("Kentico.Xperience.ContentSynchronization") 
+        .AddAspNetCoreInstrumentation()
+        .AddOtlpExporter());
+</code></pre>
+</div>
+
+
+</body>
+</html>

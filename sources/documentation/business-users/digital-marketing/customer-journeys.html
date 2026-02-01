@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Customer journeys</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>To learn more about the concept of customer journeys in depth, see our dedicated <a href="/guides/customer-journeys">series of guides</a>.</p>
+</div>
+
+<p>Customer journeys offer a unified view of <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> interactions with your content. You can define key stages in a journey, representing the sequence of steps a contact must complete to achieve a successful conversion and set conditions for their progression through the stages. The <a href="#customer-journey-results">resulting visualization</a> allows you to gain insights into how contacts move through the journey. For example, you can connect these interactions from an initial visit of a landing page to submitting a particular <a href="/documentation/business-users/digital-marketing/forms">form</a>.</p>
+<h2 id="create-a-customer-journey">Create a customer journey</h2>
+<p>A customer journey is a sequence of steps performed by <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a>, where each step is represented by a stage.</p>
+<p>Stages represent key steps in the customer journey, such as visiting a specific page or submitting a form. They help you track contact progression, which enables you to analyze contact interactions with your content.</p>
+<ol type="1">
+<li>Open the <strong>Customer journeys</strong> application in Xperience.</li>
+<li>Select <strong>New journey</strong>.</li>
+<li>
+<em>(Optional)</em> Edit () the automatically generated journey name.<br>
+</li>
+<li>In the <strong>Journey Builder</strong> view mode, select <strong>New stage</strong> to create a stage:
+<ol type="1">
+<li>Fill in the following properties:
+<ul>
+<li>
+<strong>Stage name</strong> – the name of the stage displayed in Xperience.</li>
+<li>
+<em>(Optional)</em> <strong>Stage KPI</strong> – the target number of contacts that you expect to reach this specific stage. The KPI (key performance indicator) can be used to assess the success of a particular stage in the customer journey. The KPI for the final stage can serve as a measure of overall success, reflecting how many contacts completed the full process.</li>
+<li>
+<strong>Conditions</strong> – determines the conditions that contacts must meet to advance to this stage. See <a href="#conditions">conditions</a> to learn more.<br>
+</li>
+</ul>
+</li>
+<li>
+<strong>Apply</strong> the stage configuration.</li>
+</ol>
+</li>
+<li>You can now iteratively add more stages to your customer journey. The maximum number of stages in a customer journey is 10.</li>
+<li>Once you have created all stages of the journey, select <strong>Save</strong> to create the customer journey.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>The journey will begin calculating once you save it. It may take up to a few minutes, depending on the number of contacts being evaluated.</p>
+<p>When you edit an existing customer journey, it automatically begins <a href="#customer-journey-results">recalculating</a> once you save the changes.</p>
+</div>
+
+<h3 id="conditions">Conditions</h3>
+<p>For a <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> to complete the entire customer journey and achieve a successful conversion, they must meet the conditions of each stage in the exact order defined by the journey. Since stage conditions are based on specific activities performed by the contact at a given time (such as visiting a page or submitting a form), the journey progresses sequentially. A contact can only reach a stage if they have fulfilled its condition as well as all conditions of the previous stages in the correct sequence.</p>
+<p>When building the conditions which contacts must meet to advance to a particular stage:</p>
+<ul>
+<li>Use the search or select categories to find the appropriate condition.</li>
+<li>For the set of conditions, you can select if <strong>Any</strong> or <strong>All</strong> of the conditions need to be fulfilled.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>To ensure high accuracy of your customer journey, make sure your developers set up detailed <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">activity logging</a>. Insufficient logging can lead to incomplete data, misinterpretations, and skewed calculations, affecting future decision-making and performance insights.</p>
+</div>
+
+<h2 id="customer-journey-results">Customer journey results</h2>
+<p>To view the results of a customer journey:</p>
+<ol type="1">
+<li>Open the <strong>Customer journeys</strong> application in Xperience.</li>
+<li>Select the journey whose results you want to view.</li>
+<li>Select the <strong>Journey</strong> view mode to see the results.</li>
+</ol>
+<p>For each stage in the graph, you can view the number of <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> who <em>converted</em> and met the conditions to advance to the stage. Between two stages, you can see the number of contacts who <em>dropped off</em> as they didn’t meet the conditions to continue to the next stage.</p>
+<p></p>
+<p>Additionally, you can find the following information in the list of stages below the graph:</p>
+<ul>
+<li>
+<strong>Stage</strong> – the display name of the stage</li>
+<li>
+<strong>Converted</strong> – the number and percentage of contacts from the previous stage who met the conditions to advance to this stage</li>
+<li>
+<strong>Dropped off</strong> – the number and percentage of the contacts who did not meet the conditions to advance to the next stage</li>
+<li>
+<strong>Stage KPI</strong> – the number and percentage of the contacts who reached the stage compared to the set <a href="#create-a-customer-journey">KPI</a>
+</li>
+<li>
+<strong>Conditions</strong> – the list of conditions that contacts must meet to advance to this stage</li>
+</ul>
+<h3 id="view-converted-and-dropped-off-contacts">View converted and dropped off contacts</h3>
+<p>To gain insights from a journey manually, you can view which <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> converted or dropped off at each stage by selecting the corresponding numbers in the <a href="#customer-journey-results">journey results</a>.</p>
+<p>To view more information about a specific contact from the converted or dropped off list, open () the contact details.</p>
+<p></p>
+<p></p>
+<h3 id="customer-journey-insights">Customer journey insights</h3>
+<p>You can use <a href="/documentation/business-users/aira#aira-in-product-guidance">AIRA in-product guidance</a> directly in the Xperience by Kentico administration interface to explore your journeys further. <a href="/documentation/business-users/aira#customer-journey-insights">Customer journey insights</a> offer you information on which <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> are present in journeys and how they progress through each stage. This helps you compare the performance of contact groups, explore audience behavior, and identify opportunities to improve engagement strategies. See <a href="/documentation/business-users/aira#customer-journey-insights">AIRA documentation</a> for more information.</p>
+<h3 id="recalculate-a-customer-journey">Recalculate a customer journey</h3>
+<p>Customer journey results are calculated upon saving stages in the <strong>Journey Builder</strong>, reflecting the state of <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> at the time of calculation. The data is not automatically updated according to contact activity that occurs after the calculation.</p>
+<p>You can manually update the results at any time by selecting the <strong>Recalculate</strong> button in the <strong>Journey</strong> view mode to incorporate new contacts or those who have progressed to later stages of the journey. The calculation of a journey may take up to a few minutes, depending on the number of contacts being evaluated.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Time the recalculation</strong></p>
+<p>If your application is hosting a live website, do not run the recalculation during the site’s peak traffic hours, as recalculation of the data can be a resource-intensive process that may reduce the application’s performance.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><span id="CJScheduledRecalculation"></span> <strong>Schedule automatic recalculation</strong></p>
+<p>If you want to keep the journey results up to date, you can schedule an automatic recalculation of a journey.</p>
+<p>First, your administrators need to configure and enable the <em>Scheduled customer journey recalculation</em> <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled task</a>.</p>
+<p>Then, to enable the automatic recalculation for a customer journey:</p>
+<ol type="1">
+<li>Open the <strong>Customer journeys</strong> application.</li>
+<li>Select the journey whose results you want to recalculate automatically.</li>
+<li>In the <strong>Journey Builder</strong> view mode, enable the <strong>Scheduled recalculation</strong> property.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The system will now periodically recalculate the journey according to the configuration of the scheduled task.</p>
+<p>All newly <a href="#create-a-customer-journey">created</a> journeys will now have the <strong>Scheduled recalculation</strong> property selected by default as long as the <em>Scheduled customer journey recalculation</em> scheduled task is enabled.</p>
+<p>Once you no longer need to keep the results of a journey automatically up to date, we recommend disabling the <strong>Scheduled recalculation</strong> property. Having too many journeys scheduled for recalculation may impact system performance.</p>
+</div>
+
+<p>Upon recalculation, contacts which no longer meet the <a href="#conditions">conditions</a> are removed from the corresponding stages. Recalculating the customer journey keeps the data up to date, reflecting only those contacts who currently match the inclusion criteria.</p>
+<p>Between journey calculations, <a href="/documentation/business-users/digital-marketing/contact-management#contact-merging">contact merging</a> may cause minor inconsistencies in the results. These inconsistencies are resolved when the journey is recalculated, ensuring the most accurate data.</p>
+
+</body>
+</html>

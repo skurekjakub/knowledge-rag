@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Installation troubleshooting</title>
+</head>
+<body>
+<p>If you encounter issues during or after the installation, the following topics may help you solve them:</p>
+<ul>
+<li><a href="#disk-permission-problems-when-hosting-under-iis">Disk permission problems when hosting under IIS</a></li>
+<li><a href="#database-connection-problems">Database connection problems</a></li>
+</ul>
+<h2 id="disk-permission-problems-when-hosting-under-iis">Disk permission problems when hosting under IIS</h2>
+<p>Xperience performs most operations without writing to the disk. However, there are situations when the application needs to access the disk, such as:</p>
+<ul>
+<li>Storing uploaded files on the file system</li>
+<li>File operations, such as resizing images</li>
+</ul>
+<p>If you receive an error message stating that the application cannot write to the disk, you need to:</p>
+<ol type="1">
+<li>Identify the user account under which your application is running.</li>
+<li>Grant the <strong>Modify</strong> and <strong>Write</strong> permissions for the project folder to the account.</li>
+</ol>
+<p>For applications hosted in IIS, the user account is based on the used application pool. You can find the user account name in one of the following locations:</p>
+<ul>
+<li><p>The encountered error/information message.</p></li>
+<li>
+<p>In <strong>IIS Manager</strong>, under the <strong>Application Pools</strong> section. Determine the user account according to the value in the <strong>Identity</strong> column:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>
+Application pool identity
+</p>
+</td>
+<td>
+<p>
+User account name
+</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>
+Local Service
+</p>
+</td>
+<td>
+<p>
+Service
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+LocalSystem
+</p>
+</td>
+<td>
+<p>
+System
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+NetworkService
+</p>
+</td>
+<td>
+<p>
+Network Service
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+ApplicationPoolIdentity
+</p>
+</td>
+<td>
+<p>
+IIS AppPool\&lt;app pool name&gt;
+</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p>If you are using <strong>Visual Studio’s</strong> built-in web server, the application runs under your Windows user account.</p>
+</div>
+</li>
+</ul>
+<p>See also: <a href="https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc754344(v=ws.11)" target="_blank">Set, View, Change, or Remove Permissions on Files and Folders (Microsoft documentation)</a></p>
+<h2 id="database-connection-problems">Database connection problems</h2>
+<p>If you encounter problems when connecting to the SQL server database during the installation or at a later point, make sure that:</p>
+<ul>
+<li>The target server has a <a href="/documentation/developers-and-admins/installation/system-requirements">supported database server</a> installed and running.</li>
+<li>You are using the correct instance of the SQL server if the server has multiple instances. The instance name must be entered in format <em>server\instance</em>.</li>
+<li>The TCP/IP protocol is enabled on the SQL server. You can check using the <em>SQL Server Configuration Manager</em> utility, under <em>SQL Server Network Configuration/SQL Native Client Configuration -&gt; Client Protocols</em>.</li>
+<li>Access to the database server is not blocked by a firewall (the default port number for the TCP/IP protocol is 1433).</li>
+</ul>
+<p>If the connection fails with the <strong><em>“Login failed for user ‘username’.”</em></strong> error message, check the following troubleshooting sections, depending on the used authentication type.</p>
+<h3 id="sql-server-accounts">SQL Server accounts</h3>
+<p>If you are using an SQL Server account with a password to authenticate against the database, make sure that:</p>
+<ul>
+<li>You are using a valid username and password.</li>
+<li>The login exists on the server, is enabled, and has permissions to connect to the server (check the logins on your server using SQL Server Management Studio in the <strong>Server -&gt; Security -&gt; Logins</strong> section of the <em>Object Explorer</em>).</li>
+<li>Your server supports SQL Server authentication (check that the <strong><em>SQL Server and Windows Authentication mode</em></strong> option is enabled in the <strong>Server Properties -&gt; Security</strong> dialog in SQL Server Management Studio).</li>
+</ul>
+<h3 id="windows-authentication-mode">Windows authentication mode</h3>
+<p>To resolve problems with database connections that use Windows authentication, you may need to contact your network administrator. The Xperience application runs under a specific local or domain account, depending on your environment (for example <em>NetworkService</em>).</p>
+<p>When running the application on IIS, the account depends on the <strong><em>Identity</em></strong> of the assigned application pool. If your SQL server is located on a different machine than your web server, you may need to configure the application pool to run under a domain account rather than a local account.</p>
+<p>The account must have its own login created on the SQL server, configured for Windows authentication, and with the appropriate permissions. You can manage the logins using SQL Server Management Studio, in the <strong>Server -&gt; Security -&gt; Logins</strong> section of the <em>Object Explorer.</em></p>
+
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Inline editors for widget properties</title>
+</head>
+<body>
+<p>Inline editors allow content editors to configure the <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties of Page Builder widgets</a>. They can be used as an alternative to the property configuration dialog, or in combination with it.</p>
+<p>Unlike the configuration dialog, inline editors are interactive elements directly within the output of the related widget. For example, inline editors can range from basic value inputs to more advanced options, such as file uploaders or text areas with rich formatting options.</p>
+<p>Each inline editor manages only a single widget property. For widgets that have multiple properties, you can add multiple inline editors into the widget’s output.</p>
+<p>The editors are visible only in the Xperience administration interface when <a href="/documentation/business-users/website-content/widgets-and-page-builder">working with pages that contain editable areas</a>. However, the configured properties then affect the appearance or functionality of the given widget on the live site.</p>
+<p>By default, the system contains an implementation of an inline editor that allows users to insert rich text content. See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/rich-text-inline-editors">Rich text inline editors</a> to learn how to integrate the editor into your widgets. </p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Inline editors for Email Builder widget properties</strong></p>
+<p>This page describes how to work with inline editors for <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">Page Builder widget properties</a>. Inline editors are also available for <a href="/documentation/developers-and-admins/development/builders/email-builder/inline-editors-email-builder-widgets">Email Builder widget properties</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom inline editors with links to content items</strong></p>
+<p>If you decorate any widget property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> or use an inline editor that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a>), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the widget property.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Areas</strong></p>
+<p>Widgets are designed as global components. Adding related files, such as inline editor files, into <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Areas</a> is not supported and may lead to unexpected behavior.</p>
+</div>
+
+<h2 id="implement-inline-editors">Implement inline editors</h2>
+<p>To create an inline editor for a property and integrate it into your Page Builder widgets:</p>
+
+<div>
+
+</div>
+<div>
+<p>For a full scenario with code samples which will guide you through the process of developing a widget with a property and inline editor, see <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/example-widget-development">Example - Widget development</a>.</p>
+</div>
+
+<ol type="1">
+<li>Add an editor view model class to your project.
+<ul>
+<li><p>The model class should contain at least two properties – the name and value of the widget property managed by the editor.</p></li>
+<li>
+<p>We recommend storing the view models of inline editors in a designated folder, for example: <em>~/Components/InlineEditors/&lt;EditorName&gt;/</em></p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public class CustomEditorModel
+  {
+      public string PropertyName { get; set; }
+      ...
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>Create a partial view that defines the inline editor’s interface.
+<ul>
+<li><p>Make the partial view use the view model that you created for the editor.</p></li>
+<li>
+<p>The view code must encapsulate inner HTML elements using the <code>Kentico().BeginInlineEditor()</code> helper method. Specify the following parameters for the method:</p>
+<ul>
+<li><p>A unique identifier of the inline editor.</p></li>
+<li>
+<p>The name of the widget property managed by the editor.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @using Kentico.PageBuilder.Web.Mvc
+  @using Kentico.Web.Mvc
+
+  @model CustomEditorModel
+
+  @using (Html.Kentico().BeginInlineEditor("custom-editor", Model.PropertyName))
+  {
+      ...
+  }
+
+  </code></pre>
+</div>
+</li>
+<li><p>We recommend storing the partial views of inline editors in a designated folder, for example: <em>~/Components/InlineEditors/&lt;EditorName&gt;</em></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Create a JavaScript file containing a self-invoking function that registers the property editor. Every widget property editor must be registered using client-side code.
+<ul>
+<li>
+<p>To register the property editor, call the <code>window.kentico.pageBuilder.registerInlineEditor</code> function.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  (function () {
+    // Registers the 'custom-editor' inline property editor
+    window.kentico.pageBuilder.registerInlineEditor("custom-editor", {
+      init: function (options) {
+          var editor = options.editor;
+          ...
+      }
+    });
+  })();
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Specify the following parameters when calling the <code>registerInlineEditor</code> function:</p>
+<ul>
+<li>The identifier of the property editor, i.e. the first parameter set for the <em>BeginInlineEditor</em> helper method in the HTML code of the editor’s partial view.</li>
+<li>An anonymous object with an <code>init</code> property function that is executed whenever the given property editor is loaded. Use this function to run custom JavaScript that modifies the widget’s content or behavior based on the property value. The <code>options</code> parameter is an object that wraps the following properties:
+<ul>
+<li>
+<code>editor</code> – the DOM element encapsulating the editor</li>
+<li>
+<code>propertyName</code> – the name of the related widget property</li>
+<li>
+<code>propertyValue</code> – the value of the related widget property</li>
+<li>
+<code>localizationService</code> – the localization service</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Executing scripts on inline editor events</strong></p>
+<p>If you need to execute custom scripts on certain events, you can use additional property functions of the anonymous object defined when registering the inline editor.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ // Mandatory:
+ init: function (options) { ... },
+ // Optional:
+ destroy: function (options) { ... },   // Executed when a user deletes a widget containing the inline editor
+ dragStart: function (options) { ... }, // Executed when a user starts to drag a widget with the inline editor
+ drop: function (options) { ... }       // Executed when a user successfully drops a widget with the inline editor
+
+ </code></pre>
+</div>
+</div>
+<p>Only the <code>editor</code> property is available via the <code>options</code> parameter in the destroy, <code>dragStart</code>, and <code>drop</code> property functions.</p>
+</div>
+
+<ul>
+<li>
+<p> To notify the widget about changes in the property value, dispatch a custom event named updateProperty (within the <code>init</code> function that you registered for the editor).</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Creates a custom event that notifies the widget about a change in the value of a property
+  var event = new CustomEvent("updateProperty", {
+      detail: {
+          value: "newValue",
+          name: propertyName
+      }
+  });
+  editor.dispatchEvent(event);
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The <code>updateProperty</code> event’s data must contain the detail  property, with the following values:</p>
+<ul>
+<li>
+<code>value</code> – the new value of the widget property.</li>
+<li>
+<code>name</code> – the name of the related widget property.</li>
+<li>(Optional) <code>refreshMarkup</code> – bool value that determines whether the event automatically triggers a refresh of the widget’s entire markup from the server. True by default.</li>
+</ul>
+</div>
+</li>
+</ul>
+</li>
+<li>Prepare any additional assets required by the editor, such as further JavaScript files, CSS stylesheets, images, etc.
+<ul>
+<li>For detailed information and recommendations, see <a href="#add-scripts-and-styles-for-inline-editors">Add scripts and styles for inline editors</a>.</li>
+</ul>
+</li>
+<li>Edit the partial views of the widgets where you want to integrate the editor:
+<ol type="1">
+<li><p>Determine whether the widget is being displayed in edit mode (in the administration interface). To access the context where the inline editor is rendered, use the <code>Retrieve</code> method of the <code>IPageBuilderDataContextRetriever</code> service. Evaluate the context’s Page Builder mode by using the <code>GetMode</code> method. The method returns values from the <code>PageBuilderMode</code> enumeration.</p></li>
+<li>
+<p>Render the editor’s partial view in the appropriate location. Use the editor’s view model to pass the name and current value of the related widget property.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+ @using Kentico.PageBuilder.Web.Mvc
+
+ @inject IPageBuilderDataContextRetriever pageBuilderContext
+
+ @* Shows an inline editor when rendered in the edit mode of the Pages application in Kentico *@
+ @if (pageBuilderContext.Retrieve().GetMode() == PageBuilderMode.Edit)
+ {
+     var inlineEditorModel = new CustomEditorModel
+     {
+         @* Use the nameof() operator to get the name of the widget property from the widget properties model *@
+         PropertyName = nameof(CustomWidgetProperties.Number),
+         PropertyValue = Model.Number
+     };
+
+     &lt;partial name="~/Components/InlineEditors/CustomEditor/_CustomEditor.cshtml" model="inlineEditorModel" /&gt;
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+</ol>
+<p>The modified widgets now display your inline editor when <a href="/documentation/business-users/website-content/widgets-and-page-builder">working with page content in the administration interface</a>. The appearance or functionality of widgets on the live site is affected by the property value configured through the inline editor.</p>
+<h2 id="add-scripts-and-styles-for-inline-editors">Add scripts and styles for inline editors</h2>
+<p>To add JavaScript and CSS styles required by your inline editors (including the script file containing the editor’s registration code), we recommend placing script and stylesheet files into sub-folders under:</p>
+<ul>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Public/InlineEditors/&lt;EditorName&gt;</em></strong> – scripts and styles intended for the live site</li>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Admin/InlineEditors/&lt;EditorName&gt;</em></strong> – scripts and styles intended for the administration interface (when working with the widget in the Page Builder editing interface). For example, inline editor registration scripts.</li>
+</ul>
+<p>You can use sub-folders that match the identifiers of individual editors, or a <em>Shared</em> sub-folder for assets used by multiple editors. Note that this recommendation only applies when using the default configuration of the bundling support provided by Xperience. The configuration of your project may be different. See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>.</p>
+<p>Inline editor scripts and styles are only included in the administration interface when pages are displayed in <strong>Edit</strong> mode within the <strong>Pages</strong> application.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Notes – Scripts</strong></p>
+<ul>
+<li>Avoid linking or executing scripts directly within the views of inline editors. This could lead to duplicated scripts on pages containing multiple widgets that use the editor.</li>
+</ul>
+<p><strong>Notes – Styles</strong></p>
+<ul>
+<li>To prevent your editor styles from overriding the site’s styles, add a prefix to all CSS selectors used for the editor (for example <code>custom-editor-class</code>).</li>
+<li>To prevent the editor’s styles from being overridden by the site’s styles, make all CSS selectors used for the editor as specific as possible. If necessary, use the <code>!important</code> rule for critical selectors.</li>
+</ul>
+</div>
+
+
+</body>
+</html>

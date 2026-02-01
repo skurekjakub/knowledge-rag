@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Macro resolvers</title>
+</head>
+<body>
+<p>Macro resolution within Xperience is handled by system components known as macro resolvers. A resolver is responsible for processing entered macro expressions and outputting the result. The resolution process can be simplified into the following steps:</p>
+<ol type="1">
+<li>The resolver parses the macro expression to identify its components (<a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax#Macrosyntax-macrofield">macro fields</a>, <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax#Macrosyntax-macromethod">macro methods</a>, declared variables, control statements).</li>
+<li>For each identified macro field or method, the resolver runs the code <a href="/documentation/developers-and-admins/configuration/macro-expressions/define-macro-fields">registered with the component</a>. Results are substituted into the main expression.</li>
+<li>The resolver then evaluates the main expression and outputs the result.</li>
+</ol>
+<p>The system contains multiple macro resolvers, each responsible for a particular feature set. This separation ensures that a resolver supports only macros relevant to the feature for which it is responsible. The set of supported macro fields and methods is “taught” to each resolver on application startup.</p>
+<p>Some macro resolvers are open to customization. Developers can “teach” a resolver additional <a href="/documentation/developers-and-admins/configuration/macro-expressions/define-macro-fields">macro fields</a> by registering them via specific classes. See the following reference for the extension points of individual resolvers.</p>
+<h2 id="resolver-reference">Resolver reference</h2>
+<h3 id="ui-forms-macro-resolver">UI forms macro resolver</h3>
+<p><strong>Extension point:</strong>  <code>UIFormMacroSourceRegister</code> – see <a href="/documentation/developers-and-admins/configuration/macro-expressions/define-macro-fields">Define macro fields</a> to learn how to register additional macro fields into the resolver.</p>
+<p>This resolver is available when defining fields for <a href="/documentation/developers-and-admins/customization/object-types">UI forms</a> in the <strong>Modules</strong> application. Navigate to the <strong>Modules</strong> application → <em>select a module</em> → <strong>Classes</strong> → <em>select a class</em> → <strong>UI forms</strong>.</p>
+<p><strong>Handles macro resolution in the following field properties:</strong></p>
+<ul>
+<li>Default value</li>
+</ul>
+<p>The following macro expressions are available by default:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Macro fields</p>
+</td>
+<td>
+<p>Return type</p>
+</td>
+<td>
+<p>Parameters</p>
+</td>
+<td colspan="1">
+<p>Example</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Now </p>
+</td>
+<td>
+<p>DateTime</p>
+</td>
+<td>
+<p>-</p>
+</td>
+<td colspan="1">
+<p><code>{% Now %}</code></p>
+</td>
+<td>
+<p>Returns a <code>DateTime</code> string with the current server time.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UtcNow</p>
+</td>
+<td>
+<p>DateTime</p>
+</td>
+<td>
+<p>-</p>
+</td>
+<td colspan="1">
+<p><code>{% UtcNow %}</code></p>
+</td>
+<td>
+<p>Returns a <code>DateTime</code> string with the current UTC time.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Today</p>
+</td>
+<td>
+<p>DateTime</p>
+</td>
+<td>
+<p>-</p>
+</td>
+<td colspan="1">
+<p><code>{% Today %}</code></p>
+</td>
+<td>
+<p>Returns a <code>DateTime</code> string set to today’s date, with the time component set to 00:00:00 (with formatting dependent on the application’s UI culture).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Macro methods</p>
+</td>
+<td colspan="1">
+</td>
+<td colspan="1">
+</td>
+<td colspan="1">
+</td>
+<td colspan="1">
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>IsNullOrWhiteSpace</p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td colspan="1">
+<ol type="1">
+<li>string to test</li>
+</ol>
+</td>
+<td colspan="1">
+<p><code>{% "mystringexpressionresult".IsNullOrWhiteSpace() %}</code></p>
+</td>
+<td colspan="1">
+<p>Tests whether the given string is null or contains only whitespace.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>IsNullOrEmpty</p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td colspan="1">
+<ol type="1">
+<li>string to test</li>
+</ol>
+</td>
+<td colspan="1">
+<p><code>{% "mystringexpressionresult".IsNullOrEmpty() %}</code></p>
+</td>
+<td colspan="1">
+<p>Tests whether the given string is null or empty.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>FormatString</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<ol type="1">
+<li>format string</li>
+<li>formatting params</li>
+</ol>
+</td>
+<td colspan="1">
+<p><code>{% "It is now {0}".FormatString(Now) %}</code></p>
+</td>
+<td colspan="1">
+<p>Replaces all formatting expressions in a string using the text equivalents specified in the second parameter.</p>
+<p>Based on <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/composite-formatting" target="_blank">composite formatting</a>.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

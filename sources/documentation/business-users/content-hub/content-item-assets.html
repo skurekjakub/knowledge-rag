@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content item assets</title>
+</head>
+<body>
+<p><em>Content item assets</em> are <a href="/documentation/business-users/content-hub/content-items">content items</a> of certain content types that allow you to upload and store various types of files, for example photos, pictures, sound files, videos, package files, presentations, or documents. Content item assets stored in the <em>Content hub</em> can be reused throughout the system. Different <a href="#image-variants">variants</a> of image assets can be displayed in different contexts to ensure optimal visual presentations.</p>
+<h2 id="upload-a-single-file">Upload a single file</h2>
+<p>To upload a file to the <em>Content hub</em>:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select <strong>New content item</strong>.<br>
+</li>
+<li>Select a <a href="/documentation/developers-and-admins/development/content-types">content type</a> that has an <em>Content item asset</em> field.
+<ul>
+<li>Search for content types named <em>Image</em>, <em>Media</em>, <em>File</em>, <em>Asset</em>, etc. The name of the content type depends on your project configuration.</li>
+</ul>
+</li>
+<li>Enter the values of the content type fields and upload a file via the uploader.<br>
+</li>
+<li>
+<strong>Save</strong> the new asset.</li>
+</ol>
+<p>The asset is now created in the current <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a> and needs to be <a href="/documentation/business-users/content-hub/content-items#publish-content-items">published</a> before it is publicly available.</p>
+<h2 id="mass-asset-upload">Mass asset upload</h2>
+<p>To make uploading a large number of files easier, your administrators can <a href="/documentation/developers-and-admins/development/content-types#mass-asset-upload-configuration">configure mass asset upload</a> for your project. You can then upload multiple files in bulk and automatically convert them to content item assets of a configured content type.</p>
+<ol type="1">
+<li>Upload files by drag and dropping them into the Content hub, combined content selector, or <a href="/documentation/business-users/rich-text-editor">rich text editor</a>. Alternatively, you can upload them by selecting <strong>New content item -&gt; Upload files</strong> in the Content hub. Content item assets are created automatically after the upload is finished.
+<ul>
+<li>When mass uploading to the Content hub with <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folders</a> enabled, the files are uploaded into the currently selected folder.</li>
+<li>If you cancel a mass upload in progress, the files that have already been successfully uploaded stay in the system.</li>
+</ul>
+</li>
+<li>After a successful upload, you can open () each item in a new tab to <a href="/documentation/business-users/content-hub/content-items#edit-content-items">edit</a> it. Alternatively, you can edit the content item assets in the chosen location in the Content hub. The names of the created content item assets are automatically generated from the uploaded file names.</li>
+</ol>
+<p>The assets are now created in the selected <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a> and need to be <a href="/documentation/business-users/content-hub/content-items#publish-content-items">published</a> before they become publicly available.</p>
+<h2 id="download-files">Download files</h2>
+<p>If you need to access or modify a file previously <a href="#upload-a-single-file">uploaded</a> to the Content hub, you can download it from a content item asset.</p>
+<p>To download a file from a content item asset:</p>
+<ol type="1">
+<li><p>Open the <strong>Content hub</strong> application.</p></li>
+<li>
+<p>Select a content item asset.</p>
+<ul>
+<li>Use the search bar, filter or folders to <a href="/documentation/business-users/content-hub/content-items#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Download</strong> () the asset.</p>
+<p></p>
+</li>
+</ol>
+<p>The asset is now downloaded to your device.</p>
+<h2 id="optimize-image-assets">Optimize image assets</h2>
+<p>To help ensure that the images you use across different channels are properly optimized, your administrators can enable <a href="/documentation/developers-and-admins/development/content-types#automatically-optimize-image-assets">automatic image optimization</a>. However, you can also manually optimize any image asset in the Content hub by changing the format of the image or reducing its size by adjusting image quality.</p>
+<ol type="1">
+<li>
+<a href="/documentation/business-users/content-hub/content-items#edit-content-items">Edit</a> a content item asset that contains an image.</li>
+<li>
+<strong>Adjust the image</strong> ().
+<ul>
+<li>If the image has <a href="#image-variants">variants</a>, make sure to have the <strong>Primary image</strong> selected.<br>
+</li>
+</ul>
+</li>
+<li>Change the <strong>Image format</strong> or <strong>Quality</strong> of the image.
+<ul>
+<li>Image format – while some formats like <em>WEBP</em> and <em>AVIF</em> are better suited for most modern web browsers, they may be incompatible with some legacy browsers (e.g., Internet Explorer). If you’re not sure about which image formats to use in your project, ask your project administrators.</li>
+<li>Quality – the overall quality of the image. While higher quality retains more image details, lowering the quality reduces the file size.
+<ul>
+<li>Quality selection is unavailable for image formats that use lossless compression, like <em>PNG</em>.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+If you notice undesired <a href="https://en.wikipedia.org/wiki/Compression_artifact" target="_blank">compression artifacts</a> in the optimized image, try increasing the quality until the artifacts are no longer visible.
+</div>
+</li>
+<li>You can preview the outcome of your adjustments on the image in the <strong>Adjusted image info</strong> section.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>Xperience preserves all original images in the background, ensuring that optimizations are always applied to the original file rather than a previously modified version. This means that multiple adjustments do not compound quality loss. For example, if you change an image’s quality from 70% to 50%, the compression is applied as if you were reducing quality directly from 100%, rather than from the already compressed 70%.</p>
+</div>
+
+<h2 id="image-variants">Image variants</h2>
+<p>Image variants are cropped or resized versions of an image, defined by a specific aspect ratio and pixel dimensions <a href="/documentation/developers-and-admins/development/content-types#configure-image-variants">configured</a> by your project administrator. They allow you to control how images appear in different contexts, such as hero banners, social media posts, or thumbnails. For example, you can adjust which part of an image is displayed in each scenario to ensure optimal visual presentation. Image variants also help with <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Responsive_images" target="_blank">art direction</a> or <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images#how_do_you_create_responsive_images" target="_blank">resolution switching</a>, allowing you to display different versions of the image on various layouts.</p>
+<p>Image variants are generated from the primary <a href="#optimize-image-assets">optimized image</a>, taking into account its format and quality. The <a href="/documentation/developers-and-admins/development/content-types#use-image-variants">usage</a> of image variants is currently supported only for <a href="/documentation/business-users/website-content">website channels</a>.</p>
+<p>There are two types of image variants available:</p>
+<ul>
+<li>
+<strong>Scaled variant</strong> – Image dimensions are resized based on input while maintaining the original aspect ratio.</li>
+<li>
+<strong>Smart crop variant</strong> – Images are cropped based on the focal point.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>When using <em>Scaled variants</em>, images can be scaled up if the specified dimensions exceed the original image dimensions. This may result in blurry images or increased file sizes due to image upscaling.</p>
+</div>
+
+<p>To see how your image will look like in various variants:</p>
+<ol type="1">
+<li>
+<a href="/documentation/business-users/content-hub/content-items#edit-content-items">Edit</a> a content item asset that contains an image.</li>
+<li>
+<strong>Adjust the image</strong> ().</li>
+<li>Select the image variant you want to view.</li>
+</ol>
+<p></p>
+<h3 id="change-image-focal-point">Change image focal point</h3>
+<p>Image variants are automatically cropped based on the image’s focal point. When an image is uploaded, the focal point is initially placed at its center. To adjust how all image variants are cropped, move the focal point to your preferred location.</p>
+<p>You don’t need to have any image variants <a href="/documentation/developers-and-admins/development/content-types#configure-image-variants">defined</a> in your project to adjust the focal point. Once administrators define new variants, they will be automatically cropped according to the selected focal point.</p>
+<ol type="1">
+<li>
+<strong>Adjust the image</strong> ().</li>
+<li>Use the purple dot to select a new focal point.
+<ul>
+<li>If the image has variants, make sure the <strong>Primary image</strong> is selected.</li>
+</ul>
+</li>
+<li>You can preview the new crops by selecting any image variant.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>All image variants, except those <a href="#crop-variants-manually">cropped manually</a>, are now re-cropped according to the updated focal point.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Automatic focal point selection with AIRA</strong></p>
+<p>AIRA can automatically select the best focal point for your image during file upload. See the <a href="/documentation/business-users/aira#automatically-select-image-focal-point">AIRA</a> documentation to learn more.</p>
+</div>
+
+<h3 id="crop-variants-manually">Crop variants manually</h3>
+<p>You can manually crop an image variant to fine-tune its design by repositioning or resizing the crop. The crop retains the aspect ratio and dimensions defined for the variant.</p>
+<ol type="1">
+<li>
+<strong>Adjust the image</strong> ().</li>
+<li>Select the image variant you want to crop manually.</li>
+<li>Adjust the crop to fit your needs.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Manually cropped images, marked by the <span></span> icon, are not affected by the <a href="#change-image-focal-point">focal point change</a> on the primary image.</p>
+</div>
+
+<h2 id="copy-an-asset-url">Copy an asset URL</h2>
+<p>To use assets stored in Xperience across different platforms (such as social media), you can copy the URL of a published content item asset or an <a href="#image-variants">image variant</a>. If you replace or modify the asset, you’ll need to publish it again before you can copy the URL.</p>
+<p>To copy a URL of a content item asset:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select a content item asset.
+<ul>
+<li>Use the search bar, filter or folders to <a href="/documentation/business-users/content-hub/content-items#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Copy the URL</strong> () of the asset.</li>
+</ol>
+<p></p>
+<p>To copy a URL of an image variant:</p>
+<ol type="1">
+<li>
+<a href="/documentation/business-users/content-hub/content-items#edit-content-items">Edit</a> a content item asset that contains an image.</li>
+<li>
+<strong>Adjust the image</strong> ().</li>
+<li>Select an image variant whose URL you want to copy.</li>
+<li>
+<strong>Copy the URL</strong> () of the image variant.</li>
+</ol>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>The copied URL path includes the domain of the Xperience administration by default. If you need to use a different domain, such as the domain of a <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>, manually change the corresponding part of the URL.</p>
+<p>For example, if the copied URL is <em>https://admin.example.com/getContentAsset/…</em> and your website channel uses <em>https://www.example.com</em>, you should replace the domain accordingly to <em>https://www.example.com/getContentAsset/…</em>.</p>
+</div>
+
+
+</body>
+</html>

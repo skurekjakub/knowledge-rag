@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Form Builder components</title>
+</head>
+<body>
+<p>This page lists all components available for the <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> by default in new installations of Xperience. For details on how to programmatically configure these components when used in the widget configuration dialog or in the form builder, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>. </p>
+
+<div>
+
+</div>
+<div>
+<p>In addition to the default system components, developers can <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">create custom components</a> for the form builder.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Identifiers of system form components</strong></p>
+<p>You can access the identifiers of system form components in your code via the <code>IDENTIFIER</code> constant exposed by each form component class. For example, the identifier is required when <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components/form-component-filtering">defining filters</a> for form components.</p>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Form component</p>
+</td>
+<td>
+<p>Form component class<br>
+(Kentico.Forms.Web.Mvc)</p>
+</td>
+<td colspan="1">
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Single checkbox</p>
+</td>
+<td colspan="1">
+<p>CheckBoxComponent</p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td colspan="1">
+<p>Checkbox field that saves a boolean value (<code>true</code> for a selected checkbox, <code>false</code> for a cleared checkbox).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Consent agreement</p>
+</td>
+<td colspan="1">
+<p>ConsentAgreementComponent</p>
+</td>
+<td colspan="1">
+<p>GUID</p>
+</td>
+<td colspan="1">
+<p>Checkbox field that allows users to give agreements to a pre-selected <a href="/documentation/developers-and-admins/data-protection/consent-management">consent</a>. Displays the selected consent’s short text next to the checkbox. When a visitor selects the consent checkbox and submits the form, the system creates a corresponding consent agreement for the given <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> and stores the agreement’s identifier (GUID) in the form field.</p>
+<p>To learn more, see: <a href="/documentation/developers-and-admins/data-protection/consent-management">Consent management</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Drop-down list</p>
+</td>
+<td>
+<p>DropDownComponent</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Drop-down selector offering multiple options. Only one option can be selected.</p>
+<p>To learn how to configure options for this component programmatically, see <a href="#configure-selector-editing-components">Configure selector editing components</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Email</p>
+</td>
+<td colspan="1">
+<p>EmailInputComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Input field for entering one or more email addresses. </p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Upload file</p>
+</td>
+<td colspan="1">
+<p>FileUploaderComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Field that allows users to submit a single file as part of the form data. The submitted files are stored on the file system in the <em>~/assets/BizFormFiles</em> folder and the corresponding form field stores the file’s name.</p>
+<p>To learn how to configure options for this component programmatically, see <a href="#configure-the-upload-file-component">Configure the Upload file component</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Checkboxes</p>
+</td>
+<td colspan="1">
+<p>MultipleChoiceComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Selector offering options in the form of checkboxes. Multiple options can be selected at the same time.</p>
+<p>To learn how to configure options for this component programmatically, see <a href="#configure-selector-editing-components">Configure selector editing components</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Number</p>
+</td>
+<td colspan="1">
+<p>IntInputComponent</p>
+</td>
+<td colspan="1">
+<p>int</p>
+</td>
+<td colspan="1">
+<p>Textbox input field for entering whole numbers. </p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Radio buttons</p>
+</td>
+<td colspan="1">
+<p>RadioButtonsComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Selector offering multiple options in the form of radio buttons. Only one option can be selected.</p>
+<p>To learn how to configure options for this component programmatically, see <a href="#configure-selector-editing-components">Configure selector editing components</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>reCAPTCHA</p>
+</td>
+<td>
+<p>RecaptchaComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td>
+<p>A validation element based on <a href="https://www.google.com/recaptcha/" target="_blank">reCAPTCHA</a>, which allows forms to tell apart humans and computers. If the reCAPTCHA validation fails, the form cannot be submitted.</p>
+<p>Supports the following reCAPTCHA versions:</p>
+<ul>
+<li>
+<strong>reCAPTCHA v2</strong> – requires users to click a checkbox indicating they are not a robot. This either passes the user immediately or challenges them to validate whether or not they are human (using an additional image selection or audio test).</li>
+<li>
+<strong>reCAPTCHA v3</strong> – provides frictionless validation without interrupting users. Calculates a score for every request between 0.0 (very likely a bot) and 1.0 (very likely a good interaction). Validation succeeds or fails based on a specified score threshold.</li>
+</ul>
+<p>The reCAPTCHA version used is determined by the website channel where the form is displayed, see: <a href="#configure-recaptcha">Configure reCAPTCHA</a></p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Text area</p>
+</td>
+<td colspan="1">
+<p>TextAreaComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Input field that allows users to enter text into an area with adjustable size.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Text</p>
+</td>
+<td>
+<p>TextInputComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td>
+<p>Textbox input field.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>U.S. phone number</p>
+</td>
+<td colspan="1">
+<p>USPhoneComponent</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Input field for a phone number in the standard US format, i.e. (132) 456-7890.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="configure-selector-editing-components">Configure selector editing components</h2>
+<p>When using selector components as editing components, configure the <code>DataSource</code> property to define their options. You can either specify a list of values, or a semicolon-separated list of values and text. Each option needs to be entered on a separate line. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Assigns an editing component with DataSource to the SelectedOption property
+[DropDownComponent(DataSource = "cz;Czech Republic\r\nusa;United States")]
+public string SelectedOption { get; set; }
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>If you want to include a semicolon in the value or text of the options, you also need to set a different separator for the values and text using the <code>DataSourceValueSeparator</code> property. For example:</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+    // Assigns an editing component with DataSource to the SelectedOption property and sets "-" as the separator for the options
+    [DropDownComponent(DataSource = "cz-Czech Republic\r\nusa-United States", DataSourceValueSeparator = "-")]
+    public string SelectedOption { get; set; }
+
+</code></pre>
+</div>
+</div>
+</div>
+
+<h2 id="configure-the-upload-file-component">Configure the Upload file component</h2>
+<p>You can configure properties of the file uploader via the <code>FormBuilderOptions</code> object:</p>
+<ul>
+<li>
+<a href="#limit-the-maximum-uploadable-file-size">Limit the maximum uploadable file size</a> – describes how to set the maximum allowed size of uploaded files.</li>
+<li>
+<a href="#protect-against-denial-of-service">Protect against Denial of Service</a> – describes measures the system employs as prevention against malicious attacks.</li>
+</ul>
+<h3 id="limit-the-maximum-uploadable-file-size">Limit the maximum uploadable file size</h3>
+<p>You can control the maximum size of files uploaded via the file uploader form component by setting the <code>FormBuilderOptions.FileUploaderFileSizeLimit</code> option in your application’s startup code. The component automatically prevents people from uploading files larger than the specified limit and notifies them using a browser alert.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Sets the maximum file size of files uploaded using the 'File uploader' form component to 100MB
+// You can also load this value from any configuration source using the configuration provider pattern
+builder.Services.Configure&lt;FormBuilderOptions&gt;(options =&gt; options.FileUploaderFileSizeLimit = 1024 * 100);
+
+</code></pre>
+</div>
+
+<h3 id="protect-against-denial-of-service">Protect against Denial of Service</h3>
+<p>To expedite the form submission process, all files selected using the <em>Upload file</em> component are immediately uploaded and stored in a dedicated folder on the server. This occurs independently of the form submission process. After the form is submitted, the system moves the corresponding file (currently selected in the <em>Upload file</em> component) to the folder used to store form data on the server.</p>
+<p>As a measure of protection against denial of service attacks, for example, by repeatedly uploading large files without submitting the form, the system limits the size of the folder used to temporarily store the uploaded files. The folder size limit, set to 500 MB by default, can be configured by setting the <code>FormBuilderOptions.TemporaryUploadFilesFolderSizeLimit</code> option in your application’s startup code. If the folder size limit is exceeded, the system prevents users from uploading additional files and logs an exception to the <a href="/documentation/developers-and-admins/configuration/event-log">event log</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+// Sets the temporary folder size limit to 1000MB
+// You can also load this value from any configuration source using the configuration provider pattern
+builder.Services.Configure&lt;FormBuilderOptions&gt;(options =&gt; options.TemporaryUploadFilesFolderSizeLimit = 1000);
+
+</code></pre>
+</div>
+
+<p>The system deletes the contents of the temporary folder once every two hours. If you wish to modify this behavior, for example in cases where you expect higher volumes of form submissions containing large files, you can override the default two hour interval by configuring the <strong>CMSDeleteTemporaryUploadFilesOlderThan</strong> key in your project’s configuration file (<em>appsettings.json</em> by default).</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sets the folder cleanup period to one hour</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSDeleteTemporaryUploadFilesOlderThan": 1,
+
+</code></pre>
+</div>
+
+<h2 id="configure-recaptcha">Configure reCAPTCHA</h2>
+<p>You need to register your site to use the reCAPTCHA API and obtain a pair of API keys:</p>
+<ol type="1">
+<li>Go to <a href="https://www.google.com/recaptcha/admin" target="_blank">https://www.google.com/recaptcha/admin</a> and sign in with your Google account.</li>
+<li>Select the <strong>reCAPTCHA type</strong> that you wish to use.
+<ul>
+<li>For reCAPTCHA v2, choose the <strong>“I’m not a robot” Checkbox</strong> option.</li>
+</ul>
+</li>
+<li>Fill in all required details, including the domain where your site is running.</li>
+<li>Copy your <strong>Site key</strong> and <strong>Secret key</strong>.</li>
+</ol>
+<p>Next, enter your site’s reCAPTCHA API keys into Xperience:</p>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application in the administration.</li>
+<li>reCAPTCHA is configured per <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>. Edit the channel you want to configure.</li>
+<li>Switch to the <strong>Channel settings</strong> tab.</li>
+<li>Under <strong>reCAPTCHA settings</strong>:
+<ol type="1">
+<li><p>Select the reCAPTCHA version.</p></li>
+<li><p>Paste the API keys into the <strong>Site key</strong> and <strong>Secret key</strong> fields.</p></li>
+<li>
+<p>For reCAPTCHA v3, set the <strong>Score threshold</strong> (a value between 0 and 1) required for the validation to be successful. Set a higher value if you have issues with spam or bots, and a lower value if you wish to make accessibility easier for users.</p>
+
+<div>
+
+</div>
+<div>
+<p>If the validation fails for a user, there are no further challenges and form submission is not possible. In these cases, users can attempt to refresh the page again.</p>
+</div>
+</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>With the API keys entered into the system, the <strong>reCAPTCHA</strong> form component now works in forms. When <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">composing forms</a>, the Form Builder interface allows users to configure additional properties for specific reCAPTCHA fields.</p>
+<p><strong>reCAPTCHA v2</strong></p>
+<ul>
+<li>
+<strong>Label</strong> – sets the field label.</li>
+<li>
+<strong>Size</strong> – sets the size of the reCAPTCHA element (Normal or Compact).</li>
+<li>
+<strong>Type</strong> – sets the type of challenge used if the initial noCAPTCHA validation fails (Image or Audio).</li>
+</ul>
+<p><strong>reCAPTCHA v3</strong></p>
+<ul>
+<li>
+<strong>Badge Position</strong> – <em>Bottom right</em> and <em>Bottom left</em> display the reCAPTCHA badge in the corresponding position at the bottom of the form. <em>Inline</em> displays the reCAPTCHA badge as a standard field within the form.</li>
+</ul>
+<h3 id="recaptcha-privacy-and-personal-data-handling">reCAPTCHA privacy and personal data handling</h3>
+<p>The reCAPTCHA API works by collecting hardware and software information, such as device and application data, and sending this data to Google for analysis. However, the reCAPTCHA form component is not integrated with the consent functionality in Xperience by Kentico. If required, you need to display any required privacy information to site visitors and collect consents manually.</p>
+<p>For users in the European Union, you must comply with Google’s <a href="https://www.google.com/about/company/user-consent-policy/" target="_blank">EU User Consent Policy</a>.</p>
+<h3 id="using-multiple-recaptchas-on-the-same-page">Using multiple reCAPTCHAs on the same page</h3>
+<p>The system does not support the use of multiple reCAPTCHA fields within the same form. You can have multiple different forms with a reCAPTCHA field on the same page.</p>
+
+</body>
+</html>

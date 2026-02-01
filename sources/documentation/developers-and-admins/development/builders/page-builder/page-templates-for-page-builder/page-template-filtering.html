@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page template filtering</title>
+</head>
+<body>
+<p>When users <a href="/documentation/business-users/website-content/create-pages">create a new page</a> or change the template of an existing page, the system displays a list of available <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">page templates</a>. By default, the list contains all of the page templates registered for the current content type in the website project.</p>
+<p>You can additionally implement page template filtering to control what page templates are available to users to display only templates that are relevant for specific pages.</p>
+<h2 id="implement-page-template-filters">Implement page template filters</h2>
+<p>To create a new page template filter:</p>
+<ol type="1">
+<li>Open your project in Visual Studio.</li>
+<li>Create a new class that implements the <code>IPageTemplateFilter</code> interface (available in the <code>Kentico.PageBuilder.Web.Mvc.PageTemplates</code> namespace).</li>
+<li>Add a <code>Filter</code> method as prescribed by the <code>IPageTemplateFilter</code> interface. The method has the following input parameters:
+<ul>
+<li><p><code>IEnumerable&lt;PageTemplateDefinition&gt;</code> – is a collection of all available page templates (after applying previously registered filters). Page templates are represented by <em>PageTemplateDefinition</em> objects from which you can retrieve properties of respective page templates.</p></li>
+<li>
+<p><code>PageTemplateFilterContext</code> – is a context of the page for which the template is being selected. It allows you to access properties that you can use to filter page templates:</p>
+<ul>
+<li>
+<code>LanguageName</code> – retrieves the culture code of the given page.</li>
+<li>
+<code>ContentTypeName</code> – retrieves the content type code name for the given page.</li>
+<li>
+<code>ParentWebPageItemId</code> – retrieves the ID of the parent page to the given page.The <code>Filter</code> method needs to return a collection of page templates, which is then passed to other registered filters and eventually to the template selection dialog. You cannot return <code>NULL</code> or an empty collection from a filter, as this would invalidate all subsequent filters and no templates will be displayed in the template selection dialog.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>It is recommended to divide page templates into mutually exclusive categories by their intended use. You can then create filters, which, according to the context of the current page, either return page templates of the suitable category or all other page templates.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Spanish page template filter</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Kentico.PageBuilder.Web.Mvc.PageTemplates;
+
+namespace CompanyName.PageTemplateFilters
+{
+    public class SpanishPageTemplateFilter : IPageTemplateFilter
+    {
+        public IEnumerable&lt;PageTemplateDefinition&gt; Filter(IEnumerable&lt;PageTemplateDefinition&gt; pageTemplates, PageTemplateFilterContext context)
+        {
+            // Applies filtering to a collection of page templates based on the language of the currently edited page
+            if (context.LanguageName == "es")
+            {
+                // Filters the collection to only contain templates for Spanish pages
+                return pageTemplates.Where(t =&gt; GetSpanishPageTemplates().Contains(t.Identifier));
+            }
+
+            // Excludes all Spanish page templates from the collection if the context does not match this filter
+            // Assumes that the categories of page templates are mutually exclusive
+            return pageTemplates.Where(t =&gt; !GetSpanishPageTemplates().Contains(t.Identifier));
+        }
+
+        // Gets all page templates that are designed for Spanish pages
+        public IEnumerable&lt;string&gt; GetSpanishPageTemplates() =&gt; new string[] { "CompanyName.SpanishPageTemplate", "CompanyName.AnotherSpanishPageTemplate" };
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="register-page-template-filters">Register page template filters</h2>
+<p>Register filters by adding them to the <code>PageBuilderFilters.PageTemplates</code> collection <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">on application start</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Registering page template filters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.Core;
+using CMS.DataEngine;
+
+using Kentico.PageBuilder.Web.Mvc;
+
+[assembly: RegisterModule(typeof(PageTemplateFilters))]
+
+public class PageTemplateFilters : Module
+{
+    // Module class constructor, inherits from the base constructor with the code name of the module as the parameter
+    public PageTemplateFilters() : base("PageTemplateFilters")
+    {  
+    }
+
+    // Initializes the module. Called when the application starts.
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        RegisterPageTemplateFilters();
+    }
+
+    private void RegisterPageTemplateFilters()
+    {
+        PageBuilderFilters.PageTemplates.Add(new SpanishPageTemplateFilter());
+        PageBuilderFilters.PageTemplates.Add(new AnotherPageTemplateFilter());
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Note that the filtering is cumulative. The process starts with a collection of all page templates registered in the system. Each subsequently applied filter then works with the collection of templates returned (filtered) by the previous filter.</p>
+<h3 id="register-filters-that-use-dependency-injection">Register filters that use dependency injection</h3>
+<p>Page template filter classes support <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> and their constructor can have parameters (e.g., instances of services registered in the project’s DI container).</p>
+<p>Such filters must be registered into the <code>PageBuilderFilters.PageTemplates</code> collection using the <code>Add&lt;FilterClassType&gt;</code> method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+private void RegisterPageTemplateFilters()
+{
+    PageBuilderFilters.PageTemplates.Add&lt;SpanishPageTemplateFilter&gt;();
+    PageBuilderFilters.PageTemplates.Add&lt;AnotherPageTemplateFilter&gt;();
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

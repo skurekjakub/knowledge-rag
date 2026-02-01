@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Security guidelines</title>
+</head>
+<body>
+<p>Ensuring the security of both Xperience by Kentico and your projects is crucial for protecting sensitive data, maintaining user trust, and mitigating cyber threats. To uphold high security standards, Kentico is <a href="https://www.iso.org/standard/27001" target="_blank">ISO27001</a> certified and follows the <a href="#secure-development-lifecycle">Secure Development Lifecycle (SDL)</a> framework. To help secure your Xperience projects, the product includes a range of built-in security features, including user <a href="#authentication">authentication</a>, <a href="#roles-and-permissions">role-based access control (RBAC)</a>, built-in protection against common vulnerabilities like cross-site scripting (XSS) and SQL injection, and more.</p>
+<p>On this page, you can find more information about how we approach security at Kentico and an overview of security features implemented in Xperience.</p>
+<h2 id="secure-development-lifecycle">Secure Development Lifecycle</h2>
+<p>To meet the high security standards posed on Xperience and minimize vulnerabilities in released features, Kentico integrates security through the Secure Development Lifecycle (SDL) framework. The framework embeds security into all development phases, ensuring timely delivery while maintaining high security standards.</p>
+<p>Our engineers receive comprehensive security training, both theoretical and practical, tailored to our industry, solution stack, and the latest security trends. During feature development, designs are validated against industry best practices like <a href="https://owasp.org/" target="_blank">OWASP</a> and <a href="https://www.nist.gov/" target="_blank">NIST</a>. Development teams proactively identify potential threats, which are evaluated and addressed in the final implementation of the features. Kentico also enforces internal security baselines and conducts regular security code reviews and scans, both manual and automated. To further strengthen the security of Xperience, the product undergoes external penetration testing.</p>
+<p>By integrating security at every stage of development, we make sure that each <a href="/documentation/developers-and-admins/installation/support-policy">release</a> of Xperience by Kentico is released with as few security issues as possible.</p>
+<h2 id="vulnerability-management-and-patching">Vulnerability management and patching</h2>
+<h3 id="bug-fixing">Bug fixing</h3>
+<p>In real-world development, creating complex software that is completely bug-free is virtually impossible. Though we pay high attention to quality assurance during development, we recognize that some bugs may still make it into the product. That’s why, besides developing new features, we dedicate substantial time to fixing discovered defects and vulnerabilities, and regularly release <a href="/documentation/developers-and-admins/installation/support-policy">hotfix updates</a>. You can find all the fixed issues in the product <a href="/documentation/changelog">changelog</a>.</p>
+<p>Though using a <a href="/documentation/developers-and-admins/installation/support-policy#what-does-it-mean-that-a-release-is-supported">supported release</a> of Xperience gives you full access to Kentico <a href="https://www.kentico.com/services/support" target="_blank">Support</a> and <a href="https://www.kentico.com/services/consulting" target="_blank">Consulting</a> services, security fixes are incorporated only into the <strong>latest release</strong> of Xperience by Kentico. Older releases may contain bugs and vulnerabilities that were already fixed in the latest release. For this reason, only the latest release of Xperience by Kentico can be considered truly secure.</p>
+<h3 id="vulnerability-disclosure-program">Vulnerability disclosure program</h3>
+<p>While our internal security team works hard to identify and mitigate vulnerabilities before they reach the product, we recognize the value of external expertise. If you find a vulnerability in the product, check out our <a href="https://www.kentico.com/vulnerability-disclosure-program" target="_blank">vulnerability disclosure program</a>.</p>
+<h3 id="security-advisories">Security advisories</h3>
+<p><a href="/documentation/security-advisories">Security advisories</a> provide detailed information about security vulnerabilities affecting Xperience by Kentico, including the <a href="https://www.first.org/cvss/" target="_blank">CVSS</a> score or the range of affected product releases. To receive the latest security updates as soon as they are released, subscribe to our <a href="https://docs.kentico.com/feeds/xbyk-security.xml" target="_blank">Security updates RSS feed</a>.</p>
+<h3 id="vulnerabilities-in-transitive-dependencies">Vulnerabilities in transitive dependencies</h3>
+<p>Transitive dependencies are software components indirectly used by Xperience. To learn how Kentico handles security vulnerabilities in transitive dependencies and what actions may be required on your part, see how <a href="/documentation/developers-and-admins/security-guidelines/vulnerabilities-in-transitive-dependencies">vulnerabilities in transitive dependencies</a> are managed.</p>
+<h2 id="live-site-registration-and-authentication">Live site registration and authentication</h2>
+<p>When developing your project, it’s up to you to set up and configure how your visitors register and sign in to the system. For more detailed information see the <a href="/documentation/developers-and-admins/development/registration-and-authentication">Registration and authentication</a> section of the documentation.</p>
+<h2 id="xperience-administration-registration-and-authentication">Xperience administration registration and authentication</h2>
+<h3 id="authentication">Authentication</h3>
+<p>Authentication for the Xperience admin UI needs to be configured separately, as it’s not shared with <a href="/documentation/developers-and-admins/development/registration-and-authentication">live site authentication</a>.</p>
+<p>You can <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-external-authentication">integrate an external identity provider</a> such as <a href="https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id" target="_blank">Microsoft Entra ID</a>, <a href="http://auth0.com" target="_blank">Auth0</a>, <a href="https://www.okta.com/" target="_blank">Okta</a>, <a href="https://duo.com/" target="_blank">Duo</a>, or any other platform that is OAuth/OIDC-compliant to provide a single sign-on (SSO) experience for your users.</p>
+<p>Alternatively you can make use of the <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication">built-in authentication</a>, which you can further customize to reflect your company’s security policy. For example, you can specify <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#password-options">requirements on passwords</a>, provide a list of <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#forbidden-passwords">forbidden passwords</a>, <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#lockout-options">configure account lockout options</a>, or set up <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#rate-limiting-for-user-management-endpoints">rate limiting</a> for user management endpoints.</p>
+<p>If your project requires it, you can also <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-external-authentication#sign-in-page-behavior">offer both the built-in and external authentication options</a> to your users.</p>
+<h3 id="user-management">User management</h3>
+<p>To learn more about user-related security features used for both built-in and mixed <a href="#authentication">authentication</a>, see:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/configuration/users/user-management#user-passwords">User passwords</a> – information on password policy used in Xperience by Kentico, password storage format and the options for changing and resetting passwords.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/users/user-management#multi-factor-authentication">Multi-factor authentication</a> – information on how multi-factor authentication (MFA) is handled in Xperience.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/users/user-management#account-lockout">Account lockout</a> – information on how account lockout works by default in Xperience.</li>
+</ul>
+<h2 id="roles-and-permissions">Roles and permissions</h2>
+<p>Xperience by Kentico utilizes role-based access control (RBAC) to manage user actions within the system. By default, a user has no permissions until they are <a href="/documentation/developers-and-admins/configuration/users/role-management">assigned one or more roles</a>.</p>
+<p>There are multiple types of permissions applied within the system: <a href="#application-permissions">application permissions</a> and <a href="#data-permissions">data permissions</a>.</p>
+<h3 id="permissions">Permissions</h3>
+<h4 id="application-permissions">Application permissions</h4>
+<p><a href="/documentation/developers-and-admins/configuration/users/role-management">Application permissions</a> control which roles have access to specific UI applications in Xperience and the actions they are allowed to perform inside them. This commonly includes creating, updating or deleting objects in the corresponding application.</p>
+<h4 id="data-permissions">Data permissions</h4>
+<p>Data permissions control which roles have access to specific sets of data within specific applications and how users can operate with it.</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">Page permissions</a> manage access and allowed actions in <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a>, specific content tree sections, and individual pages and folders via an <a href="https://en.wikipedia.org/wiki/Access-control_list" target="_blank">access-control list</a> (ACL).</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">Workspaces</a> segregate content into distinct, manageable units and allow you to configure which roles have specific <a href="#application-permissions">application permissions</a> within different workspaces.</li>
+</ul>
+<h4 id="custom-permissions">Custom permissions</h4>
+<p>If required by your security policy, you can define <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks">custom application permissions</a> for both custom and system UI applications when <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">extending the administration interface</a>.</p>
+<h3 id="common-system-roles">Common system roles</h3>
+<p>By default, Xperience provides an <strong>Administrator</strong> role with full permissions across all features and applications in the product. Initially, the administrator account created during the installation process is the only user with this role.</p>
+<p>To prevent misuse of privileges in the system, we strongly recommend defining additional roles with restricted privileges. While your role structure should align with your project’s security requirements, we suggest splitting the privileges into the following semantic roles:</p>
+<ul>
+<li>
+<strong>Administrator</strong> – the default system role with full privileges. This role should be assigned only to top-level system administrators.</li>
+<li>
+<strong>User manager</strong> – has permissions for the <a href="/documentation/developers-and-admins/configuration/users/user-management">Users</a> and <a href="/documentation/developers-and-admins/configuration/users/role-management">Role management</a> applications. Users in this role should be able to invite and manage users and grant limited permissions to other roles.</li>
+<li>
+<strong>Channel manager</strong> – manages a specified channel application. Users in the role act as channel owners – they can configure the channel, manage all its content, and in some cases, manage what other users can do within the channel application (e.g., by configuring <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a> in a website channel).</li>
+<li>
+<strong>Content editor</strong> – has access only to content assigned by their manager (e.g., specific pages in a website channel or content items in a specific workspace).</li>
+</ul>
+<h2 id="saas-security">SaaS security</h2>
+<p>With Kentico’s <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS</a> offering, server configuration, backups, and infrastructure security, including CDN and WAF, are fully handled by Kentico. To learn more about our SaaS security, see the <a href="/documentation/developers-and-admins/saas/saas-overview#what-security-measures-are-taken-by-kentico">SaaS overview page</a>. For details on deploying an application to the SaaS environment, see <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">Deploy to the SaaS environment</a>.</p>
+<h2 id="security-checklists">Security checklists</h2>
+<p>To help you follow security best practices throughout the lifecycle of your projects, you can take advantage of our recommended <a href="/guides/architecture/xperience-implementation-handbook/security-checklists">security checklists</a>. By making the checklists part of your workflow and revisiting them regularly, you can ensure security stays a continuous priority for your project rather than a one-time task. This approach helps you reduce risks from early on, maintain compliance, and avoid costly fixes later in development.</p>
+
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content types</title>
+</head>
+<body>
+<p>A content type is a template that defines the data structure, functionality, and behavior for all content items that are based on it. When creating content types, you determine their:</p>
+<ul>
+<li>Target usage (<a href="/documentation/business-users/content-hub">reusable content</a>, <a href="/documentation/business-users/website-content">pages</a>, <a href="/documentation/business-users/digital-marketing/emails">emails</a>, <a href="/documentation/business-users/headless-content">headless items</a>)</li>
+<li>Fields (define the content model and data structure)</li>
+<li>Editing form layout (the interface through which users create and modify the content items)</li>
+</ul>
+<h2 id="create-content-types">Create content types</h2>
+<p>To create a new content type:</p>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>Select <strong>New content type</strong>.</li>
+<li>Fill in the following values:
+<ul>
+<li>
+<strong>Content type name</strong> – the name that is displayed to users in the administration interface.</li>
+<li>
+<strong>Code name</strong>
+<ul>
+<li><p><strong>Namespace</strong> – the namespace is a prefix that distinguishes between content types. For example, it can be used to separate content types created for different sites, identify content types imported as part of third-party modules, etc.</p></li>
+<li>
+<p><strong>Name</strong> – a unique content type identifier, which is appended to the namespace.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Important</strong></p>
+<p>When creating content types, <strong><em>never</em></strong> use names beginning with an <strong><em>underscore</em></strong> (‘<em>_</em>’) character (e.g., ‘<em>_article</em>’) to avoid conflicts with system fields.</p>
+<p>Always use a <strong><em>unique namespace</em></strong>. Never use the <strong>cms</strong>, <strong>om</strong>, <strong>content</strong> or <strong>ContentItemData</strong> prefixes. A recommended option is to use your company name or an abbreviation as the prefix. For example: <em>ACME</em></p>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<strong>Icon</strong> – an icon identifying the content type when creating items (pages, emails, etc.).</li>
+<li>
+<strong>Use for</strong> – determines the target usage for the content type.
+<ul>
+<li>
+<em>Reusable content</em> – intended for reuse across multiple channels and channel types.</li>
+<li>
+<em>Pages</em> – used for <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a>.</li>
+<li>
+<em>Emails</em> – used for <a href="/documentation/business-users/digital-marketing/emails">email</a> content.</li>
+<li>
+<em>Headless items</em> – used for <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Short code name</strong> – automatically generated based on the full <em>Code name</em>. Serves as a unique identifier of the content type in scenarios and environments where special characters (underscores and periods) are not supported, for example when generating type and field names in the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">GraphQL schema of headless channels</a>. If you encounter a name conflict in these scenarios, you can edit the short code name value on the <em>General</em> tab of existing content types.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the content type.</li>
+</ol>
+<p>The system creates the content type and opens its configuration menu. </p>
+<h2 id="configure-created-content-types">Configure created content types</h2>
+<p>When configuring content types, you determine their functionality and purpose.</p>
+<p>You can:</p>
+<ul>
+<li>
+<a href="#add-fields">Add fields</a> to a content type.</li>
+<li>
+<a href="#add-the-option-to-link-content-items">Allow editors to link other content items</a>.</li>
+<li>
+<a href="#add-option-to-upload-files">Allow editors to upload files</a> to content items.
+<ul>
+<li>
+<a href="#mass-asset-upload-configuration">Configure mass asset upload</a> for a content type.</li>
+</ul>
+</li>
+<li>
+<a href="#add-option-to-tag-content">Allow editor to tag content</a>.</li>
+</ul>
+<h3 id="add-fields">Add fields</h3>
+<p>Content type fields are used to store structured data. Each field corresponds to a database column and is of a certain <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a>. Developers access the content of fields from the code to format and display stored data.</p>
+
+<div>
+
+</div>
+<div>
+<p>Fields that use custom data types are not supported by the GraphQL API for <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a> and their values cannot be retrieved. Only built-in scalar types are available in content types exposed through the API. See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">Retrieve headless content</a> to learn more about what is included in the GraphQL schema.</p>
+</div>
+
+<p>You can create content type fields via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a> on the <strong>Fields</strong> tab when editing a content type in the <strong>Content types</strong> application:</p>
+<ol type="1">
+<li>Select <strong>New field</strong>.</li>
+<li>Define a custom field using the field editor.
+<ul>
+<li>There are a couple of things to keep in mind when naming fields – see <a href="#field-naming-guidelines">Field naming guidelines</a> for more information.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the field.</li>
+<li>Repeat the above steps to create all desired fields.</li>
+</ol>
+<p>Content items based on this content type now allow editors to input data into the added fields.</p>
+<h4 id="field-naming-guidelines">Field naming guidelines</h4>
+<p>Since each field is represented as a database column and eventually a C# class, adhere to the following restrictions when naming fields:</p>
+<ul>
+<li>Don’t use the same name as another content type in the system.</li>
+<li>Don’t use <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/" target="_blank">C# keywords</a> or <a href="https://en.wikipedia.org/wiki/List_of_SQL_reserved_words" target="_blank">SQL keywords</a>.</li>
+<li>Don’t use the name <em>SystemFields</em>.</li>
+</ul>
+<p>Not following these recommendation can result in unexpected behavior, runtime errors, or uncompilable code.</p>
+<h3 id="add-the-option-to-link-content-items">Add the option to link content items</h3>
+<p>You can enable users to link content items from other reusable content items.</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, select the content type where you want to add the possibility to add linked content items.</li>
+<li>Create a <strong>New field</strong>.</li>
+<li>In <strong>Data type</strong>, select <strong>Pages and reusable content</strong> and fill in the required settings.</li>
+<li>In <strong>Form component</strong>, select the <strong>Combined content selector</strong>.</li>
+<li>In <strong>Display items based on</strong>, select whether you want to display items available in the selector based on <strong>Content types</strong> or a <strong>Reusable field schema</strong>.</li>
+<li>Add content types that are allowed to be linked via <strong>Allowed content types</strong> or select a <strong>Allowed reusable field schema</strong>.</li>
+<li>
+<strong>Save</strong> the field.</li>
+</ol>
+<p>Now, whenever users edit a content item based on the content type, they can <a href="/documentation/business-users/content-hub/content-items#link-content-items">link content items</a> of allowed content types. You can then <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-linked-content-items">retrieve</a> and use the linked items in your application’s code.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Linked item limitations for emails</strong></p>
+<p>Linked content items may have their own fields that link to further content items.</p>
+<p>When modeling the fields of content types for <a href="/documentation/business-users/digital-marketing/emails">emails</a>, the system has a <strong>limit of 5 nested content item levels</strong>. Further levels of linked items will not be loaded into the final email content.</p>
+</div>
+
+<h3 id="add-option-to-upload-files">Add option to upload files</h3>
+<p>You can enable users to upload binary files to content items of a certain content type to create <a href="/documentation/glossary#content-management">content item assets</a>. You can also <a href="/documentation/developers-and-admins/configuration/content-hub-configuration#customize-maximum-file-upload-size-and-chunk-size">configure</a> the parameters of the file upload (e.g., maximum file size).</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, select the <strong>reusable content type</strong> where you want to add the possibility to upload files.</li>
+<li>Create a <strong>New field</strong>.</li>
+<li>In <strong>Data type</strong>, select <strong>Content item asset</strong> and fill in the required settings.</li>
+<li>In <strong>Form component</strong>, select the <strong>Asset uploader</strong>.</li>
+<li>Configure <strong>Allowed extensions</strong>.</li>
+<li>
+<strong>Save</strong> the field.</li>
+</ol>
+<p>Now, whenever users edit a content item based on the content type, they can <a href="/documentation/business-users/content-hub/content-item-assets">upload binary files</a> to the item to create a content item asset. You can then <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-assets">retrieve</a> and use the assets in your application’s code.</p>
+<h4 id="mass-asset-upload-configuration">Mass asset upload configuration</h4>
+<p>You can allow users to upload multiple files in a single bulk into the Content hub, combined content selector, or rich text editor, and automatically convert them to content item assets of a specific content type. The system only supports converting all mass-uploaded files to a single content type.</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, open the <strong>Asset configurations -&gt; Mass asset upload</strong> tab.</li>
+<li>Select the <strong>Content type for mass-uploaded items</strong>. You can select only a content type used for reusable content that has at least one content item asset field configured.</li>
+<li>Select the <strong>Content item asset field</strong> of the content type which will store the uploaded file.</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>Users can now <a href="/documentation/business-users/content-hub/content-item-assets#mass-asset-upload">mass upload assets</a> into the Content hub, combined content selector, and <a href="/documentation/business-users/rich-text-editor">rich text editor</a>.</p>
+<h3 id="add-option-to-tag-content">Add option to tag content</h3>
+<p>You can enable content editors to add <a href="/documentation/developers-and-admins/configuration/taxonomies">tags</a> to pages and reusable content items.</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, select a content type for which you want to enable the option to tag content.</li>
+<li>Create a <strong>New field</strong>.</li>
+<li>In <strong>Data type</strong>, select <strong>Taxonomy</strong> and fill the required settings.</li>
+<li>In <strong>Form component</strong>, select <strong>Tag selector</strong>.</li>
+<li>In <strong>Taxonomy group</strong>, select from which <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomy</a> users can select tags in this field.</li>
+<li>
+<strong>Save</strong> the field.</li>
+</ol>
+<p>Now, whenever you edit a content item based on the content type, you are able to add tags to the content.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: You can add multiple taxonomy fields to a single content type, each with a different set of tags.</p>
+</div>
+
+<h2 id="configure-asset-content-types">Configure asset content types</h2>
+<h3 id="automatically-optimize-image-assets">Automatically optimize image assets</h3>
+<p>To ensure that your content editors work with images that are properly optimized for use across different channels, you can configure the system to automatically convert all newly created images to a single image format, and optimize their file size by adjusting image quality or image dimensions. While the system retains the original version of the image in case of a future re-optimization, the original version is not accessible from the administration interface.</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, select the content type for which you want to enable automatic image optimization.</li>
+<li>In the <strong>Content item asset</strong> field, select <strong>Enable automatic image format conversion</strong>.</li>
+<li>Select <strong>Image extensions to convert</strong>. You can choose only <a href="/documentation/developers-and-admins/configuration/content-hub-configuration#customize-supported-file-types">optimizable image types</a> that are <a href="#add-option-to-upload-files">allowed</a> for the particular content type.</li>
+<li>Select a single <strong>Output image extension</strong> for the converted images. If you are not sure which image format to use for the content item asset, see the <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types" target="_blank">Image file type and format</a> guide.</li>
+<li>Select the <strong>Quality</strong> level of the converted images.
+<ul>
+<li>Quality selection is unavailable for image formats that use lossless image compression, like <em>PNG</em>.</li>
+<li>While higher quality retains more image details, lowering the quality reduces the output file size.</li>
+</ul>
+</li>
+<li>
+<em>(Optional)</em> In the <strong>Image width limit</strong> and <strong>Image height limit</strong> fields, you can set the maximum dimensions of the converted image. Images exceeding the set width or height limit are automatically resized to fit upon upload.
+
+<div>
+
+</div>
+<div>
+<p>Setting a very low image width or height limit can result in poor-quality <a href="#configure-image-variants">image variants</a> , as they will be generated from the downsized version of the original image. Make sure the limit is high enough to maintain visual quality across all variants.</p>
+</div>
+</li>
+<li>
+<strong>Save</strong> the field.</li>
+</ol>
+<p>Upon upload, images with the selected <strong>Image extensions to convert</strong> are automatically converted to images with the <strong>Output image extension</strong> in the specified <strong>Quality</strong>. Images with other extensions are uploaded without any optimization.</p>
+
+<div>
+
+</div>
+<div>
+<p>We recommend <a href="/documentation/business-users/content-hub/content-item-assets#optimize-image-assets">manually optimizing</a> several sample images before enabling automatic optimization to fine-tune the optimization parameters for the best results.</p>
+<p>If you notice undesired <a href="https://en.wikipedia.org/wiki/Compression_artifact" target="_blank">compression artifacts</a> in the converted images, try increasing the quality until the artifacts are no longer visible.</p>
+</div>
+
+<h3 id="configure-image-variants">Configure image variants</h3>
+<p>Image variants are cropped and resized versions of an image, each defined by a specific aspect ratio and pixel dimensions. Variants allow marketers to control how images appear across different contexts, such as hero banners, social media posts, or thumbnails, and help developers address the <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Responsive_images#art_direction" target="_blank">art direction</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images#how_do_you_create_responsive_images" target="_blank">resolution switching</a> problem.</p>
+<p>Image variants are generated from the primary <a href="#automatically-optimize-image-assets">optimized image</a>, taking into account its format and quality. The <a href="#use-image-variants">usage</a> of image variants is currently supported only for <a href="/documentation/business-users/website-content">website channels</a>.</p>
+<p>You can add two types of image variant definitions:</p>
+<ul>
+<li>
+<strong>Scaled variant</strong> – Image dimensions are resized based on input while maintaining the original aspect ratio. If one dimension is set to 0, the system automatically calculates that dimension proportionally to preserve the aspect ratio. For example:
+<ul>
+<li>If you define a variant with the size of <strong>0 px × 200 px</strong> and upload an image with the dimensions <strong>600 px × 400 px</strong>, the resulting image will have the dimensions <strong>300 px × 200 px</strong>, with the width calculated automatically to preserve the aspect ratio.</li>
+<li>If you define a variant with the size of <strong>1000 px × 100 px</strong> and upload an image with the dimensions <strong>500 px × 500 px</strong>, the resulting image will have the dimensions <strong>100 px × 100 px</strong>, proportionally downscaled so that neither dimension exceeds the defined limits.</li>
+<li>If you define a variant with the size of <strong>1000 px × 800 px</strong> and upload an image with the dimensions <strong>500 px × 500 px</strong>, the resulting image will have the dimensions <strong>800 px × 800 px</strong>, proportionally upscaled so that neither dimension exceeds the defined limits.</li>
+</ul>
+</li>
+<li>
+<strong>Smart crop variant</strong> – Images are cropped based on the focal point. Marketers can fine-tune the smart crop variants by <a href="/documentation/business-users/content-hub/content-item-assets#change-image-focal-point">selecting a focal point</a> to guide automatic cropping or by <a href="/documentation/business-users/content-hub/content-item-assets#crop-variants-manually">adjusting the crop manually</a>. To ensure the image meets the specified dimensions, the system may upscale or downscale the final variant as needed.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The maximum supported number of image variant definitions is 63. Exceeding this limit may result in unexpected behavior.</p>
+<p>When using <em>Scaled variants</em>, images can be scaled up if the specified dimensions exceed the original image dimensions. This may result in blurry images or increased file sizes due to image upscaling. Developers who need to avoid upscaling should handle this behavior within their implementation.</p>
+</div>
+
+<p>To define a new variant for images in the system:</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, open the <strong>Asset configurations → Image variants</strong> tab.</li>
+<li>
+<strong>Add new variant</strong> definition.</li>
+<li>Select the variant type and fill in the variant’s properties.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>All images in the system become available in the defined variant shortly, after the automatically triggered <em>Update asset variants</em> <a href="/documentation/developers-and-admins/customization/scheduled-tasks">system scheduled task</a> completes. Users can then further <a href="/documentation/business-users/content-hub/content-item-assets#image-variants">manage individual variants</a> of their images.</p>
+
+<div>
+
+</div>
+<div>
+<p>Marketers typically won’t use every variant of every image. To prevent unnecessary storage use, the binary file for each variant is generated only when the variant is <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-image-variants">accessed</a> for the first time.</p>
+</div>
+
+<h4 id="use-image-variants">Use image variants</h4>
+<p>To correctly display image variants on the pages of a <a href="/documentation/business-users/website-content">website channel</a>, developers can either:</p>
+<ul>
+<li>(Recommended) Use the <code>kxp-img</code>, <code>kxp-img-dimensions</code> and <code>kxp-img-variant</code> attribute Tag Helpers to render the image variant in your views. For more information on Tag Helper usage, see <a href="/documentation/developers-and-admins/development/reference-tag-helpers#attribute-tag-helpers-images">Reference - Tag Helpers</a>.
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @*
+  - kxp-img – Renders markup of the `src` or `srcset` attributes with
+  the image URL as their value. Accepts a ContentItemAsset object representing the image.
+  - kxp-img-dimensions – Renders markup of the `width` and `height`
+  attributes based on the dimensions of the image variant.
+  - kxp-img-variant – Specifies the code name of the image variant to be used.
+  *@
+
+  @addTagHelper Kentico.Content.Web.Mvc.ContentItemAssetImageTagHelper, Kentico.Content.Web.Mvc.ContentItemAssetPictureSourceTagHelper, Kentico.Content.Web.Mvc
+
+  @* Works well with both scaled and smart crop image variants *@
+  &lt;img kxp-img="@Model.ContentItemAsset" kxp-img-dimensions kxp-img-variant="variantCodeName" ... /&gt;
+
+  @* Best used with smart-crop variants to address art direction scenarios *@
+  &lt;picture&gt;
+      &lt;source media="(min-width: 1024px)" kxp-img="@Model.ContentItemAsset" kxp-img-dimensions kxp-img-variant="variantCodeName1" ... /&gt;
+      &lt;source media="(min-width: 600px)" kxp-img="@Model.ContentItemAsset" kxp-img-dimensions kxp-img-variant="variantCodeName2" ... /&gt;
+      &lt;img kxp-img="@Model.ContentItemAsset" kxp-img-dimensions ... /&gt;
+  &lt;/picture&gt;
+  </code></pre>
+</div>
+</li>
+<li>Retrieve and use the variant’s URL and other properties in your views. For more information on image variant retrieval, see <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-image-variants">Retrieve content items</a>.
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve image variants</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Retrieves a content item asset
+  // ...
+
+  // Accesses the asset object in the ImageFile property of the asset's content type
+  ContentItemAsset asset = myAsset.ImageFile;
+
+  // Accesses the properties of an image variant with the 'Hero' code name
+  if (asset.Metadata.Variants.ContainsKey("Hero")){
+      int variantWidth = asset.Metadata.Variants["Hero"].Width;
+      int variantHeight = asset.Metadata.Variants["Hero"].Height;
+      string variantType = asset.metadata.Variants["Hero"].TransformationType;
+      string variantUrl = asset.VariantUrls["Hero"];
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h4 id="edit-image-variant-definitions">Edit image variant definitions</h4>
+<p>To edit an image variant’s definition:</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, open the <strong>Asset configurations → Image variants</strong> tab.</li>
+<li>Edit the variant’s properties as needed.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The image variant is updated accordingly to its new definition in all images after the automatically triggered <code>Update asset variants</code> <a href="/documentation/developers-and-admins/customization/scheduled-tasks">system scheduled task</a> completes.</p>
+<h4 id="delete-image-variant-definitions">Delete image variant definitions</h4>
+<p>If a specific image variant should no longer be used in your project, you can remove its definition:</p>
+<ol type="1">
+<li>In the <strong>Content types</strong> application, open the <strong>Asset configurations → Image variants</strong> tab.</li>
+<li>
+<strong>Delete</strong> () the image variant’s definition.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>After the image variant’s definition is deleted, the <a href="/documentation/business-users/content-hub/content-item-assets#image-variants">variant itself</a> remains visible when adjusting images but becomes read-only. Your developers should now update their code to no longer <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-image-variants">use</a> the deleted variant.</p>
+<h2 id="work-with-content-types-in-custom-code">Work with content types in custom code</h2>
+<p>The system provides <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">code generation support</a> for objects that contain custom fields. The resulting generated classes are plain data transfer objects that work seamlessly with Xperience’s <a href="/documentation/developers-and-admins/api/content-item-api">data retrieval API</a>.</p>
+<p>Whenever you modify a content type’s fields (add or remove fields, change the field’s data type), you need to regenerate the corresponding classes using the code generator. This keeps the models consistent with the content type’s database definition.</p>
+
+</body>
+</html>

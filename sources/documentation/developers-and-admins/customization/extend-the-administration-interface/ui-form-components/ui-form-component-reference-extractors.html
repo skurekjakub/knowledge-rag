@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI form component reference extractors</title>
+</head>
+<body>
+<p>The system tracks <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage of content items</a> to help editors determine the impact of modifying content items on the published data. The system tracks all content item references created using the default system form components (<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a>, <a href="/documentation/business-users/rich-text-editor">rich text editor</a>). For all custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a> that contain links to content item assets or references to content items (e.g., a custom URL selector, a custom rich text inline editor), you need to implement a custom reference extractor.</p>
+<h2 id="implement-reference-extractors">Implement reference extractors</h2>
+<p>Implement a custom class based on where you want to extract references from:</p>
+<ul>
+<li><a href="#page-and-email-builder-component-properties-extractors">Page and Email Builder component properties</a></li>
+<li><a href="#content-type-fields-extractors">Content type fields</a></li>
+</ul>
+<h3 id="page-and-email-builder-component-properties-extractors">Page and Email Builder component properties extractors</h3>
+<p>To extract references from Page Builder component properties (<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widget</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">section</a>, and <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">page template</a> properties) and <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder component</a> properties, implement the <code>IContentItemReferenceExtractor</code> interface in a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom class</a>. Within the <code>Extract</code> method, process the content of the property and return a collection of <code>ContentItemReference</code> objects, which contain GUID <code>Identifier</code> of content items that are linked in the property.</p>
+<p>You need to <a href="#register-reference-extractors">register the extractor</a> and <a href="#assign-reference-extractors-to-page-and-email-builder-component-properties">assign the extractor</a> to all properties where references to content items were created using custom form components.</p>
+<h3 id="content-type-fields-extractors">Content type fields extractors</h3>
+<p>To extract references from <a href="/documentation/developers-and-admins/customization/field-editor">content type fields</a>, implement the <code>IFormFieldContentItemReferenceExtractor</code> interface in a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom class</a>. The interface requires you to implement the following methods:</p>
+<ul>
+<li>
+<code>Extract</code> – processes the content of the field and returns a collection of <code>ContentItemReference</code> objects, which contain GUID <code>Identifier</code> of content items that are linked in the field.</li>
+<li>
+<code>CanExtractReferences</code> – returns a <em>bool</em> value that specifies whether the extractor supports the field type specified in the <code>FormFieldInfo</code> parameter. To determine whether a field contains references that can be extracted, use the field’s data type (<code>fieldInfo.DataType</code> property) and the form control used by the field (<code>fieldInfo.GetComponentName()</code> method).</li>
+</ul>
+<p>You need to <a href="#register-reference-extractors">register the extractor</a>. After any content item is modified, content type fields of the item are checked against all registered <code>IFormFieldContentItemReferenceExtractor</code> implementations and their <code>CanExtractReferences</code> methods to determine if references need to be extracted from said fields and the extraction is performed using the <code>Extract</code> method of the suitable extractor.</p>
+<p>The following example shows the implementation of the default reference extractor used by the system to extract references from rich text fields:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Default extractor for references in the system rich text fields</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
+
+using CMS;
+using CMS.ContentEngine;
+using CMS.Core;
+using CMS.FormEngine;
+
+...
+
+public class ContentItemReferenceExtractor : IFormFieldContentItemReferenceExtractor
+{
+    private const string CONTENT_ITEM_GROUP_NAME = "ContentItemGuid";
+    private const string GUID_REGEX = @"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+
+    private readonly HtmlParser htmlParser;
+    private readonly Regex contentItemLinkRegex = new Regex(@$"getContentAsset\/(?&lt;{CONTENT_ITEM_GROUP_NAME}&gt;{GUID_REGEX})\/{GUID_REGEX}\/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public ContentItemReferenceExtractor()
+    {
+        htmlParser = new HtmlParser();
+    }
+
+    // Returns whether the field in the parameter is supported by this extractor
+    public bool CanExtractReferences(FormFieldInfo field)
+    {
+        return string.Equals(field.DataType, FieldDataType.RichTextHTML, StringComparison.InvariantCultureIgnoreCase) ||
+            (string.Equals(field.GetComponentName(), RichTextEditorConstants.IDENTIFIER, StringComparison.OrdinalIgnoreCase) &amp;&amp;
+                (field.DataType.Equals(FieldDataType.Text, StringComparison.Ordinal) || field.DataType.Equals(FieldDataType.LongText, StringComparison.Ordinal)));
+    }
+
+
+    // Returns a collection of reference object found in the field
+    public IEnumerable&lt;ContentItemReference&gt; Extract(object fieldValue)
+    {
+        if (fieldValue is not string html)
+        {
+            return Enumerable.Empty&lt;ContentItemReference&gt;();
+        }
+
+        var referencesGuids = new HashSet&lt;Guid&gt;();
+        var document = htmlParser.ParseDocument(html);
+
+        referencesGuids.UnionWith(document.Images.Where(image =&gt; contentItemLinkRegex.IsMatch(image.Source))
+            .Select(image =&gt; GetContentItemReferenceGuidFromLink(image.Source)));
+
+        var anchors = document.QuerySelectorAll("a").Select(anchors =&gt; anchors as IHtmlAnchorElement);
+
+        referencesGuids.UnionWith(anchors.Where(anchor =&gt; contentItemLinkRegex.IsMatch(anchor.Href))
+            .Select(anchor =&gt; GetContentItemReferenceGuidFromLink(anchor.Href)));
+
+        return referencesGuids.Select(guid =&gt; new ContentItemReference { Identifier = guid });
+    }
+
+    // Converts plaintext links to GUIDs
+    private Guid GetContentItemReferenceGuidFromLink(string source)
+    {
+        return Guid.Parse(contentItemLinkRegex.Match(source).Groups[CONTENT_ITEM_GROUP_NAME].Value);
+    }
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Universal extractors</strong></p>
+<p>It is generally recommended to use individual extractors for distinct fields or properties. However, as the <code>IFormFieldContentItemReferenceExtractor</code> inherits from the <code>IContentItemReferenceExtractor</code>, you can create a universal extractor for all fields and properties where the references are stored in the same format.</p>
+</div>
+
+<h2 id="register-reference-extractors">Register reference extractors</h2>
+<p>To register a reference extractor, use the <code>RegisterImplementation</code> <a href="/documentation/developers-and-admins/customization/integrate-custom-code#enable-class-discovery">assembly attribute</a>. This attribute ensures the reference extractor is recognized by the system.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Registration of an extractor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+[assembly: RegisterImplementation(typeof(IFormFieldContentItemReferenceExtractor),
+                                  typeof(ContentItemReferenceExtractor),
+                                  Lifestyle = Lifestyle.Singleton,
+                                  Priority = RegistrationPriority.Default)]
+</code></pre>
+</div>
+
+<h3 id="assign-reference-extractors-to-page-and-email-builder-component-properties">Assign reference extractors to Page and Email Builder component properties</h3>
+<p>After you implement and register an instance of the <code>IContentItemReferenceExtractor</code>, you need to assign it to all Page Builder component properties (<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widget</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder/section-properties">section</a>, and <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">page template</a> properties) or <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder component</a> properties that may contain the corresponding type of references to content items.</p>
+<p>Use the <code>TrackContentItemReference</code> attribute and specify the type of your extractor as a parameter. Two versions of the attribute are available in different namespaces:</p>
+<ul>
+<li>
+<code>Kentico.PageBuilder.Web.Mvc</code> – for Page Builder component properties</li>
+<li>
+<code>Kentico.EmailBuilder.Web.Mvc</code> – for Email Builder component properties</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Properties model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Page Builder widget properties model example
+public class CustomPageBuilderWidgetProperties : IWidgetProperties 
+{
+    [CustomEditingComponent]
+    [Kentico.PageBuilder.Web.Mvc.TrackContentItemReference(typeof(CustomExtractor))]
+    public string PropertyName { get; set; }
+}
+
+// Email Builder widget properties model example
+public class CustomEmailBuilderWidgetProperties : IEmailWidgetProperties 
+{
+    [CustomEditingComponent]
+    [Kentico.EmailBuilder.Web.Mvc.TrackContentItemReference(typeof(CustomExtractor))]
+    public string PropertyName { get; set; }
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

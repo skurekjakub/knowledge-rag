@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Differences between SaaS and private cloud solutions</title>
+</head>
+<body>
+<p>Xperience offers two approaches to development and deployment of your projects – <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud solutions</a> and <a href="/documentation/developers-and-admins/saas">SaaS</a>, which allows you to deploy, host, and manage Xperience by Kentico projects in a cloud environment managed by Kentico. While the features of the product remain the same, there are minor differences between the two approaches, especially in the deployment process.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+</td>
+<td rowspan="2">
+<p>SaaS</p>
+</td>
+<td rowspan="5">
+<p>Private cloud</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/installation">Installation</a></p>
+</td>
+<td>
+<ul>
+<li>
+<p><a href="/documentation/developers-and-admins/installation#create-a-project">Create a project</a> – use the <code>--cloud</code> parameter. This will ensure you have the necessary additional configurations for the SaaS service:</p>
+<ul>
+<li>The <strong>Kentico.Integrations.Cloud</strong> NuGet package</li>
+<li>AppInsights and SendGrid startup configurations</li>
+<li>A PowerShell script and CD configuration for generating a deployment package</li>
+<li>
+<strong>StorageInitializationModule.cs</strong> file with a sample storage initialization module (<a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#default-kentico-managed-azure-blob-storage-configuration">for mapping of files to Azure Blob storage</a>)</li>
+</ul>
+</li>
+<li>
+<p><a href="/documentation/developers-and-admins/installation#create-the-project-database">Create the project database</a></p>
+<ul>
+<li>
+<code>--hash-string-salt</code> – set the parameter to the hash salt value <a href="/documentation/developers-and-admins/saas/xperience-portal#hash-string-salt-for-the-xperience-portal-project">found in Xperience Portal</a>
+</li>
+</ul>
+</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>
+<p><a href="/documentation/developers-and-admins/installation#create-the-project-database">Create the project database</a></p>
+<ul>
+<li>
+<code>--hash-string-salt</code>– skip the parameter</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/installation/licenses">Licenses</a></p>
+</td>
+<td>
+<ul>
+<li>
+<a href="https://www.kentico.com/pricing" target="_blank">Tiered licenses</a> are offered for the product and various <a href="/documentation/developers-and-admins/saas/saas-service-plans">service plans</a> are offered for the SaaS environment. Access to various deployment environments, capacities, and performance based on the purchased plan.</li>
+<li>License keys
+<ul>
+<li>For applications deployed in all SaaS environments – automatically handled by Xperience Portal</li>
+<li>
+<a href="/documentation/developers-and-admins/installation/licenses#license-keys-for-saas-local-development">For local development</a> – generated in Xperience Portal</li>
+</ul>
+</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>
+<a href="https://www.kentico.com/pricing" target="_blank">Tiered license</a> offered for the product</li>
+<li>License keys – Generated via <a href="https://client.kentico.com/licenses" target="_blank">https://client.kentico.com/licenses</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects">Configure new projects</a></p>
+</td>
+<td>
+<ul>
+<li>Necessary to include the <code>UseKenticoCloud</code> component in the project’s middleware pipeline</li>
+<li>Use <a href="/documentation/developers-and-admins/configuration/saas-configuration#environment-identification-extension-methods">environment identification extension methods</a> to include environment-specific configuration or code</li>
+<li>Call the <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects#configure-application-startup">required Xperience SaaS services</a> when building the web application</li>
+<li>Configure cache headers for <a href="/documentation/developers-and-admins/configuration/saas-configuration#cloudflare-cdn">Cloudflare CDN</a>
+</li>
+</ul>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/deployment">Deployment</a></p>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">Deployment in SaaS</a>
+<ul>
+<li>Cannot be deployed without the administration</li>
+<li><a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#create-a-deployment-package">Create a deployment package</a></li>
+<li>
+<a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#upload-a-deployment-package-to-your-xperience-portal-project">Upload a deployment package</a> to Xperience Portal (manually or via API)</li>
+</ul>
+</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">Private cloud deployment</a>
+<ul>
+<li>Can be deployed <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">without the administration</a>
+</li>
+<li>Platform-specific process</li>
+<li>For cloud-hosted deployments, important to manually <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud#map-parts-of-the-file-system-to-a-shared-storage">map certain project folders</a> to shared cloud-based storage</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/deployment/read-only-deployments">Continuous availability</a></p>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#zero-downtime-deployments">Zero-downtime deployments</a> fully managed by Kentico</li>
+<li>Infrastructure (deployment slots, database replication, blob versioning) automatically configured</li>
+<li>You only need to:
+<ul>
+<li>Configure your application code to support <a href="/documentation/developers-and-admins/deployment/read-only-deployments">read-only mode</a>
+</li>
+<li>Use the <code>-ZeroDowntimeSupportEnabled</code> parameter when creating deployment packages</li>
+</ul>
+</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/deployment/read-only-deployments">Read-only deployments</a> require manual infrastructure configuration</li>
+<li>You must configure:
+<ul>
+<li>Two databases (production and clone for updates)</li>
+<li>Three deployment slots (production, staging, and swap operations)</li>
+<li>
+<a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a> with blob versioning enabled</li>
+</ul>
+</li>
+<li>Requires infrastructure expertise and <a href="/documentation/developers-and-admins/deployment/read-only-deployments#deployment-process-overview">manual deployment process</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a></p>
+</td>
+<td>
+<ul>
+<li>Necessary project folders are <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#default-kentico-managed-azure-blob-storage-configuration">mapped by default</a>
+</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>Need to <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#azure-blob-storage-for-private-cloud-deployments">add mapping for certain project folders manually</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/website-channel-management">Website channel management</a></p>
+</td>
+<td>
+<ul>
+<li>Website channels must be <a href="/documentation/developers-and-admins/configuration/website-channel-management#website-channels-in-the-saas-environment">added and managed</a> in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> (in addition to the administration UI of the Xperience application itself)</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>Website channels must have unique <a href="/documentation/developers-and-admins/configuration/website-channel-management#website-channels-in-private-cloud-environments">channel domains</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channel management</a></p>
+</td>
+<td>
+<ul>
+<li>Headless channels are NOT managed in Xperience Portal</li>
+<li>The <a href="/documentation/developers-and-admins/configuration/headless-channel-management#graphql-api-endpoints">GraphQL API endpoint</a> is available on the system and default channel domains of any SaaS deployment that is publicly available. Keep this in mind when designing your project’s security.</li>
+</ul>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a></p>
+</td>
+<td>
+<ul>
+<li>SendGrid integration is the only email sending option for SaaS – <a href="/documentation/developers-and-admins/configuration/email-configuration#managed-sendgrid-integration">Managed SendGrid integration</a>
+</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>SendGrid integration – <a href="/documentation/developers-and-admins/configuration/email-configuration#self-managed-sendgrid-integration">Self-managed SendGrid integration</a>
+</li>
+<li>Other available options – <a href="/documentation/developers-and-admins/configuration/email-configuration#smtp-servers">External SMTP servers</a> or <a href="/documentation/developers-and-admins/customization/email-customization#custom-email-client">custom email clients</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Email channel management</a></p>
+</td>
+<td>
+<ul>
+<li>Email channels must be <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">added and managed</a> in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> (in addition to the administration UI of the Xperience application itself)</li>
+<li>You can view <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#email-metrics">email sending statistics</a> in the <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> to help you identify deliverability issues</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>Sending and service domains of email channels can be <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#configure-sending-and-service-domains-programmatically">configured programmatically</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/auto-scaling-support">Auto-scaling</a></p>
+</td>
+<td>
+<ul>
+<li>No configuration necessary</li>
+<li>When the load increases to peak levels in the production environment, the system temporarily adds one additional instance to ensure load balancing.</li>
+<li>One auto-scaling instance is available for all license tiers. Additional instances can be purchased as a part of a custom service plan.</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/configuration/auto-scaling-support#private-cloud-hosting">Private cloud hosting</a> using third-party providers</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/auto-scaling-support#private-on-premise-hosting">Private cloud on-premise hosting</a> using multiple application instances and a shared database</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/installation/update-xperience-by-kentico-projects">Update Xperience by Kentico projects</a></p>
+</td>
+<td>
+<ul>
+<li>After updating locally you need to create a new deployment package</li>
+</ul>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/api/use-the-xperience-by-kentico-api-externally">Use Xperience by Kentico API externally</a></p>
+</td>
+<td>
+<ul>
+<li>Not available for SaaS</li>
+<li>Supported for locally used external tools, such as tools used for data import or migration</li>
+</ul>
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

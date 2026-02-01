@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Widgets for Page Builder</title>
+</head>
+<body>
+<p>Page Builder widgets are reusable components that can be easily manipulated by content editors and other non-technical users. Widgets and the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> feature give non-technical users more power and flexibility when adjusting page content, in addition to basic editing of text and images. By working with widgets, users can decide which components are placed on pages and where. For the list of widgets available in the system by default, check the <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">system widget reference</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>For inspiration, explore the implementation of sample widgets on the <a href="/documentation/developers-and-admins/installation">Dancing Goat site</a>.</p>
+</div>
+
+<p>On this page, you can find information about:</p>
+<ul>
+<li><a href="#implement-widgets">Implementing widgets</a></li>
+<li><a href="#basic-widgets">Basic widgets</a></li>
+<li><a href="#widgets-based-on-a-view-component">Widgets based on a view component</a></li>
+<li><a href="#handle-post-actions">Handling POST actions</a></li>
+<li><a href="#register-widgets">Registering widgets</a></li>
+<li><a href="#add-scripts-and-styles-for-widgets">Adding scripts and styles for widgets</a></li>
+</ul>
+<h2 id="implement-widgets">Implement widgets</h2>
+<p>On a basic level, widgets are pieces of HTML output placed within a suitable location in the page structure. You can develop two types of widgets:</p>
+<ul>
+<li>
+<a href="#basic-widgets">Basic widgets</a> – define their logic in a single partial view.</li>
+<li>
+<a href="#widgets-based-on-a-view-component">Widgets based on a view component</a> – define their logic in an ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component</a>. Recommended for more complex widgets that require non-trivial interactions with the application’s business layer.</li>
+</ul>
+<p>In both cases, the widgets can contain configurable properties, which allow content editors to adjust the widget content or behavior directly in the administration interface. For widgets with properties, you need to create an additional model class that holds the properties data. See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">Widget properties</a> to learn more.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Areas</strong></p>
+<p>Widgets are designed to be used in the global scope and their code files must be placed in the application root of your Core project (not in an <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Area</a>). Creating widgets in Areas may lead to unexpected behavior.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Examples of widget development</strong></p>
+<p>For a step-by-step guide showcasing the development of a simple widget, see <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/example-widget-development">Example - Widget development</a>.</p>
+<p>For a detailed walkthrough showing how to create a more complex widget, see the <a href="/guides/development/page-builder/define-advanced-widget">Define an advanced widgets</a> guide.</p>
+</div>
+
+<h2 id="basic-widgets">Basic widgets</h2>
+<p>Use the following process to develop a widget:</p>
+<ol type="1">
+<li>Prepare a <strong>partial view</strong> that defines the output of the widget according to general <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/overview" target="_blank">MVC best practices</a>.
+<ul>
+<li>We recommend storing widget views in the <em>~/Components/Widgets/&lt;WidgetName&gt;</em> folder and using a view name that matches the <strong>identifier</strong> assigned to the widget <a href="#register-widgets">upon its registration</a> prefixed with the underscore (<em>‘_’</em>) character.</li>
+<li>Alternatively, you can use any required view location or name, and then specify it when registering the widget.</li>
+</ul>
+</li>
+<li>
+<a href="#register-widgets">Register the widget</a> into the system.</li>
+</ol>
+<p>When added via the Page Builder, the widget’s view is automatically displayed using logic provided by the Xperience API.</p>
+<p>The values of any <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties</a> defined for the widget can be accessed by using the <code>ComponentViewModel&lt;TPropertiesType&gt;</code> class as the model.</p>
+<p>You can also use the <code>Page</code> property of <code>ComponentViewModel</code> to access the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the page where the widget is displayed.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+
+@model ComponentViewModel&lt;CustomWidgetProperties&gt;
+
+@{
+    int customNumber = Model.Properties.Number;     
+
+    int webPageId = Model.Page.WebPageItemID;
+    int languageId = Model.Page.LanguageID
+    string languageName = Model.Page.LanguageName;
+    int contentTypeId = Model.Page.ContentTypeID;
+    string contentTypeName = Model.Page.ContentTypeName;
+    int channelId = Model.Page.WebsiteChannelID;
+    string channelName = Model.Page.WebsiteChannelName;  
+}
+
+...
+
+</code></pre>
+</div>
+
+<h2 id="widgets-based-on-a-view-component">Widgets based on a view component</h2>
+<p>The basic implementation of a widget consists of only a partial view (and possibly a <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties</a> class). You may need additional logic, for example if you need to:</p>
+<ul>
+<li>react to the configuration of the widget’s properties</li>
+<li>perform interactions based on the page where the widget is rendered</li>
+<li>execute general business logic not suitable for views (e.g., database operations)</li>
+</ul>
+<p>For this purpose, you can develop widgets based on ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view components</a>. Such widgets consist of a view component class and the corresponding partial view it renders.</p>
+<p>Implementing a widget based on a view component follows this general process:</p>
+<ol type="1">
+<li>
+<p>Create a <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component</a> for the widget.</p>
+<ul>
+<li>We recommend storing view component files in the <em>~/Components/Widgets/&lt;WidgetName&gt;</em> directory together with other files required by the widget. For reusable code shared across components, you can create a <em>~/Components/Shared</em> directory.</li>
+</ul>
+</li>
+<li>
+<p>Implement the component’s <code>Invoke</code> or <code>InvokeAsync</code> method (the synchronous and asynchronous approaches are both supported, this choice depends solely on your requirements).</p>
+<ul>
+<li>
+<p>The system invokes the view component when the widget is inserted via Page Builder. As part of the rendering process, the system passes the widget’s <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties</a> (the <code>ComponentViewModel</code> class) into the component’s <code>Invoke</code> method. For this reason, include the <code>ComponentViewModel</code> parameter in the method’s signature. For widgets with custom properties, you also need to specify the properties class as the generic parameter:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // The signature of a view component's InvokeAsync method for widgets without custom properties
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel widgetModel)
+
+  // The signature of a view component's InvokeAsync method for widgets with custom properties
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;TWidgetPropertiesClass&gt; widgetModel)
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>The return statement of the component’s <code>ComponentViewModeInvoke</code> method needs to specify the full relative path to the component’s partial view. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ return View("~/Components/Widgets/MyWidget/_MyWidget.cshtml", model);
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Create any required view model classes used to pass data from the widget view component to the partial view according to general <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/overview" target="_blank">ASP.NET Core MVC best practices</a>.</p>
+<ul>
+<li>We recommend storing widget models in the <em>~/Components/Widgets/&lt;WidgetName&gt;</em> folder together with other files required by the widget.</li>
+<li>For widgets with <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">configurable properties</a>, do not directly pass the property model to your widget views. Passing data to views is the responsibility of the widget’s view model. For this reason, we strongly recommend keeping the models separate.</li>
+</ul>
+</li>
+<li>
+<p>Prepare a <strong>partial view</strong> that defines the output of the widget.</p>
+<ul>
+<li>We recommend storing widget views in the <em>~/Components/Widgets/&lt;WidgetName&gt;</em> folder together with other files used by the widget.</li>
+</ul>
+</li>
+<li><p><a href="#register-widgets">Register</a> the widget in the system.</p></li>
+</ol>
+<p>Access the current page</p>
+<p>If you need to access the page where the widget is currently rendered, use the <code>Page</code> property of the <code>ComponentViewModel</code> class (from the component’s Invoke method). The property exposes further properties containing the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the page. You can use this data to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page</a> and access its content fields.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves the language of the page on which the widget is currently rendered
+string language = widgetProperties.Page.LanguageName;
+
+</code></pre>
+</div>
+
+<h2 id="handle-post-actions">Handle POST actions</h2>
+<p>If your widget needs to communicate with the server using <em>POST</em> actions, create a custom controller class containing the required action methods and logic. We recommend storing the class in the <em>~/Components/Widgets/&lt;WidgetName&gt;</em> folder together with other files required by the widget.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Endpoint security</strong></p>
+<p>Consider whether the endpoints you design should only be accessible from the admin UI (edit mode of website channel applications). See <a href="/documentation/developers-and-admins/customization/secure-custom-endpoints">Secure custom endpoints</a> for more information.</p>
+</div>
+
+<p>Note that the page where the widget is currently rendered is not by default accessible from within <em>POST</em> actions. Common <em>POST</em> requests do not contain sufficient information to identify the page from which they originate. </p>
+<p>To access the page data in <em>POST</em> actions, you need to include information about the current page into the data submitted by the corresponding form in the widget’s output by calling the <code>ModeHtml.Kentico().PageData</code> extension method (or the method’s <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a>) within the given form tag in your widget view.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Web.Mvc
+@using Kentico.PageBuilder.Web.Mvc
+
+&lt;form asp-controller="WidgetPostActionsController" asp-action="HandlePost" method="post"&gt;
+
+    ...
+
+    @Html.Kentico().PageData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden form field that persists information about the current page. The page data can be retrieved via the <code>IWebPageDataContextRetriever</code> service and <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">content retriever API</a> in the corresponding controller action.</p>
+<p>Obtain an instance of the <code>IWebPageDataContextRetriever</code> service (using dependency injection) and call its <code>Retrieve</code> method. The returned object’s <code>WebPage</code> property contains basic information about the current page, which you can use to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page object</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// An instance of IWebPageDataContextRetriever (e.g., obtained via dependency injection)
+private readonly IWebPageDataContextRetriever retriever;
+
+// Access the current page data
+var page = retriever.Retrieve().WebPage;
+
+// Access the properties of the page 
+int webPageId = page.WebPageItemID;
+int languageId = page.LanguageID
+string languageName = page.LanguageName;
+int contentTypeId = page.ContentTypeID;
+string contentTypeName = page.ContentTypeName;
+int channelId = page.WebsiteChannelID;
+string channelName = page.WebsiteChannelName;
+
+</code></pre>
+</div>
+
+<h2 id="register-widgets">Register widgets</h2>
+<p>Every widget needs to be registered into the system to be available via Page Builder. Register widgets using the <code>RegisterWidget</code> assembly attribute (from the <code>Kentico.PageBuilder.Web.Mvc</code> namespace).</p>
+<p>For basic widgets that consist of only partial views, we recommend adding their registration attributes to a dedicated code file. This keeps your registrations organized. For example, you can create a file named <code>ComponentRegister.cs</code> in your project’s <em>~/Components</em> folder and use it to register your Page Builder components. </p>
+<p>When registering basic widgets, specify the following parameters:</p>
+<ul>
+<li><p><code>Identifier</code> – the unique identifier of the widget. We recommend using a unique prefix in your widget identifiers to prevent conflicts when deploying widgets to other projects, for example matching your company’s name.</p></li>
+<li><p><code>Name</code> – the name used to identify the widget when displayed in the administration interface.</p></li>
+<li><p>(Optional) <code>PropertiesType</code> – only required for <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widgets with properties</a>. Specifies the <code>System.Type</code> of the widget’s property model class.</p></li>
+<li>
+<p><code>CustomViewName</code> – specifies the name and location of the view that defines the widget’s output. If not set, the system searches for a corresponding <em>_&lt;Identifier&gt;.cshtml</em> view in the <em>~/Views/Shared/Widgets</em> folder (any period characters ‘.’ in the identifier are replaced by underscores ‘_’).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Basic widget registration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  [assembly: RegisterWidget(
+      identifier: "CompanyName.CustomWidget", 
+      name: "Custom widget", 
+      propertiesType: typeof(CustomWidgetProperties), 
+      customViewName: "~/Components/Widgets/&lt;WidgetName&gt;/_CustomWidgetView")]
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>For widgets based on view components, you can add the assembly attribute directly into the component code file. In this case, specify the following attribute parameters:</p>
+<ul>
+<li><p><code>Identifier</code> – the unique identifier of the widget. We recommend using a unique prefix in your widget identifiers to prevent conflicts when deploying widgets to other projects, for example matching your company’s name.</p></li>
+<li><p><code>ViewComponentType</code> – the <code>System.Type</code> of the widget’s view component class.</p></li>
+<li><p><code>Name</code> – the name used to identify the widget when displayed in the administration interface.</p></li>
+<li>
+<p>(Optional) <code>PropertiesType</code> – only required for <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widgets with properties</a>. Specifies the <code>System.Type</code> of the widget’s property model class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>View component widget registration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  [assembly: RegisterWidget(
+      identifier: "CompanyName.CustomWidget", 
+      viewComponentType: typeof(CustomWidgetViewComponent), 
+      name: "Custom widget",
+      propertiesType: typeof(CustomWidgetProperties))]
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>For both types of widgets you can also set the following optional properties:</p>
+<ul>
+<li>
+<code>AllowCache</code> – a <code>bool</code> value indicating whether the output of the widget can be <a href="/documentation/developers-and-admins/development/caching/output-caching">cached</a>.</li>
+<li>
+<code>Description</code> – the description of the widget displayed as a tooltip.</li>
+<li>
+<code>IconClass</code> – the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">font icon class</a> displayed when viewing the widgets in the widget list.</li>
+</ul>
+<h2 id="add-scripts-and-styles-for-widgets">Add scripts and styles for widgets</h2>
+<p>To add JavaScript and CSS styles required by your widgets, we recommend placing script and stylesheet files into sub-folders under:</p>
+<ul>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Public/Widgets/&lt;WidgetName&gt;</em></strong> – scripts and styles intended for the live site</li>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Admin/Widgets/&lt;WidgetName&gt;</em></strong> – scripts and styles intended for the administration interface (when working with the widget in the Page Builder editing interface). For example, <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editor</a> registration scripts.</li>
+</ul>
+<p>You can use sub-folders that match the identifiers of individual widgets, or a <em>Shared</em> sub-folder for assets used by multiple widgets. Note that this recommendation only applies when using the default configuration of the bundling support provided by Xperience (and may therefore be different for your project). See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>CSS notes</strong></p>
+<ul>
+<li>Only use the specified directories to add <strong>basic styles</strong> that are required for the widget to render correctly. Any <strong>site-specific styles</strong> that finalize the live site design of the widget should be handled separately within the given site’s main stylesheet.</li>
+<li>To avoid potential conflicts between styles from other third-party components, we recommend adding a unique prefix to your CSS classes and identifiers (for example <em>#CompanyName-mid-button</em>), or use similar measures to ensure their uniqueness.</li>
+</ul>
+</div>
+
+<h3 id="initialize-widget-scripts">Initialize widget scripts</h3>
+<p>In many cases, you will need to initialize your scripts from the views of widgets (for example if you need to call a function on page load or register an event listener). For most types of page or element events, you can use <a href="https://www.w3schools.com/tags/ref_eventattributes.asp" target="_blank">HTML Event Attributes</a> of elements in your views.</p>
+<p>For scripts that you want to run on page load, you need to consider the following:</p>
+<ul>
+<li>Your main scripts are added at the end of the HTML document’s body tag, so they are not available in the widget code during the page load process. A solution is to run the initialization script during the <a href="https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded" target="_blank">DOMContentLoaded</a> event.</li>
+<li>Widgets in the Page Builder interface may be added dynamically after the page is loaded. In this case, the <code>DOMContentLoaded</code> event has already occurred and will not fire again.</li>
+</ul>
+<p>For example, the following script demonstrates how to reliably call a custom function on page load:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+if (document.readyState === "loading") {
+    // Calls the function during the 'DOMContentLoaded' event, after the HTML document has been completely loaded
+    document.addEventListener("DOMContentLoaded", function () {
+        customFunction();
+    });
+} else {
+    // Calls the function directly in cases where the widget is rendered dynamically after 'DOMContentLoaded' has occurred
+    customFunction();
+}
+
+</code></pre>
+</div>
+
+<p>This approach ensures that the initialization script runs correctly when the widget is displayed on the live site, as well as in the Page Builder interface.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: Apart from initialization code, avoid linking or executing scripts directly within widget views – this could lead to duplicated scripts on pages that contain multiple instances of the same widget.</p>
+</div>
+
+
+</body>
+</html>

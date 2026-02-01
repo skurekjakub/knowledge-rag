@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Application UI page template</title>
+</head>
+<body>
+<p>The application page serves as an entry point for <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-application-pages">admin UI applications</a>. All root pages must inherit from the <code>ApplicationPage</code> base class. The page acts as a regular <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI page</a>, with one exception. When accessed, it automatically redirects to its first child page (as specified by the <code>order</code> property in child page registrations).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Creating an application page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+public class UsersApplication : ApplicationPage
+{
+}
+
+</code></pre>
+</div>
+
+<h3 id="register-application-pages">Register application pages</h3>
+<p>Application pages serve as root pages for admin UI applications. For this reason, they are intended for use together with the <code>SECTION_LAYOUT</code> <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/side-navigation-ui-page-template">client template</a> to provide a navigation menu for application pages.</p>
+<p>Register application pages using the <code>UIApplication</code> assembly attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example application registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.UIPages;
+
+[assembly: UIApplication(
+    identifier: UsersApplication.IDENTIFIER, 
+    type: typeof(UsersApplication), 
+    slug: "users", 
+    name: "Users", 
+    category: BaseApplicationCategories.DEVELOPMENT, 
+    icon: Icons.RectangleParagraph, 
+    templateName: TemplateNames.SECTION_LAYOUT)]
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

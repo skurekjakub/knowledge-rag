@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Amazon S3</title>
+</head>
+<body>
+<p>Xperience by Kentico supports file system providers that allow you to map parts of the file system to <a href="https://aws.amazon.com/s3/" target="_blank">Amazon S3</a> storage. You can use Amazon S3 when hosting your project in <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> or when you wish to store parts of the application file system in external shared storage. For example, shared storage is a requirement for all <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">scaled</a> Xperience environments.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Filename case</strong></p>
+<p>Unlike regular file systems (NTFS, VFAT), Amazon S3 storage is case-sensitive. To ensure consistent behavior, Xperience automatically converts all file and folder names to lower case when processing files on Amazon S3.</p>
+</div>
+
+<h2 id="media-library-files-in-amazon-s3">Media library files in Amazon S3</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Media libraries sunset</strong></p>
+<p>Media libraries have been officially sunset. Support for media libraries will continue for one more year (until July 24, 2026), after which the feature and all associated APIs will be completely removed.</p>
+<p>Before mapping media library files to the <a href="https://aws.amazon.com/s3/" target="_blank">Amazon S3</a> storage, consider migrating media libraries and mapping content item assets instead. See <a href="/guides/architecture/media-libraries-migration-guidance">Media library migration</a> for instructions on how to migrate your media library files to <a href="/documentation/business-users/content-hub">Content hub</a>.</p>
+</div>
+
+<p>Media library files stored in Amazon S3 have the following limitations:</p>
+<ul>
+<li>
+<strong>Storing a large number (thousands) of media library files in a single media library can significantly affect the performance and user experience of the <a href="/documentation/business-users/media-libraries/create-media-libraries">Media libraries</a> application.</strong>
+<ul>
+<li>We recommend structuring media library files into multiple media libraries and storing at most 100 files in a single media library folder.</li>
+</ul>
+</li>
+<li>Mapping subfolders of media libraries is not supported. You can map either the directory containing the media libraries (<strong>~/assets/media</strong>), or individual media libraries (<strong>~/assets/media/&lt;MediaLibraryName&gt;</strong>).</li>
+<li>The system’s automatic clearing of files from the server-side cache does not work for files stored in an external storage. If you modify a media file, the website may still display the old version until the cache expires (unless you manually clear the application’s cache). See also: <a href="/documentation/developers-and-admins/development/caching/file-caching">File caching</a>.</li>
+</ul>
+<h2 id="map-files-to-amazon-storage">Map files to Amazon storage</h2>
+<p>Mapping folders to Amazon storage allows you to store files on a shared storage and leverage Amazon’s Cloudfront CDN.</p>
+<p>Before you can map parts of the file system to Amazon storage, add the following application settings to your project:</p>
+<ol type="1">
+<li>
+<p>The ID of your Amazon access key:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ "CMSAmazonAccessKeyID": "YourKey"
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>The Amazon access key:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ "CMSAmazonAccessKey": "YourSecret"
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Add the following key to specify the bucket that you want to use to store files.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ "CMSAmazonBucketName": "YourBucketName"
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>With the Amazon account connected and configured, use the following process to map parts of the file system to the specified bucket:</p>
+<ol type="1">
+<li><p>Open the Xperience project in Visual Studio.</p></li>
+<li><p><a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom Class Library project</a> and install the <strong>Kentico.Xperience.AmazonStorage</strong> NuGet package as a dependency.</p></li>
+<li><p>Create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module class</a> in the created library.</p></li>
+<li>
+<p>Override the module’s <code>OnInit</code> method and for each folder that you want to store in the shared storage:</p>
+<ol type="1">
+<li><p>Create a new instance of the Amazon S3 storage provider.</p></li>
+<li><p>Specify the target bucket using the <code>CustomRootPath</code>property of the provider.</p></li>
+<li><p><em>(Optional)</em> You can specify whether you want the bucket to be publicly accessible using the <code>PublicExternalFolderObject</code> property of the provider. <code>True</code> means the bucket is publicly accessible.</p></li>
+<li>
+<p>Map the directory to the provider:</p>
+
+<div>
+
+</div>
+<div>
+As some deployment environments don’t provide a persistent file system, we recommend mapping the <strong>~/assets/</strong> project folder to prevent possible loss of files due to redeployment, swapping of slots, etc.
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mapping assets to Amazon storage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ /* The following code snippet demonstrates the recommended mappings 
+ for the **~/assets/** folder mentioned in the note above. 
+ You can use the same approach to also map other folders from your project's file system.*/
+
+ using CMS;
+ using CMS.DataEngine;
+ using CMS.IO;
+
+ using Kentico.Xperience.AmazonStorage;
+
+ // Registers the custom module into the system
+ [assembly: RegisterModule(typeof(CustomInitializationModule))]
+
+ public class CustomInitializationModule : Module
+ {
+     // Module class constructor, the system registers the module under the name "CustomInit"
+     public CustomInitializationModule()
+         : base("CustomInit")
+     {
+     }
+
+     // Contains initialization code that is executed when the application starts
+     protected override void OnInit()
+     {
+         base.OnInit();
+
+         // Creates a new StorageProvider instance for Amazon S3
+         var assetsProvider = AmazonStorageProvider.Create();
+
+         // Specifies the target bucket, the provider ensures its existence in the storage account
+         assetsProvider.CustomRootPath = "myassetsbucket";
+
+         // Makes the 'myassetscontainer' container publicly accessible
+         assetsProvider.PublicExternalFolderObject = true;
+
+         // Maps the local directory to the storage provider
+         StorageHelper.MapStoragePath("~/assets", assetsProvider);
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+</ol>
+<p>The deployed application now stores files from the <strong>~/assets</strong> project folder in the <strong>myassetsbucket</strong> Amazon S3 bucket.</p>
+<h3 id="optional-application-settings-for-amazon-s3">Optional application settings for Amazon S3</h3>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMSAmazonTempPath</p>
+</td>
+<td>
+<p>Path to a local directory that the system uses to store temporary files.</p>
+<p><strong>Default value</strong>: &lt;project root&gt;\App_Data\AmazonTemp</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAmazonTempPath": "C:\\Windows\\Temp"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAmazonCachePath</p>
+</td>
+<td>
+<p>Path to a local directory where the provider stores cached files.</p>
+<p><strong>Default value</strong>: &lt;project root&gt;\App_Data\AmazonCache</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAmazonCachePath": "C:\\Cache"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAmazonEndPoint</p>
+</td>
+<td>
+<p>Allows you to change the default URL of the Amazon S3 <a href="http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html" target="_blank">Website Endpoint</a>. For example, you can change the endpoint if you want to use CloudFront CDN.</p>
+<p><strong>Default value</strong>: http://&lt;yourbucketname&gt;.s3.amazonaws.com</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAmazonEndPoint": "http://someendpoint.s3.amazonaws.com"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAmazonRestApiEndPoint</p>
+</td>
+<td>
+<p>Allows you to change the default URL of the Amazon S3 <a href="http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html#WebsiteRestEndpointDiff" target="_blank">REST API Endpoint</a>. The system uses the REST API to determine the region of buckets.</p>
+<p><strong>Default value</strong>: https://s3.amazonaws.com</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAmazonRestApiEndPoint": "http://s3.amazonaws.com"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAmazonPublicAccess</p>
+</td>
+<td>
+<p>Specifies whether files uploaded to Amazon S3 through Xperience are accessible for public users.</p>
+<p><strong>Default value</strong>:</p>
+<p><em>true</em> if you specify an endpoint</p>
+<p><em>false</em> If no endpoint is specified</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAmazonPublicAccess": true
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h2 id="configuring-xperience-to-use-amazon-cloudfront-cdn">Configuring Xperience to use Amazon CloudFront CDN</h2>
+<p>A Content Delivery Network (CDN) speeds up distribution of content to the end users through a network of data centers. See <a href="https://aws.amazon.com/cloudfront/features/" target="_blank">Amazon CloudFront Product Details</a> to learn more.</p>
+<p>To start using the Amazon CloudFront service with Xperience:</p>
+<ol type="1">
+<li><p>Create a <strong>CloudFront Distribution</strong>. You can use the <a href="https://console.aws.amazon.com" target="_blank">Amazon Management Console</a>. Select your Amazon S3 storage bucket as the <strong>Origin Domain Name</strong>.</p></li>
+<li>
+<p>Edit the application settings file of your Xperience project and add the <strong>CMSAmazonPublicAccess</strong> and <strong>CMSAmazonEndPoint</strong> keys:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ "CMSAmazonPublicAccess": true,
+ "CMSAmazonEndPoint": "EndpointURL"
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Set the value of the <strong>CMSAmazonEndPoint</strong> key to the <strong>Domain Name</strong> URL of your created CDN.</p>
+
+<div>
+
+</div>
+<div>
+<p>If your website runs under <strong>HTTPS</strong>, we recommend always specifying the endpoint URL with the <strong>HTTPS</strong> protocol as well.</p>
+<p>For example: <em>https://domain.cloudfront.net</em></p>
+<p>Without this configuration you may receive <a href="https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content?hl=en" target="_blank">Mixed Content</a> warnings in your browser’s console when retrieving files from the CDN.</p>
+</div>
+</li>
+</ol>
+<p>Your project now uses the created CDN service.</p>
+
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Cookies</title>
+</head>
+<body>
+<p>A cookie is a small piece of data that a website asks your browser to store on your computer or mobile device. The cookie allows the website to “remember” your past actions or preferences.</p>
+<p>Xperience provides an extensible framework, built around <a href="#cookie-levels">cookie levels</a>, for manipulating cookies – from assigning specific levels of allowed cookies to users and contacts, to <a href="#register-custom-cookies">registering custom cookies</a> and their corresponding cookie levels.</p>
+<h2 id="set-the-default-cookie-level">Set the default cookie level</h2>
+<p>A website channel’s default cookie level determines which cookies the system stores in the browsers of visitors by default. To set the default cookie level:</p>
+<ol type="1">
+<li>Open <strong>Channel management</strong> application in Xperience.</li>
+<li>Select a website channel.</li>
+<li>Open the <strong>Channel settings</strong> tab.</li>
+<li>In the <strong>Cookies</strong> section, choose a <strong>Default cookie level</strong>.
+<ul>
+<li>For an overview of individual cookie levels, see <a href="#cookie-levels">Cookie levels</a>.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The system now uses the selected cookie level when evaluating which cookies should be stored.</p>
+<p>Developers can add functionality to your website to allow visitors to give consent with tracking and increase their cookie level above the default. See <a href="#enable-users-to-select-a-preferred-cookie-level">Enable users to select a preferred cookie level</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong><em>All cookies</em> level required for Digital marketing features to work correctly in Xperience</strong></p>
+<p>Xperience <a href="/documentation/business-users/digital-marketing">Digital marketing features</a> only work fully for visitors who have their cookie level set to <strong>All</strong> cookies.</p>
+<p>For example, the system does not track <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> for visitors whose allowed cookie level is only <em>System</em> or <em>Essential</em>. Contacts may still be created in certain cases for visitors without the required cookie level – for example, if they submit data through a form – but such contacts only store the provided data and do not track the visitor.</p>
+</div>
+
+<h3 id="cookie-levels">Cookie levels</h3>
+<p>Xperience classifies cookies into several levels according to their purpose. These levels determine which cookies are set for administration users and website visitors. The following table lists the default levels available in the API (<code>Kentico.Web.Mvc.CookieLevel</code> class):</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Cookie level</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>None (-1000)</strong></p>
+</td>
+<td>
+<p>Absolutely no cookies are allowed, including the cookie that stores the cookie level selected for users. This makes sense only if you want to disable absolutely every cookie by default.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>System (-100)</strong></p>
+</td>
+<td>
+<p>This level allows the <em>CookieLevel</em> cookie, which stores the cookie level selected by the user. In terms of the end user and the Cookie law, this means <strong><em>“Cookies are not allowed”</em></strong>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Essential (0)</strong></p>
+</td>
+<td>
+<p>Cookies that are required for all website functionality needed by visitors. This includes authentication, language selection, etc. From the visitor’s perspective, this means <strong><em>“Allow only cookies that I may need, but do not track me”</em></strong>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Editor (100)</strong></p>
+</td>
+<td>
+<p>Cookies required for correct administration interface functionality. For example used to remember selected preferences, tabs, etc.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Visitor (200)</strong></p>
+</td>
+<td>
+<p>All cookies that are not assigned to an explicit level are considered to be cookies identifying the visitor, i.e. tracking cookies, which are not really needed, but are useful for the website owner if using Xperience digital marketing features.</p>
+<p>This level is used for all custom cookies by default. You can <a href="#register-custom-cookies">register custom cookies</a> to adjust their assigned cookie level.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>All (1000)</strong></p>
+</td>
+<td>
+<p>Allows all cookies, no matter what their level is. From the visitor’s perspective, this means <strong><em>“Allow all cookies now and in the future”</em></strong>.</p>
+</td>
+</tr>
+</table>
+
+<p>The numbers associated with each cookie level are integer constants, which allows you to further customize the granularity of available cookie levels. The levels ‘<em>None</em>’ and ‘<em>All</em>’ are set to an absolute value of 1000 to provide enough space for future Xperience updates or developer-specified custom levels.</p>
+
+<div>
+
+</div>
+<div>
+<p>Automatic <a href="/documentation/business-users/digital-marketing/contact-management">tracking of contacts</a> and their <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a> only works for new visitors if the <strong>Default cookie level</strong> setting to ‘<em>Visitor</em>’ or ‘<em>All</em>’. For more information, see <a href="/documentation/developers-and-admins/data-protection/consent-development">Consent development</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Automatic cookie consent for administrators and editors</strong></p>
+<p>If a user signs in to the Xperience administration, cookies are automatically enabled to provide full editing functionality. The system assumes that working in the administration interface identifies the user as staff, so there is no need for cookie consent.</p>
+</div>
+
+<h2 id="register-custom-cookies">Register custom cookies</h2>
+<p>If your website uses any custom or third-party cookies, we recommend that you register them with an appropriate <a href="#cookie-levels">cookie level</a>. Unregistered cookies are processed with the <em>Visitor</em> level by default.</p>
+<p>When a visitor adjusts their allowed cookie level (for example by <a href="/documentation/developers-and-admins/data-protection/consent-development">accepting or revoking a consent</a>), the system automatically clears all cookies of a level higher than consented from the visitor’s browser. You may also encounter problems with custom or third-party cookies not being stored if your website channel’s <strong>Default cookie level</strong> setting has a lower value than <em>Visitor</em>, for example when managing tracking consent.</p>
+<p>Custom cookies are registered via the <code>CookieLevelOptions</code> object on application startup. The options object exposes a <code>CookieConfigurations</code> dictionary where you can add your cookies. Use the following parameters:</p>
+<ul>
+<li>
+<code>key</code> – the name of the cookie that you are registering.</li>
+<li>
+<code>value</code> – an integer value representing the <a href="#cookie-levels">cookie level</a> required to use the cookie. You can access the default values in the <code>Kentico.Web.Mvc.CookieLevel</code> enumeration.</li>
+</ul>
+<h3 id="example">Example</h3>
+<p>The following example demonstrates how to register a custom cookie named <strong>CustomCookie</strong> with the <strong>Essential</strong> cookie level:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Register custom cookies</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Web.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ...
+
+// Registers 'CustomCookie' with the 'Essential' cookie level in Xperience 
+builder.Services.Configure&lt;CookieLevelOptions&gt;(options =&gt;
+{
+    options.CookieConfigurations.Add("CustomCookie", CookieLevel.Essential);
+});
+
+</code></pre>
+</div>
+
+<p>The <em>CustomCookie</em> is now registered and can be used by visitors with the <em>Essential</em> and above cookie level (based on your website channel’s <a href="#set-the-default-cookie-level">default cookie level</a>, the users’ <a href="#enable-users-to-select-a-preferred-cookie-level">preferred cookie level</a>, or other custom actions such as <a href="/documentation/developers-and-admins/data-protection/consent-development">consent agreements</a>). </p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Handling cookies in ASP.NET Core</strong></p>
+<p>When setting cookies in ASP.NET Core projects, there is an option to use the <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.cookieoptions.isessential" target="_blank">CookieOptions.IsEssential</a> property.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Designating cookies as essential</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var cookieOptions = new CookieOptions
+{
+    IsEssential = true
+};
+
+// Adds the cookie to the response cookie collection
+HttpContext.Response.Cookies.Append("cookieName", "cookieValue", cookieOptions);
+
+</code></pre>
+</div>
+</div>
+<p>Cookies that are not registered via <code>CookieLevelOptions</code> are seen as <em>Visitor</em> level cookies by Xperience, but the <code>CookieOptions.IsEssential</code> option overrides the system cookie settings as it is handled directly by the framework. As a result, such cookies are always set for visitors.</p>
+</div>
+
+<h2 id="set-and-work-with-cookies">Set and work with cookies</h2>
+<p>You can use the Xperience API to create and set custom cookies into a user’s browser. Use <code>ICookieAccessor.Set</code> within the scope of an HTTP request:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Set cookies using ICookieAccessor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Microsoft.AspNetCore.Http;
+
+using Kentico.Web.Mvc;
+...
+
+// Contains an instance of 'ICookieAccessor' e.g., obtained using dependency injection
+private readonly ICookieAccessor cookieAccessor;
+
+cookieAccessor.Set("MyCookie", "SomeValue");
+
+</code></pre>
+</div>
+
+<p>Cookies set without specifying any <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.cookieoptions" target="_blank">Microsoft.AspNetCore.Http.CookieOptions</a> use the <strong>Lax</strong> <a href="https://web.dev/samesite-cookies-explained/" target="_blank">SameSite mode</a> by default. To set a different <em>SameSite</em> mode, configure the desired behavior via the options object. The <code>Microsoft.ApeNetCore.Http.SameSiteMode</code> enumeration stores all available values:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Set cookie SameSite</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Microsoft.AspNetCore.Http;
+
+...
+
+cookieAccessor.Set("CustomCookie", "CustomValue", new CookieOptions() { SameSite = SameSiteMode.Strict });
+
+// Adds the Secure attribute to the cookie with 'SameSite=None'. 
+// The user agent will include the cookie in an HTTP request only if the request is transmitted over a secure channel (typically HTTPS). 
+cookieAccessor.Set("CustomCookie", "CustomValue", new CookieOptions() { 
+                                                        SameSite = SameSiteMode.None,
+                                                        Secure = true });
+
+</code></pre>
+</div>
+
+<p>To get and remove cookies, use <code>ICookieAccessor.Get</code> and <code>ICookieAccessor.Remove</code> respectively.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Get and remove cookies</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets the cookie called 'MyCookie' from the current request
+cookieAccessor.Get("MyCookie");
+
+// Removes the cookie called 'MyCookie' from the current request
+cookieAccessor.Remove("MyCookie");
+
+</code></pre>
+</div>
+
+<h2 id="enable-users-to-select-a-preferred-cookie-level">Enable users to select a preferred cookie level</h2>
+<p>In compliance with the cookie law, you can allow users to select their preferred cookie level. Use the <code>SetCurrentCookieLevel</code> method provided by the <code>ICurrentCookieLevelProvider</code> service.</p>
+<p>The following code snippets demonstrate the usage of the <code>ICurrentCookieLevelProvider</code> API on a basic example. The code allows users to set their preferred cookie level via a simple form.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>CookieLevelController.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+
+using CMS.Helpers;
+
+public class CookieLevelController : Controller
+{
+    private readonly ICurrentCookieLevelProvider cookieLevelService;
+
+    // Initializes instances of required services using dependency injection
+    public CookieLevelController(ICurrentCookieLevelProvider cookieLevelService)
+    {
+        this.cookieLevelService = cookieLevelService;
+    }
+
+    public ActionResult Index()
+    {
+        // Creates a list with the three default levels of cookie compliance relevant for visitors.
+        // The CookieLevel class is used to directly extract integer values corresponding to each cookie level
+        // so that no additional mapping is necessary.
+        var cookieLevels = new List&lt;object&gt;() {
+                new { label = "Essential", value = Kentico.Web.Mvc.CookieLevel.Essential.Level },
+                new { label = "Visitor", value = Kentico.Web.Mvc.CookieLevel.Visitor.Level },
+                new { label = "All", value = Kentico.Web.Mvc.CookieLevel.All.Level }
+            };
+
+        return View(new SelectList(cookieLevels, "value", "label"));
+    }
+
+    // Sets the cookie level for the current user
+    // The value passed into the action from the corresponding view directly corresponds to one of the system's 
+    // cookie levels thanks to the CookieLevel class.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult SetCookieLevel(int selectedValue)
+    {
+        // Sets the cookie level for the current user to the level corresponding to the provided value
+        cookieLevelService.SetCurrentCookieLevel(selectedValue);
+
+        return RedirectToAction(nameof(Index));
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The corresponding view contains a drop-down selector that allows users to select the desired level of cookies.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Index.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@model SelectList
+
+@using (Html.BeginForm("SetCookieLevel", "CookieLevel", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.DropDownListFor(x =&gt; x.SelectedValue, Model)
+    &lt;input type="submit" value="Select" /&gt;
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

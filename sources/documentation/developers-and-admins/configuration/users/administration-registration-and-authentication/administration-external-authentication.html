@@ -1,0 +1,1116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Administration - External authentication</title>
+</head>
+<body>
+<p>The Xperience by Kentico administration interface supports authentication via external identity and authentication providers. Identity providers are used to centralize user and role management across multiple services and to provide a unified sign-in experience for particular sets of users – often referred to as single sign-on (SSO).</p>
+<p>You can use any identity provider that best fits your needs, be it <a href="https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id" target="_blank">Microsoft Entra ID</a> (formerly known as Azure Active Directory), <a href="http://auth0.com" target="_blank">Auth0</a>, <a href="https://www.okta.com/" target="_blank">Okta</a>, <a href="https://duo.com/" target="_blank">Duo</a> or any other platform that is OAuth/OIDC-compliant.</p>
+<p>This page provides detailed instructions for the set up of <a href="#microsoft-entra-id">Entra ID</a>, <a href="#auth0">Auth0</a> and <a href="#okta">Okta</a>, though other providers can be set up in a similar manner. Refer to the documentation of a particular provider to learn about the specific details for setting up the given integration.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Only one</strong> external authentication provider can be enabled at a time – combining multiple providers is not supported.</p>
+</div>
+
+<h2 id="microsoft-entra-id">Microsoft Entra ID</h2>
+<p><a href="https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id" target="_blank">Entra ID</a> is an identity service that provides single sign-on, multifactor authentication, and conditional access. You can configure Xperience to use Entra ID with the <a href="https://openid.net/connect/" target="_blank">OpenID Connect (OIDC)</a> protocol for SSO purposes.</p>
+<p>The following instructions show how to set up Entra ID authentication using the <a href="https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow" target="_blank">authorization code token grant flow</a>.</p>
+<p>First, register your application in your Entra ID tenant:</p>
+<ol type="1">
+<li>Open your Entra ID tenant in <a href="https://entra.microsoft.com/" target="_blank">Microsoft Entra</a>.</li>
+<li>Switch to <strong>Applications</strong> → <strong>App registrations</strong> and <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app#register-an-application" target="_blank">register your Xperience application</a>.</li>
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app#add-a-redirect-uri" target="_blank">Add a sign-in redirect URI</a> that specifies where Entra ID redirects users after successful authentication.
+<ul>
+<li>This is the URL that Entra ID sends information to when a user signs in. This route is called a callback route or redirect URI. The callback route isn’t seen by the user, and it’s not the user’s final destination. It’s just one step in the authentication redirect flow. The redirect URI must be a free route in the application. For example: <code>https://&lt;domain&gt;/admin-oidc</code>
+</li>
+</ul>
+</li>
+<li>Add credentials (certificate or secret) for your application:
+<ol type="1">
+<li>Navigate to your app registration in Entra ID and switch to the <strong>Certificates &amp; secrets</strong> tab.</li>
+<li>Choose one of the following:
+<ul>
+<li>Upload a <strong>certificate</strong> (recommended for production applications). See <a href="https://github.com/AzureAD/microsoft-identity-web/wiki/Using-certificates" target="_blank">Using certificates</a> for more information.</li>
+<li>Add a <strong>client secret</strong>.</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>Add claims to ensure the token obtained by the Xperience application contains values that can be mapped to user objects representing the Entra ID user in Xperience:
+<ol type="1">
+<li>Switch to the <strong>Token configuration</strong> tab.</li>
+<li>Select <strong>Add optional claim</strong>.</li>
+<li>Choose the <strong>ID</strong> token type and select the following fields:
+<ol type="1">
+<li>
+<em>email</em> – mapped to the user’s Email</li>
+<li>
+<em>family_name</em> – mapped to the user’s Last name</li>
+<li>
+<em>given_name</em> – mapped to the user’s First name</li>
+<li>
+<em>preferred_username</em> – mapped to the user’s Username</li>
+</ol>
+</li>
+<li>Select <strong>Add</strong>. For more information about claims and their mapping to Xperience objects, see <a href="#claims-mapping-and-transformations">Claims mapping and transformations</a>.</li>
+</ol>
+</li>
+</ol>
+<p>The application is now registered and configured in Entra ID. Now, you need to connect your Xperience application to the Entra ID application registration:</p>
+<ol type="1">
+<li><p>Install the <strong>Microsoft.Identity.Web</strong> NuGet package to your project.</p></li>
+<li>
+<p>Edit the <strong>Program.cs</strong> application configuration class and add the following:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Entra ID configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using System.Security.Claims;
+
+ using Microsoft.AspNetCore.Authentication.Cookies;
+ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+ using Microsoft.AspNetCore.Builder;
+ using Microsoft.AspNetCore.Http;
+ using Microsoft.Identity.Web;
+
+ using Kentico.Membership;
+
+ ...
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ ...
+
+ builder.Services.AddAdminExternalAuthenticationProvider(
+     builder =&gt; builder.AddMicrosoftIdentityWebApp(options =&gt;
+     {
+         // Your Entra ID tenant
+         options.Domain = "";
+         // Your tenant ID - found on the Overview tab of your application registration in Entra ID
+         options.TenantId = "ffffffff-ffff-ffff-fff-ffffffffffff"; 
+         // Your application ID - found on the Overview tab of your application registration in Entra ID
+         options.ClientId = "ffffffff-ffff-ffff-fff-ffffffffffff"; 
+         // The authorization server to use (login.microsoftonline.com unless using a custom one)
+         options.Instance = "https://login.microsoftonline.com/";
+         // The callback path must match the redirect URI specified when configuring the application in Entra ID
+         options.CallbackPath = new PathString("/admin-oidc");
+         // Sets the response type for the Authorization Code Flow
+         options.ResponseType = OpenIdConnectResponseType.Code;
+
+         // Add the credentials used to prove your application's identity,
+         // either a certificate OR a client secret.
+
+         // Secret ID generated for a client secret
+         options.ClientSecret = "ffffffff-ffff-ffff-fff-ffffffffffff";
+
+         // Certificate
+         options.ClientCertificates = new List&lt;CertificateDescription&gt;
+         {
+             // Replace the examples of certificate descriptions with your own
+
+             // Certificate from Azure Key Vault
+             CertificateDescription.FromKeyVault("https://keyvault-name.vault.azure.net/", "certificate-name"),
+             // Certificate from a local file
+            CertificateDescription.FromPath("path_to_certificate.pfx","certificate_password")
+         };
+     }), 
+     options =&gt;
+     {
+         // Sets cookies as the sign in scheme
+         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+         // Sets OIDC as the authentication method
+         options.AuthenticateScheme = OpenIdConnectDefaults.AuthenticationScheme;
+     }
+ );
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The Xperience application is now set up to use Entra ID. If you run the application and navigate to the admin UI sign-in page, the external provider is now the only available sign-in method.</p>
+<p></p>
+<p>Selecting <strong>Sign in</strong> redirects users to the Entra ID authorization server, where they can authenticate using their existing credentials. If you wish to maintain the default forms authentication in parallel with external authentication, see <a href="#sign-in-page-behavior">Sign-in page behavior</a>.  </p>
+<p>When a user signs in for the first time, a corresponding user object is created in the system, and the application maps claims from the received token to the corresponding properties of the user object (First name, Last name, Username, and Email). The system is, by default, configured to only run this mapping once when a user first signs in and the object that represents them is created. To change the synchronization frequency for this data, see <a href="#user-data-synchronization-frequency">User data synchronization frequency</a>.</p>
+<p>Additionally, newly created users don’t have any assigned <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a> and therefore lack the permissions to access and work with applications in the admin UI. To manage role assignments for Entra ID users, you have the following options:</p>
+<ul>
+<li>
+<a href="#AdministrationExternalauthentication-ADRoles">Synchronize role assignments</a> from Entra ID to Xperience</li>
+<li>Manually assign roles to Entra ID users (for example, using existing accounts or via <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">event handlers</a>)</li>
+</ul>
+<h3 id="synchronize-roles"> Synchronize roles</h3>
+<p>Xperience supports the synchronization of role assignments from Entra ID. However, only assignments to roles that already exist in the system are synchronized. The system doesn’t automatically create new roles based on data received from Entra ID.</p>
+<p>To enable the synchronization of role assignments from Entra ID:</p>
+<ol type="1">
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps#assign-users-and-groups-to-roles" target="_blank">Configure user-role assignments</a> for the application in Entra ID.</li>
+<li>Create the desired roles in Xperience and define their permissions.
+<ul>
+<li>
+<p>The role <strong>Code name</strong> must match the <strong>Value</strong> parameter (what is sent as part of the “roles” claim) specified for the corresponding <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps" target="_blank">Entra ID App role</a>. For example, for an App role with the following properties:</p>
+<ul>
+<li>Display name: Content editors</li>
+<li>Allowed member types: Users/Groups</li>
+<li>Value: contenteditors</li>
+<li>Description: Members of the content editing team for our Xperience projects.the Xperience application must contain a role with the <em>contenteditors</em> code name. Otherwise, the role assignment will not synchronize.</li>
+</ul>
+</li>
+<li><p>See <a href="/documentation/developers-and-admins/configuration/users/role-management">Role management</a> to learn how to create roles and assign permissions in the system.</p></li>
+</ul>
+</li>
+<li>Configure user data synchronization frequency to either <code>FirstLogin</code> or <code>Always</code>, depending on your requirements, to ensure role assignments are propagated to Xperience. See <a href="#user-data-synchronization-frequency">User data synchronization frequency</a>.</li>
+</ol>
+<p>When a user signs in, the system maps their Entra ID role assignments to roles defined in Xperience. </p>
+<h4 id="grant-the-administrator-role-via-entra-id">Grant the Administrator role via Entra ID</h4>
+<p>The <em>Administrator</em> role is a default system role that cannot be modified or deleted. The system requires at least one user with this role assigned to exist in the system at all times. If you need to ensure the role can be granted to users via Entra ID (for example, if you wish to discontinue the default <em>administrator</em> account):</p>
+<ol type="1">
+<li>Create a new <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps" target="_blank">Entra ID App role</a> with the following properties:
+<ol type="1">
+<li>
+<strong>Display name</strong>: Xperience administrator</li>
+<li>
+<strong>Allowed member types</strong>: Users/Groups</li>
+<li>
+<strong>Value</strong>: administrator</li>
+<li>
+<strong>Description</strong>: Role granting the highest privilege for the Xperience administration interface</li>
+</ol>
+</li>
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps#assign-users-and-groups-to-roles" target="_blank">Add the desired users</a> to the role.
+<ul>
+<li>If you are making this change after Entra ID has already been set up (and users may, as a result, already have accounts in Xperience), make sure to change the <a href="#user-data-synchronization-frequency">user data synchronization frequency</a> to <code>Always</code> to ensure the role is granted to users the next time they sign in.</li>
+</ul>
+</li>
+</ol>
+<p>You can now grant the administrator role via Entra ID.</p>
+<h3 id="security-considerations">Security considerations</h3>
+<p>See <a href="#general-security-considerations">General security considerations</a> for an overview of recommended security practices related to external authentication provider configuration and management.</p>
+<p>For security practices related to Entra ID specifically, refer to <a href="https://learn.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices" target="_blank">Identity management best practices</a> and other Microsoft sources.</p>
+<h2 id="auth0">Auth0</h2>
+<p><a href="http://auth0.com" target="_blank">Auth0</a> is an authentication and authorization platform that provides identity management solutions for applications. It allows developers to authenticate, authorize, and secure access for their applications and APIs by implementing various authentication methods such as social login, single sign-on, multi-factor authentication, and more. Auth0 also provides features for user management, token generation, and security.</p>
+<p>You can configure Xperience to use Auth0 with the <a href="https://openid.net/connect/" target="_blank">OpenID Connect (OIDC)</a> protocol for SSO purposes.</p>
+<p>First, create a new application for your Xperience project in Auth0:</p>
+<ol type="1">
+<li>Open your Auth0 management dashboard.</li>
+<li>Switch to <strong>Applications</strong> and <a href="https://auth0.com/docs/get-started/applications" target="_blank">register your Xperience application</a> with the <strong>Regular web application</strong> application type.</li>
+<li>Open the application configuration and add a callback URL that specifies where Auth0 redirects users after successful authentication.
+<ul>
+<li>This is the URL that Auth0 sends information to when a user signs in. This route is called a callback route or redirect URI. The callback route isn’t seen by the user, and it’s not the user’s final destination. It’s just one step in the authentication redirect flow. The redirect URI must be a free route in the application. For example: <code>https://&lt;domain&gt;/admin-oidc</code>
+</li>
+</ul>
+</li>
+</ol>
+<p>The application is registered and configured in Auth0. Now, you need to connect your Xperience application to the Auth0 application registration:</p>
+<ol type="1">
+<li><p>Install the <strong>Microsoft.Identity.Web</strong> NuGet package to your project.</p></li>
+<li>
+<p>Edit the <strong>Program.cs</strong> application configuration class and add the following:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Auth0 configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using System.Security.Claims;
+
+ using Microsoft.AspNetCore.Authentication.Cookies;
+ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+ using Microsoft.AspNetCore.Builder;
+ using Microsoft.AspNetCore.Http;
+ using Microsoft.Identity.Web;
+
+ using Kentico.Membership;
+
+ ...
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ ...  
+
+ builder.Services.AddAdminExternalAuthenticationProvider(authBuilder =&gt;
+     authBuilder.AddOpenIdConnect(options =&gt;
+     {
+             // Authorization server URL
+             options.Authority = "https://&lt;authority&gt;.auth0.com";
+             // The client identifier assigned to your Auth0 application
+             options.ClientId = "&lt;client identifier&gt;";
+             // The secret generated for your Auth0 application
+             options.ClientSecret = "&lt;client secret&gt;";
+             options.ClaimsIssuer = "Auth0";
+             // The callback path must match the callback URL specified when configuring the application in Auth0
+             options.CallbackPath = new PathString("/admin-oidc");
+
+             // Requests email claims to be included in ID tokens received by the application
+             // Required to synchronize user email addresses
+             options.Scope.Add("email");
+
+             options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+             options.SignInScheme = AdminIdentityConstants.EXTERNAL_SCHEME;
+     }),
+     options =&gt;
+     {
+         // Sets the authentication scheme to OIDC
+         options.AuthenticateScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+         /* When creating the user account in Xperience, the system is by default configured
+            to read the UserName value from the "preferred_username" claim. However, Auth0 does not 
+            by default send the "preferred_username" claim as part of the user information. 
+
+            This configuration uses the value stored under "nickname" as the username instead. 
+            This is only for illustration and you can use any other claim you prefer, but note that
+            all users must have the value populated (the field is required for user creation). 
+            For more information, see the 'Claims mapping and transformations' section on this page. */
+         options.UserNameClaimName = "nickname";
+     }
+ );
+
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Storing application secrets</strong></p>
+<p>We do not recommend storing application secrets (<code>ClientSecret</code> property) directly in code or application configuration files (e.g., <em>appsettings.json</em>). See <a href="#securely-store-application-secrets">Securely store application secrets</a> for recommendations.</p>
+</div>
+</li>
+</ol>
+<p>The Xperience application is now set up. If you run the application and navigate to the admin UI sign-in page, the external provider is now the only available sign-in method.</p>
+<p></p>
+<p>Selecting <strong>Sign in</strong> redirects users to the Auth0 authorization server, where they can authenticate using their existing credentials. If you wish to maintain the default forms authentication in parallel with external authentication, see <a href="#sign-in-page-behavior">Sign-in page behavior</a>.  </p>
+<p>When a user signs in for the first time, a corresponding user object is created in the system and the application maps claims from the received ID token to the corresponding properties of the user object (First name, Last name, Username, and Email). By default, the system is configured to only run this mapping once when the user first signs in and the object that represents them is created. To change the synchronization frequency for this data, see <a href="#user-data-synchronization-frequency">User data synchronization frequency</a>.</p>
+<p>Additionally, newly created users don’t have assigned <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a> and therefore lack the permissions to access and work with applications in the admin UI. To manage role assignments for Auth0 users, you have the following options:</p>
+<ul>
+<li>
+<a href="#AdministrationExternalauthentication-AuthRoles">Synchronize role assignments</a> from Auth0 to Xperience</li>
+<li>Manually assign roles to external users (for example, using existing accounts or via <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">event handlers</a>)</li>
+</ul>
+<h3 id="synchronize-roles-1"> Synchronize roles</h3>
+<p>Xperience supports the synchronization of role assignments from Auth0. However, only assignments to roles that already exist in the system are synchronized. The system doesn’t automatically create new roles based on data received from the external provider. </p>
+<p>To enable the synchronization of role assignments from Auth0:</p>
+<ol type="1">
+<li><p><a href="https://auth0.com/docs/manage-users/access-control/configure-core-rbac/rbac-users/assign-roles-to-users" target="_blank">Configure user-role assignments</a> for the application in Auth0.</p></li>
+<li>
+<p>Create the roles to map onto in Xperience and define their permissions.</p>
+<ul>
+<li>
+<p>The role <strong>Code name</strong> must match the <strong>Name</strong> of the corresponding role in Auth0. For example, for an Auth0 role with the following properties:</p>
+<ul>
+<li>Name: Acme.ContentEditors</li>
+<li>Description: Members of the content editing team for our Xperience projects.the Xperience application must contain a role with the <em>Acme.ContentEditors</em> code name. Otherwise, the role assignment will not be synchronized.</li>
+</ul>
+</li>
+<li><p>See <a href="/documentation/developers-and-admins/configuration/users/role-management">Role management</a> to learn how to create roles and assign permissions in the system.</p></li>
+</ul>
+</li>
+<li><p>Configure user data synchronization frequency to either <code>FirstLogin</code> or <code>Always</code>, depending on your requirements, to ensure role assignments are propagated to Xperience. See <a href="#user-data-synchronization-frequency">User data synchronization frequency</a>.</p></li>
+<li>
+<p>Add the <code>groups</code> scope to your Auth0 configuration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ authBuilder.AddOpenIdConnect("OpenIdConnect", options =&gt;
+ {
+     // Authorization server URL
+     options.Authority = "https://&lt;auhority&gt;.auth0.com";
+     options.ClientId = "";
+     options.ClientSecret = "";
+     options.ClaimsIssuer = "Auth0";
+     options.CallbackPath = new PathString("/admin-oidc");
+
+     // Requests email claims to be included in ID tokens received by the application
+     // Required to synchronize user email addresses
+     options.Scope.Add("email");
+
+     // Requests role claims to be included in ID tokens received by the application
+     options.Scope.Add("groups");
+
+     options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+     options.SignInScheme = AdminIdentityConstants.EXTERNAL_SCHEME;
+ }), 
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Now, when a user signs in, the system maps their Auth0 roles assignments to roles defined in Xperience. </p>
+<h4 id="grant-the-administrator-role-via-auth0">Grant the Administrator role via Auth0</h4>
+<p>The <em>Administrator</em> role is a default system role that cannot be modified or deleted. The system requires at least one user with this role assigned to exist in the system at all times. If you need to ensure the role can be granted to users via Auth0 (for example, if you wish to discontinue the default <em>administrator</em> account):</p>
+<ol type="1">
+<li>Create a new Auth0 role with the following properties:
+<ol type="1">
+<li>
+<strong>Name</strong>: Administrator</li>
+<li>
+<strong>Description</strong>: Role granting the highest privilege for the Xperience administration interface</li>
+</ol>
+</li>
+<li>Add the desired users to the role.
+<ul>
+<li>If you are making this change after Auth0 has already been set up (and users may, as a result, already have accounts in Xperience), make sure to change the <a href="#user-data-synchronization-frequency">user data synchronization frequency</a> to <code>Always</code> to ensure the role is granted to users the next time they sign in.</li>
+</ul>
+</li>
+</ol>
+<p>You can now grant the administrator role via Auth0.</p>
+<h3 id="security-considerations-1">Security considerations</h3>
+<p>See <a href="#general-security-considerations">General security considerations</a> for an overview of recommended security practices related to external authentication provider configuration and management.</p>
+<p>For security practices related to Auth0 specifically, refer to the official provider documentation, such as <a href="https://auth0.com/docs/troubleshoot/general-usage-and-operations-best-practices" target="_blank">General usage and operations best practices</a>.</p>
+<h2 id="okta">Okta</h2>
+<p><a href="https://www.okta.com/" target="_blank">Okta</a> is a cloud-based identity and access management platform that provides a secure way for organizations to manage and authenticate users for their applications and services. It offers a range of features, including single sign-on, multi-factor authentication, user provisioning, API access management, and more.</p>
+<p>You can configure Xperience to use Okta with the <a href="https://openid.net/connect/" target="_blank">OpenID Connect (OIDC)</a> protocol for SSO purposes. First, register your application in Okta:</p>
+<ol type="1">
+<li>Open the <a href="https://www.okta.com/login/" target="_blank">Okta dashboard</a>.</li>
+<li>
+<a href="https://help.okta.com/oie/en-us/Content/Topics/Apps/apps-overview-add-apps.htm" target="_blank">Add an app integration</a> with the following configuration:
+<ol type="1">
+<li>Sign-in method: OpenID Connect (OIDC)</li>
+<li>Application type: Web Application</li>
+<li>Grant type – select the following:
+<ol type="1">
+<li>Authorization code</li>
+<li>Implicit (hybrid)</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<a href="https://developer.okta.com/docs/guides/sign-into-web-app-redirect/asp-net-core-3/main/" target="_blank">Add a sign-in redirect URI</a> that specifies where Okta redirects users after successful authentication.
+<ul>
+<li>This is the URL that Okta sends information to when a user signs in. This route is called a callback route or redirect URI. The callback route isn’t seen by the user, and it’s not the user’s final destination. It’s just one step in the authentication redirect flow. The redirect URI must be a free route in the application. For example: <code>https://&lt;domain&gt;/admin-oidc</code>
+</li>
+</ul>
+</li>
+</ol>
+<p>The application is registered and configured in Okta. Now, you need to connect your Xperience application to the Okta application registration:</p>
+<ol type="1">
+<li><p>Install the <strong>Microsoft.Identity.Web</strong> NuGet package to your project.</p></li>
+<li>
+<p>Edit the <strong>Program.cs</strong> application configuration class and add the following:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Okta configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using System.Security.Claims;
+
+ using Microsoft.AspNetCore.Authentication.Cookies;
+ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+ using Microsoft.AspNetCore.Builder;
+ using Microsoft.AspNetCore.Http;
+ using Microsoft.Identity.Web;
+
+ using Kentico.Membership;
+
+ ...
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ ...    
+
+ builder.Services.AddAdminExternalAuthenticationProvider(authBuilder =&gt;
+     authBuilder.AddOpenIdConnect(options =&gt;
+     {
+         options.Authority = "https://&lt;authority&gt;.okta.com";
+         // The client identifier assigned to your Auth0 application
+         options.ClientId = "&lt;client identifier&gt;";
+         // The secret generated for your Auth0 application
+         options.ClientSecret = "&lt;client secret&gt;";
+         options.ClaimsIssuer = "Okta";
+         options.CallbackPath = new PathString("/admin-oidc");
+
+         // Requests email claims to be included in ID tokens received by the application
+         // Required to synchronize user email addresses
+         options.Scope.Add("email");
+
+         options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+         options.SignInScheme = AdminIdentityConstants.EXTERNAL_SCHEME;
+     }),
+     options =&gt;
+     {
+         options.AuthenticateScheme = OpenIdConnectDefaults.AuthenticationScheme;
+     }
+ );
+
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Storing application secrets</strong></p>
+<p>We do not recommend storing application secrets (<code>ClientSecret</code> property) directly in code or application configuration files (e.g., <em>appsettings.json</em>). See <a href="#securely-store-application-secrets">Securely store application secrets</a> for recommendations.</p>
+</div>
+</li>
+</ol>
+<p>The Xperience application is now set up to use Okta. If you run the application and navigate to the admin UI sign-in page, the external provider is now the only available sign-in method.</p>
+<p></p>
+<p>Selecting <strong>Sign in</strong> redirects users to the Okta authorization server, where they can authenticate using their existing credentials. If you wish to maintain the default forms authentication in parallel with external authentication, see <a href="#sign-in-page-behavior">Sign-in page behavior</a>.  </p>
+<p>When a user signs in for the first time, a corresponding user object is created in the system, and the application maps claims from the received ID token to the corresponding properties of the user object (First name, Last name, Username, and Email). The system is, by default, configured to only run this mapping once when the user first signs in and the object that represents them is created. To change the synchronization frequency for this data, see <a href="#user-data-synchronization-frequency">User data synchronization frequency</a>.</p>
+<p>Additionally, newly created users don’t have assigned <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a> and therefore lack the permissions to access and work with applications in the admin UI. To manage role assignments for Okta users, you have the following options:</p>
+<ul>
+<li>
+<a href="#AdministrationExternalauthentication-OktaRoles">Synchronize role assignments</a> from Okta to Xperience</li>
+<li>Manually assign roles to Okta users (for example, using existing accounts or via <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">event handlers</a>)</li>
+</ul>
+<h3 id="synchronize-roles-2"> Synchronize roles</h3>
+<p>Xperience supports the synchronization of role assignments from Okta. However, only assignments to roles that already exist in the system are synchronized. The system doesn’t automatically create new roles based on data received from Okta. </p>
+<p>To enable the synchronization of role assignments from Okta, first prepare your Xperience instance:</p>
+<ol type="1">
+<li>
+<p>Create the roles to map onto in Xperience and define their permissions.</p>
+<ul>
+<li>See <a href="/documentation/developers-and-admins/configuration/users/role-management">Role management</a> to learn how to create roles and assign permissions in the system.</li>
+<li>Note the <strong>code name</strong> of each created role. You will need to use it in Okta.</li>
+</ul>
+</li>
+<li><p>Map <a href="#claims-mapping-and-transformations">role claims</a> by adding the following line to the external provider registration in <strong>Program.cs</strong>: <code>options.RoleClaimName = "XperienceAdminRoles"</code></p></li>
+<li>
+<p>Configure user data synchronization frequency to either <code>FirstLogin</code> or <code>Always</code>, to ensure role assignments are propagated to Xperience. See <a href="#user-data-synchronization-frequency">User data synchronization frequency</a> for details.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Map role claims and set synchronization frequency</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ builder.Services.AddAdminExternalAuthenticationProvider(authBuilder =&gt;
+     authBuilder.AddOpenIdConnect(options =&gt;
+     {
+         // Okta configuration
+     }),
+     // Configures Xperience behavior with relation to the external authentication provider
+     options =&gt;
+     {
+         // Specifies that role claims are available under 'XperienceAdminRoles'
+         options.RoleClaimName = "XperienceAdminRoles"; 
+
+         // Xperience synchronizes the user account with data from the external provider every time a user signs in
+         options.UserSynchronizationFrequency = UserSynchronizationFrequency.Always;
+     }
+ );
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Next, switch to Okta and prepare the Xperience application registration for role synchronization:</p>
+<ol type="1">
+<li>Add a a new custom attribute to your Xperience application’s user profile. You will later populate this attribute with the collection of roles that you want users assigned to a particular Okta group to have in Xperience:
+<ol type="1">
+<li>From the Okta dashboard, go to <strong>Directory</strong> → <strong>Profile editor</strong> and edit the user profile belonging to your Xperience application registration.</li>
+<li>
+<a href="https://help.okta.com/en-us/Content/Topics/users-groups-profiles/usgp-add-custom-user-attributes.htm" target="_blank">Add a user profile attribute</a> with the following properties:
+<ol type="1">
+<li>
+<strong>Data type</strong>: string array</li>
+<li>
+<strong>Display name</strong>: XperienceAdminRoles – the display name must match the claim name mapped to <code>RoleClaimName</code> in <strong>Program.cs</strong>
+</li>
+<li>
+<strong>Mutability</strong>: READ_WRITE</li>
+<li>
+<strong>Group Priority</strong>: Combine values across groups</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<a href="https://help.okta.com/en-us/Content/Topics/users-groups-profiles/usgp-assign-group-people.htm" target="_blank">Add users to groups</a> in Okta.</li>
+<li>Open the Xperience application registration in Okta, switch to the <strong>Assignments</strong> tab, and under <strong>Filters</strong> select <strong>Groups</strong>.
+<ol type="1">
+<li>Edit (blue pencil icon) each group and add the <strong>code names</strong> of roles you want members of the group to have in Xperience using the custom <em>XperienceAdminRoles</em> attribute. </li>
+<li>When users sign-in via Okta, Xperience assigns the set of roles specified for their group. See the following diagram for an example scenario: </li>
+</ol>
+</li>
+</ol>
+<p>When users sign in, the system maps their Okta roles assignments to roles defined in Xperience. </p>
+<h4 id="grant-the-administrator-role-via-okta">Grant the Administrator role via Okta</h4>
+<p>The <em>Administrator</em> role is a default system role that cannot be modified or deleted. The system requires at least one user with this role assigned to exist in the system at all times. If you need to ensure the role can be granted to users via Okta (for example, if you wish to discontinue the default <em>administrator</em> account):</p>
+<ol type="1">
+<li>Open the Xperience application registration in Okta, switch to the <strong>Assignments</strong> tab, and under <strong>Filters</strong> select <strong>Groups</strong>.</li>
+<li>Edit (blue pencil icon) a group and add <strong>Administrator</strong> to the <em>XperienceAdminRoles</em> attribute.
+<ul>
+<li>If you are making this change after Okta has already been set up (and users may, as a result, already have accounts in Xperience), make sure to have <a href="#user-data-synchronization-frequency">user data synchronization frequency</a> set to <code>Always</code> to ensure the role is granted the next time users sign in.</li>
+</ul>
+</li>
+</ol>
+<p>All users from the modified group now have administrator privileges when they sign in.</p>
+<h3 id="security-considerations-2">Security considerations</h3>
+<p>See <a href="#general-security-considerations">General security considerations</a> for an overview of recommended security practices related to external authentication provider configuration and management.</p>
+<h2 id="user-data-synchronization-frequency">User data synchronization frequency</h2>
+<p>The system allows you to configure the rate at which user information is synchronized with the external authentication provider. By default, user data is only taken when a user first signs in and their user account is created. However, this behavior can be changed via the <code>UserSynchronizationFrequency</code> option configurable within the <code>AddAdminExternalAuthenticationProvider</code> method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddAdminExternalAuthenticationProvider(
+    builder =&gt; builder.AddMicrosoftIdentityWebApp(options =&gt;
+    {
+        // External authentication provider configuration (Entra ID in this example)
+    }), 
+    // Configures Xperience behavior with relation to the external authentication provider
+    options =&gt;
+    {       
+        // Xperience synchronizes the user account with data from the external provider every time a user signs in
+        options.UserSynchronizationFrequency = UserSynchronizationFrequency.Always;
+    }
+);
+
+</code></pre>
+</div>
+
+<p>The following synchronization options are available:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Frequency</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>Never</code></p>
+</td>
+<td>
+<p>Default behavior. Uses received user data to create an account for users signing in for the first time and never updates the information again. Does not synchronize role assignments.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>FirstLogin</code></p>
+</td>
+<td>
+<p>Uses received user data to create an account for users signing in for the first time and never updates the information again. Synchronizes role assignments once during account creation.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>Always</code></p>
+</td>
+<td>
+<p>Uses received user data to create an account for users signing in for the first time. Synchronizes user data and role assignments every time a user signs in. </p>
+</td>
+</tr>
+</table>
+
+<p>Xperience synchronizes the following user data from the external provider:</p>
+<ul>
+<li>First name</li>
+<li>Last name</li>
+<li>Email</li>
+<li>Username</li>
+<li>Roles – only when synchronization is set to <code>FirstLogin</code> or <code>Always</code>.</li>
+</ul>
+<p>What data is synchronized to each property can be changed via <code>AdminExternalAuthenticationProviderOptions</code>. See <a href="#claims-mapping-and-transformations">Claims mapping and transformations</a>.</p>
+<h2 id="user-account-invalidation-or-lockout">User account invalidation or lockout</h2>
+<p>If you wish to prevent a user from accessing the Xperience admin UI or completely delete their account:</p>
+<ol type="1">
+<li>In your identity provider, remove the user from the role or group assigned to the Xperience application registration (or restrict their account in some other way as permitted by the provider)</li>
+<li>In the Xperience admin UI, open the <strong>Users</strong> application and <strong>Disable</strong> (via  → <em>Disable</em>) or <strong>Delete</strong> () the user’s account.</li>
+</ol>
+<p>The user is now prevented from accessing the admin UI.</p>
+<h2 id="claims-mapping-and-transformations">Claims mapping and transformations</h2>
+<p><a href="https://developer.okta.com/blog/2017/07/25/oidc-primer-part-1#key-concepts-scopes-claims-and-response-types" target="_blank">Claims</a> are key-value pairs that contain verified information about a user. In the OIDC authentication flow, claims are sent by the identity provider within ID Tokens. Generally, these tokens are processed by the application and the information mapped to some internal representation of a user. In Xperience, this is the <code>UserInfo</code> object.</p>
+<p>To facilitate working with claims, use the <code>ClaimTypes</code> class that provides the most common OIDC-compliant claim key identifiers in an easily accessible format. For example, <code>ClaimTypes.Email</code> resolves to the name of a key under which the user’s email should be stored in the ID token received by the application.</p>
+<p>By default, Xperience uses the following mapping for the admin UI user object, defined via <code>AdminExternalAuthenticationProviderOptions</code>:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>UserInfo property</p>
+</td>
+<td>
+<p>Options property</p>
+</td>
+<td>
+<p>Claim key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Username</p>
+</td>
+<td>
+<p>UserNameClaimName</p>
+</td>
+<td>
+<p>“preferred_username”</p>
+</td>
+<td>
+<p>The username is used to identify external user accounts and must be unique within the system.</p>
+<p>If this claim is not present in the information returned from the identity provider, the system cannot create the corresponding user account and logs an exception. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>FirstName</p>
+</td>
+<td>
+<p>FirstNameClaimName</p>
+</td>
+<td>
+<p>ClaimTypes.GivenName</p>
+</td>
+<td>
+<p>The first (given) name. If this claim is not present in the information returned from the identity provider, the property remains empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LastName</p>
+</td>
+<td>
+<p>LastNameClaimName</p>
+</td>
+<td>
+<p>ClaimTypes.Surname</p>
+</td>
+<td>
+<p>The family name. If this claim is not present in the information returned from the identity provider, the property remains empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email</p>
+</td>
+<td>
+<p>EmailClaimName</p>
+</td>
+<td>
+<p>ClaimTypes.Email</p>
+</td>
+<td>
+<p>The user’s email. If this claim is not present in the information returned from the identity provider, the property remains empty.</p>
+</td>
+</tr>
+</table>
+
+<p>Role claims are mapped to the <code>UserRoleInfo</code> <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">binding</a> <a href="/documentation/developers-and-admins/customization/object-types">object type</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Options property</p>
+</td>
+<td>
+<p>Claim key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>RoleClaimName</p>
+</td>
+<td>
+<p>ClaimTypes.Roles</p>
+</td>
+<td>
+<p>Contains roles assigned to the user via the external provider. The values must match the code names of roles already present in the target Xperience instance. </p>
+</td>
+</tr>
+</table>
+
+<p>If the external provider does not send a property under one these known claims, or you want to map a custom claim to one of the properties, you can modify the default mapping via <code>AdminExternalAuthenticationProviderOptions</code> within the identity provider registration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddAdminExternalAuthenticationProvider(
+    builder =&gt; builder.AddMicrosoftIdentityWebApp(options =&gt;
+    {
+        // External authentication provider configuration (Entra ID in this example)
+    }), 
+    // Configures Xperience behavior with relation to the external authentication provider
+    options =&gt;
+    {       
+        // Maps a different claim to the user name
+        options.UserNameClaimName = "my_custom_claim";
+    }
+);
+
+</code></pre>
+</div>
+
+<p>Mapping claims to other default or custom properties of the user object is <strong>not supported</strong>.</p>
+<p>Additionally, you may wish to implement <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authentication/claims#extend-or-add-custom-claims-using-iclaimstransformation" target="_blank">claims transformations</a> to leverage existing claims. Claims transformation is the process of modifying or adding to the claims within an identity token, before it is passed to the application for processing.</p>
+<p>This process can be used to add additional information to a user’s identity token, to change the format of the claims, or to filter out unnecessary claims. For example, you can modify role assignments from your implemented identity provider to have them match roles already present in Xperience. In other words, you can reuse existing assignments and save yourself the effort of setting up user groups specifically for Xperience.</p>
+<p>See the following example for illustration. The code extends the set of a user’s claims with an additional claim for the <em>Administrator</em> role based on whether the user is in the <em>Acme.Administrator</em> role:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
+
+using Kentico.Membership;
+
+public class MyClaimsTransformation : IClaimsTransformation
+{
+    private readonly IOptions&lt;AdminExternalAuthenticationProviderOptions&gt; externalProviderOptions;
+
+    public MyClaimsTransformation(IOptions&lt;AdminExternalAuthenticationProviderOptions&gt; externalProviderOptions)
+    {
+        this.externalProviderOptions = externalProviderOptions;
+    }
+
+    public Task&lt;ClaimsPrincipal&gt; TransformAsync(ClaimsPrincipal principal)
+    {
+        ClaimsIdentity claimsIdentity = new ClaimsIdentity();
+
+        // Gets the roles claim key as configured for the application
+        var claimType = externalProviderOptions.Value.RoleClaimName;
+
+        // Adds the 'Administrator' role claim to users with the 'Acme.Administrator' claim
+        if (principal.HasClaim(claim =&gt; (claim.Type == claimType) &amp;&amp; (claim.Value == "Acme.Administrator")))
+        {
+            claimsIdentity.AddClaim(new Claim(claimType, "Administrator"));
+        }
+
+        principal.AddIdentity(claimsIdentity);
+        return Task.FromResult(principal);
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Register the transformation to the application’s <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">IoC container</a>. All registered transformations are applied automatically at runtime:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddTransient&lt;IClaimsTransformation, MyClaimsTransformation&gt;();
+
+</code></pre>
+</div>
+
+<h2 id="sign-in-page-behavior">Sign-in page behavior</h2>
+<p>The sign-in page into the Xperience admin UI by default only offers authentication via an external provider, if one is registered via <code>AddAdminExternalAuthenticationProvider</code>. The default forms authentication sign-in method is completely hidden. If you wish to change this behavior, you can do so via the <code>AdminAuthenticationMode</code> enum. The following options are available:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Mode</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>PrioritizeExternal</p>
+</td>
+<td>
+<p>If the application detects an external authentication provider registration for the administration interface, the administration sign-in page shows the external provider as the only available authentication option. If no external provider is registered, the sign-in page offers the default forms authentication instead.</p>
+<p>Additionally, when <em>PrioritizeExternal</em> is set and an identity provider is registered for your application, you cannot directly invite new users via the <strong>Users</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MaintainForms</p>
+</td>
+<td>
+<p>If the application detects an external authentication provider registration for the administration interface, the administration sign-in page shows the external provider authentication in addition to the default forms authentication option. This allows you to have both sign-in options available. If no external provider is registered, the sign-in page offers the default forms authentication instead. </p>
+</td>
+</tr>
+</table>
+
+<p>To change the behavior, use the <code>AdminIdentityOptions</code> object.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Sign-in page behavior configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+using Kentico.Membership;
+
+var builder = WebApplication.CreateBuilder(args);
+
+...
+
+builder.Services.Configure&lt;AdminIdentityOptions&gt;(options =&gt;
+{
+    options.AuthenticationOptions.Mode = AdminAuthenticationMode.MaintainForms;
+});
+
+</code></pre>
+</div>
+
+<h2 id="general-security-considerations">General security considerations</h2>
+<p>When configuring external authentication for your projects, keep in mind the following practices and recommendations.</p>
+
+<div>
+
+</div>
+<section id="use-https">
+<h3>Use HTTPS</h3>
+<p>Always communicate with the external provider using <strong>HTTPS</strong> to reduce the probability of a third-party obtaining unencrypted sensitive information about your application and users. This generally applies when configuring callback/redirect URIs as well as additional features such as sign-out redirects for your application on the provider’s end.</p>
+</section>
+
+
+<div>
+
+</div>
+<section id="configure-two-factor-authentication-in-your-external-provider">
+<h3>Configure two-factor authentication in your external provider</h3>
+<p>Two-factor authentication (2FA) is an additional layer of security that provides an extra level of protection beyond just a password. The benefits of 2FA include:</p>
+<ol type="1">
+<li>Increased security: By requiring a second form of authentication, 2FA makes it much more difficult for hackers to gain access to an account. Even if a hacker obtains a user’s password, they would still need to have access to the second factor, such as a security token, in order to gain access. This reduces the risk of account takeover and helps protect against phishing and other types of attacks.</li>
+<li>Compliance: In some cases, two-factor authentication is required by regulatory compliance, such as payment card industry (PCI) and healthcare industries.</li>
+<li>Cost-effectiveness: Two-factor authentication can be relatively inexpensive to implement and maintain. 2FA solutions can be set up without significant infrastructure changes or the need for specialized hardware.</li>
+</ol>
+</section>
+
+
+<div>
+
+</div>
+<section id="use-a-separate-application-registration-per-physical-application">
+<h3>Use a separate application registration per physical application</h3>
+<p>Always make sure to register and configure a new application in your provider’s dashboard for each separate project you plan to integrate with an external provider. This approach provides the following benefits:</p>
+<ol type="1">
+<li>Isolation of access: You allow for more granular control over access to each application. For example, if a client secret for one application is compromised, it would not affect the other applications.</li>
+<li>Least Privilege: You can assign only the minimal set of permission that each application requires and therefore reduce the risk of privilege escalation.</li>
+<li>Auditing and tracking: It is easier to track and audit access to each application. This can help identify and investigate suspicious activity.</li>
+<li>Easy Revocation: It is easier to revoke or modify the access of one application while keeping the access of other applications intact.</li>
+</ol>
+</section>
+
+
+<div>
+
+</div>
+<section id="use-hybrid-authentication-flow-when-possible">
+<h3>Use hybrid authentication flow when possible</h3>
+<p>Most providers offer two OIDC-compliant authentication flows: <em>hybrid</em> and <em>implicit</em>.</p>
+<p>The hybrid authentication flow exposes less sensitive information to the client, preferring to exchange important information over the back-end (machine-to-machine). This method is generally more secure, because sensitive user data never touches the client and cannot be accessed by malicious code that potentially be running there.</p>
+<p>On the other hand, the implicit flow returns an access token directly to the client, without the need for an authorization code. The access token is passed in the browser’s redirect URI and is therefore less secure than the hybrid flow since the access token is exposed to the browser. This flow is unavoidable when building applications without a back-end component (such as SPAs).</p>
+<p>When configuring external authentication for the Xperience admin UI, always prefer the hybrid flow (the server back-end is always available).</p>
+</section>
+
+<p>For more specific security practices consult the documentation of your chosen authentication provider.</p>
+<h2 id="securely-store-application-secrets">Securely store application secrets</h2>
+<p>As a general security best practice, it is not recommended to store application secrets directly in code or application settings. Instead, consider using the following alternatives.</p>
+<h3 id="during-development">During development</h3>
+<p>When implementing and testing external authentication locally, use the <a href="https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets" target="_blank">Secrets Manager</a> utility provided by <code>dotnet</code>. The utility abstracts key management and storage. However, note that keys stored using the manager are not encrypted – use this approach only for local development.</p>
+
+<div>
+<div>
+<div>
+<span>PS</span>
+</div>
+<strong>Store a secret</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+cd "C:\my\xperience\WebApp\"
+
+# Initialize the Secrets Manager
+dotnet user-secrets init
+
+# Stores a secret for local development
+dotnet user-secrets set "Project:ExternalAuthProvider" "12345"
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Read a stored secret</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = WebApplication.CreateBuilder(args);
+...
+// Reads the secret and stores it in a variable
+var externalAuthApiKey = builder.Configuration["Project:ExternalAuthProvider"];
+
+</code></pre>
+</div>
+
+<h3 id="on-production">On production</h3>
+<p>For projects in production, consider the following options:</p>
+<h4 id="sites-hosted-on-microsoft-azure">Sites hosted on Microsoft Azure</h4>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration#secret-storage-in-the-production-environment-with-azure-key-vault" target="_blank">Azure KeyVault</a></li>
+</ul>
+<h4 id="private-cloud-hosting">Private cloud hosting</h4>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/standard/security/how-to-use-data-protection" target="_blank">DataProtection API</a></li>
+<li><a href="https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration#use-application-id-and-x509-certificate-for-non-azure-hosted-apps" target="_blank">Azure KeyVault</a></li>
+</ul>
+
+</body>
+</html>

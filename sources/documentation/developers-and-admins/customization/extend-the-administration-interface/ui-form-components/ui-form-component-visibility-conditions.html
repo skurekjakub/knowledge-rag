@@ -1,0 +1,772 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI form component visibility conditions</title>
+</head>
+<body>
+<p>Visibility conditions allow you to dynamically hide or display fields in editing forms within the Xperience administration UI. These conditions can be used for:</p>
+<ul>
+<li>Fields of <a href="/documentation/developers-and-admins/development/content-types">content types</a> or <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>. In this case, visibility conditions are configured via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a> UI.</li>
+<li>Inputs in model-based forms, which are used to configure admin UI, <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a>, and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components. In this case, visibility conditions are assigned directly to the configuration properties via C# attribute notation (each property represents a field in the corresponding configuration dialog).</li>
+</ul>
+<p>A visibility condition consists of logic that evaluates whether a given field is displayed – implemented in the condition’s <code>Evaluate</code> method – and, optionally, a set of configuration properties.</p>
+<h2 id="define-visibility-conditions">Define visibility conditions</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Visibility condition namespaces</strong></p>
+<p>Unless specified otherwise, all classes and members mentioned in this section can be found in the following namespaces:</p>
+<ul>
+<li><code>Kentico.Xperience.Admin.Base.Forms</code></li>
+<li><code>Kentico.Xperience.Admin.Base.FormAnnotations</code></li>
+</ul>
+<p>Do <strong>not</strong> use API from the <em>Kentico.Forms.Web.Mvc</em> namespace, which contains some classes with matching names (e.g., <code>VisibilityCondition</code>, <code>RegisterFormVisibilityCondition</code>).</p>
+</div>
+
+<p>Visibility conditions are defined and evaluated on the application’s back end (the ASP.NET Core project). Their architecture is summarized by the following diagram:</p>
+<p></p>
+<p>The visibility of an input is determined using:</p>
+<ul>
+<li>contextual information from the system (e.g., about the current user)</li>
+<li>other inputs in the form</li>
+<li>completely custom logic</li>
+</ul>
+<p>With this in mind, visibility conditions can be classified into two categories:</p>
+<ul>
+<li>
+<a href="#visibility-conditions-without-field-dependencies">Conditions without field dependencies</a> – determine visibility based solely on external or contextual information and custom logic.</li>
+<li>
+<a href="#visibility-conditions-with-field-dependencies">Conditions with field dependencies</a> – use other fields in the form to determine visibility.</li>
+</ul>
+<h3 id="visibility-conditions-without-field-dependencies">Visibility conditions without field dependencies</h3>
+<p>This type of visibility condition determines field visibility using information external to the form itself (e.g., information about the current user). </p>
+<p>Visibility conditions must inherit from the <code>VisibilityCondition</code> base class, and implement the <code>Evaluate</code> method. The method must return either <code>true</code> – indicating that the field is visible, or <code>false</code> – indicating that the field is hidden.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Visibility condition main class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyVisibilityCondition : VisibilityCondition
+{
+    public override bool Evaluate(IFormFieldValueProvider formFieldValueProvider)
+    {
+        // Visibility evaluation
+    }
+}
+</code></pre>
+</div>
+
+<p>Visibility conditions can have configuration properties that modify how the condition is evaluated (e.g., a “case sensitive” property for a condition that evaluates a text value). In this case, the condition class must inherit from the <code>VisibilityCondition&lt;TProperties&gt;</code> base class, where <code>TProperties</code> holds the configuration properties. This properties class must inherit from <code>VisibilityConditionProperties</code>.</p>
+<p>Conditions intended for <a href="#register-visibility-conditions-into-the-field-editor">use in the field editor</a> must have an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> assigned to properties in the <code>VisibilityConditionProperties</code> class. The editing components provide the editing UI for configuration properties in the field editor.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Visibility condition main class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyVisibilityCondition : VisibilityCondition&lt;MyVisibilityConditionProperties&gt;
+{
+    public override bool Evaluate(IFormFieldValueProvider formFieldValueProvider)
+    {
+        // Visibility evaluation
+
+        // The condition's properties can be accessed via 'VisibilityCondition&lt;TProperties&gt;.Properties'
+        string value = Properties.StringProperty;
+    }
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Visibility condition properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class MyVisibilityConditionProperties : VisibilityConditionProperties
+{
+    // Properties required for the functionality of the condition
+    
+    // Assign editing components to allow configuration of the properties in the field editor UI
+
+    [NumberInputComponent(Label = "Number", Order = 1)]
+    public int IntProperty { get; set; }
+
+    [TextInputComponent(Label = "Text", Order = 2)]
+    public string StringProperty { get; set; }
+}
+</code></pre>
+</div>
+
+<p>To make the condition usable, you need to do at least one of the following:</p>
+<ul>
+<li>
+<a href="#register-visibility-conditions-into-the-field-editor">Register the condition</a> to make it available in the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</li>
+<li>Create a corresponding attribute class, which can be used to <a href="#assign-visibility-conditions-using-attributes">assign the condition to properties in model-based forms</a>.</li>
+</ul>
+<h3 id="visibility-conditions-with-field-dependencies">Visibility conditions with field dependencies</h3>
+<p>This type of condition uses inputs from other fields in the form to determine a field’s visibility. </p>
+<p>To implement a visibility condition with field dependencies:</p>
+<ol type="1">
+<li><a href="#visibility-conditions-without-field-dependencies">Create a regular visibility condition</a></li>
+<li><a href="#add-support-for-field-dependencies">Add support for field dependencies</a></li>
+<li><a href="#access-field-values">Access field values when evaluating visibility</a></li>
+<li>Enable the condition for:
+<ul>
+<li><a href="#register-visibility-conditions-into-the-field-editor">the field editor</a></li>
+<li><a href="#assign-visibility-conditions-using-attributes">model-based forms</a></li>
+</ul>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Visibility condition performance</strong></p>
+<p>Consider the performance impact of your code when implementing the evaluation logic for visibility conditions with field dependencies. Such conditions are re-evaluated upon every change in the value of the linked fields.</p>
+</div>
+
+<h4 id="add-support-for-field-dependencies">Add support for field dependencies</h4>
+<p>Conditions with dependencies need to locally store the names of the fields or model-based form properties on which they depend. The system uses this information to mark fields on which at least one visibility condition depends. A change in a marked field’s input triggers a re-evaluation of all related visibility conditions.</p>
+<p>For this purpose, the <code>VisibilityCondition&lt;TProperties&gt;</code> base class contains the virtual <code>DependsOnFields</code> property, which holds the collection of field names as <code>IEnumerable&lt;string&gt;</code>. This property needs to be overridden in the class implementing the visibility condition and assigned a collection of field names on which the visibility evaluation depends. When <a href="#assign-visibility-conditions-using-attributes">assigning the visibility condition using an attribute</a>, the field names must be provided via configuration properties.</p>
+<p>The Xperience API provides native support for conditions that depend on <strong>one</strong> other field via the following classes:</p>
+<ul>
+<li>
+<p><code>VisibilityConditionWithDependencyProperties</code> – visibility condition properties class with one predefined property – <code>PropertyName</code>. The property holds the name of the field on which the visibility evaluation depends. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - VisibilityConditionWithDependencyProperties usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  using Kentico.Xperience.Admin.Base.Forms;
+
+  public class MyVisibilityConditionProperties : VisibilityConditionWithDependencyProperties {
+      // Additional configuration properties for 'MyVisibilityCondition'
+  }
+
+  // The implementation of the 'VisibilityConditionWithDependencyProperties' class from the Xperience API
+  public class VisibilityConditionWithDependencyProperties : VisibilityConditionProperties
+  {
+      public string PropertyName { get; set; }
+  }
+  </code></pre>
+</div>
+</li>
+<li>
+<p><code>VisibilityConditionWithDependency&lt;TProperties&gt;</code> – extends the <code>VisibilityCondition&lt;TProperties&gt;</code> class with support for conditions that depend on a single other field. Intended to be used together with <code>VisibilityConditionWithDependencyProperties</code>. Ensures <code>DependsOnFields</code> is populated with the name of the dependency provided via <code>VisibilityConditionWithDependencyProperties.PropertyName</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - VisibilityConditionWithDependency usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  using Kentico.Xperience.Admin.Base.Forms;
+
+  public class MyVisibilityCondition : VisibilityConditionWithDependency&lt;MyVisibilityConditionProperties&gt;
+  {
+  }
+
+  // The implementation of the 'VisibilityConditionWithDependency&lt;TProperties&gt;' class from the Xperience API
+  public abstract class VisibilityConditionWithDependency&lt;TProperties&gt; : VisibilityCondition&lt;TProperties&gt;
+          where TProperties : VisibilityConditionWithDependencyProperties, new()
+  {
+       // Assigns the name of the property on which the condition depends to the collection
+       public override IEnumerable&lt;string&gt; DependsOnFields =&gt; Enumerable.Repeat(Properties.PropertyName, 1);
+  }
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>You can extend this approach if you need to write conditions that depend on multiple other fields – override the <code>DependsOnFields</code> property in your visibility condition class, and add the names of the given fields to the collection.</p>
+<h4 id="access-field-values">Access field values</h4>
+<p>Visibility conditions can only depend on fields that precede the currently evaluated field in the given form. For example, if a form comprises inputs <strong>A</strong>, <strong>B</strong>, <strong>C</strong> a visibility condition assigned to <strong>C</strong> can only depend on fields <strong>A</strong> and <strong>B</strong>. Note that the field order in the resulting form can be influenced by the <code>Order</code> property specified when assigning <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a>.</p>
+<p>To work with the values of fields on which the condition depends, the <code>Evaluate</code> method provides an instance of <code>IFormFieldValueProvider</code>. The provider enables access to the values of all preceding form field inputs. For example, if a form comprises inputs <strong>A</strong>, <strong>B</strong>, <strong>C</strong> and visibility is currently being evaluated on <strong>C</strong>, <code>IFormFieldValueProvider</code> can be used to access the values of <strong>A</strong> and <strong>B</strong>.</p>
+<p>To get field values, use:</p>
+<ul>
+<li>
+<code>TryGet&lt;TType&gt;(string fieldName, out var fieldValue)</code> – returns the value of the given field as <code>TType</code>
+</li>
+</ul>
+<p>where <code>fieldName</code> is the name of the dependency from which to retrieve the value (provided via a configuration property – e.g., <code>VisibilityConditionWithDependencyProperties.PropertyName</code>).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - VisibilityConditionWithDependency usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyVisibilityCondition : VisibilityConditionWithDependency&lt;MyVisibilityConditionProperties&gt;
+{
+    public override bool Evaluate(IFormFieldValueProvider formFieldValueProvider)
+    {
+        // Gets the value of the field as object
+        formFieldValueProvider.TryGet&lt;string&gt;(Properties.PropertyName, out var fieldValue);
+
+        // Use the value in visibility evaluation...
+    }
+}
+
+public class MyVisibilityConditionProperties : VisibilityConditionWithDependencyProperties
+{
+    // Additional configuration properties for 'MyVisibilityCondition'
+}
+</code></pre>
+</div>
+
+<h2 id="register-visibility-conditions-into-the-field-editor">Register visibility conditions into the field editor</h2>
+<p>Use the <code>RegisterFormVisibilityCondition</code> assembly attribute to register visibility conditions. Registration is required for the condition to be available in the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>. When registering a condition, specify the following parameters:</p>
+<ul>
+<li>
+<strong>Identifier</strong> – a unique <code>string</code> identifier of the visibility condition.
+<ul>
+<li>We recommend using a unique prefix in your identifiers to prevent conflicts when deploying components to other projects. For example, use prefixes matching your company’s name.</li>
+<li>You can store the identifier within a constant in the visibility condition class.</li>
+</ul>
+</li>
+<li>
+<strong>ConditionType</strong> – the <em>System.Type</em> of the visibility condition class.</li>
+<li>
+<strong>Name</strong> – sets the name displayed when adding visibility conditions via the field editor.</li>
+</ul>
+<p>For <a href="#visibility-conditions-with-field-dependencies">visibility conditions with field dependencies</a>, you also need to set the <strong>TargetFieldType</strong> property of the <code>RegisterFormVisibilityCondition</code> attribute. The value must be a C# <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> that determines which type of fields are compatible as dependencies. For example, if <code>TargetFieldType</code> is set to <code>typeof(string)</code>, the registered condition becomes available if the dependency is on a <em>Text</em>, <em>Long text</em> or <em>Rich text (HTML)</em> field.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Visibility condition registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Registers a custom visibility condition with a field dependency
+[assembly: RegisterFormVisibilityCondition(
+    identifier: "Acme.CustomVisibilityCondition",
+    conditionType: typeof(CustomVisibilityCondition),
+    name: "Condition name",
+    // Sets a data type that limits which fields are compatible as dependencies for the condition
+    TargetFieldType = typeof(string)
+)]
+</code></pre>
+</div>
+
+<p>The visibility condition is now registered in the system. Users can assign the condition when configuring the visibility of fields not marked as <em>Required</em> via the field editor for content types and reusable field schemas. Each field can have <strong>one</strong> visibility condition.</p>
+<h2 id="assign-visibility-conditions-using-attributes">Assign visibility conditions using attributes</h2>
+<p>Visibility conditions are supported in dynamically created configuration dialogs of <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components and other admin UI components:</p>
+<ul>
+<li>Page Builder
+<ul>
+<li>widget configuration and personalization</li>
+<li>section configuration</li>
+<li>page template configuration</li>
+</ul>
+</li>
+<li>Form Builder
+<ul>
+<li>form component configuration</li>
+<li>form section configuration</li>
+</ul>
+</li>
+<li>Admin UI
+<ul>
+<li>form component configuration</li>
+<li>validation rule configuration</li>
+<li>visibility condition configuration</li>
+</ul>
+</li>
+</ul>
+<p>In these scenarios, visibility conditions are assigned using <a href="https://docs.microsoft.com/en-us/dotnet/csharp/tutorials/attributes" target="_blank">attribute</a> notation to the properties of model classes defining the configuration dialogs of supported components. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - visibility condition usage in widget properties</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.PageBuilder.Web.Mvc;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class BannerWidgetProperties : IWidgetProperties
+{
+    ...
+
+    [CheckboxInputComponent(Label = "Show link", Order = 1)]
+    public bool ShowLink { get; set; }
+
+    [TextInputComponent(Label = "Link URL", Order = 2, WatermarkText = "Enter a URL...")]
+    // The 'VisibleIfTrue' condition only shows link-related properties in the dialog if 'ShowLink' is selected
+    [VisibleIfTrue(nameof(ShowLink))]
+    public string LinkUrl { get; set; }
+
+    [TextInputComponent(Label = "Link title", Order = 3)]
+    // The 'VisibleIfTrue' condition only shows link-related properties in the dialog if 'ShowLink' is selected
+    [VisibleIfTrue(nameof(ShowLink))]
+    // The 'VisibleIfNotEmpty' condition hides 'LinkTitle' from the properties dialog until 'LinkUrl' is provided
+    [VisibleIfNotEmpty(nameof(LinkUrl))]
+    public string LinkTitle { get; set; } = String.Empty;
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Multiple visibility conditions</strong></p>
+<p>A single property can have multiple visibility condition attributes assigned. The property is visible if <strong>all</strong> added visibility conditions are fulfilled.</p>
+<p>However, be mindful not to create contradictory rulesets that could make the field permanently hidden.</p>
+</div>
+
+<h3 id="create-visibility-condition-attributes">Create visibility condition attributes</h3>
+<p>Each visibility condition that you wish to assign to properties in code <strong>must</strong> have a corresponding <a href="https://docs.microsoft.com/en-us/dotnet/csharp/tutorials/attributes" target="_blank">attribute</a>. When the attribute is used to annotate a property of one of the supported components, the condition applies to that property’s input.</p>
+<p>Visibility condition attribute classes must inherit from <code>VisibilityConditionAttribute</code> or derived classes:</p>
+<ul>
+<li>
+<code>VisibilityConditionAttribute</code> – for rules that depend only on data that can be obtained contextually (e.g., a user’s assigned role).</li>
+<li>
+<code>VisibilityConditionWithDependencyAttribute</code> – for rules that <a href="#visibility-conditions-with-field-dependencies">depend on a single other field in the configuration dialog</a> (e.g., the example snippet above). The class extends the base <code>VisibilityConditionAttribute</code> class with a property that holds the name of the field on which the condition depends. You can adapt this pattern and add other properties to transfer field names for conditions with multiple dependencies.</li>
+</ul>
+<p>Declare all mandatory and optional properties of the corresponding visibility condition as properties of the attribute class. The properties:</p>
+<ul>
+<li>
+<strong>must be named identically</strong> to the properties in the visibility condition class. The system uses the property names to instantiate the corresponding condition.</li>
+<li>
+<strong>must be of the same type</strong> as the corresponding property in the visibility condition.</li>
+</ul>
+<p>Properties that are required for the condition to function can be forced via the attribute’s constructor.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - sample visibility condition attribute</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ValueIsBetweenVisibilityConditionAttribute : VisibilityConditionWithDependencyAttribute 
+{
+    public int Maximum { get; set; }
+
+    public int Minimum { get; set; }
+
+    // Use the attribute constructor to force properties required for the correct
+    // functionality of the visibility condition
+    public ValueIsBetweenVisibilityConditionAttribute(string propertyName,
+              int max, int min) : base(propertyName)
+    {
+        Maximum = max;
+        Minimum = min;
+    }
+}
+
+</code></pre>
+</div>
+
+<p>To indicate the relation between the attribute class and the corresponding visibility condition, decorate the visibility condition class with the <code>VisibilityConditionAttribute</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - bind visibility condition and corresponding attribute</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+[VisibilityConditionAttribute(typeof(ValueIsBetweenVisibilityConditionAttribute))]
+public class ValueIsBetweenVisibilityCondition : VisibilityConditionWithDependency&lt;TProperties&gt;
+
+</code></pre>
+</div>
+
+<p>For the example above, every property decorated with <code>ValueIsBetweenVisibilityConditionAttribute</code> is assigned the <code>ValueIsBetweenVisibilityCondition</code> condition. </p>
+<h2 id="default-visibility-conditions">Default visibility conditions</h2>
+<p>By default, the system provides a set of visibility conditions for the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, which assess the value of another field (<em>Equal to</em>, <em>Contains</em>, <em>Empty</em>, etc.). The available conditions depend on the data type of the target field.</p>
+<p>Additionally, the Xperience API includes the following visibility conditions for model-based forms, which you can <a href="#assign-visibility-conditions-using-attributes">assign to properties via attributes</a>. All visibility condition attributes are located in the <code>Kentico.Xperience.Admin.Base.FormAnnotations</code> namespace.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Visibility condition</p>
+</td>
+<td>
+<p>Attribute</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Visible if B empty</p>
+</td>
+<td>
+<p>VisibleIfEmptyAttribute</p>
+</td>
+<td>
+<p>The decorated property A is visible if property B is empty (an empty string, an empty collection, or <code>null</code>). </p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visible if B not empty</p>
+</td>
+<td colspan="1">
+<p>VisibleIfNotEmptyAttribute</p>
+</td>
+<td colspan="1">
+<p>The decorated property A is visible if property B is not empty.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visible if B equal to</p>
+</td>
+<td colspan="1">
+<p>VisibleIfEqualToAttribute</p>
+</td>
+<td colspan="1">
+<p>The decorated property A is visible if property B is equal to the specified string or object.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visible if B not equal to</p>
+</td>
+<td colspan="1">
+<p>VisibleIfNotEqualToAttribute</p>
+</td>
+<td colspan="1">
+<p>The decorated property A is visible if property B is not equal to the specified string or object.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visible if B true</p>
+</td>
+<td colspan="1">
+<p>VisibleIfTrueAttribute</p>
+</td>
+<td colspan="1">
+<p>The decorated property A is visible if property B is (boolean) <code>true</code>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visible if B false</p>
+</td>
+<td colspan="1">
+<p>VisibleIfFalseAttribute</p>
+</td>
+<td colspan="1">
+<p>The decorated property A is visible if property B is (boolean) <code>false</code>.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="examples">Examples</h2>
+<h3 id="is-administrator-condition">Is administrator condition</h3>
+<p>The following example demonstrates the implementation of a visibility condition that checks if the user viewing the editing form belongs to the system’s default <em>Administrator</em> <a href="/documentation/developers-and-admins/configuration/users/role-management">role</a>. Such a condition doesn’t depend on any other fields, and doesn’t require any configuration properties. As a result, we only need to create a single class inheriting from <code>VisibilityCondition</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Is admin visibility condition class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Authentication;
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Registers the visibility condition
+[assembly: RegisterFormVisibilityCondition(
+    identifier: IsAdminCondition.IDENTIFIER,
+    conditionType: typeof(IsAdminCondition),
+    name: "Is administrator"
+)]
+
+public class IsAdminCondition : VisibilityCondition
+{
+    internal const string IDENTIFIER = "IsAdminVisibilityCondition";
+
+    private readonly IAuthenticatedUserAccessor userAccessor;
+
+    public IsAdminCondition(IAuthenticatedUserAccessor userAccessor)
+    {
+        this.userAccessor = userAccessor;
+    }
+
+    public override bool Evaluate(IFormFieldValueProvider formFieldValueProvider)
+    {
+        // Gets the current user in the administration
+        var currentUser = userAccessor.Get().Result;
+
+        // Visible if the current user belongs to the 'administrator' system role
+        return currentUser.IsAdministrator();
+    }
+}
+</code></pre>
+</div>
+
+<p>The “Is administrator” condition is now available in the field editor for any fields not marked as <em>Required</em>. If you wish to use the condition for fields in model-based forms, you also need to <a href="#create-visibility-condition-attributes">implement an appropriate attribute</a>.</p>
+<h3 id="value-is-between-condition">Value is between condition</h3>
+<p>The following example shows how to implement a visibility condition that checks if the value entered into another field falls into the specified integer interval. Based on the result, the condition displays or hides its assigned field accordingly. The condition will be usable both in the field editor UI and in model-based forms via an attribute.</p>
+<p>From the task definition, we know that we need to create a visibility condition that depends on <strong>one</strong> other field. To achieve this, we can use <code>VisibilityConditionWithDependency&lt;TProperties&gt;</code> and <code>VisibilityConditionWithDependencyProperties</code> provided by the Xperience API. The classes ensure our visibility condition gets correctly configured, leaving us to focus on the implementation of the <code>Evaluate</code> method and required configuration properties.</p>
+<p>The condition’s properties class needs to store two values – the <em>lower</em> and <em>upper</em> boundary of the accepted interval. If the input falls outside this interval, the field to which this condition is assigned is hidden. We’ll also decorate the properties with the <code>NumberInputComponent</code><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> attribute, which allows users to input a number when configuring the visibility condition in the field editor UI.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ValueIsBetweenVisibilityConditionProperties : VisibilityConditionWithDependencyProperties
+{
+    [NumberInputComponent(Label = "Min", Order = 1)]
+    public int Minimum { get; set; }
+
+    [NumberInputComponent(Label = "Max", Order = 2)]
+    public int Maximum { get; set; }
+}
+</code></pre>
+</div>
+
+<p>Within the condition’s main class, we implement the <code>Evaluate</code> method, access the value of the field on which the condition depends (using the field name provided when configuring the condition) via <code>IFormFieldValueProvider</code> and use it to evaluate the condition.</p>
+<p>We’ll also add an <code>IDENTIFIER</code> constant for the condition and <a href="#register-visibility-conditions-into-the-field-editor">register it into the field editor</a> using the <code>RegisterFormVisibilityCondition</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Visibility condition class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Registers the custom visibility condition
+[assembly: RegisterFormVisibilityCondition(
+    identifier: ValueIsBetweenVisibilityCondition.IDENTIFIER,
+    conditionType: typeof(ValueIsBetweenVisibilityCondition),
+    name: "Value is between",
+    TargetFieldType = typeof(int)
+)]
+
+public class ValueIsBetweenVisibilityCondition : VisibilityConditionWithDependency&lt;ValueIsBetweenVisibilityConditionProperties&gt;
+{
+    internal const string IDENTIFIER = "ValueIsBetweenVisibilityCondition";
+
+    public override bool Evaluate(IFormFieldValueProvider formFieldValueProvider)
+    {
+        // Gets the value of the field on which the condition depends
+        formFieldValueProvider.TryGet&lt;int&gt;(Properties.PropertyName, out var dependeeField);
+
+        return (dependeeField &gt;= Properties.Minimum) &amp;&amp; (dependeeField &lt;= Properties.Maximum);
+    }
+}
+</code></pre>
+</div>
+
+<p>Now we need to create the corresponding attribute to enable <a href="#assign-visibility-conditions-using-attributes">usage in component model classes</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ValueIsBetween attribute class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ValueIsBetweenVisibilityConditionAttribute : VisibilityConditionWithDependencyAttribute
+{
+    public int Maximum { get; set; }
+
+    public int Minimum { get; set; }
+
+    // The 'VisibilityConditionWithDependencyAttribute' base class enforces the field dependency via the constructor
+    public ValueIsBetweenVisibilityConditionAttribute(string propertyName,
+             int max, int min) : base(propertyName)
+    {
+        Maximum = max;
+        Minimum = min;
+    }
+}
+</code></pre>
+</div>
+
+<p>With the attribute created, add <code>VisibilityConditionAttribute</code> with the attribute type as the parameter to the condition’s main class to tie the attribute and visibility condition together.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Visibility condition and attribute relationship</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+[VisibilityConditionAttribute(typeof(ValueIsBetweenVisibilityConditionAttribute))] 
+public class ValueIsBetweenVisibilityCondition : VisibilityConditionWithDependency&lt;ValueIsBetweenVisibilityConditionProperties&gt;
+</code></pre>
+</div>
+
+<p>The visibility condition is now ready to be used.</p>
+
+</body>
+</html>

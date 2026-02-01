@@ -1,0 +1,1879 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Model product stock</title>
+</head>
+<body>
+<p>Product stock management is a critical component of any commerce system. This page covers key considerations for implementing a product stock model in Xperience by Kentico.</p>
+<p>The product stock model manages the relationship between products and their available quantities. It provides functionality to track, update, and display stock levels while handling various business scenarios such as purchases, returns, and restocking. We recommend that you implement the product stock model as a custom module to ensure flexibility and maintainability.</p>
+<p>To create a custom product stock management module, follow these main steps:</p>
+<ol type="1">
+<li>Create the core <a href="#product-stock-module">custom module</a> with database structure and object dependencies.</li>
+<li>Build <a href="#management-interfaces">administration interfaces</a> for listing and editing product stock records.</li>
+<li>Implement automatic or manual <a href="#product-stock-creation">stock record creation processes</a>.</li>
+<li>Handle <a href="#business-logic-implementation">business logic</a> of stock updates for purchases, returns, and reservations.</li>
+<li>Implement <a href="#validation-and-business-rules">validation and business rules</a> to ensure data integrity and implement business constraints.</li>
+<li>
+<a href="#display-product-stock">Display product stock</a> information to customers on your storefront.</li>
+</ol>
+<h2 id="product-stock-module">Product stock module</h2>
+<p>Create a <a href="/documentation/developers-and-admins/customization/object-types">custom module</a> to handle product stock management. Within the module, create a class with the necessary fields. Each record of this class represents the stock level for a specific product. The fields typically include:</p>
+<ul>
+<li>Content item ID – unique identifier linking to the product’s content item.
+<ul>
+<li>
+<p>You need to manually set the <code>ProductStock</code> object as a <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">child</a> of <code>cms.contentitem</code> in the generated object’s <code>TYPEINFO</code> configuration. This ensures that the stock information is always associated with a product and that <code>ProductStock</code> is automatically deleted together with the parent.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - ProductStockInfo</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    public static readonly ObjectTypeInfo TYPEINFO = new ObjectTypeInfo(typeof(IInfoProvider&lt;ProductStockInfo&gt;), OBJECT_TYPE, "Codesamples.ProductStock", nameof(ProductStockID), null, null, null, null, null, null, null)
+  {
+  TouchCacheDependencies = true,
+  DependsOn =
+  [
+      new ObjectDependency(nameof(ProductStockContentItemID), "cms.contentitem", ObjectDependencyEnum.Required)
+  ]
+  };</code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>Product stock value – current quantity available for purchase.</li>
+</ul>
+<p>Depending on your requirements, you may use a simple implementation with just content item ID and product stock value, or a more complex model that also includes fields such as reserved stock for pending orders and minimum threshold value.</p>
+<h2 id="management-interfaces">Management interfaces</h2>
+<p>The management interface consists of several interconnected components that work together to provide a complete administration experience for product stock records. <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">Create the following UI pages</a> to manage product stock.</p>
+<ul>
+<li>
+<a href="#create-the-application-entry-point">Create the application entry point</a> – Register the stock management app in the admin interface</li>
+<li>
+<a href="#create-the-listing-page">Create the listing page</a> – Display all stock records with product information</li>
+<li>
+<a href="#create-the-edit-section">Create the edit section</a> – Handle URL routing for individual record editing</li>
+<li>
+<a href="#create-the-edit-page">Create the edit page</a> – Provide the actual editing form interface</li>
+<li>
+<a href="#create-the-product-metadata-retriever">Create the product metadata retriever</a> – Service to retrieve product display names</li>
+<li>
+<a href="#register-dependencies">Register dependencies</a> – Configure dependency injection for all services</li>
+</ul>
+<h3 id="create-the-application-entry-point">Create the application entry point</h3>
+<p>First, create an application class to register your product stock management interface in the administration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ProductStockApplication.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.DigitalCommerce.UIPages;
+
+using Codesamples.Commerce.Admin;
+
+// Registers the application in the admin interface
+[assembly: UIApplication(
+    identifier: ProductStockApplication.IDENTIFIER,
+    type: typeof(ProductStockApplication),
+    slug: "productstock",
+    name: "Product stock",
+    category: DigitalCommerceApplicationCategories.DIGITAL_COMMERCE,
+    icon: Icons.MoneyBill,
+    templateName: TemplateNames.SECTION_LAYOUT)]
+
+namespace Codesamples.Commerce.Admin;
+
+/// &lt;summary&gt;
+/// Product stock management application for the admin interface.
+/// &lt;/summary&gt;
+// Sets permissions required to access the application
+// Create and delete permissions are not needed if stock records are created and deleted automatically with products
+[UIPermission(SystemPermissions.VIEW, "{$base.roles.permissions.view$}")]
+[UIPermission(SystemPermissions.UPDATE, "{$base.roles.permissions.update}")]
+public sealed class ProductStockApplication : ApplicationPage
+{
+    /// &lt;summary&gt;
+    /// Unique identifier for the product stock application.
+    /// &lt;/summary&gt;
+    public const string IDENTIFIER = "Codesamples.Application.ProductStock";
+}</code></pre>
+</div>
+
+<h3 id="create-the-listing-page">Create the listing page</h3>
+<p>The listing page displays all product stock records with product names, SKUs, and stock levels. <strong>Important</strong>: To display product information, you must join the <code>CMS_ContentItemLanguageMetadata</code> and <code>CMS_ContentItemCommonData</code> tables to obtain the product display name and product SKU.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ProductStockList.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System.Threading.Tasks;
+
+using CMS.Base;
+using CMS.Commerce;
+using CMS.DataEngine;
+
+using Codesamples.Commerce.Admin;
+
+using Kentico.Xperience.Admin.Base;
+
+[assembly: UIPage(
+    parentType: typeof(ProductStockApplication),
+    slug: "list",
+    uiPageType: typeof(ProductStockList),
+    name: "List of product stock",
+    templateName: TemplateNames.LISTING,
+    order: UIPageOrder.First)]
+
+namespace Codesamples.Commerce.Admin;
+
+/// &lt;summary&gt;
+/// Product stock listing page that displays all stock records with product information.
+/// &lt;/summary&gt;
+public sealed class ProductStockList : ListingPage
+{
+    private readonly DefaultContentLanguageRetriever defaultContentLanguageRetriever;
+    private readonly IProductQuantityFormatter productQuantityFormatter;
+
+    public ProductStockList(
+        DefaultContentLanguageRetriever defaultContentLanguageRetriever,
+        IProductQuantityFormatter productQuantityFormatter)
+    {
+        this.defaultContentLanguageRetriever = defaultContentLanguageRetriever;
+        this.productQuantityFormatter = productQuantityFormatter;
+    }
+
+    /// &lt;summary&gt;
+    /// Specifies which object type this listing page manages.
+    /// &lt;/summary&gt;
+    protected override string ObjectType =&gt; ProductStockInfo.OBJECT_TYPE;
+
+    public override async Task ConfigurePage()
+    {
+        // Gets the default language to ensure consistent data retrieval across multilingual content
+        var defaultContentLanguage = await defaultContentLanguageRetriever.Get();
+
+        // Adds edit action for each row in the listing
+        PageConfiguration.AddEditRowAction&lt;ProductStockEditSection&gt;();
+
+        // Configures the columns that will be displayed in the listing grid
+        PageConfiguration.ColumnConfigurations
+                        // Product name comes from ContentItemLanguageMetadata table
+                        .AddColumn("ContentItemLanguageMetadataDisplayName", "Product name", searchable: true)
+                        // Stock value from the ProductStockInfo table with custom formatting
+                        .AddColumn(nameof(ProductStockInfo.ProductStockValue), "Stock", formatter: StockFormatter);
+
+        // Joins necessary tables to retrieve product information
+        // This is required because ProductStockInfo only contains ContentItemID, not product details
+        PageConfiguration.QueryModifiers.AddModifier(query =&gt;
+            query.Source(
+                s =&gt; s
+                    // Joins with ContentItemLanguageMetadata to get product display names
+                    .Join(
+                        "CMS_ContentItemLanguageMetadata",
+                        new WhereCondition($"[CMS_ContentItemLanguageMetadata].[ContentItemLanguageMetadataContentItemID] = [{ProductStockInfo.TYPEINFO.ClassStructureInfo.TableName}].[{nameof(ProductStockInfo.ProductStockContentItemID)}]")
+                            // Filters by default language to avoid duplicate rows in multilingual setups
+                            .And(new WhereCondition().WhereEquals("ContentItemLanguageMetadataContentLanguageID", defaultContentLanguage!.ContentLanguageID))
+                    )
+                    // Joins with ContentItemCommonData to get reusable field schema data (like SKU)
+                    .Join(
+                        "CMS_ContentItemCommonData",
+                        new WhereCondition($"[CMS_ContentItemCommonData].[ContentItemCommonDataContentItemID] = [{ProductStockInfo.TYPEINFO.ClassStructureInfo.TableName}].[{nameof(ProductStockInfo.ProductStockContentItemID)}]")
+                            // Filters by default language for consistency
+                            .And(new WhereCondition().WhereEquals("ContentItemCommonDataContentLanguageID", defaultContentLanguage.ContentLanguageID))
+                    )
+            )
+        );
+
+        await base.ConfigurePage();
+    }
+
+    /// &lt;summary&gt;
+    /// Formats the stock value for display using the commerce quantity formatter.
+    /// &lt;/summary&gt;
+    private string StockFormatter(object value, IDataContainer dataContainer)
+    {
+        return productQuantityFormatter.Format((decimal)value, new ProductQuantityFormatContext());
+    }
+}</code></pre>
+</div>
+
+<h3 id="create-the-edit-section">Create the edit section</h3>
+<p>The edit section defines URL parameterization and routing for editing specific product stock records. It acts as a container or entry point for the edit operation:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ProductStockEditSection.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System.Threading.Tasks;
+
+using CMS.DataEngine;
+
+using Kentico.Xperience.Admin.Base;
+
+using Codesamples.Commerce.Admin;
+
+[assembly: UIPage(
+    parentType: typeof(Codesamples.Commerce.Admin.ProductStockList),
+    slug: PageParameterConstants.PARAMETERIZED_SLUG,
+    uiPageType: typeof(ProductStockEditSection),
+    name: "Product stock section caption",
+    templateName: TemplateNames.SECTION_LAYOUT,
+    order: UIPageOrder.NoOrder)]
+
+namespace Codesamples.Commerce.Admin;
+
+/// &lt;summary&gt;
+/// Edit section that handles URL parameterization and routing for editing specific product stock records.
+/// Acts as a container/entry point for the edit operation.
+/// &lt;/summary&gt;
+public sealed class ProductStockEditSection : EditSectionPage&lt;ProductStockInfo&gt;
+{
+    private readonly ProductMetadataRetriever productMetadataRetriever;
+
+    public ProductStockEditSection(ProductMetadataRetriever productMetadataRetriever)
+    {
+        this.productMetadataRetriever = productMetadataRetriever;
+    }
+
+    /// &lt;summary&gt;
+    /// Gets the display name for the object being edited (used in breadcrumbs and page titles).
+    /// &lt;/summary&gt;
+    protected override async Task&lt;string&gt; GetObjectDisplayName(BaseInfo infoObject)
+    {
+        // Retrieves the product name for display in the edit section header
+        // This ensures the page shows "Edit Product Stock - [Product Name]" instead of just an ID
+        if (infoObject is ProductStockInfo productStockInfo)
+        {
+            var product = await productMetadataRetriever.GetProductMetadata(productStockInfo);
+            return product!.DisplayName;
+        }
+
+        return base.GetObjectDisplayName(infoObject).Result;
+    }
+}</code></pre>
+</div>
+
+<h3 id="create-the-edit-page">Create the edit page</h3>
+<p>Create a <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types#Extendsystemobjecttypes-UIForms">UI form</a> for editing product stock records:</p>
+<ol type="1">
+<li><p>Navigate to the <strong>Modules</strong> application → select your stock management module → <strong>Classes</strong> tab → select your product stock class → <strong>UI forms</strong> tab.</p></li>
+<li><p>Create a <strong>New UI form</strong> with the name <em>ProductStockEdit</em> (code name).</p></li>
+<li>
+<p>Switch to the <strong>Fields</strong> tab and add the fields you want to display on the form:</p>
+<ul>
+<li>Product stock value field
+<ul>
+<li>
+<strong>Database column</strong>: <em>The field of the product stock class that stores the stock value</em>
+</li>
+<li>
+<strong>Field caption</strong>: Available stock value</li>
+<li>
+<strong>Enabled</strong>: <em>Yes, selected</em>
+</li>
+<li>
+<strong>Form component</strong>: Decimal number input</li>
+</ul>
+</li>
+<li>
+<em>(Optional)</em> Product name field (for context, typically read-only)
+<ul>
+<li>
+<strong>Database column</strong>: New field without database column</li>
+<li>
+<strong>Field name</strong>: ProductStockProductName</li>
+<li>
+<strong>Data type</strong>: Text</li>
+<li>
+<strong>Field caption</strong>: Product name</li>
+<li>
+<strong>Enabled</strong>: <em>No, not selected (this makes the field read-only)</em>
+</li>
+<li>
+<strong>Form component</strong>: Text input</li>
+<li>You need to ensure that the product name field is populated programmatically in the edit page code since it does not have a database column.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>The edit page then renders the actual editing form where users interact with the product stock data:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ProductStockEdit.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using CMS.ContentEngine;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+using Codesamples.Commerce.Admin;
+
+[assembly: UIPage(
+    parentType: typeof(ProductStockEditSection),
+    slug: "general",
+    uiPageType: typeof(ProductStockEdit),
+    name: "General",
+    templateName: TemplateNames.EDIT,
+    order: UIPageOrder.First)]
+
+namespace Codesamples.Commerce.Admin;
+
+/// &lt;summary&gt;
+/// The actual edit page where the editing form is rendered and user interaction happens.
+/// Inherits from InfoEditPage&amp;lt;ProductStockInfo&amp;gt; to provide standard CRUD functionality.
+/// &lt;/summary&gt;
+public sealed class ProductStockEdit : InfoEditPage&lt;ProductStockInfo&gt;
+{
+    /// &lt;summary&gt;
+    /// Name of the UI form definition created in the admin interface.
+    /// &lt;/summary&gt;
+    private const string UI_FORM_COMPONENT_NAME = "codesamples_productstockedit";
+
+    /// &lt;summary&gt;
+    /// Name of the field used to display the product name.
+    /// &lt;/summary&gt;
+    private const string PRODUCT_NAME_COMPONENT_NAME = "ProductStockProductName";
+
+    private readonly ProductMetadataRetriever productMetadataRetriever;
+
+    /// &lt;summary&gt;
+    /// Object ID parameter from the URL route (e.g., /edit/123).
+    /// &lt;/summary&gt;
+    [PageParameter(typeof(IntPageModelBinder))]
+    public override int ObjectId { get; set; }
+
+    public ProductStockEdit(
+        IFormComponentMapper formComponentMapper,
+        IFormDataBinder formDataBinder,
+        ProductMetadataRetriever productMetadataRetriever)
+        : base(formComponentMapper, formDataBinder)
+    {
+        this.productMetadataRetriever = productMetadataRetriever;
+    }
+
+    public override async Task ConfigurePage()
+    {
+        // Specifies which UI form definition to use
+        PageConfiguration.UIFormName = UI_FORM_COMPONENT_NAME;
+        PageConfiguration.Headline = "Edit product stock";
+
+        await base.ConfigurePage();
+    }
+
+    /// &lt;summary&gt;
+    /// Retrieves and modifies form items before they are displayed to the user.
+    /// &lt;/summary&gt;
+    protected override async Task&lt;ICollection&lt;IFormItem&gt;&gt; GetFormItems()
+    {
+        ICollection&lt;IFormItem&gt; formItems = await base.GetFormItems();
+
+        // Sets up the product name component to show which product this stock record belongs to
+        await SetupProductNameComponent(formItems);
+
+        return formItems;
+    }
+
+    /// &lt;summary&gt;
+    /// Sets up the product name component to display the associated product's name.
+    /// This provides context to administrators about which product they're editing stock for.
+    /// &lt;/summary&gt;
+    private async Task SetupProductNameComponent(ICollection&lt;IFormItem&gt; formItems)
+    {
+        // Gets the current product stock record being edited
+        ProductStockInfo? productStockInfo = await GetInfoObject();
+        
+        if (productStockInfo == null)
+        {
+            return;
+        }
+
+        // Retrieves the product metadata to get the display name
+        ContentItemLanguageMetadata? productMetadata = await productMetadataRetriever.GetProductMetadata(productStockInfo);
+        
+        if (productMetadata == null)
+        {
+            return;
+        }
+
+        // Finds the product name form component and sets its value
+        IFormComponent? productNameComponent = formItems.OfType&lt;IFormComponent&gt;()
+            .FirstOrDefault(f =&gt; f.Name.Equals(PRODUCT_NAME_COMPONENT_NAME, StringComparison.OrdinalIgnoreCase));
+
+        // Sets the product name (this is typically a read-only field for context)
+        productNameComponent?.SetObjectValue(productMetadata.DisplayName);
+    }
+}</code></pre>
+</div>
+
+<h3 id="create-the-product-metadata-retriever">Create the product metadata retriever</h3>
+<p>The <code>ProductMetadataRetriever</code> must be implemented to retrieve product display names and other metadata. This service is essential for displaying correct product information in the management interface:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ProductMetadataRetriever.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System.Threading.Tasks;
+
+using CMS.ContentEngine;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Authentication;
+using Kentico.Xperience.Admin.Base.Forms;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+
+using Codesamples.Commerce.Admin;
+
+namespace Codesamples.Commerce;
+
+/// &lt;summary&gt;
+/// Service responsible for retrieving product metadata (display names, etc.) from content items.
+/// This is essential for displaying meaningful product information in the admin interface.
+/// &lt;/summary&gt;
+public sealed class ProductMetadataRetriever
+{
+    private readonly IContentItemManagerFactory contentItemManagerFactory;
+    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly DefaultContentLanguageRetriever defaultContentLanguageRetriever;
+
+    public ProductMetadataRetriever(
+        IContentItemManagerFactory contentItemManagerFactory,
+        IHttpContextAccessor httpContextAccessor,
+        DefaultContentLanguageRetriever defaultContentLanguageRetriever)
+    {
+        this.contentItemManagerFactory = contentItemManagerFactory;
+        this.httpContextAccessor = httpContextAccessor;
+        this.defaultContentLanguageRetriever = defaultContentLanguageRetriever;
+    }
+
+    /// &lt;summary&gt;
+    /// Retrieves product metadata for a given product stock record.
+    /// &lt;/summary&gt;
+    /// &lt;param name="productStockInfo"&gt;The product stock record.&lt;/param&gt;
+    /// &lt;returns&gt;Content item language metadata containing the product's display name and other properties.&lt;/returns&gt;
+    public async Task&lt;ContentItemLanguageMetadata&gt; GetProductMetadata(ProductStockInfo productStockInfo)
+    {
+        // Uses the default language to ensure consistent metadata retrieval
+        ContentLanguageInfo defaultContentLanguage = await defaultContentLanguageRetriever.Get();
+
+        // Gets the current authenticated user for content manager context
+        var currentUser = await httpContextAccessor.HttpContext!.RequestServices
+            .GetRequiredService&lt;IAuthenticatedUserAccessor&gt;().Get();
+
+        // Creates content manager with proper user context for security
+        IContentItemManager contentItemManager = contentItemManagerFactory.Create(currentUser.UserID);
+
+        // Retrieves the product metadata using the content item ID stored in the stock record
+        // This gets the product name and other language-specific metadata
+        ContentItemLanguageMetadata productMetadata = await contentItemManager.GetContentItemLanguageMetadata(
+            productStockInfo.ProductStockContentItemID,
+            defaultContentLanguage.ContentLanguageName);
+
+        return productMetadata;
+    }
+}</code></pre>
+</div>
+
+<h3 id="create-the-default-content-language-retriever">Create the default content language retriever</h3>
+<p>Create a service to retrieve the default content language, which is needed for consistent data retrieval:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>DefaultContentLanguageRetriever.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+using CMS.ContentEngine;
+using CMS.DataEngine;
+using CMS.Helpers;
+
+namespace Codesamples.Commerce;
+
+/// &lt;summary&gt;
+/// Service for retrieving the default content language.
+/// This ensures consistent data retrieval across multilingual content scenarios.
+/// &lt;/summary&gt;
+public sealed class DefaultContentLanguageRetriever
+{
+    /// &lt;summary&gt;
+    /// Cache duration in minutes (24 hours).
+    /// &lt;/summary&gt;
+    private const int ONE_DAY = 24 * 60;
+
+    private readonly IInfoProvider&lt;ContentLanguageInfo&gt; contentLanguageInfoProvider;
+    private readonly IProgressiveCache progressiveCache;
+    private readonly ICacheDependencyBuilderFactory cacheDependencyBuilderFactory;
+
+    public DefaultContentLanguageRetriever(
+        IInfoProvider&lt;ContentLanguageInfo&gt; contentLanguageInfoProvider,
+        IProgressiveCache progressiveCache,
+        ICacheDependencyBuilderFactory cacheDependencyBuilderFactory)
+    {
+        this.contentLanguageInfoProvider = contentLanguageInfoProvider;
+        this.progressiveCache = progressiveCache;
+        this.cacheDependencyBuilderFactory = cacheDependencyBuilderFactory;
+    }
+
+    /// &lt;summary&gt;
+    /// Retrieves the default content language with caching for performance.
+    /// &lt;/summary&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    /// &lt;returns&gt;The default ContentLanguageInfo.&lt;/returns&gt;
+    public async Task&lt;ContentLanguageInfo&gt; Get(CancellationToken cancellationToken = default)
+    {
+        // Uses progressive cache to avoid repeated database queries
+        return (await progressiveCache.LoadAsync(async (cacheSettings, token) =&gt;
+        {
+            // Sets up cache dependency to invalidate when languages change
+            var cacheDependencyBuilder = cacheDependencyBuilderFactory.Create();
+            cacheSettings.CacheDependency = cacheDependencyBuilder
+                .ForInfoObjects&lt;ContentLanguageInfo&gt;()
+                    .All()
+                    .Builder()
+                .Build();
+
+            // Queries for the default language (marked as default in the system)
+            var result = await contentLanguageInfoProvider.Get()
+               .WhereTrue(nameof(ContentLanguageInfo.ContentLanguageIsDefault))
+               .TopN(1)
+               .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+
+            return result.FirstOrDefault();
+        },
+        // Caches for one day with automatic invalidation when content languages change
+        new CacheSettings(ONE_DAY, true, nameof(DefaultContentLanguageRetriever), nameof(Get)), cancellationToken))!;
+    }
+}</code></pre>
+</div>
+
+<h3 id="register-dependencies">Register dependencies</h3>
+<p>Finally, you need to register the dependencies in your dependency injection container:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Add these services to your Program.cs or service registration
+// These are required for the product stock management interface to function properly
+builder.Services.AddTransient&lt;ProductMetadataRetriever&gt;();
+builder.Services.AddTransient&lt;DefaultContentLanguageRetriever&gt;();
+</code></pre>
+</div>
+
+<h2 id="product-stock-creation">Product stock creation</h2>
+<h3 id="automatic-stock-creation">Automatic stock creation</h3>
+<p>Consider implementing automatic stock creation when new products are added:</p>
+<ul>
+<li>Set up <a href="/documentation/developers-and-admins/customization/handle-global-events">event handlers</a> for product creation</li>
+<li>Initialize default stock values based on business rules</li>
+<li>Ensure proper data consistency between products and stock</li>
+</ul>
+<p>The following code snippet demonstrates a simple event handler for automatic stock creation using the modern object event handling pattern.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Automatic stock creation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System.Linq;
+
+using CMS.ContentEngine;
+using CMS.DataEngine;
+
+namespace Codesamples.Commerce.Admin;
+
+/// &lt;summary&gt;
+/// Event handler triggered after a new content item is created.
+/// Automatically creates a stock record for product content items.
+/// &lt;/summary&gt;
+public class ProductStockCreationHandler
+{
+    /// &lt;summary&gt;
+    /// An instance of the product stock info provider, obtained via dependency injection.
+    /// &lt;/summary&gt;
+    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+
+    public ProductStockCreationHandler(IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider)
+    {
+        this.productStockInfoProvider = productStockInfoProvider;
+    }
+
+    /// &lt;summary&gt;
+    /// Handles the Create.After event for content items.
+    /// &lt;/summary&gt;
+    public void HandleContentItemCreated(object? sender, CreateContentItemEventArgs args)
+    {
+        // Only handle product content items
+        if (IsProductContentItem(args.ContentTypeName) &amp;&amp; args.ID.HasValue)
+        {
+            CreateProductStockRecord(args.ID.Value);
+        }
+    }
+
+    /// &lt;summary&gt;
+    /// Checks if the content type is a product.
+    /// &lt;/summary&gt;
+    private static bool IsProductContentItem(string contentTypeName)
+    {
+        // Replace "Codesamples.ProductSKU" with your actual product content type name
+        return contentTypeName.Equals("Codesamples.ProductSKU", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// &lt;summary&gt;
+    /// Creates a product stock record asynchronously.
+    /// &lt;/summary&gt;
+    private void CreateProductStockRecord(int contentItemId)
+    {
+        // Checks if stock record already exists
+        var existingProductStock =
+            productStockInfoProvider
+                .Get()
+                .WhereEquals(nameof(ProductStockInfo.ProductStockContentItemID), contentItemId)
+                .GetEnumerableTypedResult();
+
+        if (!existingProductStock.Any())
+        {
+            // Creates a new product stock record
+            productStockInfoProvider.Set(new ProductStockInfo
+            {
+                ProductStockContentItemID = contentItemId,
+                ProductStockValue = 0,
+            });
+        }
+    }
+}</code></pre>
+</div>
+
+<p>To use this event handler, you must register it in your application’s service collection. Create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module</a> and override the <code>OnPreInit</code> method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register the event handler</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using Microsoft.Extensions.DependencyInjection;
+
+using CMS;
+using CMS.ContentEngine;
+using CMS.Core;
+using CMS.DataEngine;
+
+using Codesamples.Commerce.Admin;
+
+[assembly: RegisterModule(typeof(ProductStockModule))]
+
+namespace Codesamples.Commerce.Admin;
+
+/// &lt;summary&gt;
+/// Module for product stock management.
+/// Registers event handlers for automatic stock creation.
+/// &lt;/summary&gt;
+public class ProductStockModule : Module
+{
+    public ProductStockModule() : base(nameof(ProductStockModule))
+    {
+    }
+
+    /// &lt;summary&gt;
+    /// OnPreInit allows you to access IServiceCollection via ModulePreInitParameters.
+    /// &lt;/summary&gt;
+    protected override void OnPreInit(ModulePreInitParameters parameters)
+    {
+        base.OnPreInit(parameters);
+
+        // Registers services
+        parameters.Services.AddTransient&lt;ProductMetadataRetriever&gt;();
+        parameters.Services.AddTransient&lt;DefaultContentLanguageRetriever&gt;();
+        parameters.Services.AddTransient&lt;ProductStockCreationHandler&gt;();
+    }
+
+    protected override void OnInit(ModuleInitParameters parameters)
+    {
+        base.OnInit(parameters);
+
+        // Registers the product stock creation event handler
+        var handler = parameters.Services.GetRequiredService&lt;ProductStockCreationHandler&gt;();
+        ContentItemEvents.Create.After += handler.HandleContentItemCreated;
+    }
+}</code></pre>
+</div>
+
+<h2 id="business-logic-implementation">Business logic implementation</h2>
+<p>After establishing the product stock module and management interfaces, implement the business logic that connects stock management with your commerce operations. This includes reducing stock during purchases, restoring stock for returns, and optionally implementing temporary stock reservations during checkout.</p>
+<h3 id="purchase-transactions">Purchase transactions</h3>
+<p>Stock reduction is a critical operation that occurs after an order is successfully placed. The timing and approach depend on your business requirements—you may reduce stock immediately during checkout, after payment confirmation, or when an order reaches a specific status.</p>
+<p>The following service methods demonstrate stock reduction logic. The <code>ReduceStockForOrder</code> method accepts a dictionary mapping content item IDs to quantities, making it suitable for integration with <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/order-creation">order creation</a> workflows:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Reduce stock for order</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+    private readonly ILogger&lt;ProductStockService&gt; logger;
+
+    public ProductStockService(
+        IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+        ILogger&lt;ProductStockService&gt; logger)
+    {
+        this.productStockInfoProvider = productStockInfoProvider;
+        this.logger = logger;
+    }
+
+    /// &lt;summary&gt;
+    /// Reduces stock levels for all items in an order after successful purchase.
+    /// &lt;/summary&gt;
+    /// &lt;param name="orderedItems"&gt;Dictionary mapping ContentItemID to ordered quantity.&lt;/param&gt;
+    /// &lt;param name="orderNumber"&gt;Order number for logging purposes.&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    public async Task ReduceStockForOrder(
+        Dictionary&lt;int, decimal&gt; orderedItems,
+        string orderNumber,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (KeyValuePair&lt;int, decimal&gt; orderedItem in orderedItems)
+        {
+            try
+            {
+                // Retrieves the product stock information for the ordered item
+                ProductStockInfo? productStockInfo = (await productStockInfoProvider
+                    .Get()
+                    .WhereEquals(nameof(ProductStockInfo.ProductStockContentItemID), orderedItem.Key)
+                    .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken))
+                    .FirstOrDefault();
+
+                // Digital products may not have any associated stock
+                if (productStockInfo != null)
+                {
+                    // Decreases the stock value by the ordered quantity
+                    productStockInfo.ProductStockValue -= orderedItem.Value;
+
+                    // Updates the product stock record
+                    await productStockInfoProvider.SetAsync(productStockInfo, cancellationToken);
+
+                    logger.LogInformation(
+                        "Reduced stock for ContentItemID {ContentItemID} by {Quantity}. New stock: {NewStock}",
+                        orderedItem.Key, orderedItem.Value, productStockInfo.ProductStockValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to reduce stock for ContentItemID {ContentItemID} in order {OrderNumber}",
+                    orderedItem.Key, orderNumber);
+                throw;
+            }
+        }
+    }</code></pre>
+</div>
+
+<p>For scenarios where you have shopping cart data available, use the <code>ReduceStockFromCart</code> method, which automatically extracts product identifiers and quantities from the cart model:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Reduce stock from cart</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+    private readonly ILogger&lt;ProductStockService&gt; logger;
+
+    public ProductStockService(
+        IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+        ILogger&lt;ProductStockService&gt; logger)
+    {
+        this.productStockInfoProvider = productStockInfoProvider;
+        this.logger = logger;
+    }
+
+    /// &lt;summary&gt;
+    /// Reduces stock levels based on shopping cart data after order creation.
+    /// Extracts ContentItemIDs from cart items and reduces corresponding stock.
+    /// &lt;/summary&gt;
+    /// &lt;param name="cartData"&gt;Shopping cart data containing items to process.&lt;/param&gt;
+    /// &lt;param name="orderNumber"&gt;Order number for logging purposes.&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    public async Task ReduceStockFromCart(
+        ShoppingCartDataModel cartData,
+        string orderNumber,
+        CancellationToken cancellationToken = default)
+    {
+        // Collects ContentItemIDs and quantities from the cart
+        Dictionary&lt;int, decimal&gt; orderedItems = cartData.Items
+            .ToDictionary(
+                item =&gt; item.ProductIdentifier.Identifier,  // ContentItemID
+                item =&gt; (decimal)item.Quantity);
+
+        await ReduceStockForOrder(orderedItems, orderNumber, cancellationToken);
+    }</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Important considerations for production implementations</strong></p>
+<ul>
+<li>Implement proper <a href="#validation-and-business-rules">validation</a> before reducing stock to prevent negative values</li>
+<li>Consider using <a href="#stock-reservations">stock reservations</a> to hold inventory during checkout</li>
+<li>Handle edge cases such as partial order fulfillment or digital products without stock records</li>
+<li>Log all stock changes for audit trails and troubleshooting</li>
+</ul>
+</div>
+
+<h3 id="returns-and-restocking">Returns and restocking</h3>
+<p>Stock restoration is necessary when products are returned by customers or when receiving new inventory. The restoration logic should mirror your return policy – some businesses restore stock immediately upon return initiation, while others wait for physical receipt and inspection of returned items.</p>
+<p>The <code>RestoreStockForReturn</code> method increases stock levels for individual product returns, useful for processing customer returns one item at a time:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Restore stock for return</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+    private readonly ILogger&lt;ProductStockService&gt; logger;
+
+    public ProductStockService(
+        IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+        ILogger&lt;ProductStockService&gt; logger)
+    {
+        this.productStockInfoProvider = productStockInfoProvider;
+        this.logger = logger;
+    }
+
+    /// &lt;summary&gt;
+    /// Restores stock levels when products are returned.
+    /// &lt;/summary&gt;
+    /// &lt;param name="contentItemId"&gt;ContentItemID of the returned product.&lt;/param&gt;
+    /// &lt;param name="quantity"&gt;Quantity being returned.&lt;/param&gt;
+    /// &lt;param name="orderNumber"&gt;Order number for logging purposes.&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    public async Task RestoreStockForReturn(
+        int contentItemId,
+        decimal quantity,
+        string orderNumber,
+        CancellationToken cancellationToken = default)
+    {
+        ProductStockInfo? productStockInfo = (await productStockInfoProvider
+            .Get()
+            .WhereEquals(nameof(ProductStockInfo.ProductStockContentItemID), contentItemId)
+            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken))
+            .FirstOrDefault();
+
+        if (productStockInfo != null)
+        {
+            // Increases the stock value by the returned quantity
+            productStockInfo.ProductStockValue += quantity;
+
+            await productStockInfoProvider.SetAsync(productStockInfo, cancellationToken);
+
+            logger.LogInformation(
+                "Restored stock for ContentItemID {ContentItemID} by {Quantity} (order {OrderNumber}). New stock: {NewStock}",
+                contentItemId, quantity, orderNumber, productStockInfo.ProductStockValue);
+        }
+        else
+        {
+            logger.LogWarning(
+                "No stock record found for ContentItemID {ContentItemID} during return processing",
+                contentItemId);
+        }
+    }</code></pre>
+</div>
+
+<p>For bulk restocking operations, such as receiving new inventory shipments, use the <code>RestockProducts</code> method which processes multiple products in a single operation:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Restock products</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+    private readonly ILogger&lt;ProductStockService&gt; logger;
+
+    public ProductStockService(
+        IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+        ILogger&lt;ProductStockService&gt; logger)
+    {
+        this.productStockInfoProvider = productStockInfoProvider;
+        this.logger = logger;
+    }
+
+    /// &lt;summary&gt;
+    /// Adds stock during restocking operations (e.g., receiving new inventory).
+    /// &lt;/summary&gt;
+    /// &lt;param name="restockItems"&gt;Dictionary mapping ContentItemID to quantity being added.&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    public async Task RestockProducts(
+        Dictionary&lt;int, decimal&gt; restockItems,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (KeyValuePair&lt;int, decimal&gt; restockItem in restockItems)
+        {
+            ProductStockInfo? productStockInfo = (await productStockInfoProvider
+                .Get()
+                .WhereEquals(nameof(ProductStockInfo.ProductStockContentItemID), restockItem.Key)
+                .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken))
+                .FirstOrDefault();
+
+            if (productStockInfo != null)
+            {
+                productStockInfo.ProductStockValue += restockItem.Value;
+                await productStockInfoProvider.SetAsync(productStockInfo, cancellationToken);
+
+                logger.LogInformation(
+                    "Restocked ContentItemID {ContentItemID} by {Quantity}. New stock: {NewStock}",
+                    restockItem.Key, restockItem.Value, productStockInfo.ProductStockValue);
+            }
+            else
+            {
+                // Create new stock record if one doesn't exist
+                var newStockInfo = new ProductStockInfo
+                {
+                    ProductStockContentItemID = restockItem.Key,
+                    ProductStockValue = restockItem.Value
+                };
+                await productStockInfoProvider.SetAsync(newStockInfo, cancellationToken);
+
+                logger.LogInformation(
+                    "Created new stock record for ContentItemID {ContentItemID} with quantity {Quantity}",
+                    restockItem.Key, restockItem.Value);
+            }
+        }
+    }</code></pre>
+</div>
+
+<p>This method automatically creates new stock records if they don’t exist, making it useful for adding products to your inventory system for the first time.</p>
+<h3 id="stock-reservations">Stock reservations</h3>
+<p>Stock reservations provide a mechanism to temporarily hold inventory for customers during the checkout process. This prevents overselling while allowing automatic cleanup of abandoned shopping carts. Without reservations, two customers could simultaneously checkout with the last unit of a product, resulting in an oversold situation.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Implementation requirement</strong></p>
+<p>To implement stock reservations, add a <code>ProductStockReservedValue</code> field to your <code>ProductStockInfo</code> class. This field tracks reserved quantities separately from available stock:</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Reserved value field</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Reserved stock quantity (temporarily held for pending orders).
+    /// &lt;/summary&gt;
+    /// &lt;remarks&gt;
+    /// This field is optional and only needed if implementing stock reservations.
+    /// Reserved stock is subtracted from available stock during checkout to prevent overselling.
+    /// &lt;/remarks&gt;
+    [DatabaseField]
+    public virtual decimal ProductStockReservedValue
+    {
+        get =&gt; ValidationHelper.GetDecimal(GetValue(nameof(ProductStockReservedValue)), 0);
+        set =&gt; SetValue(nameof(ProductStockReservedValue), value);
+    }</code></pre>
+</div>
+</div>
+</div>
+
+<p>The reservation workflow consists of three key operations:</p>
+<ol type="1">
+<li>
+<p><strong>Reserve stock</strong> when a customer begins checkout—this checks available stock (total minus already reserved) and marks the requested quantity as reserved:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Reserve stock</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+ private readonly ILogger&lt;StockReservationService&gt; logger;
+
+ public StockReservationService(
+     IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+     ILogger&lt;StockReservationService&gt; logger)
+ {
+     this.productStockInfoProvider = productStockInfoProvider;
+     this.logger = logger;
+ }
+
+ /// &lt;summary&gt;
+ /// Reserves stock for items in a shopping cart during checkout.
+ /// Reserved stock is temporarily held and not available for other customers.
+ /// &lt;/summary&gt;
+ /// &lt;param name="items"&gt;Dictionary mapping ContentItemID to quantity to reserve.&lt;/param&gt;
+ /// &lt;param name="reservationMinutes"&gt;How long to hold the reservation (default: 15 minutes).&lt;/param&gt;
+ /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+ /// &lt;returns&gt;Reservation result with success status and reservation ID.&lt;/returns&gt;
+ public async Task&lt;StockReservationResult&gt; ReserveStock(
+     Dictionary&lt;int, decimal&gt; items,
+     int reservationMinutes = DEFAULT_RESERVATION_MINUTES,
+     CancellationToken cancellationToken = default)
+ {
+     var result = new StockReservationResult
+     {
+         ReservationId = Guid.NewGuid(),
+         ExpiresAt = DateTime.UtcNow.AddMinutes(reservationMinutes)
+     };
+
+     // First, check if all items have sufficient available stock
+     foreach (KeyValuePair&lt;int, decimal&gt; item in items)
+     {
+         ProductStockInfo? stockInfo = await GetStockInfo(item.Key, cancellationToken);
+
+         if (stockInfo == null)
+         {
+             // Products without stock records (digital products) are always available
+             continue;
+         }
+
+         // Calculate available stock (total stock minus already reserved stock)
+         decimal availableStock = stockInfo.ProductStockValue - stockInfo.ProductStockReservedValue;
+
+         if (availableStock &lt; item.Value)
+         {
+             result.Failures.Add(new StockReservationFailure
+             {
+                 ContentItemId = item.Key,
+                 RequestedQuantity = item.Value,
+                 AvailableQuantity = Math.Max(0, availableStock)
+             });
+         }
+     }
+
+     // If any items failed, return without making reservations
+     if (result.Failures.Count &gt; 0)
+     {
+         result.Success = false;
+         return result;
+     }
+
+     // All items available - create reservations
+     foreach (KeyValuePair&lt;int, decimal&gt; item in items)
+     {
+         ProductStockInfo? stockInfo = await GetStockInfo(item.Key, cancellationToken);
+
+         if (stockInfo != null)
+         {
+             // Increase reserved stock
+             stockInfo.ProductStockReservedValue += item.Value;
+             await productStockInfoProvider.SetAsync(stockInfo, cancellationToken);
+
+             logger.LogInformation(
+                 "Reserved {Quantity} units of ContentItemID {ContentItemID}. ReservationId: {ReservationId}",
+                 item.Value, item.Key, result.ReservationId);
+         }
+     }
+
+     result.Success = true;
+     return result;
+ }</code></pre>
+</div>
+</li>
+<li>
+<p><strong>Release reservations</strong> when a checkout is abandoned or cancelled, making the stock available again for other customers:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Release reservation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+ private readonly ILogger&lt;StockReservationService&gt; logger;
+
+ public StockReservationService(
+     IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+     ILogger&lt;StockReservationService&gt; logger)
+ {
+     this.productStockInfoProvider = productStockInfoProvider;
+     this.logger = logger;
+ }
+
+ /// &lt;summary&gt;
+ /// Releases a stock reservation, making the stock available again.
+ /// Call this when a checkout is abandoned or cancelled.
+ /// &lt;/summary&gt;
+ /// &lt;param name="items"&gt;Dictionary mapping ContentItemID to quantity to release.&lt;/param&gt;
+ /// &lt;param name="reservationId"&gt;Reservation ID for logging purposes.&lt;/param&gt;
+ /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+ public async Task ReleaseReservation(
+     Dictionary&lt;int, decimal&gt; items,
+     Guid reservationId,
+     CancellationToken cancellationToken = default)
+ {
+     foreach (KeyValuePair&lt;int, decimal&gt; item in items)
+     {
+         ProductStockInfo? stockInfo = await GetStockInfo(item.Key, cancellationToken);
+
+         if (stockInfo != null)
+         {
+             // Decrease reserved stock (ensure it doesn't go negative)
+             stockInfo.ProductStockReservedValue = Math.Max(0, stockInfo.ProductStockReservedValue - item.Value);
+             await productStockInfoProvider.SetAsync(stockInfo, cancellationToken);
+
+             logger.LogInformation(
+                 "Released reservation of {Quantity} units for ContentItemID {ContentItemID}. ReservationId: {ReservationId}",
+                 item.Value, item.Key, reservationId);
+         }
+     }
+ }</code></pre>
+</div>
+</li>
+<li>
+<p><strong>Confirm reservations</strong> when an order is successfully placed, converting the reserved stock to sold stock by reducing both total and reserved values:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Confirm reservation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider;
+ private readonly ILogger&lt;StockReservationService&gt; logger;
+
+ public StockReservationService(
+     IInfoProvider&lt;ProductStockInfo&gt; productStockInfoProvider,
+     ILogger&lt;StockReservationService&gt; logger)
+ {
+     this.productStockInfoProvider = productStockInfoProvider;
+     this.logger = logger;
+ }
+
+ /// &lt;summary&gt;
+ /// Confirms a reservation by converting reserved stock to sold stock.
+ /// Call this when an order is successfully placed.
+ /// &lt;/summary&gt;
+ /// &lt;param name="items"&gt;Dictionary mapping ContentItemID to quantity to confirm.&lt;/param&gt;
+ /// &lt;param name="reservationId"&gt;Reservation ID for logging purposes.&lt;/param&gt;
+ /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+ public async Task ConfirmReservation(
+     Dictionary&lt;int, decimal&gt; items,
+     Guid reservationId,
+     CancellationToken cancellationToken = default)
+ {
+     foreach (KeyValuePair&lt;int, decimal&gt; item in items)
+     {
+         ProductStockInfo? stockInfo = await GetStockInfo(item.Key, cancellationToken);
+
+         if (stockInfo != null)
+         {
+             // Decrease both total stock and reserved stock
+             stockInfo.ProductStockValue -= item.Value;
+             stockInfo.ProductStockReservedValue = Math.Max(0, stockInfo.ProductStockReservedValue - item.Value);
+
+             await productStockInfoProvider.SetAsync(stockInfo, cancellationToken);
+
+             logger.LogInformation(
+                 "Confirmed reservation of {Quantity} units for ContentItemID {ContentItemID}. ReservationId: {ReservationId}. Remaining stock: {Stock}",
+                 item.Value, item.Key, reservationId, stockInfo.ProductStockValue);
+         }
+     }
+ }</code></pre>
+</div>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Reservation expiration</strong></p>
+<p>Implement a <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled task</a> to automatically release expired reservations (typically after 15-30 minutes of inactivity). This prevents abandoned carts from holding stock indefinitely. The <code>StockReservationResult.ExpiresAt</code> property tracks when reservations should be released.</p>
+</div>
+
+<h2 id="validation-and-business-rules">Validation and business rules</h2>
+<p>Robust validation prevents data integrity issues and provides a better customer experience by catching problems before they occur. Stock validation should happen at multiple points: when adding items to cart, during cart updates, before checkout, and before finalizing orders.</p>
+<h3 id="cart-validation">Cart validation</h3>
+<p>Before allowing customers to proceed to checkout, validate that all cart items have sufficient stock. The <code>ValidateCartStock</code> method performs batch validation for all items, checking both out-of-stock conditions and insufficient quantities:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Validate cart stock</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Validates that all items in a cart have sufficient stock.
+    /// Call this before proceeding to checkout.
+    /// &lt;/summary&gt;
+    /// &lt;param name="cartItems"&gt;Dictionary mapping ContentItemID to requested quantity.&lt;/param&gt;
+    /// &lt;param name="productNames"&gt;Optional dictionary mapping ContentItemID to product names for error messages.&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    /// &lt;returns&gt;Validation result with any errors found.&lt;/returns&gt;
+    public async Task&lt;StockValidationResult&gt; ValidateCartStock(
+        Dictionary&lt;int, decimal&gt; cartItems,
+        Dictionary&lt;int, string&gt;? productNames = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new StockValidationResult { IsValid = true };
+
+        // Get all stock records in a single query for efficiency
+        IEnumerable&lt;ProductStockInfo&gt; stockRecords = await productStockInfoProvider
+            .Get()
+            .WhereIn(nameof(ProductStockInfo.ProductStockContentItemID), cartItems.Keys.ToList())
+            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+
+        Dictionary&lt;int, ProductStockInfo&gt; stockByContentItemId = stockRecords
+            .ToDictionary(s =&gt; s.ProductStockContentItemID);
+
+        foreach (KeyValuePair&lt;int, decimal&gt; cartItem in cartItems)
+        {
+            string productName = productNames?.GetValueOrDefault(cartItem.Key) ?? $"Product {cartItem.Key}";
+
+            if (!stockByContentItemId.TryGetValue(cartItem.Key, out ProductStockInfo? stockInfo))
+            {
+                // No stock record - might be digital product (skip) or configuration error
+                logger.LogWarning(
+                    "No stock record found for ContentItemID {ContentItemID}. Assuming unlimited stock.",
+                    cartItem.Key);
+                continue;
+            }
+
+            // Calculate available stock (accounting for reservations if used)
+            decimal availableStock = stockInfo.ProductStockValue - stockInfo.ProductStockReservedValue;
+
+            if (availableStock &lt;= 0)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new StockValidationError
+                {
+                    ContentItemId = cartItem.Key,
+                    ProductName = productName,
+                    ErrorType = StockValidationErrorType.OutOfStock,
+                    RequestedQuantity = cartItem.Value,
+                    AvailableQuantity = 0,
+                    Message = $"{productName} is currently out of stock."
+                });
+            }
+            else if (availableStock &lt; cartItem.Value)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new StockValidationError
+                {
+                    ContentItemId = cartItem.Key,
+                    ProductName = productName,
+                    ErrorType = StockValidationErrorType.InsufficientStock,
+                    RequestedQuantity = cartItem.Value,
+                    AvailableQuantity = availableStock,
+                    Message = $"Only {availableStock} units of {productName} available. You requested {cartItem.Value}."
+                });
+            }
+        }
+
+        return result;
+    }
+
+/// &lt;summary&gt;
+/// Result of stock validation for cart items.
+/// &lt;/summary&gt;
+public class StockValidationResult
+{
+    /// &lt;summary&gt;
+    /// Indicates whether all items passed validation.
+    /// &lt;/summary&gt;
+    public bool IsValid { get; set; }
+
+    /// &lt;summary&gt;
+    /// List of validation errors for items that failed.
+    /// &lt;/summary&gt;
+    public List&lt;StockValidationError&gt; Errors { get; set; } = [];
+}
+
+/// &lt;summary&gt;
+/// Details about a stock validation failure.
+/// &lt;/summary&gt;
+public class StockValidationError
+{
+    /// &lt;summary&gt;
+    /// ContentItemID of the product that failed validation.
+    /// &lt;/summary&gt;
+    public int ContentItemId { get; set; }
+
+    /// &lt;summary&gt;
+    /// Name of the product for display purposes.
+    /// &lt;/summary&gt;
+    public string ProductName { get; set; } = string.Empty;
+
+    /// &lt;summary&gt;
+    /// Type of validation error.
+    /// &lt;/summary&gt;
+    public StockValidationErrorType ErrorType { get; set; }
+
+    /// &lt;summary&gt;
+    /// Requested quantity that failed validation.
+    /// &lt;/summary&gt;
+    public decimal RequestedQuantity { get; set; }
+
+    /// &lt;summary&gt;
+    /// Available quantity (if applicable).
+    /// &lt;/summary&gt;
+    public decimal AvailableQuantity { get; set; }
+
+    /// &lt;summary&gt;
+    /// Human-readable error message.
+    /// &lt;/summary&gt;
+    public string Message { get; set; } = string.Empty;
+}</code></pre>
+</div>
+
+<p>This method returns detailed validation results including error types and messages suitable for display to customers. Use the results to show specific error messages such as “Product X is out of stock” or “Only 3 units available, you requested 5.”</p>
+<h3 id="threshold-monitoring">Threshold monitoring</h3>
+<p>Low stock alerts help you proactively manage inventory and avoid stockouts. Implement threshold checking after each stock reduction to trigger notifications to inventory managers:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Check low stock threshold</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Checks if a product's stock has fallen below the threshold.
+    /// Call this after stock reductions to trigger alerts.
+    /// &lt;/summary&gt;
+    /// &lt;param name="contentItemId"&gt;ContentItemID of the product.&lt;/param&gt;
+    /// &lt;param name="threshold"&gt;Stock threshold to check against (default: 10).&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    /// &lt;returns&gt;True if stock is below threshold; false otherwise.&lt;/returns&gt;
+    public async Task&lt;bool&gt; CheckLowStockThreshold(
+        int contentItemId,
+        decimal threshold = DEFAULT_LOW_STOCK_THRESHOLD,
+        CancellationToken cancellationToken = default)
+    {
+        ProductStockInfo? stockInfo = (await productStockInfoProvider
+            .Get()
+            .WhereEquals(nameof(ProductStockInfo.ProductStockContentItemID), contentItemId)
+            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken))
+            .FirstOrDefault();
+
+        if (stockInfo == null)
+        {
+            return false;
+        }
+
+        bool isLowStock = stockInfo.ProductStockValue &lt;= threshold;
+
+        if (isLowStock)
+        {
+            logger.LogWarning(
+                "Low stock alert: ContentItemID {ContentItemID} has only {Stock} units (threshold: {Threshold})",
+                contentItemId, stockInfo.ProductStockValue, threshold);
+        }
+
+        return isLowStock;
+    }</code></pre>
+</div>
+
+<p>Retrieve all products below the threshold for reporting and dashboard displays:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Get low stock products</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Retrieves all products with stock below the specified threshold.
+    /// &lt;/summary&gt;
+    /// &lt;param name="threshold"&gt;Stock threshold (default: 10).&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    /// &lt;returns&gt;List of ProductStockInfo records below threshold.&lt;/returns&gt;
+    public async Task&lt;IEnumerable&lt;ProductStockInfo&gt;&gt; GetLowStockProducts(
+        decimal threshold = DEFAULT_LOW_STOCK_THRESHOLD,
+        CancellationToken cancellationToken = default)
+    {
+        return await productStockInfoProvider
+            .Get()
+            .WhereLessOrEquals(nameof(ProductStockInfo.ProductStockValue), threshold)
+            .WhereGreaterThan(nameof(ProductStockInfo.ProductStockValue), 0) // Exclude out of stock
+            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+    }</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Business rule considerations</strong></p>
+<ul>
+<li>
+<strong>Negative stock prevention</strong> – Always validate before reducing stock to ensure values don’t go below zero</li>
+<li>
+<strong>Concurrent access</strong> – The database handles basic concurrency, but consider implementing optimistic locking for high-traffic scenarios</li>
+<li>
+<strong>Threshold alerts</strong> – Set different thresholds based on product type, sales velocity, or supplier lead times</li>
+<li>
+<strong>Data integrity</strong> – Regularly reconcile stock records with physical inventory counts</li>
+</ul>
+</div>
+
+<h2 id="display-product-stock">Display product stock</h2>
+<p>Displaying accurate stock information on your storefront helps customers make informed purchasing decisions and sets appropriate expectations. Balance transparency with sales optimization—showing exact quantities for low stock creates urgency, while “In Stock” messages for abundant inventory avoid unnecessary anxiety.</p>
+<h3 id="stock-display-model">Stock display model</h3>
+<p>The <code>StockDisplayModel</code> encapsulates all information needed to display stock status on product pages. It includes availability flags, quantity information, and pre-calculated display messages:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Stock display model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// View model for displaying product stock information on the storefront.
+/// &lt;/summary&gt;
+public class StockDisplayModel
+{
+    /// &lt;summary&gt;
+    /// ContentItemID of the product.
+    /// &lt;/summary&gt;
+    public int ContentItemId { get; set; }
+
+    /// &lt;summary&gt;
+    /// Indicates whether the product is in stock.
+    /// &lt;/summary&gt;
+    public bool IsInStock { get; set; }
+
+    /// &lt;summary&gt;
+    /// Available quantity (null for digital/unlimited products).
+    /// &lt;/summary&gt;
+    public decimal? AvailableQuantity { get; set; }
+
+    /// &lt;summary&gt;
+    /// Indicates low stock condition (less than threshold).
+    /// &lt;/summary&gt;
+    public bool IsLowStock { get; set; }
+
+    /// &lt;summary&gt;
+    /// Display message for stock status.
+    /// &lt;/summary&gt;
+    public string StatusMessage { get; set; } = string.Empty;
+
+    /// &lt;summary&gt;
+    /// CSS class for styling based on stock status.
+    /// &lt;/summary&gt;
+    public string StatusCssClass { get; set; } = string.Empty;
+
+    /// &lt;summary&gt;
+    /// Maximum quantity that can be added to cart.
+    /// &lt;/summary&gt;
+    public int MaxOrderQuantity { get; set; }
+}</code></pre>
+</div>
+
+<h3 id="stock-display-service">Stock display service</h3>
+<p>The <code>StockDisplayService</code> transforms raw stock data into a presentation-ready model with appropriate messages and styling classes. It handles different scenarios including digital products (unlimited stock), out of stock, low stock warnings, and normal availability:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Stock display service</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Service for preparing stock information for display on the storefront.
+/// &lt;/summary&gt;
+public class StockDisplayService
+{
+    /// &lt;summary&gt;
+    /// Threshold below which stock is considered "low".
+    /// &lt;/summary&gt;
+    private const decimal LOW_STOCK_THRESHOLD = 5;
+
+    /// &lt;summary&gt;
+    /// Maximum quantity selector value for unlimited stock products.
+    /// &lt;/summary&gt;
+    private const int MAX_UNLIMITED_QUANTITY = 99;
+
+    private readonly ProductStockService productStockService;
+
+    public StockDisplayService(ProductStockService productStockService)
+    {
+        this.productStockService = productStockService;
+    }
+
+    /// &lt;summary&gt;
+    /// Gets stock display information for a single product.
+    /// &lt;/summary&gt;
+    /// &lt;param name="contentItemId"&gt;ContentItemID of the product.&lt;/param&gt;
+    /// &lt;param name="cancellationToken"&gt;Cancellation token.&lt;/param&gt;
+    /// &lt;returns&gt;Stock display model for rendering on the storefront.&lt;/returns&gt;
+    public async Task&lt;StockDisplayModel&gt; GetStockDisplayModel(
+        int contentItemId,
+        CancellationToken cancellationToken = default)
+    {
+        decimal? stockLevel = await productStockService.GetStockLevel(contentItemId, cancellationToken);
+
+        var model = new StockDisplayModel
+        {
+            ContentItemId = contentItemId
+        };
+
+        // Handle digital/unlimited products (no stock record)
+        if (stockLevel == null)
+        {
+            model.IsInStock = true;
+            model.AvailableQuantity = null;
+            model.IsLowStock = false;
+            model.StatusMessage = "In Stock";
+            model.StatusCssClass = "stock-available";
+            model.MaxOrderQuantity = MAX_UNLIMITED_QUANTITY;
+            return model;
+        }
+
+        // Handle out of stock
+        if (stockLevel &lt;= 0)
+        {
+            model.IsInStock = false;
+            model.AvailableQuantity = 0;
+            model.IsLowStock = false;
+            model.StatusMessage = "Out of Stock";
+            model.StatusCssClass = "stock-unavailable";
+            model.MaxOrderQuantity = 0;
+            return model;
+        }
+
+        // Handle low stock
+        if (stockLevel &lt;= LOW_STOCK_THRESHOLD)
+        {
+            model.IsInStock = true;
+            model.AvailableQuantity = stockLevel;
+            model.IsLowStock = true;
+            model.StatusMessage = $"Only {stockLevel} left - order soon!";
+            model.StatusCssClass = "stock-low";
+            model.MaxOrderQuantity = (int)stockLevel;
+            return model;
+        }
+
+        // Handle normal stock
+        model.IsInStock = true;
+        model.AvailableQuantity = stockLevel;
+        model.IsLowStock = false;
+        model.StatusMessage = "In Stock";
+        model.StatusCssClass = "stock-available";
+        model.MaxOrderQuantity = (int)Math.Min(stockLevel.Value, MAX_UNLIMITED_QUANTITY);
+
+        return model;
+    }
+}</code></pre>
+</div>
+
+<p>The service automatically categorizes stock levels: - <strong>Out of stock</strong> (0 units) – Displays unavailable message, disables add to cart - <strong>Low stock</strong> (≤5 units) – Shows urgent “Only X left” message to encourage purchase - <strong>In stock</strong> (&gt;5 units) – Simple availability message without specific quantities - <strong>Unlimited</strong> (no stock record) – Treats as always available (e.g., digital products)</p>
+<h3 id="view-component-implementation">View component implementation</h3>
+<p>Use an ASP.NET Core view component to render stock information consistently across your storefront. The component calls the display service and renders the appropriate view:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Product stock view component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// View component for displaying product stock status on product pages.
+/// &lt;/summary&gt;
+/// &lt;example&gt;
+/// Usage in Razor view:
+/// &lt;code&gt;
+/// @await Component.InvokeAsync("ProductStock", new { contentItemId = Model.ContentItemId })
+/// &lt;/code&gt;
+/// &lt;/example&gt;
+public class ProductStockViewComponent : ViewComponent
+{
+    private readonly StockDisplayService stockDisplayService;
+
+    public ProductStockViewComponent(StockDisplayService stockDisplayService)
+    {
+        this.stockDisplayService = stockDisplayService;
+    }
+
+    /// &lt;summary&gt;
+    /// Renders the stock display component.
+    /// &lt;/summary&gt;
+    /// &lt;param name="contentItemId"&gt;ContentItemID of the product.&lt;/param&gt;
+    /// &lt;returns&gt;View result with stock display model.&lt;/returns&gt;
+    public async Task&lt;IViewComponentResult&gt; InvokeAsync(int contentItemId)
+    {
+        StockDisplayModel model = await stockDisplayService.GetStockDisplayModel(contentItemId);
+        return View("~/Views/Shared/Components/ProductStock/Default.cshtml", model);
+    }
+}</code></pre>
+</div>
+
+<p>Usage examples in Razor views:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Product detail page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>@* Product detail page - Model would be your product detail view model *@
+&lt;div class="product-availability"&gt;
+    @await Component.InvokeAsync("ProductStock", new { contentItemId = Model.ContentItemId })
+&lt;/div&gt;</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Product listing</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>@* Product listing - Model would be your product listing view model containing a collection of products *@
+@foreach (var product in Model.Products)
+{
+    &lt;div class="product-card"&gt;
+        &lt;h3&gt;@product.Name&lt;/h3&gt;
+        @await Component.InvokeAsync("ProductStock", new { contentItemId = product.ContentItemId })
+    &lt;/div&gt;
+}</code></pre>
+</div>
+
+
+</body>
+</html>

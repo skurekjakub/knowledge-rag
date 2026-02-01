@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Enable application features</title>
+</head>
+<body>
+<p>Some features provided by the system need to be explicitly enabled in the ASP.NET Core application’s startup class.</p>
+<p>Features are enabled within the <code>IServiceCollection.AddKentico</code> call when building the application using <code>WebApplicationBuilder</code>. Each feature is enabled with a corresponding <em>Use*FeatureName*</em> extension method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddKentico(features =&gt;
+{
+    features.Use*FeatureName*();
+});
+
+</code></pre>
+</div>
+
+<p>The following table provides an overview of all features that can be enabled: </p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Feature</p>
+</td>
+<td>
+<p>Extension method</p>
+</td>
+<td>
+<p>Description and additional notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-commerce-setup">Commerce</a></p>
+</td>
+<td>
+<p>UseCommerce<br>
+(Kentico.Xperience.Commerce)</p>
+</td>
+<td>
+<p>Enables the commerce feature, which allows you to build simple online stores.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/contact-activities">Contact activity tracking</a></p>
+</td>
+<td>
+<p>UseActivityTracking<br>
+(Kentico.Activities.Web.Mvc)</p>
+</td>
+<td>
+<p>Required for page-related activities that need to be logged manually in your code. See <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">Set up activities</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">Content tree-based routing</a></p>
+</td>
+<td>
+<p>UseWebPageRouting<br>
+(Kentico.Content.Web.Mvc.Routing)</p>
+</td>
+<td>
+<p>Enables <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">Content tree-based routing</a> and registers the resulting routes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">Cross-site tracking</a></p>
+</td>
+<td>
+<p>UseCrossSiteTracking<br>
+(Kentico.OnlineMarketing.Web.Mvc)</p>
+</td>
+<td>
+<p>Registers endpoints that process contact and activity tracking requests from external sites.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder">Email Builder</a></p>
+</td>
+<td>
+<p>UseEmailBuilder<br>
+(Kentico.EmailBuilder.Web.Mvc)</p>
+</td>
+<td>
+<p>Initializes the Email Builder feature and registers required routes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Email subscriptions</a></p>
+</td>
+<td>
+<p>UseEmailMarketing<br>
+(Kentico.OnlineMarketing.Web.Mvc)</p>
+</td>
+<td>
+<p>Registers endpoints that process subscription confirmation and unsubscription requests for email recipient lists. See <a href="/documentation/developers-and-admins/digital-marketing-setup/enable-email-subscriptions">Enable email subscriptions</a> for additional details.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">Email statistic logging</a></p>
+</td>
+<td>
+<p>UseEmailStatisticsLogging<br>
+(Kentico.OnlineMarketing.Web.Mvc)</p>
+</td>
+<td>
+<p>Enables tracking of statistics for <a href="/documentation/business-users/digital-marketing/emails">emails</a> sent from Xperience, including the number of sent emails, email opens and clicked links. Only applies to emails created in the Xperience administration within an email channel application.</p>
+<p>When a recipient opens an email or clicks a link in its content, a hidden request is sent to the Xperience application. Enabling the <em>UseEmailStatisticsLogging</em> feature registers endpoints that process the tracking requests and log the appropriate email statistics.</p>
+<p>See <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">Set up email tracking</a> for additional details.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a></p>
+</td>
+<td>
+<p>UsePageBuilder<br>
+(Kentico.PageBuilder.Web.Mvc)</p>
+</td>
+<td>
+<p>Initializes the Page Builder feature and registers required routes. See <a href="/documentation/developers-and-admins/development/builders/page-builder#enable-the-page-builder-feature">Enable the Page Builder feature</a> for more details and additional configuration options.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

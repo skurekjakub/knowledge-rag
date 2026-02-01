@@ -1,0 +1,1037 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Forms authentication</title>
+</head>
+<body>
+<p>Forms authentication is a method of authenticating users in web applications where users are required to enter their credentials (such as a username and password) on a login page, which is then validated against a database or other data source to confirm their identity. The user’s credentials reach the server via a form submitted from the login page (hence the naming).</p>
+<p>Once the user is authenticated, a session is created for them and they can access protected pages and features of the application. The user’s identity is typically stored in an encrypted cookie for the duration of the session.</p>
+<p>Xperience by Kentico uses <a href="https://learn.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity" target="_blank">ASP.NET Identity</a> to manage membership in web applications. The types and API to set up forms authentication is located in the <strong>Kentico.Membership</strong> namespace (provided as part of the <em>Kentico.Xperience.WebApp</em> <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">NuGet package</a>).</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before implementing forms authentication, you must <a href="/documentation/developers-and-admins/development/registration-and-authentication">enable and configure ASP.NET Identity</a> in your web application.</p>
+<h2 id="implement-forms-authentication">Implement forms authentication</h2>
+<p>Use the following approach to develop actions that allow visitors to register on your website:</p>
+<ul>
+<li><a href="#registration">Registration</a></li>
+<li><a href="#sign-in-and-sign-out">Sign in and sign out</a></li>
+<li><a href="#password-policy">Password policy</a></li>
+<li><a href="#password-reset">Password reset</a></li>
+</ul>
+<h3 id="registration">Registration</h3>
+<p>Create a new controller class in your project or edit an existing one. Implement two registration actions – one basic GET action to display the registration form and a second POST action to handle creating new users when the form is submitted. Use conventional Identity APIs to implement the registration flow. For more information, see the comments in the following code snippet:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Registration actions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class AccountController : Controller
+{
+    private readonly ILogger&lt;AccountController&gt; logger;
+    private readonly UserManager&lt;ApplicationUser&gt; userManager;
+    private readonly SignInManager&lt;ApplicationUser&gt; signInManager;
+
+    // Provides instances of required services using dependency injection
+    public AccountController(UserManager&lt;ApplicationUser&gt; userManager,
+                             SignInManager&lt;ApplicationUser&gt; signInManager,
+                             ILogger&lt;AccountController&gt; logger)
+    {
+        this.userManager = userManager;
+        this.signInManager = signInManager;
+        this.logger = logger;
+    }
+
+    ...  
+
+    // GET: Account/Register
+    // Returns a basic view with the registration form
+    public ActionResult Register()
+    {
+        return View();
+    }
+
+    // POST: Account/Register
+    // Creates a member account
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Register(RegisterViewModel model)
+    {
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        // Holds user registration data. Map the properties from
+        // the registration form to the desired fields.
+        var member = new ApplicationUser
+        {
+            UserName = model.UserName,
+            Email = model.Email,
+            // Enables the member account. In simple registration flows,
+            // always set to true, otherwise the account will not be able to sign in.
+            // When implementing a multi-step registration process (e.g., with email confirmation),
+            // more robust logic is required. See the 'Email confirmation' section for details.
+            Enabled = true
+        };
+
+        var registerResult = new IdentityResult();
+        try
+        {
+            // Creates the member account
+            registerResult = await userManager.CreateAsync(member, model.Password);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(new EventId(0, "REGISTRATION_ERROR"), ex, $"Registration failed for user {model.UserName}");
+            ModelState.AddModelError(string.Empty, "Registration failed.");
+        }
+
+        if (registerResult.Succeeded)
+        {
+            // Signs the registered account in to the site
+            var signInResult = await signInManager.PasswordSignInAsync(member, model.Password, true, false);
+
+            if (signInResult.Succeeded)
+            {
+                // Redirects to the site root
+                return Redirect("/");
+            }
+        }
+
+        foreach (var error in registerResult.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        return View(model);
+    } 
+}
+
+</code></pre>
+</div>
+
+<p>In Xperience, registered users are stored as members in the <strong>CMS_Member</strong> database table and displayed in the administration’s <strong>Members</strong> application. In the example above, <code>ApplicationUser</code> represents the Xperience member object that is being created. The default implementation lets you collect only basic data (username, email, password). To collect a broader set of visitor data, the <code>ApplicationUser</code> class can be extended with additional fields (first name, title, etc.). See <a href="/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects">Add fields to member objects</a>. </p>
+<p>Next, create a view model for the Register action (<code>RegisterViewModel</code> in the example above). The view model:</p>
+<ul>
+<li>
+<p>Passes parameters from the registration form (name, email address, password and confirmation field).</p>
+
+<div>
+
+</div>
+<div>
+<p>The name is required for every account. See the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.iuservalidator-1" target="_blank">IUserValidator</a> implementation in the default Identity implementation.</p>
+</div>
+</li>
+<li><p>Uses data annotations to define validation and formatting rules for the data. See <a href="https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations" target="_blank">System.ComponentModel.DataAnnotations</a> for more information about the available annotation attributes.</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Registration view model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+public class RegisterViewModel
+{
+    [DataType(DataType.Text)]
+    [Required(ErrorMessage = "Enter your username")]
+    [DisplayName("User name")]
+    public string UserName { get; set; }
+
+    [DataType(DataType.EmailAddress)]
+    [Required(ErrorMessage = "Enter your email")]
+    [DisplayName("Email")]
+    [EmailAddress(ErrorMessage = "Enter a valid email address")]
+    public string Email { get; set; }
+
+    [DataType(DataType.Password)]
+    [DisplayName("Password")]
+    [Required(ErrorMessage = "Enter a password")]
+    public string Password { get; set; }
+
+    [DataType(DataType.Password)]
+    [DisplayName("Confirm your password")]
+    [Required(ErrorMessage = "Enter the password again")]
+    [Compare("Password", ErrorMessage = "The entered passwords do not match")]
+    public string PasswordConfirmation { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>As the last step, design the user interface required for registration on your website:</p>
+<ul>
+<li>Create a view for the <code>Register</code> action and display an appropriate registration form. Use a strongly typed view based on your registration view model. <em>Note:</em> The following example uses <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a> to provide basic formatting.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - registration form</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;form asp-action="Register" method="post"&gt;
+    &lt;div class="form-group"&gt;
+        &lt;span class="text-dark"&gt;&lt;label asp-for="UserName"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="UserName" class="form-control" /&gt;
+        &lt;span asp-validation-for="UserName" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;span class="text-dark"&gt;&lt;label asp-for="Email"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="Email" class="form-control" /&gt;
+        &lt;span asp-validation-for="Email" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;span class="text-dark"&gt;&lt;label asp-for="Password"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="Password" class="form-control" /&gt;
+        &lt;span asp-validation-for="Password" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;span class="text-dark"&gt;&lt;label asp-for="PasswordConfirmation"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="PasswordConfirmation" class="form-control" /&gt;
+        &lt;span asp-validation-for="PasswordConfirmation" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;input type="submit" value="Register" class="btn btn-primary" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>Visitors can now register new accounts on your site. Upon successful registration, the system creates the account in the connected Xperience database, <strong>CMS_Member</strong> table.</p>
+<h3 id="sign-in-and-sign-out">Sign in and sign out</h3>
+<p>The next part of the authentication flow enables registered accounts to sign in to the site. With forms authentication, this is done through another form that validates submitted credentials against the database of existing accounts. If the submitted information matches an existing account, the visitor is signed in. Otherwise, an error occurs. </p>
+<p>To implement the sign in flow on your website:</p>
+<ul>
+<li>Create a sign-in form that allows registered users to enter their credentials.</li>
+<li>Implement two authentication actions:
+<ul>
+<li>A basic GET action to display the authentication form.</li>
+<li>A POST action to handle the authentication.</li>
+</ul>
+</li>
+</ul>
+<p>Use conventional Identity APIs to implement the authentication flow. For more information, see the comments in the following code snippet:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Sign in controller actions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class AccountController : Controller
+{
+    private readonly ILogger&lt;AccountController&gt; logger;
+    private readonly UserManager&lt;ApplicationUser&gt; userManager;
+    private readonly SignInManager&lt;ApplicationUser&gt; signInManager;
+
+    // Provides instances of required services using dependency injection
+    public AccountController(UserManager&lt;ApplicationUser&gt; userManager,
+                             SignInManager&lt;ApplicationUser&gt; signInManager,
+                             ILogger&lt;AccountController&gt; logger)
+    {
+        this.userManager = userManager;
+        this.signInManager = signInManager;
+        this.logger = logger;
+    }
+
+    ...
+
+    // GET: Account/SignIn
+    [HttpGet]
+    [AllowAnonymous]
+    public ActionResult SignIn()
+    {
+        return View();
+    }
+
+    // POST: Account/SignIn
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; SignIn(SignInViewModel model, string returnUrl)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var signInResult = SignInResult.Failed;
+        try
+        {
+            // Signs the visitor in using Identity APIs
+            signInResult = await signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(new EventId(0, "SIGNIN_ERROR"), ex, $"Sign in failed for user {model.UserName}");
+        }
+
+        if (signInResult.Succeeded)
+        {          
+            // Redirects successfully signed-in members to the home page
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
+
+        // Returns an error in case the sign-in fails
+        ModelState.AddModelError(string.Empty, "We couldn't sign you in using the provided credentials.");
+        return View(model);
+    }
+
+    // POST: Account/Logout
+    // Signs the account out of the system
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult Logout()
+    {
+        signInManager.SignOutAsync();
+        return Redirect("/");
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The controller now contains actions required to handle user authentication. The view model used by the <code>SignIn</code> action:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>SignInViewModel.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+public class SignInViewModel
+{
+    [Required(ErrorMessage = "Enter your user name")]
+    [DisplayName("User name")]
+    public string UserName { get; set; }
+
+    [DataType(DataType.Password)]
+    [DisplayName("Password")]
+    public string Password { get; set; }
+
+    [DisplayName("Stay signed in")]
+    public bool RememberMe { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>As the last step, design the user interface:</p>
+<ul>
+<li>Create a view for the <code>SignIn</code> action and display an appropriate form. Use a strongly typed view based on your registration view model. <em>Note:</em> The following example uses <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a> to provide basic formatting.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - sign-in form</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;form asp-controller="Account" asp-action="SignIn" method="post"&gt;
+    &lt;div class="form-group"&gt;
+        &lt;span&gt;&lt;label asp-for="UserName"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="UserName" class="form-control" /&gt;
+        &lt;span asp-validation-for="UserName" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;span class="text-dark"&gt;&lt;label asp-for="Password"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="Password" class="form-control" /&gt;
+        &lt;span asp-validation-for="Password" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;span class="text-dark"&gt;&lt;label asp-for="RememberMe"&gt;&lt;/label&gt;&lt;/span&gt;
+        &lt;input asp-for="RememberMe" class="form-control" /&gt;
+        &lt;span asp-validation-for="RememberMe" class="text-danger"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;input type="submit" value="Sign in" class="btn btn-primary" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<h3 id="password-policy">Password policy</h3>
+<p>By default, ASP.NET Identity uses a relatively strong password policy that requires passwords to be at least six characters long and contain at least one non-alphanumeric character, one digit, and one lowercase and uppercase character. However, developers can modify these settings to meet their specific security requirements.</p>
+<p>Here are some of the common settings that you can configure:</p>
+<ol type="1">
+<li>Minimum password length (<code>RequiredLength</code>) – this setting specifies the minimum number of characters required for a user’s password.</li>
+<li>Require non-alphanumeric characters (<code>RequireNonAlphanumeric</code>) – this setting specifies whether the password should contain at least one non-alphanumeric character, such as a symbol or punctuation mark.</li>
+<li>Require digit (<code>RequireDigit</code>) – this setting specifies whether the password should contain at least one digit.</li>
+<li>Require lowercase and uppercase characters (<code>RequireUppercase, RequireLowercase</code>) – this setting specifies whether the password should contain both lowercase and uppercase characters.</li>
+</ol>
+<p>See <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-configuration#password" target="_blank">Microsoft’s ASP.NET Identity documentation</a> for all password options.</p>
+<p>Configure these settings in the application’s Identity configuration in <strong>Program.cs</strong>: </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddIdentity&lt;ApplicationUser, NoOpRoleStore&gt;(options =&gt;
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+})
+
+</code></pre>
+</div>
+
+<h3 id="password-reset">Password reset</h3>
+<p>The ability to reset passwords is an important part of any website that allows visitors to register accounts and sign in. It is expected and commonly used as a recovery mechanism by users who forget their password.</p>
+<p>Before starting with the implementation, add the <code>AddDefaultTokenProviders</code> method to your <code>AddIdentity</code> call in <strong>Program.cs</strong>. The call ensures the default Identity implemetnation of password reset generators for the integration.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+services.AddIdentity&lt;ApplicationUser, NoOpApplicationRole&gt;(options =&gt;
+{
+     // ...
+})
+    .AddUserStore&lt;ApplicationUserStore&lt;ApplicationUser&gt;&gt;()
+    .AddRoleStore&lt;NoOpApplicationRoleStore&gt;()
+    .AddUserManager&lt;UserManager&lt;ApplicationUser&gt;&gt;()
+    .AddSignInManager&lt;SignInManager&lt;ApplicationUser&gt;&gt;()
+    .AddDefaultTokenProviders();
+
+</code></pre>
+</div>
+
+<p>Now, to implement password reset on your site, add the following controller actions:</p>
+<ul>
+<li>A GET action that displays an email address entry form.</li>
+<li>A POST action that handles sending of password reset emails to the specified address.</li>
+<li>An action that handles the password reset requests – validates the reset token and displays a password reset form.</li>
+<li>A POST action that accepts the input of the password reset form.</li>
+</ul>
+<p>Use conventional Identity APIs to implement the authentication flow. For more information, see the comments in the following code snippet:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Web;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+
+using CMS.EmailEngine;
+
+using Kentico.Membership;
+
+public class PasswordResetController : Controller
+{
+    private readonly UserManager&lt;ApplicationUser&gt; userManager;
+    private readonly IEmailService messageService;
+
+    public PasswordResetController(UserManager&lt;ApplicationUser&gt; userManager,
+                             IEmailService messageService)
+    {
+        this.userManager = userManager;
+        this.messageService = messageService;
+    }
+
+    // Allows visitors to submit their email address and request a password reset
+    public IActionResult PasswordResetRequest()
+    {
+        return View();
+    }
+
+    // Generates a password reset request for the specified email address.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; RequestPasswordReset(PasswordResetRequestViewModel model)
+    {
+        // Validates the received email address based on the view model
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        // Gets the user entity for the specified email address
+        ApplicationUser user = await userManager.FindByEmailAsync(model.Email);
+
+        if (user != null)
+        {
+            // Generates a password reset token for the user
+            string token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            // URL-encodes the token 
+            string encodedToken = HttpUtility.UrlEncode(token);
+
+            // Prepares the URL of the password reset link (targets the "PasswordReset" action)
+            // Fill in the name of your controller
+            string resetUrl = Url.Action(nameof(PasswordResetController.PasswordReset),
+                                         "PasswordReset",
+                                         new { userId = user.Id, token = encodedToken },
+                                         Request.Scheme);
+
+            // Creates and sends the password reset email to the user's address
+            await messageService
+                .SendEmail(new EmailMessage()
+                {
+                    From = "admin@localhost.local",
+                    Recipients = user.Email,
+                    Subject = "Password reset request",
+                    Body = $"To reset your account's password, click &lt;a href=\"{resetUrl}\"&gt;here&lt;/a&gt;."
+                });
+        }
+
+        // Displays a view asking the visitor to check their email and click the password reset link.
+        // General security practices recommend never confirming whether the reset email was sent successfully. 
+        // For this reason, the method always terminates by displaying a generic message.
+        return RedirectToAction(nameof(CheckYourEmail));
+    }
+
+    public IActionResult CheckYourEmail()
+    {
+        return View();
+    }
+
+    // Handles the links that users click in password reset emails.
+    // If the request parameters are valid, displays a form where users can reset their password.
+    public async Task&lt;IActionResult&gt; PasswordReset(int? userId, string token)
+    {         
+        // Handles the case when the token is missing from the URL 
+        if (String.IsNullOrEmpty(token))
+        {
+            return NotFound();
+        }
+
+        // Decodes the token from the URL
+        token = HttpUtility.UrlDecode(token);
+
+        // Gets the member that requested the password reset
+        ApplicationUser user = await userManager.FindByIdAsync(userId.ToString());          
+
+        try
+        {
+            // Verifies the parameters of the password reset request
+            // True if the token is valid for the specified user, false if the token is invalid or has expired
+            // By default, the generated tokens are single-use and expire in 1 day
+            if (await userManager.VerifyUserTokenAsync(
+                                    user: user, 
+                                    tokenProvider: userManager.Options.Tokens.PasswordResetTokenProvider,
+                                    purpose: UserManager&lt;ApplicationUser&gt;.ResetPasswordTokenPurpose,
+                                    token: token)
+               )
+            {
+                // If the password request is valid, displays the password reset form
+                var model = new ResetPasswordViewModel
+                {
+                    UserId = userId.Value,
+                    Token = token
+                };
+
+                return View(model);
+            }
+
+            // If the password request is invalid, returns a view informing the user
+            return View("PasswordResetResult", ViewBag.Success = false);
+        }
+        catch (InvalidOperationException)
+        {
+            // An InvalidOperationException occurs if a user with the given ID is not found
+            // Returns a view informing the user that the password reset request is not valid
+            return View("PasswordResetResult", ViewBag.Success = false);
+        }
+    }
+
+    // Resets the user's password based on the posted data.
+    // Accepts the user ID, password reset token and the new password via the ResetPasswordViewModel.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; ResetPasswordResult(ResetPasswordViewModel model)
+    {
+        // Validates the received password data based on the view model
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        bool result = false;
+
+        ApplicationUser user = await userManager.FindByIdAsync(model.UserId.ToString());
+
+        // Changes the user's password if the provided reset token is valid
+        if (user != null &amp;&amp; (await userManager.ResetPasswordAsync(user, model.Token, model.Password)).Succeeded)
+        {
+            // If the password change was successful, displays a message informing the user
+            result = true;
+        }
+
+        // Displays the result of the password reset operation
+        return View("PasswordResetResult", ViewBag.Success = result);
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Create view models for your password reset actions and input forms:</p>
+<ul>
+<li>For the reset request form (<code>PasswordResetRequestViewModel</code>), the view model must validate and transfer the email address value.</li>
+<li>For the password reset form (<code>ResetPasswordViewModel</code>), the view model must contain the user ID, reset token and the new password.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>View models used by the password reset actions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class PasswordResetRequestViewModel
+{
+    [DataType(DataType.EmailAddress)]
+    [Required(ErrorMessage = "The email address cannot be empty.")]
+    [Display(Name = "Email address")]
+    [EmailAddress(ErrorMessage = "Invalid email address.")]
+    [MaxLength(254, ErrorMessage = "The Email address cannot be longer than 254 characters.")]
+    public string Email
+    {
+        get;
+        set;
+    }
+}
+
+public class ResetPasswordViewModel
+{
+    public int UserId
+    {
+        get;
+        set;
+    }
+
+    public string Token
+    {
+        get;
+        set;
+    }
+
+    [DataType(DataType.Password)]
+    [Required(ErrorMessage = "The password cannot be empty.")]
+    [DisplayName("Password")]
+    [MaxLength(100, ErrorMessage = "The password cannot be longer than 100 characters.")]
+    public string Password
+    {
+        get;
+        set;
+    }
+
+    [DataType(DataType.Password)]
+    [DisplayName("Password confirmation")]
+    [MaxLength(100, ErrorMessage = "The password cannot be longer than 100 characters.")]
+    [Compare("Password", ErrorMessage = "The entered passwords do not match.")]
+    public string PasswordConfirmation
+    {
+        get;
+        set;
+    }
+}
+
+</code></pre>
+</div>
+
+<p>As the last step, design the user interface for the password reset functionality on your website:</p>
+<ul>
+<li>Create a view for the <em>PasswordResetRequest</em> action that displays an email submission form.</li>
+<li>Create a view that instructs users to check their email and click a link to reset their password (<em>CheckYourEmail</em> view in the example).</li>
+<li>Create a view for the <em>PasswordReset</em> action that displays a password reset form.</li>
+<li>Create a view for the results of the <em>ResetPasswordResult</em> action (<em>PasswordResetResult</em> in the example).</li>
+</ul>
+<p>Password reset is now available for the application. When a user initiates password reset and submits their email address, the system sends them an email. The email contains a link (single-use with a 1-day expiration by default) that sends the user to a password reset form, where they can set a new password. The password reset form only works for users who access the URL with a valid token parameter.</p>
+<h2 id="email-confirmation">Email confirmation</h2>
+<p>ASP.NET Identity also allows you to set up a more advanced registration process that requires email confirmation (double opt-in). Email confirmation is useful when you wish to add an additional layer of legitimacy to the accounts registered in your application. This approach can help mitigate fake or spam user accounts by requiring an email address that the visitor can provably access as part of the registration process.</p>
+<p>The account registration flow with email confirmation enabled looks as follows:</p>
+<ol type="1">
+<li>The visitor submits a registration form that must contain their email address.</li>
+<li>The system sends an email with a confirmation link to the provided address.</li>
+<li>The user clicks the link in the email, proving ownership of the address.</li>
+<li>The system enables their account, allowing them to sign in.</li>
+</ol>
+<h3 id="implement-email-confirmation">Implement email confirmation</h3>
+<p>In your project’s ASP.NET Identity configuration, enable email confirmation and add the <code>AddDefaultTokenProviders</code> method to your <code>AddIdentity</code> call.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddIdentity&lt;ApplicationUser, NoOpRoleStore&gt;(options =&gt;
+{
+    ...
+    options.SignIn.RequireConfirmedEmail = true;
+})
+    .AddDefaultTokenProviders();
+
+</code></pre>
+</div>
+
+<p>Create a new controller class in your project or modify an existing registration flow.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Authentication flow with email confirmation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+private readonly ILogger&lt;AccountController&gt; logger;
+private readonly IEmailService emailService;
+private readonly UserManager&lt;ApplicationUser&gt; userManager;
+private readonly SignInManager&lt;ApplicationUser&gt; signInManager;
+
+// Obtains instances of required dependencies using constructor dependency injection
+public AccountController(UserManager&lt;ApplicationUser&gt; userManager,
+                         SignInManager&lt;ApplicationUser&gt; signInManager,
+                         ILogger&lt;AccountController&gt; logger,
+                         IEmailService emailService)
+{
+    this.userManager = userManager;
+    this.signInManager = signInManager;
+    this.logger = logger;
+    this.emailService = emailService;
+}    
+
+// Displays the registration form
+// For the purposes of email confirmation, the form must collect
+// the visitor's email and password at minimum.
+// GET: //Account/Register
+[HttpGet]
+public IActionResult Register()
+{
+    return View();
+}
+
+// Handles user registration
+// POST: Account/Register
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task&lt;IActionResult&gt; Register(RegisterViewModel model)
+{
+
+    if (!ModelState.IsValid)
+    {
+        return View(model);
+    }
+
+    var member = new ApplicationUser
+    {
+        UserName = model.UserName,
+        Email = model.Email,
+        // Newly registered accounts must be created as disabled to prevent them from being able to sign in.
+        // Disabled accounts cannot sign in until they have confirmed their account.
+        // See the remarks section on the parent page for details about 'ApplicationUser.Enabled'.
+        Enabled = userManager.Options.SignIn.RequireConfirmedEmail ? false : true
+    };
+
+    var registerResult = new IdentityResult();
+
+    try
+    {
+        registerResult = await userManager.CreateAsync(member, model.Password);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(new EventId(0, "REGISTRATION_ERROR"), ex, $"Registration failed for user {model.UserName}");
+        ModelState.AddModelError(string.Empty, "Registration failed.");
+    }
+
+    if (registerResult.Succeeded)
+    {
+
+        if (userManager.Options.SignIn.RequireConfirmedEmail)
+        {
+            // Generates the confirmation token and link URL
+            string confirmToken = await userManager.GenerateEmailConfirmationTokenAsync(member);
+            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account",
+                new { memberEmail = member.Email, confirmToken }, Request.Scheme);
+
+            // Sends the cofirmation message using the configured email provider
+            await emailService.SendEmail(new EmailMessage()
+            {
+                From = "admin@localhost.local",
+                Recipients = member.Email,
+                Subject = "Email confirmation",
+                Body = $"Confirm your new account by clicking &lt;a href=\"{confirmationLink}\"&gt;here&lt;/a&gt;."
+            });
+
+            return RedirectToAction(nameof(VerifyEmail));
+        }
+        else
+        {
+            var signInResult = await signInManager.PasswordSignInAsync(member, model.Password, true, false);
+
+            if (signInResult.Succeeded)
+            {
+                // Redirects to the Home action
+                RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+        }
+    }
+
+    foreach (var error in registerResult.Errors)
+    {
+        ModelState.AddModelError(string.Empty, error.Description);
+    }
+
+    return View(model);
+}
+
+// Processes email confirmation links
+[HttpGet]
+public async Task&lt;ActionResult&gt; ConfirmEmail([FromQuery] string memberEmail, [FromQuery] string confirmToken)
+{
+    IdentityResult confirmResult;
+
+    ApplicationUser user = await userManager.FindByEmailAsync(memberEmail);
+    try
+    {
+        // Verifies the confirmation parameters and enables the user account if successful
+        confirmResult = await userManager.ConfirmEmailAsync(user, confirmToken);
+    }
+    catch (InvalidOperationException)
+    {
+        // An InvalidOperationException occurs if a user with the given ID is not found
+        confirmResult = IdentityResult.Failed(new IdentityError() { Description = "User not found." });
+    }
+
+    if (confirmResult.Succeeded)
+    {
+        // If the verification was successful, displays a view informing the user that their account was activated                     
+        return RedirectToAction(nameof(EmailConfirmed));
+     }
+
+    // Returns a view informing the user that the email confirmation failed
+    return RedirectToAction(nameof(EmailConfirmationFailed));
+}
+
+// Returns a basic view informing users about the sent confirmation email
+public IActionResult VerifyEmail()
+{
+    return View();
+}
+
+// Informs that email confirmation was successful
+public IActionResult EmailConfirmed()
+{
+    return View();
+}
+
+// Returned in case the email confirmation fails (e.g., due to an expired token or invalid link)
+public IActionResult EmailConfirmationFailed()
+{
+    return View();
+}
+
+</code></pre>
+</div>
+
+<p>The view model used by <code>Register</code>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register action view model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+public class RegisterViewModel
+{
+    [DataType(DataType.Text)]
+    [Required(ErrorMessage = "Enter your username")]
+    [DisplayName("User name")]
+    [MaxLength(100, ErrorMessage = "Username cannot be longer than {1}")]
+    public string UserName { get; set; }
+
+    [DataType(DataType.EmailAddress)]
+    [Required(ErrorMessage = "Enter your email")]
+    [DisplayName("Email")]
+    [EmailAddress(ErrorMessage = "Enter a valid email address")]
+    [MaxLength(100, ErrorMessage = "Address cannot be longer than {1}")]
+    public string Email { get; set; }
+
+    [DataType(DataType.Password)]
+    [DisplayName("Password")]
+    [Required(ErrorMessage = "Enter a password")]
+    public string Password { get; set; }
+
+    [DataType(DataType.Password)]
+    [DisplayName("Confirm your password")]
+    [Required(ErrorMessage = "Enter the password again")]
+    [Compare("Password", ErrorMessage = "The entered passwords do not match")]
+    public string PasswordConfirmation { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>Design the user interface required for registration on your website:</p>
+<ul>
+<li>Create a view for the <em>Register</em> action and display an appropriate registration form.</li>
+<li>Create a view with content that informs users about the need to confirm their newly registered account <em>(</em>the <em>VerifyEmail</em> view in the example).</li>
+<li>Create views for the <em>EmailConfirmed</em> and <em>EmailConfirmationFailed</em> actions. Display information for users who click the confirmation link (for both successful and unsuccessful confirmation).</li>
+</ul>
+<p>Visitors can now register accounts on your site. Upon registration, the system creates a disabled member in the connected Xperience database – <strong>CMS_Member</strong> table – and sends a confirmation email to the submitted address. After clicking the confirmation link, the visitor’s account becomes enabled and they can sign in.</p>
+
+</body>
+</html>

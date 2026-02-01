@@ -1,0 +1,457 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Headless tracking</title>
+</head>
+<body>
+<p>Websites running in Xperience by Kentico can <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">track visitors as contacts</a> and <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">log their activities</a>. Headless tracking allows you to extend these features to the audience of other content channels, such as mobile apps, external services, single-page applications, etc. Xperience then serves as a central hub where you can monitor contacts and analyze activities for all connected websites and channels.</p>
+<p>For example, headless tracking is suitable for applications that retrieve and display content from Xperience through <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Relationship of headless channels and tracking</strong></p>
+<p>Applications where you wish to use headless tracking must be represented in Xperience by a <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a>.</p>
+<p>The channel allows you to <a href="/documentation/business-users/headless-content">manage headless content</a> and <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">retrieve it via the GraphQL API</a>. However, content retrieval is not a prerequisite, and you can use headless tracking in external applications that do not retrieve content from Xperience. For example, if you have an Xperience website channel and a mobile app that loads content from a different source, you can use headless tracking to synchronize the app’s user activity with your contacts in Xperience.</p>
+</div>
+
+<p>Headless tracking works as a REST API. The Xperience application provides endpoints to which you send HTTP requests from your external applications.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Make sure the <code>Enable</code> and <code>EnableTracking</code> configuration keys or options are enabled for your Xperience application. See <a href="/documentation/developers-and-admins/configuration/headless-channel-management#configure-the-headless-api">Configure the headless API</a> for details.</p>
+</div>
+
+<p>The following steps outline the typical process for setting up headless tracking in an external application:</p>
+<ul>
+<li><a href="#authentication-and-cors">Ensure authentication and CORS for your requests</a></li>
+<li><a href="#get-the-text-of-consents-from-xperience">Display one or more tracking consents from Xperience to your application’s users</a></li>
+<li><a href="#add-or-revoke-a-consent-agreement">Allow users to accept or revoke the consents</a></li>
+<li>For users who have given a consent agreement to be tracked:
+<ul>
+<li><a href="#create-contacts">Create contacts in Xperience to represent individual users</a></li>
+<li>
+<a href="#log-activities">Log activities for the contacts</a>
+<ul>
+<li>Use the <em>Data input</em> <a href="#log-activities">activity</a> to send or update information about contacts</li>
+<li>You can set up <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activity types</a> for any actions that you wish to track in your application.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="authentication-and-cors">Authentication and CORS</h2>
+<p>To authenticate headless tracking requests, you need to:</p>
+<ol type="1">
+<li>Set up a <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a> in Xperience.</li>
+<li>Create at least one <a href="/documentation/developers-and-admins/configuration/headless-channel-management#manage-api-keys">API key</a> with the <strong><a href="/documentation/developers-and-admins/configuration/headless-channel-management#access-types-of-api-keys">Access type</a></strong> set to <em>Tracking API</em>.</li>
+</ol>
+<p>For each tracking API request, add the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization" target="_blank">Authorization</a> header containing an <strong>enabled tracking API key</strong>.</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong>HTTP Authorization header</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+Authorization: Bearer &lt;ApiKey&gt;
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Authorizaton header security recommendations</strong></p>
+<p>If you set the <em>Authorization</em> header directly when sending requests from a client API on a public web page, it can be seen by anyone. To ensure the security of your API keys, we recommend that you use a backend proxy server to add the <em>Authorization</em> header and forward the requests to a headless tracking API endpoint.</p>
+</div>
+
+<p>If sending tracking requests directly from the client-side code of a web application (without additional header processing on a proxy server), you also need to ensure <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank">Cross-Origin Resource Sharing (CORS)</a>.</p>
+<p>Follow the instructions in <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content#cross-origin-resource-sharing">Cross-origin resource sharing</a> — the CORS configuration options are shared for headless tracking endpoints and headless channel GraphQL endpoints.</p>
+<h2 id="get-the-text-of-consents-from-xperience">Get the text of consents from Xperience</h2>
+<p>To comply with <a href="/documentation/developers-and-admins/data-protection">data protection regulations</a>, most applications can only collect personal data and track activities for users who explicitly give consent.</p>
+<p>Set up your <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a> in Xperience, and retrieve their text by sending requests:</p>
+<ul>
+<li><p><strong>HTTP method</strong>: GET</p></li>
+<li><p><strong>Endpoint</strong>: /Kentico.Tracking/consents/{consent_code_name}?languageName={language_code_name}</p></li>
+<li><p><strong>URI example</strong>: https://domain.com/Kentico.Tracking/consents/TrackingConsent?languageName=en</p></li>
+<li>
+<p><strong>Response body</strong>: Consent text strings in the <code>shortText</code> and <code>fullText</code> fields</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  {
+      "shortText": "...",
+      "fullText": "..."
+  }
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Consent text format</strong></p>
+<p>The returned consent text strings contain HTML tags – text formatting elements, <code>&lt;p&gt;</code> tags for paragraphs, etc.</p>
+</div>
+</li>
+</ul>
+<p>Create an appropriate UI in your application that displays the retrieved texts and allows users to give consent agreements.</p>
+<h2 id="create-contacts">Create contacts</h2>
+<p>Your application’s users are represented as <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> in Xperience. When a user gives consent to be tracked, you can create a new contact in Xperience by sending the following request:</p>
+<ul>
+<li><p><strong>HTTP method</strong>: POST</p></li>
+<li><p><strong>Endpoint</strong>: /Kentico.Tracking/contacts</p></li>
+<li>
+<p><strong>Response body</strong>: GUID of the new contact in the <code>contact</code> field</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  {
+      "contact": "06b035b8-6658-4a1b-b1de-5994e4975fb1"
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>The returned contact GUID is an identifier that you need to <strong>store in your application</strong>. Link the identifier with any other data that you have about the user. This allows you to keep track of the user in your application, identify them whenever they return, and pair them with the same contact.</p>
+<p>The GUID is a required parameter whenever you need to <a href="#add-or-revoke-a-consent-agreement">manage the contact’s consent agreements</a> or <a href="#log-activities">log activities</a>.</p>
+<h2 id="add-or-revoke-a-consent-agreement">Add or revoke a consent agreement</h2>
+<p>To add or revoke a <a href="#get-the-text-of-consents-from-xperience">consent agreement</a> for a <a href="#create-contacts">contact</a>, send the following request:</p>
+<ul>
+<li><p><strong>HTTP method</strong>: POST</p></li>
+<li><p><strong>Endpoint</strong>: /Kentico.Tracking/contacts/{contact_guid}/consents/{consent_name}</p></li>
+<li><p><strong>URI example</strong>: https://domain.com/Kentico.Tracking/contacts/06b035b8-6658-4a1b-b1de-5994e4975fb1/consents/TrackingConsent</p></li>
+<li><p><strong>Request headers</strong>: The <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type" target="_blank">Content-Type</a> header must be set to <em>application/json</em>.</p></li>
+<li>
+<p><strong>Request body</strong>: Set the <code>agree</code> field to <code>true</code> (agree) or <code>false</code> (revoke)</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  {
+      "agree": true
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h2 id="check-whether-a-contact-has-given-a-consent-agreement">Check whether a contact has given a consent agreement</h2>
+<p>To check whether a <a href="#create-contacts">contact</a> currently has a valid agreement for a <a href="#get-the-text-of-consents-from-xperience">consent</a>, send the following request:</p>
+<ul>
+<li><p><strong>HTTP method</strong>: GET</p></li>
+<li><p><strong>Endpoint</strong>: /Kentico.Tracking/contacts/{contact_guid}/consents/{consent_name}</p></li>
+<li><p><strong>URI example</strong>: https://domain.com/Kentico.Tracking/contacts/06b035b8-6658-4a1b-b1de-5994e4975fb1/consents/TrackingConsent</p></li>
+<li>
+<p><strong>Response body</strong>: <code>true</code> or <code>false</code> value in the <code>isAgreed</code> field</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  {
+      "isAgreed": true
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h2 id="log-activities">Log activities</h2>
+<p>The headless tracking API allows you to log the following types of <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">activities</a>:</p>
+<ul>
+<li>
+<strong>Page visit</strong> – represents a single view of a “page” in your application.</li>
+<li>
+<strong>Click</strong> – represents a “click” action performed by a user.</li>
+<li>
+<strong>Data input</strong> – allows you to update the data of <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> using information submitted by the user.</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">Custom activity types</a> – can represent any action that you wish to track.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The headless endpoint for activity logging does not automatically evaluate whether the specified contact has given consent to be tracked. Such conditions need to be implemented on the side of your external application before you log activities (see <a href="#check-whether-a-contact-has-given-a-consent-agreement">Check whether a contact has given a consent agreement</a>).</p>
+</div>
+
+<p>Log activities by sending the following requests:</p>
+<ul>
+<li>
+<strong>HTTP method</strong>: POST</li>
+<li>
+<strong>Endpoint</strong>: /Kentico.Tracking/activities</li>
+<li>
+<strong>Request headers</strong>: The <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type" target="_blank">Content-Type</a> header must be set to <em>application/json</em>.</li>
+<li>
+<strong>Request body</strong>:
+<ul>
+<li>
+<p><code>channel</code> – the GUID identifier of the <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a> under which the activity will be logged.</p>
+<ul>
+<li>Find the identifier in the Xperience administration: <strong>Channel management</strong> → edit channel → <strong>General</strong> → <strong>Channel identifier for Tracking API</strong>
+</li>
+<li>The identifier must match the parent channel of the API key used to <a href="#authentication-and-cors">authenticate</a> the logging request.</li>
+</ul>
+</li>
+<li><p><code>contact</code> – the GUID of the contact who performed the activity (see <a href="#create-contacts">Create contacts</a>).</p></li>
+<li><p><code>activities</code> – an array of activity objects. You can log any number of activities within a single request. See below to learn about the data structure of activity objects.</p></li>
+</ul>
+</li>
+</ul>
+<p>For each activity object in the <code>activities</code> array, set the following fields:</p>
+<ul>
+<li>
+<p><code>type</code> – the <em>code name</em> of the activity type that you wish to log. Use the following values:</p>
+<ul>
+<li>pagevisit</li>
+<li>click</li>
+<li>datainput</li>
+<li>
+<em>&lt;activity type code name&gt;</em> for custom activities</li>
+</ul>
+</li>
+<li><p><code>value</code> – a value logged with the activity. Required for <em>Click</em> and <em>Data input</em> activities.</p></li>
+<li><p><code>url</code> – optional for all activity types (except <em>Page visit</em>). Currently not displayed in the activity log within the Xperience administration.</p></li>
+<li><p><code>referrer</code> – an optional <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer" target="_blank">URL referrer</a> value. Currently not displayed in the activity log within the Xperience administration.</p></li>
+</ul>
+<p>Additionally, individual activity types have additional requirements:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Activity type</p>
+</td>
+<td>
+<p>Instructions</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Page visit</p>
+</td>
+<td>
+<p>The <code>url</code> field is required for page visit activities (for potential use in <a href="/documentation/business-users/digital-marketing/contact-groups">Contact group</a> conditions).</p>
+<p>Set the <code>value</code> field to the title/name of the visited page.</p>
+<p>The title of the resulting activity is in format: <em>Page visit ‘&lt;value&gt;’</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Click</p>
+</td>
+<td>
+<p>The <code>Value</code> field is required for <em>Click</em> activites. We recommend setting the value to the name, label or identifier of the clicked UI element.</p>
+<p>The title of the resulting activity is in format: <em>Clicked ‘&lt;value&gt;’</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Data input</p>
+</td>
+<td>
+<p>Populate <code>contactFields</code> with a JSON object containing fields matching the names of contact fields that you wish to set. The following contact fields are available:</p>
+<ul>
+<li>
+<strong>ContactEmail</strong>
+<ul>
+<li>Note: For security reasons, the <em>Data input</em> activity cannot be used to change a contact’s existing email value. If the contact already has an email address stored in Xperience that doesn’t match the new email value, the <em>Data input</em> activity and all related field updates are performed for a different contact. Either an existing contact that matches the submitted email value is used, or a new contact is created.</li>
+</ul>
+</li>
+<li><strong>ContactFirstName</strong></li>
+<li><strong>ContactMiddleName</strong></li>
+<li><strong>ContactLastName</strong></li>
+<li><strong>ContactBirthday</strong></li>
+<li>
+<strong>ContactMobilePhone</strong> (<em>Private phone</em> in the Xperience <em>Contact management</em> application)</li>
+<li><strong>ContactBusinessPhone</strong></li>
+<li><strong>ContactCompanyName</strong></li>
+<li><strong>ContactJobTitle</strong></li>
+<li><strong>ContactAddress1</strong></li>
+<li><strong>ContactCity</strong></li>
+<li><strong>ContactZIP</strong></li>
+<li>
+<strong>ContactCountry</strong> (accepts <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3" target="_blank">3 letter ISO country codes</a>)</li>
+<li>
+<strong>ContactState</strong> (accepts 2 letter state codes, currently only <a href="https://en.wikipedia.org/wiki/List_of_U.S._state_and_territory_abbreviations" target="_blank">USA state codes (ANSI)</a> are supported)</li>
+<li><strong>ContactNotes</strong></li>
+</ul>
+<p>Only <code>string</code> values are supported for the contact fields.</p>
+<p>The <code>value</code> field is required for <em>Data input</em> activities. For example, you can set the value to describe the source of the contact data.</p>
+<p>The title of the resulting activity is in format: <em>Data input ‘&lt;value&gt;’</em></p>
+<p>You can view the collected contact data in the Xperience <strong>Contact management</strong> application and use it to build <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> conditions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Custom activities</p>
+</td>
+<td>
+<p>The <code>type</code> field must match the <strong>Code name</strong> of an enabled <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activity type</a>.</p>
+<p>The title of the resulting activity is the custom activity type’s name, followed by <em>‘&lt;value&gt;’</em> if the <code>value</code> field was specified.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Request body example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+    "channel": "a3f4bc8b-6d84-454f-8215-cbec70bfaadd",
+    "contact": "06b035b8-6658-4a1b-b1de-5994e4975fb1",
+    "activities": [
+        {
+            "type": "pagevisit",
+            "url": "https://example.com/mypage"
+        },
+        {
+            "type": "click",
+            "value": "MyClickableElement"
+        },
+        {
+            "type": "datainput",
+            "value": "Registration form",
+            "contactFields": 
+            {
+                "ContactFirstName": "Luke",
+                "ContactLastName" : "Smith",
+                "ContactEmail" : "lsmith@domain.com"
+            }
+        },
+        {
+            "type": "custom_loan_calculator",
+            "value": "5000"
+        }
+    ]
+}
+
+</code></pre>
+</div>
+
+<p>Activity logging requests return an <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/207" target="_blank">HTTP 207 Multi-Status</a> response. The response body contains a <code>results</code> array where you can find the HTTP status code for individual submitted activities.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Response example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+    "results": [
+        {
+            "status": 202,
+        },
+        {
+            "status": 202
+        }
+    ]
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

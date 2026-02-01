@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI page extenders</title>
+</head>
+<body>
+<p>If you need custom functionality or content adjustments that you cannot configure through the properties available from the admin UI, you can develop a <strong>page extender</strong> for the corresponding page.</p>
+<p>Page extenders allow you to modify the back-end definition of existing UI pages without directly editing their source code. You can use them to add new <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">commands</a> or change the initial configuration of pages. For example, you can add additional columns to an object listing (e.g., to display additional properties of registered users) or specify new actions (e.g., perform a specific operation with selected objects).</p>
+<p>The following diagram illustrates the function of page extenders.</p>
+<p></p>
+<h2 id="create-page-extenders">Create page extenders</h2>
+<p>All page extenders must inherit from the <code>PageExtender&lt;TPage&gt;</code> base class. Substitute the generic parameter with the type of the page you wish to extend.</p>
+
+<div>
+
+</div>
+<div>
+<p>To find the implementing type of default or other third-party pages that don’t make their source code available, the admin UI provides the <strong>UI tree</strong> view available in the <strong>System</strong> application. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#UIpages-UITree">Register new pages under existing admin UI pages</a> for more information.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Creating a page extender</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.UIPages;
+
+// Extends the user listing from the 'Users' application
+public class UserListExtender : PageExtender&lt;UserList&gt;
+{ 
+}
+
+</code></pre>
+</div>
+
+<h2 id="modify-the-page-configuration">Modify the page configuration</h2>
+<p>Within page extenders, you can modify the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">configuration of the page</a> and its <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">client template properties</a>.</p>
+<p>The options available to you largely depend on the type of the page you wish to extend. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates">Reference - UI page templates</a> for a list of templates on which most of the administration interface is built.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - extending the Users application user listing page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class UserListExtender : PageExtender&lt;UserList&gt;
+{
+    // Configures the listing template on which UserList is based
+    // The available configuration options vary based on the type of the extended page
+    public override Task ConfigurePage()
+    {
+        // Adds a new action to each item in the listing
+        Page.PageConfiguration.TableActions.AddCommand...
+
+        // Adds a new action for the entire listing
+        Page.PageConfiguration.HeaderActions.AddCommand...
+
+        return base.ConfigurePage();
+    }
+
+    // Configures the properties of the client template this page is based on
+    // Called after the 'ConfigurePage' method
+    public override Task&lt;TemplateClientProperties&gt; ConfigureTemplateProperties(TemplateClientProperties properties)
+    {
+        // Manipulate properties as desired
+
+        return base.ConfigureTemplateProperties(properties);
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="add-new-page-commands">Add new page commands</h2>
+<p>You can use extenders to add new <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">page commands</a>. </p>
+<p>Declare a new method within the page extender class and annotate it with the <code>PageCommand</code> attribute. The process is identical to writing commands for UI pages.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[PageCommand]
+public async Task&lt;ICommandResponse&gt; MyExtenderCommand()
+{
+    // Command logic...
+
+    return Response().AddSuccessMessage("Command executed.");
+}
+
+</code></pre>
+</div>
+
+<h2 id="register-page-extenders">Register page extenders</h2>
+<p>Page extenders need to be registered in the system via the <code>PageExtender</code> assembly attribute.</p>
+<p>When registering extenders, you need to provide the <code>System.Type</code> of the implementing class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Page extender registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+// Registers the page extender of the 'MyPageExtender' type into the system
+[assembly: PageExtender(typeof(MyPageExtender))]
+
+public class MyPageExtender : PageExtender&lt;MyPage&gt; 
+{
+    ...
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

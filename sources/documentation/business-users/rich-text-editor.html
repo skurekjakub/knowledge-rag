@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Rich text editor</title>
+</head>
+<body>
+<p>To help you with the editing of text fields, the rich text editor allows you to work with content in an intuitive WYSIWYG (“What You See Is What You Get”) manner. The editor provides essential formatting functionality, e.g., bold, italics, paragraph formatting, lists, or indentation.</p>
+<p>When editing, you can also switch to a code view to see the corresponding HTML formatting of the text. The count of the currently entered characters is always displayed at the bottom right corner of the editor.</p>
+<p></p>
+<h2 id="format-text">Format text</h2>
+<p>The rich text editor offers essential formatting functionality. You can use the editor toolbar to format text within the editor.</p>
+<p>Following is the default setup of the rich text editor (the editor might offer different functionality in your projects, depending on the configuration <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">set by the developers</a>):</p>
+<p></p>
+<ol type="1">
+<li>
+<strong>Bold</strong> (<em>Ctrl + B</em>)</li>
+<li>
+<strong>Italic</strong> (<em>Ctrl + I</em>)</li>
+<li>
+<strong>Underline</strong> (<em>Ctrl + U</em>)</li>
+<li>
+<strong>Paragraph format</strong>
+<ul>
+<li>Use the <strong>Paragraph format</strong> button to further break down the text into sections using predefined header formatting.</li>
+</ul>
+</li>
+<li><strong>Ordered List</strong></li>
+<li><strong>Unordered List</strong></li>
+<li>
+<strong>Decrease Indent</strong> (<em>Ctrl + [</em>)</li>
+<li>
+<strong>Increase Indent</strong> (<em>Ctrl + ]</em>)</li>
+<li><strong>Align Left</strong></li>
+<li><strong>Align Center</strong></li>
+<li><strong>Align Right</strong></li>
+<li>
+<strong>Code View</strong>
+<ul>
+<li>Select <strong>Code View</strong> to see and edit the corresponding HTML formatting of the text.</li>
+</ul>
+</li>
+<li>
+<strong>Insert image</strong> - insert a <a href="/documentation/business-users/content-hub/content-item-assets">content hub</a> image into the edited content.
+<ul>
+<li>Selecting an inserted image offers additional options:
+<ul>
+<li>
+<strong>Alternative text</strong> – sets the alt text property.</li>
+<li>
+<strong>Align</strong> – controls image alignment.</li>
+<li>
+<strong>Display</strong> – sets display style.</li>
+<li>
+<strong>Change size</strong> – resizes the image.</li>
+<li>
+<strong>Remove</strong> – deletes the image.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Insert link</strong>
+<ul>
+<li>Select any <strong>Asset</strong> from the <a href="/documentation/business-users/content-hub/content-item-assets">content hub</a> (e.g., image, spreadsheet, PDF, text document) and insert a hypertext link to the file into the edited content.</li>
+<li>Select a <strong>Page</strong> from the <a href="/documentation/business-users/website-content">content tree</a> and insert a link into the edited content. Note that you can only select pages of content types that have the <a href="/documentation/developers-and-admins/development/content-types">URL feature enabled</a>.</li>
+<li>Select <strong>Web URL</strong> to insert a hypertext link to any external resource into the edited content.</li>
+</ul>
+</li>
+</ol>
+<h2 id="allowed-html-attributes-and-tags">Allowed HTML attributes and tags</h2>
+<p>In order to mitigate possible security threats, the rich text editor sanitizes the content’s HTML code. That is, any HTML attributes and tags <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#html-allowed-in-the-editor">that are not allowed</a> are removed. This may in some cases modify or break your HTML code, for example when adding content via the editor’s <em>Code View</em> option.</p>
+
+</body>
+</html>

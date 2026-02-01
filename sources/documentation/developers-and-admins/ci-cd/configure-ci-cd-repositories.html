@@ -1,0 +1,630 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Configure CI/CD repositories</title>
+</head>
+<body>
+<p><a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> and <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> repositories can be configured to only store specific types of objects. This is useful if you do not wish to synchronize or deploy all supported types, particularly in larger projects. For all included object types, CI/CD also allows object-level filtering using code names.</p>
+<p>All configuration is defined within <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#generate-cd-configuration-files">repository configuration files</a> located in the root of the CI/CD repository. Use the following process if you need to make changes:</p>
+<ol type="1">
+<li><p>Edit the repository configuration file.</p></li>
+<li>
+<p>Adjust the configuration according to your object filtering requirements. See the following sections for details:</p>
+<ul>
+<li><a href="#includeexclude-object-types">Include/Exclude object types</a></li>
+<li><a href="#filter-individual-objects">Filter individual objects</a></li>
+<li><a href="#configure-cd-restore-mode">Configure CD restore mode</a></li>
+</ul>
+</li>
+<li><p>Save the file.</p></li>
+<li><p>Run the store command (<a href="/documentation/developers-and-admins/ci-cd/continuous-integration#store-object-data-to-the-repository">CI</a>/<a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#store-objects-to-a-cd-repository">CD</a>) to bring your repository into a consistent state.</p></li>
+</ol>
+<p>Excluding objects in the configuration file affects both store and restore actions for CI/CD.</p>
+
+<div>
+<p><strong>Continuous Integration environments</strong></p>
+<p>Always use the same CI repository configuration settings across your entire development environment to maintain consistency. Whenever you make any changes, use your source control system to synchronize the configuration file and the other repository content. When a developer loads a new version of the configuration file from the source control, the new settings apply after restoring objects into the database or manually restarting the application.</p>
+<hr>
+<p><strong>Repository configuration templates</strong></p>
+<p>The <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates">Repository configuration templates</a> page provides <code>repository.config</code> templates for CI/CD scenarios. It details specific configurations for collaborative local development, initial instance population (including SaaS considerations), adding new content types, updating specific content items, and deploying changes to object types. Each template includes explanations of key settings like restore modes and filtering options, helping users effectively define and customize their CI/CD workflows for various tasks.</p>
+</div>
+
+<h2 id="includeexclude-object-types">Include/Exclude object types</h2>
+<p>By editing your <strong>repository.config</strong> file, you can configure CI/CD to include or exclude certain object types from the repository.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Xperience by Kentico 30.4.0</strong> introduced a new version of the <em>repository.config</em> file with advanced options for content item exclusion. See <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Migrate CI/CD repository.config to v2</a> for details.</p>
+<p>This section describes the options available with the new config. See <a href="#IncludeExcludeLegacy">Legacy repository.config options</a> for the configuration options available when using the legacy <em>repository.config</em> file.</p>
+</div>
+
+<ol type="1">
+<li>
+<p>Add <code>&lt;ObjectType&gt;</code> elements into one of the following sections of the config file:</p>
+<ul>
+<li>
+<code>&lt;IncludedObjectTypes&gt;</code> – defines an <em>allowlist</em> of object types. If you specify one or more object types, only objects of the given type are processed. The configuration must explicitly specify all object types that are to be included in the repository. To include all supported objects, use <code>&lt;IncludeAll /&gt;</code> as shorthand. See <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">Reference - CI/CD object types</a> for an overview of object types that support CI/CD.</li>
+<li>
+<code>&lt;ExcludedObjectTypes&gt;</code> – defines a <em>denylist</em> of object types. All included object types are processed except for the listed types.</li>
+<li>This filtering approach applies to general system objects. To include or exclude content items, see <a href="#includeexclude-content-items">Include/Exclude content items</a>.</li>
+</ul>
+</li>
+<li><p>Set the values of individual <code>&lt;ObjectType&gt;</code> elements to the <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">names of object types</a> supported by CI/CD.</p></li>
+</ol>
+<p>The system uses the following rules to automatically exclude child and binding objects:</p>
+<ul>
+<li>Child object types follow the configuration of their parent object type.</li>
+<li>Binding object types are excluded if all object types within the given relationship are excluded.</li>
+</ul>
+<p>The <code>&lt;IncludedObjectTypes&gt;</code> allowlist only allows you to specify the main object types, not child types or bindings.</p>
+<p>In the <code>&lt;ExcludedObjectTypes&gt;</code> denylist, you can exclude both the main object types and specific binding or child object types.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Object removal due to dependencies</strong></p>
+<p>Objects excluded in the configuration file may still be deleted when restoring data from the repository due to parent-child relationships and other dependencies. For example, restoring the deletion of a settings category will consequently delete all setting keys within that category, regardless of whether the <code>cms.settingskey</code> object type was excluded.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Only includes email channel objects --&gt;
+  &lt;IncludedObjectTypes&gt;
+    &lt;!-- Shorthand to include all supported object types --&gt;
+    &lt;IncludeAll /&gt;
+    &lt;!-- Include only specific object types using their code names --&gt;
+    &lt;ObjectType&gt;cms.channel&lt;/ObjectType&gt;
+    &lt;ObjectType&gt;emaillibrary.emailchannel&lt;/ObjectType&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;!-- Excludes sender addresses, which are child objects
+  under the emaillibrary.emailchannel object. --&gt;
+  &lt;ExcludedObjectTypes&gt;
+    &lt;ObjectType&gt;emaillibrary.emailchannelsender&lt;/ObjectType&gt;
+  &lt;/ExcludedObjectTypes&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h3 id="includeexclude-content-items">Include/Exclude content items</h3>
+<p>Content items (pages, reusable items, headless items, emails) can be included or excluded based on their <a href="/documentation/developers-and-admins/development/content-types">content type</a>. By default, the repository tracks all items of all included types. This can be further refined using <a href="#filter-individual-content-items">item-level filters</a>.</p>
+<p>To include or exclude content items, add the following elements to <strong>repository.config</strong>:</p>
+<ul>
+<li>
+<p><code>&lt;IncludedContentItemsOfType&gt;</code> – stores a list of content type code names. The repository tracks all content items that match the types specified in this collection. It must contain one or more <code>&lt;ContentType&gt;</code> elements specifying the code names of <a href="/documentation/developers-and-admins/development/content-types">content item types</a> that are to be tracked by the repository. Omitting this element results in <strong>NO</strong> content items being tracked by the repository.</p>
+<p>Instead of listing each content type individually, you can also use the <code>&lt;IncludeAll /&gt;</code> element, which provides a shorthand method for including all system content items (mirroring its function for including all object types). However, careless usage of <code>IncludeAll</code> can have severely negative performance consequences.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong><code>&lt;IncludeAll /&gt;</code> usage</strong></p>
+<p>In <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> scenarios outside of the <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates#initial-deployment-to-target-instance">initial CD deployment</a>, <strong>always</strong> prefer to explicitly list all content item types tracked by the repository to using <code>&lt;IncludeAll /&gt;</code>.</p>
+<p>When you run <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#store-objects-to-a-cd-repository">kxp-cd-store</a> (store operation), the system correctly identifies content item types present in the source environment and serializes them. However, when you run <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#restore-the-cd-repository-to-the-database">kxp-cd-restore</a> (restore operation) with <code>&lt;IncludeAll /&gt;</code>, the process iterates over <strong>all content item of all types</strong> that exist on the target environment, regardless of whether they were present in the source repository data. This can lead to extremely long processing times and potential timeouts if the target environment contains substantially more content types or items than the source repository, as every target item of every type must be processed during the restore.</p>
+<p><strong>Recommendation:</strong> For these reasons, we strongly advise against using <code>&lt;IncludeAll /&gt;</code> for regular CD deployments to production or other target environments <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates#initial-deployment-to-target-instance">after the initial setup</a>. Instead, explicitly list each <code>&lt;ContentType&gt;</code> you intend to track via CD in the <code>&lt;IncludedContentItemsOfType&gt;</code> section.</p>
+<p>Take a look at <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates">Repository configuration templates</a> for starter CD repository templates designed to cover most common deployment scenarios.</p>
+</div>
+</li>
+<li>
+<p><code>&lt;ExcludedContentItemsOfType&gt;</code> – provides an optional mechanism to refine which content items are tracked. While the element itself is optional, if included in the configuration, it must contain one or more <code>&lt;ContentType&gt;</code> elements specifying content type code names to exclude.</p>
+<p>Functionally, it acts as a subtraction – the content types listed within <code>&lt;ExcludedContentItemsOfType&gt;</code> are removed from the set of items initially defined by the <code>&lt;IncludedContentItemsOfType&gt;</code> element. This can be useful for scenarios where you want to include a broad category (using <code>&lt;IncludeAll /&gt;</code> within <code>&lt;IncludedContentItemsOfType&gt;</code>) but specifically omit certain types from being tracked by the repository.</p>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Examples</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration 
+    Version="2"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+    &lt;!-- Defines the types of content items tracked by the repository.
+    NOTE: This element is specific to Version 2 configurations. --&gt;
+    &lt;IncludedContentItemsOfType&gt;
+        &lt;!-- Includes all content items of a specific type --&gt;
+        &lt;ContentType&gt;DancingGoat.Coffee&lt;/ContentType&gt;
+        &lt;ContentType&gt;DancingGoat.Article&lt;/ContentType&gt;
+    &lt;/IncludedContentItemsOfType&gt;
+
+    &lt;!-- Optional: Define types to exclude from the set defined above
+    NOTE: This element must contain at least one ContentType element if added. --&gt;
+    &lt;ExcludedContentItemsOfType&gt;
+        &lt;!-- Exclude items of the 'DancingGoat.Article' type --&gt;
+        &lt;ContentType&gt;DancingGoat.Article&lt;/ContentType&gt;
+    &lt;/ExcludedContentItemsOfType&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p></p>
+<h3 id="legacy-includeexclude-options">Legacy include/exclude options</h3>
+<p>This section describes filtering options available in legacy (pre version 30.4.0) <strong>repository.config</strong> files.</p>
+<ol type="1">
+<li>
+<p>Add <code>&lt;ObjectType&gt;</code> elements into one of the following sections of the config file:</p>
+<ul>
+<li>
+<code>&lt;IncludedObjectTypes&gt;</code> – defines an <em>allowlist</em> of object types. If you specify one or more object types, only objects of the given type are processed. No restrictions apply if the allowlist is empty.</li>
+<li>
+<code>&lt;ExcludedObjectTypes&gt;</code> – defines a <em>denylist</em> of object types. All included object types are processed except for the listed types.</li>
+</ul>
+</li>
+<li>
+<p>Set the values of individual <code>&lt;ObjectType&gt;</code> elements to the <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">names of object types</a> supported by CI/CD.</p>
+
+<div>
+
+</div>
+<div>
+<p>To find the <em>ObjectType</em> values, check the names of the corresponding folders in the repository folder.</p>
+</div>
+</li>
+</ol>
+<p>The system uses the following rules to automatically exclude child and binding objects:</p>
+<ul>
+<li>Child object types follow the configuration of their parent object type.</li>
+<li>Binding object types are excluded if all object types within the given relationship are excluded.</li>
+</ul>
+<p>The <code>&lt;IncludedObjectTypes&gt;</code> allowlist only allows you to specify the main object types, not child types or bindings.</p>
+<p>In the <code>&lt;ExcludedObjectTypes&gt;</code> denylist, you can exclude both the main object types and specific binding or child object types.</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Only includes email channel objects --&gt;
+  &lt;IncludedObjectTypes&gt;
+    &lt;ObjectType&gt;cms.channel&lt;/ObjectType&gt;
+    &lt;ObjectType&gt;emaillibrary.emailchannel&lt;/ObjectType&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;!-- Excludes sender addresses, which are child objects
+  under the emaillibrary.emailchannel object. --&gt;
+  &lt;ExcludedObjectTypes&gt;
+    &lt;ObjectType&gt;emaillibrary.emailchannelsender&lt;/ObjectType&gt;
+  &lt;/ExcludedObjectTypes&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h2 id="filter-individual-objects">Filter individual objects</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Xperience by Kentico 30.4.0</strong> introduced a new version of the <em>repository.config</em> file with advanced filtering options. See <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Migrate CI/CD repository.config to v2</a> for details.</p>
+<p>This section describes the options available with the new version. See <a href="#FilteringLegacy">Legacy repository.config options</a> for the configuration options available when using the legacy <em>repository.config</em> file.</p>
+</div>
+
+<p>You can exclude individual objects from CI/CD via the <code>&lt;ObjectFilters&gt;</code> element. The system combines the filtering rules for individual objects with existing rules for entire object types. This filtering approach applies to general system objects. To filter individual content items, see <a href="#filter-individual-content-items">Filter individual content items</a>.</p>
+<p>Within the <code>&lt;ObjectFilters&gt;</code> element, child elements <code>&lt;IncludedCodeNames&gt;</code> and <code>&lt;ExcludedCodeNames&gt;</code> specify item code name patterns that filter individual tracked items.</p>
+<p>Within the content of each <code>&lt;IncludedCodeNames&gt;</code> and <code>&lt;ExcludedCodeNames&gt;</code> element, list the <strong>code names</strong> of objects to exclude or include.</p>
+<ul>
+<li>Add the <code>%</code> wildcard to the end or start of the code name entry to cover multiple objects with a shared code name prefix or suffix. Using only the <code>%</code> wildcard as the value represents all objects of the given type.
+<ul>
+<li>
+<code>prefix_%</code> matches all code names starting with <strong>prefix_</strong>.</li>
+<li>
+<code>%_suffix</code> matches all code names ending with <strong>_suffix</strong>.</li>
+</ul>
+</li>
+<li>You can add multiple code name entries for a single object type, separated by semicolons.</li>
+<li>The code name values are case insensitive.</li>
+</ul>
+<p>This name-based filtering acts as a secondary layer in object type processing – it only applies to objects included via <a href="#includeexclude-object-types">&lt;IncludedObjectTypes&gt;</a> and not removed by <a href="#filter-individual-objects">&lt;ExcludedObjectTypes&gt;</a>. It cannot introduce objects types not selected in the first filtering stage.</p>
+
+<div>
+<p><strong>ObjectType attribute remarks</strong></p>
+<p>By default, values specified inside <code>&lt;IncludedCodeNames&gt;</code> and <code>&lt;ExcludedCodeNames&gt;</code> elements apply globally to ALL included objects.</p>
+<div>
+<div>
+<pre><code>
+  &lt;!-- Excludes ALL objects whose code name contains a 'test' prefix --&gt;
+  &lt;IncludedCodeNames&gt;test%&lt;/IncludedCodeNames&gt;
+</code></pre>
+</div>
+</div>
+<p>However, both elements can optionally specify the <code>ObjectType</code> attribute, which scopes the filtering only to objects of the provided type.</p>
+<div>
+<div>
+<pre><code>
+  &lt;!-- Excludes all cms.user objects whose code name contains a 'test' prefix --&gt;
+  &lt;IncludedCodeNames ObjectType="cms.user"&gt;test%&lt;/IncludedCodeNames&gt;
+</code></pre>
+</div>
+</div>
+<p>The attribute can target the following object types:</p>
+<ul>
+<li><p>You can use both main object types and child types <a href="#includeexclude-object-types">included in your repository</a>.</p></li>
+<li><p>Binding types typically do not have a code name field, so they cannot be used.</p></li>
+<li><p>Rules for specific object types override rules for all object types. You can disable rules for all object types by adding empty <code>&lt;IncludedCodeNames&gt;</code> or <code>&lt;ExcludedCodeNames&gt;</code> elements for individual object types.</p></li>
+<li>
+<p>Do not add multiple elements for the same object type. Instead, use multiple values separated by semicolons and/or wildcards.</p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>ObjectType attribute usage examples</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;ObjectFilters&gt;
+  &lt;!-- Excludes included objects of ALL types
+  whose code name starts with the "test" or "demo" prefix. --&gt;
+  &lt;ExcludedCodeNames&gt;test%;demo%&lt;/ExcludedCodeNames&gt;
+  &lt;!-- Overrides the preceding rule for objects of the 'cms.user' type --&gt;
+  &lt;ExcludedCodeNames ObjectType="cms.user"&gt;&lt;/ExcludedCodeNames&gt;
+&lt;/ObjectFilters&gt;
+
+</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+<p>When you exclude an object using either the allowlist or denylist, the system automatically excludes dependent objects according to the following rules:</p>
+<ul>
+<li><p><strong>Child objects</strong> – all child objects are excluded together with their parent. For example, excluding a country object excludes all states under the given country.</p></li>
+<li><p><strong>Binding objects</strong> – binding objects are automatically excluded if at least one of the related objects is excluded.</p></li>
+<li>
+<p><strong>Channel objects</strong> – excluding a channel automatically excludes all channel-specific objects belonging to the given channel. When excluding channels, exclude based on the <code>cms.channel</code> object type, not the specific channel configuration objects <code>emaillibrary.emailchannel</code> or <code>cms.websitechannel</code>.</p>
+<ul>
+<li>Objects that are only connected to channels through bindings are not excluded.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<p><strong>Notes</strong></p>
+<ul>
+<li>It is not possible to exclude objects without a code name field, such as <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">binding tables</a>.</li>
+<li>The object exclusion rules apply globally across all objects and channels.</li>
+</ul>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:x="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Includes all supported object types --&gt;
+  &lt;IncludedObjectTypes&gt;
+    &lt;IncludeAll /&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;ObjectFilters&gt;
+
+    &lt;!-- Excludes all objects of any type whose code name starts with the "test" prefix, except for users --&gt;
+    &lt;ExcludedCodeNames&gt;test%&lt;/ExcludedCodeNames&gt;
+    &lt;ExcludedCodeNames ObjectType="cms.user"&gt;&lt;/ExcludedCodeNames&gt;
+
+    &lt;!-- Includes only the "birthdaysuccessgroup" and "recentbuyers" contact groups --&gt;
+    &lt;IncludedCodeNames ObjectType="om.contactgroup"&gt;birthdaysuccessgroup;recentbuyers&lt;/IncludedCodeNames&gt;
+
+    &lt;!-- Excludes the "articles" and "graphics" media libararies --&gt;
+    &lt;ExcludedCodeNames ObjectType="media.library"&gt;articles;graphics&lt;/ExcludedCodeNames&gt;
+
+  &lt;/ObjectFilters&gt;
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h3 id="filter-individual-content-items">Filter individual content items</h3>
+<p>For more granular control beyond type-level inclusion/exclusion, the <code>ContentItemFilters</code> element allows filtering of individual content items based on their code names, irrespective of type.</p>
+<p>Within this element, child elements <code>IncludedContentItemNames</code> and <code>ExcludedContentItemNames</code> specify item code name patterns that filter individual tracked items. You can use the <code>%</code> character as a wildcard to match multiple code names. For example:</p>
+<ul>
+<li>
+<code>prefix_%</code> matches all code names starting with <strong>prefix_</strong>.</li>
+<li>
+<code>%_suffix</code> matches all code names ending with <strong>_suffix</strong>.</li>
+</ul>
+<p>This name-based filtering acts as a secondary layer in content item processing – it only applies to content items included via <code>IncludedContentItemsOfType</code> and not removed by <code>ExcludedContentItemsOfType</code>. It cannot introduce items whose types were not selected in the first filtering stage.</p>
+<p>The following code demonstrates content item filtering on a simple example:</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+
+&lt;!-- Example: Include only 'DancingGoat.Article' 
+items whose code names start with 'News_' --&gt;
+&lt;RepositoryConfiguration 
+  version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:x="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Step 1: Include the relevant content item TYPE --&gt;
+  &lt;IncludedContentItemsOfType&gt;
+    &lt;!-- Only items of this type are considered for the filtering step --&gt;
+    &lt;ContentType&gt;DancingGoat.Article&lt;/ContentType&gt;
+  &lt;/IncludedContentItemsOfType&gt;
+
+  &lt;!-- Step 2: Apply secondary filtering based on
+  individual item code names. This filter only applies to items
+    whose type ('DancingGoat.Article') was included above --&gt;
+  &lt;ContentItemFilters&gt;
+    
+    &lt;!-- Include only items whose code names match the pattern 'News_%' --&gt;
+    &lt;IncludedContentItemNames&gt;
+        News_%
+    &lt;/IncludedContentItemNames&gt;
+
+    &lt;!-- You could also use &lt;ExcludedContentItemNames&gt; 
+    here to exclude specific names. For example: 
+
+    &lt;ExcludedContentItemNames&gt;
+        News_Internal%
+    &lt;/ExcludedContentItemNames&gt; 
+    
+    --&gt;
+  &lt;/ContentItemFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This setup first selects all items of the type <code>DancingGoat.Article</code> and then applies the <code>ContentItemFilters</code> to keep only those articles whose code names begin with <strong>News_</strong>.</p>
+<p></p>
+<h3 id="legacy-filtering-options">Legacy filtering options</h3>
+<p>This section describes filtering options available in legacy (pre version 30.4.0) <strong>repository.config</strong> files.</p>
+<p>You can exclude individual objects from CI/CD by editing your repository configuration file. The system combines the filtering rules for individual objects with existing rules for entire object types.</p>
+<ol type="1">
+<li>
+<p>Add the following elements into the <code>&lt;ObjectFilters&gt;</code> section:</p>
+<ul>
+<li>
+<code>&lt;IncludedCodeNames&gt;</code> – defines an <em>allowlist</em> of objects. If you specify one or more object code names, only matching objects are processed. No restrictions apply if the allowlist is empty.</li>
+<li>
+<code>&lt;ExcludedCodeNames&gt;</code> – defines a <em>denylist</em> of objects. Adds further filtering for the set of included objects. Objects that match the specified code names are excluded from processing.</li>
+</ul>
+</li>
+<li>
+<p>Specify the type of objects that you wish to exclude for each <code>&lt;IncludedCodeNames&gt;</code> and <code>&lt;ExcludedCodeNames&gt;</code> element:</p>
+<ul>
+<li><p>If you do not set the <code>ObjectType</code> attribute for the element, it applies to objects of ALL types.</p></li>
+<li>
+<p>To apply the filtering rule to a specific object type, set the element’s <code>ObjectType</code> attribute to the given object type name.</p>
+<ul>
+<li>You can use both main object types and child types (that are included in your CI/CD configuration).</li>
+<li>Binding types typically do not have a code name field, so they cannot be used.</li>
+<li>Rules for specific object types override rules for all object types. You can disable rules for all object types by adding empty <code>&lt;IncludedCodeNames&gt;</code> or <code>&lt;ExcludedCodeNames&gt;</code> elements for individual object types.</li>
+<li>Do not add multiple elements for the same object type. Instead, use multiple values separated by semicolons and/or wildcards.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Within the content of each <code>&lt;IncludedCodeNames&gt;</code> and <code>&lt;ExcludedCodeNames&gt;</code> element, list the <strong>code names</strong> of objects to exclude or include.</p>
+<ul>
+<li>Add the <code>%</code> wildcard to the end or start of the code name entry to cover multiple objects with a shared code name prefix or suffix. Using only the <code>%</code> wildcard as the value represents all objects of the given type.</li>
+<li>You can add multiple code name entries for a single object type, separated by semicolons.</li>
+<li>The code name values are case insensitive.</li>
+</ul>
+</li>
+</ol>
+<p>When you exclude an object using either the allowlist or denylist, the system automatically excludes dependent objects according to the following rules:</p>
+<ul>
+<li><p><strong>Child objects</strong> – all child objects are excluded together with their parent. For example, excluding a country object excludes all states under the given country.</p></li>
+<li><p><strong>Binding objects</strong> – binding objects are automatically excluded if at least one of the related objects is excluded.</p></li>
+<li>
+<p><strong>Channel objects</strong> – excluding a channel automatically excludes all channel-specific objects belonging to the given channel. When excluding channels, exclude based on the <code>cms.channel</code> object type, not the specific channel configuration objects <code>emaillibrary.emailchannel</code> or <code>cms.websitechannel</code>.</p>
+<ul>
+<li>Objects that are only connected to channels through bindings are not excluded.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<p><strong>Notes</strong></p>
+<ul>
+<li>It is not possible to exclude objects without a code name field.</li>
+<li>The object exclusion rules apply globally across all objects and channels.</li>
+<li>It is not possible to exclude <a href="/documentation/business-users/website-content">website channel pages</a> based on their <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#filter-pages-based-on-content-tree-structure">page path</a>. You can exclude individual pages using their code name (e.g., based on a predetermined code name prefix or suffix), but large-scale page filtering is currently not supported.</li>
+</ul>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:x="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Includes all supported object types --&gt;
+  &lt;IncludedObjectTypes&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;ExcludedObjectTypes&gt;
+  &lt;/ExcludedObjectTypes&gt;
+
+  &lt;ObjectFilters&gt;
+    &lt;!-- Excludes all content items (reusable, pages, emails) whose code name starts with 'Banner'.
+    Always use the 'cms.contentitem' object type to filter content items.
+    Filtering based on other entities that compose content items can lead to
+    repository inconsistencies and incorrect behavior. --&gt;
+    &lt;ExcludedCodeNames ObjectType="cms.contentitem"&gt;Banner%&lt;/ExcludedCodeNames&gt;
+
+    &lt;!-- Excludes all objects of any type whose code name starts with the "test" prefix, except for users --&gt;
+    &lt;ExcludedCodeNames&gt;test%&lt;/ExcludedCodeNames&gt;
+    &lt;ExcludedCodeNames ObjectType="cms.user"&gt;&lt;/ExcludedCodeNames&gt;
+
+    &lt;!-- Includes only the "birthdaysuccessgroup" and "recentbuyers" contact groups --&gt;
+    &lt;IncludedCodeNames ObjectType="om.contactgroup"&gt;birthdaysuccessgroup;recentbuyers&lt;/IncludedCodeNames&gt;
+
+    &lt;!-- Excludes the "articles" and "graphics" media libararies --&gt;
+    &lt;ExcludedCodeNames ObjectType="media.library"&gt;articles;graphics&lt;/ExcludedCodeNames&gt;
+  &lt;/ObjectFilters&gt;
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h2 id="configure-cd-restore-mode">Configure CD restore mode</h2>
+<p>For <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a>, the repository configuration file <strong>must</strong> contain the <code>&lt;RestoreMode&gt;</code> element. The restore mode specifies which types of object operations are performed in the target database when restoring the repository. The restore mode provides restrictive options that allow you to safely deploy to production environments where you do not wish to delete or overwrite live data.</p>
+<p>The following values are possible:</p>
+<ul>
+<li>
+<code>Create</code> – only creates new objects. Never deletes or modifies existing objects.</li>
+<li>
+<code>CreateUpdate</code> – creates new objects and updates existing objects. Never deletes objects. This is the default option for newly generated CD repository configuration files.</li>
+<li>
+<code>Full</code> – creates new objects, updates existing objects, and deletes objects that do not exist in the repository.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;RestoreMode&gt;
+    CreateUpdate
+  &lt;/RestoreMode&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p><code>&lt;RestoreMode&gt;</code> only affects restore operations. The limitations do not apply if you run the store command to deploy object data to an existing CD repository (including updates and removal of the object XML files).</p>
+
+</body>
+</html>

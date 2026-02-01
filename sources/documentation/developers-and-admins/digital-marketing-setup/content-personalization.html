@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content personalization</title>
+</head>
+<body>
+<p>Content personalization is digital marketing technique that creates pages with different content depending on the circumstances in which they are viewed. For example, you can build pages that offer special content for different types of visitors or dynamically change for each user according to the actions they performed on the website.</p>
+<p>When developing websites, you can use the following different approaches to create personalized content:</p>
+<ul>
+<li><a href="#set-up-personalization-of-page-builder-widgets">Allow marketers to personalize content added through Page Builder widgets</a></li>
+<li><a href="#add-personalization-conditions-to-page-code">Create personalization conditions directly in the code of your site’s pages</a></li>
+</ul>
+<h2 id="set-up-personalization-of-page-builder-widgets">Set up personalization of Page Builder widgets</h2>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/development/builders/page-builder">Set up Page Builder</a> for your project.</li>
+<li>Prepare pages with <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable areas for Page Builder</a>.</li>
+<li>Develop <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a> and <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a> that allow website editors to add the required content.</li>
+<li>Develop <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/develop-personalization-condition-types">personalization condition types</a>.</li>
+</ol>
+<p>Marketers can now <a href="/documentation/business-users/digital-marketing/widget-personalization">personalize widgets</a> on pages where Page Builder is enabled, using the condition types that you developed.</p>
+<h2 id="add-personalization-conditions-to-page-code">Add personalization conditions to page code</h2>
+<p>In addition to personalization of Page Builder widgets, you can write personalization conditions directly within the code of your project’s components, controllers, views or other classes. The conditions can leverage the visitor segmentation tools that marketers define within Xperience, such as <a href="/documentation/business-users/digital-marketing/contact-groups">Contact groups</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Set up <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">tracking of contacts</a> before defining personalization conditions based on contact groups or other contact properties.</p>
+</div>
+
+<h3 id="personalize-content-based-on-contact-groups">Personalize content based on contact groups</h3>
+<p>We recommend using <a href="/documentation/business-users/digital-marketing/contact-groups">Contact groups</a> to personalize your project’s content:</p>
+<ol type="1">
+<li><p>Define contact groups to segment your website’s visitors (in the <strong>Contact groups</strong> application within Xperience).</p></li>
+<li><p>Use the contact tracking API to get the current contact in your project’s code.</p></li>
+<li><p>Create conditions to display different content for contacts who belong to different contact groups.</p></li>
+<li>
+<p>Call one of the following extension methods for the current contact object within the conditions:</p>
+<ul>
+<li><p><code>IsInContactGroup</code> – evaluates whether the contact belongs to one specific contact group.</p></li>
+<li><p><code>IsInAnyContactGroup</code> – evaluates whether the contact belongs to <em>at least one</em> of the specified contact groups.</p></li>
+<li>
+<p><code>IsInAllContactGroups</code> – evaluates whether the contact belongs to <em>all</em> of the specified contact groups.</p>
+
+<div>
+
+</div>
+<div>
+<p>All of the methods return a boolean value that you can use in your content conditions.</p>
+<p>The methods accept one or more string parameters, which must match the <strong>code names</strong> of contact groups. To find the code names, view contact groups in the <em>Contact groups</em> application in Xperience.</p>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>The system segments your website’s visitors into contact groups, for example according to <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">performed activities</a>. Your site then displays personalized content depending on the contact groups to which the current visitor (contact) belongs.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Razor view example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using CMS.ContactManagement
+
+@{
+    // Gets the current contact
+    ContactInfo currentContact = ContactManagementContext.GetCurrentContact();
+}
+
+@* Displays personalized content for contacts belonging to the "YoungCustomers" contact group *@
+@if (currentContact != null &amp;&amp; currentContact.IsInContactGroup("YoungCustomers"))
+{
+    &lt;text&gt;Hiya @currentContact.ContactFirstName&lt;/text&gt;
+} 
+else
+{
+    &lt;text&gt;Hello&lt;/text&gt;
+}
+
+</code></pre>
+</div>
+
+<h2 id="output-caching-on-personalized-pages">Output caching on personalized pages</h2>
+<p>When using  output caching to improve the performance of your website, you need to take additional steps to ensure that the output cache correctly stores personalized pages. Because personalized pages serve different content based on various conditions, you need to adjust your application to cache separate output versions according to the personalization criteria.</p>
+<p>See <a href="/documentation/developers-and-admins/development/caching/output-caching">Output caching</a> for more information.</p>
+
+</body>
+</html>

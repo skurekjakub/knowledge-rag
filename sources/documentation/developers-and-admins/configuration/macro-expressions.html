@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Macro expressions</title>
+</head>
+<body>
+<p>Macros are text expressions that the system evaluates and resolves into values. For more information about macro usage, see <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">Macro syntax</a>.</p>
+<h2 id="macro-availability">Macro availability</h2>
+<p>In the current version of Xperience by Kentico, macro expressions are usable in:</p>
+<ul>
+<li>the source code of <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Email templates</a>
+</li>
+<li>the <strong>Modules</strong> application when defining default values for the editing forms of <a href="/documentation/developers-and-admins/customization/object-types">object types</a>
+</li>
+</ul>
+<h2 id="development-considerations">Development considerations</h2>
+<p>Developers and administrators need to consider macros when deploying content and other data between different instances of Xperience, for example using <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> or <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a>. To ensure that all functionality relying on macros works correctly in these scenarios, macros must have valid signatures for their current environment. See the <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">Macro signatures</a> page to learn more.</p>
+
+</body>
+</html>

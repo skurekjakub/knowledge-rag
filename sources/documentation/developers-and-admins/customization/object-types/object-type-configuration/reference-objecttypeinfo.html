@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - ObjectTypeInfo</title>
+</head>
+<body>
+<p> This page provides a reference of the <code>ObjectTypeInfo</code> properties that you can use to <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">set the type information for object types</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>The reference lists the <code>ObjectTypeInfo</code> members that are intended for public use. The class also contains other members, which are used internally or handled automatically by the system. <strong>We don’t recommend</strong> working with any of the undocumented members.</p>
+</div>
+
+<p>The <code>ObjectTypeInfo</code> class has the following types of properties:</p>
+<ul>
+<li><a href="#constructor">Constructor</a></li>
+<li><a href="#database-columns">Database columns</a></li>
+<li><a href="#general">General</a></li>
+<li><a href="#object-type-relationships-and-bindings">Object type relationships and bindings</a></li>
+<li><a href="#continuous-integration">Continuous integration</a></li>
+<li><a href="#macros">Macros</a></li>
+</ul>
+<h2 id="constructor">Constructor</h2>
+<p>The following properties are always set through the constructor parameters when creating new <code>ObjectTypeInfo</code> instances:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>BinaryColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the column that stores binary data associated with the object type. Can be <code>null</code>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CodeNameColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the column that stores the unique text identifiers of objects.</p>
+<p>Can be <code>null</code> for object types without a dedicated code name column.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>DisplayNameColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the column that stores the visible names of objects (names used in the administration interface or on the live site). Can be <code>null</code>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GuidColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the column that stores the <a href="http://en.wikipedia.org/wiki/Globally_unique_identifier" target="_blank">GUID identifiers</a> of objects. Can be <code>null</code>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IDColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the primary key column. Created together with the object type’s data class and non-removable.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ObjectClassName</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p><strong>Required</strong> for all object types.</p>
+<p>The code name that is assigned to the data class in the Xperience administration interface. Identifies the class’s definition in the database.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ObjectType</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p><strong>Required</strong> for all object types.</p>
+<p>Serves as the primary identifier string for the object type. Use the identifier to select objects of a particular type via the API or when <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">building user interfaces</a>.</p>
+<p>Code generators automatically create the <code>OBJECT_TYPE</code> constant within the code of the <em>Info</em> class.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ParentIDColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the column that stores the IDs of parent objects. Set to <code>null</code> for object types without a parent.</p>
+<p>See the parent-child relationships section of <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ParentObjectType</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The <em>name</em> of the object type’s parent (defined in the type information of the parent class within the <code>OBJECT_TYPE</code> constant).</p>
+<p>Set to <code>null</code> for object types without a parent.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ProviderType</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.type" target="_blank">Type</a></p>
+</td>
+<td>
+<p><strong>Required</strong> for all object types.</p>
+<p>The type of the type’s <em>InfoProvider</em> class. For example: <code>typeof(UserInfoProvider)</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TimeStampColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The name of the column that stores the last modification date for objects. Can be <code>null</code>.</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceObjectTypeInfo-TypeInfoTop">&gt; Back to list of ObjectTypeInfo property types</a></p>
+<h2 id="database-columns">Database columns</h2>
+<p>In addition to the <code>*Column</code> properties used in the <code>ObjectTypeInfo</code> constructor, you can set the following optional properties to set database columns that perform a specific function:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>ExtensionColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Intended for objects that store associated binary data. Sets the name of the column that stores the extension type of the binary data. Used by <a href="/documentation/developers-and-admins/ci-cd">CI/CD</a> when serializing the associated binary data.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ObjectLevelColumn</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Intended for object types that form a tree hierarchy. Sets the name of the column that stores the level of objects in the hierarchy structure.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ObjectPathSettings</p>
+</td>
+<td>
+<p>PathSettings</p>
+</td>
+<td>
+<p>Intended for object types that form a tree hierarchy. Sets the name of the column that stores the path of objects in the hierarchy structure.</p>
+<p>You can also set the path column separately for paths built out of objects names or object IDs through the <code>ObjectNamePathSettings</code> and <code>ObjectIDPathSettings</code> properties respectively.</p>
+<p>The system uses the stored paths to more efficiently delete child objects when a parent is being deleted and when serializing the objects via CI/CD.</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceObjectTypeInfo-TypeInfoTop">&gt; Back to list of ObjectTypeInfo property types</a></p>
+<h2 id="general">General</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>IsCategory</p>
+</td>
+<td>
+<p>bool</p>
+</td>
+<td>
+<p>Indicates whether the object type represents a category for organizing other objects in a tree hierarchy. The default value is <code>false</code> <em>.</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>LogEvents</p>
+</td>
+<td>
+<p>bool</p>
+</td>
+<td>
+<p>Indicates whether the system logs events into the <a href="/documentation/developers-and-admins/configuration/event-log">Event log</a> when objects of the object type are modified. <code>False</code> by default.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ProviderObject</p>
+</td>
+<td>
+<p>IInfoProvider</p>
+</td>
+<td>
+<p>Read-only property. Gets an instance of the <code>IInfoProvider</code> provider class specified by the <code>ProviderType</code> property.</p>
+<p>See: <a href="/documentation/developers-and-admins/api/database-table-api">Database table API</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TouchCacheDependencies</p>
+</td>
+<td>
+<p>bool</p>
+</td>
+<td>
+<p>Indicates whether the system <em>touches</em> the corresponding dummy cache keys when an object is modified. This causes the cache to delete all items that depend on the given dummy keys.</p>
+<p>Set to <em>true</em> if you wish to use objects of the object type as cache dependencies. Populated by the code generator for <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">binding object types</a>.</p>
+<p>See also: <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">Cache dependencies</a></p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceObjectTypeInfo-TypeInfoTop">&gt; Back to list of ObjectTypeInfo property types</a></p>
+<h2 id="object-type-relationships-and-bindings">Object type relationships and bindings</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CheckDependenciesOnDelete</p>
+</td>
+<td>
+<p>bool</p>
+</td>
+<td>
+<p>Applies to object types that are the target of a <em>Required</em> type reference. See the one-to-many relationships section on <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a> for more information.</p>
+<p>If you set <code>CheckDependenciesOnDelete</code> to <code>true</code> <em>,</em> the system prevents objects of the type from being deleted if they are the target of a required reference from at least one other object in the system.</p>
+<p>Defaults to <code>false</code>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>DependsOn</p>
+</td>
+<td>
+<p>List&lt;ObjectDependency&gt;</p>
+</td>
+<td>
+<p>Registers fields that store references from the type to other types (i.e., foreign key columns). Allows the system to maintain the referential integrity of relationships when a referenced object is deleted.</p>
+<p>Assign a <code>List</code> collection of <code>ObjectDependency</code> objects, each defining one reference.</p>
+<p><strong>Note</strong>: Do not include the parent reference fields specified in the <code>ParentIDColumn</code> properties.</p>
+<p>See the one-to-many relationships section on <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Extends</p>
+</td>
+<td>
+<p>List&lt;ExtraColumn&gt;</p>
+</td>
+<td>
+<p>Registers external fields that store references from other classes in the system to the given class. Allows the system to maintain the <a href="https://en.wikipedia.org/wiki/Referential_integrity" target="_blank">referential integrity</a> of relationships when objects are removed from the system.</p>
+<p>Assign a <em>List</em> collection of <code>ExtraColumn</code> objects, each defining one reference that targets the given class.</p>
+<p>See the one-to-many relationships section on <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>IsBinding</p>
+</td>
+<td>
+<p>bool</p>
+</td>
+<td>
+<p>Indicates whether the object type represents a relationship between two or more object types.</p>
+<p>See the many-to-many relationships section on <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">Model object type relationships</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ParentTypeInfo</p>
+</td>
+<td>
+<p>ObjectTypeInfo</p>
+</td>
+<td>
+<p>Read-only property. Returns the <code>ObjectTypeInfo</code> instance of the parent object type.</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceObjectTypeInfo-TypeInfoTop">&gt; Back to list of ObjectTypeInfo property types</a></p>
+<h2 id="continuous-integration">Continuous integration</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>ContinuousIntegrationSettings</p>
+</td>
+<td colspan="1">
+<p>ContinuousIntegrationSettings</p>
+</td>
+<td colspan="1">
+<p>Determines how the class works with the system’s <a href="/documentation/developers-and-admins/ci-cd">CI/CD solution</a>.</p>
+<p>Set through the properties of the <code>ContinuousIntegrationSettings</code> class. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/enable-ci-cd-for-object-types">Enable CI/CD for object types</a> for details.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>SerializationSettings</p>
+</td>
+<td colspan="1">
+<p>SerializationSettings</p>
+</td>
+<td colspan="1">
+<p>Determines how the system serializes the class’s objects from the database into XML data. Serialization is used by the system’s CI/CD solution.</p>
+<p>Set through the properties of the <code>SerializationSettings</code> class. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/enable-ci-cd-for-object-types">Enable CI/CD for object types</a> for details.</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceObjectTypeInfo-TypeInfoTop">&gt; Back to list of ObjectTypeInfo property types</a></p>
+<h2 id="macros">Macros</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>MacroSettings</p>
+</td>
+<td colspan="1">
+<p>MacroProcessingSettings</p>
+</td>
+<td colspan="1">
+<p>Configures the behavior of the class within the system’s <a href="/documentation/developers-and-admins/configuration/macro-expressions">macro engine</a>.</p>
+<p>Set through the properties of the <code>MacroProcessingSettings</code> class:</p>
+<ul>
+<li>
+<code>ContainsMacros (bool)</code> – indicates whether the class has fields that contain macro expressions in their values. The property determines if objects of the class are processed when <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">resigning macros</a> in the system. <code>True</code> by default. You can set the value to <code>false</code>  to optimize the performance of the resigning process (during manual resigning and upgrades). Does NOT affect the resolving of macros.</li>
+<li>
+<code>MacroCollectionName (string)</code> – overrides the name of object collections used for the class’s data in macros. If not set, a default name is automatically derived from the class code name.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>SensitiveColumns</p>
+</td>
+<td colspan="1">
+<p>List&lt;string&gt;</p>
+</td>
+<td colspan="1">
+<p>Specifies class fields that the system excludes from <a href="/documentation/developers-and-admins/configuration/macro-expressions">macro expressions</a>. Allows you to protect fields with sensitive values (e.g., passwords).</p>
+<p>Set the sensitive columns by assigning a <code>List</code> collection of column names.</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceObjectTypeInfo-TypeInfoTop">&gt; Back to list of ObjectTypeInfo property types</a></p>
+
+</body>
+</html>

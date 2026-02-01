@@ -1,0 +1,613 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit UI page template</title>
+</head>
+<body>
+<p>Edit pages generate forms that enable users to edit <a href="/documentation/developers-and-admins/customization/object-types">object types</a> (<em>*Info</em> objects).</p>
+<p></p>
+<p>All edit pages inherit from the <code>InfoEditPage&lt;TInfo&gt;</code> base class, where <code>TInfo</code> is substituted for the <strong>Info</strong> class of the object type the page is used to edit.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - edit page implementation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.UIPages;
+
+// Registers the UI page
+[assembly: UIPage(
+    parentType: typeof(UserEditSection), 
+    slug: "edit", 
+    uiPageType: typeof(UserEdit), 
+    name: "Edit user", 
+    templateName: TemplateNames.EDIT, 
+    order: 1)]
+
+public class UserEdit : InfoEditPage&lt;UserInfo&gt;
+{
+    // Property that holds the ID of the edited user. 
+    // Needs to be decorated with the PageParameter attribute to propagate 
+    // user ID from the request path to the configuration of the page.
+    [PageParameter(typeof(IntPageModelBinder))]
+    public override int ObjectId { get; set; }
+
+    // Mandatory constructor providing required services via dependency injection
+    public UserEdit(IFormComponentMapper formComponentMapper, IFormDataBinder formDataBinder)
+             : base(formComponentMapper, formDataBinder)
+    {
+    }
+}
+
+</code></pre>
+</div>
+
+<p>From the code above, you can see that edit pages are parameterized by the identifier of the edited object. To get this information into the URL structure of the page, the system provides the <code>EditSectionPage</code> base class. The base class, in conjunction with URL parameterization (described in the <em>Page URLs and routing</em> section on <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a>), is used to ensure correct URLs for edit pages:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+
+// The 'PARAMETERIZED_SLUG' constant used in the registration notifies the system that the URL slug contributed by this page is parameterized
+// Edit pages for objects of this type must be registered as children of this page
+// The 'AddEditRowAction' extension method provided by the listing template ensures URLs for each row are correctly generated with corresponding object IDs
+[assembly: UIPage(
+    parentType: typeof(UserObjectListing), 
+    slug: PageParameterConstants.PARAMETERIZED_SLUG, 
+    uiPageType: typeof(UserEditSection), 
+    name: "Edit",
+    templateName: TemplateNames.SECTION_LAYOUT, 
+    order: 0)]
+
+// Edit page for user objects
+public class UserEditSection : EditSectionPage
+{
+}
+
+</code></pre>
+</div>
+
+<p>This results in the following URL structure:</p>
+<p><code>~/&lt;ID_PARAMETERIZED_SLUG&gt;/&lt;EDIT_PAGE_SLUG&gt;</code></p>
+<p>where <em>ID_PARAMETERIZED_SLUG</em> contains the identifier of the edited object. The resulting URLs look like, e.g., the following: <em>~/57/edit</em></p>
+<h2 id="access-the-currently-edited-info-object">Access the currently edited info object</h2>
+<p>You can retrieve the currently edited object (identified by the ID slug in the page URL) via the <code>GetInfoObject</code> method.</p>
+<h2 id="assign-editing-forms">Assign editing forms</h2>
+<p>To specify which <a href="/documentation/developers-and-admins/customization/object-types">UI form</a> the edit page displays, use the <code>UIFormName</code> property and assign the <strong>Code name</strong> of the desired UI form:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Reserved UI form code names</strong></p>
+<p>If the selected object type contains a UI form with the <strong>edit</strong> code name, that form gets used automatically without needing to be set via <code>UIFormName</code>. Other forms need to be set directly.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override Task ConfigurePage()
+{
+    // Assigns the 'officeedit' UI form to the page. The assignment is case-insensitive.
+    PageConfiguration.UIFormName = "officeedit";
+
+    return base.ConfigurePage();
+}
+
+</code></pre>
+</div>
+
+<h2 id="configure-the-submit-action">Configure the submit action</h2>
+<p>You can configure the submit action via <code>SubmitConfiguration</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Configure the submit action</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override async Task ConfigurePage()
+{
+    ...
+
+    // Sets the submit action tooltip
+    PageConfiguration.SubmitConfiguration.TooltipText = "Select me to save";
+    // Determines if the submit action is visible
+    PageConfiguration.SubmitConfiguration.Visible = false;
+    // Sets the submit button label
+    PageConfiguration.SubmitConfiguration.Label = "Save";
+}
+
+</code></pre>
+</div>
+
+<h2 id="raise-a-confirmation-prompt-on-submit">Raise a confirmation prompt on submit</h2>
+<p>If <code>ConfirmationConfiguration</code> is provided within <code>SubmitConfiguration</code>, users are prompted to confirm their action when saving changes. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Enable confirmation dialog display</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override async Task ConfigurePage()
+{
+    ...
+
+    // If set, the page displays a confirmation dialog when saving changes
+    PageConfiguration.SubmitConfiguration.ConfirmationConfiguration = new ConfirmationConfiguration()
+    {
+        Title = "Dialog caption",
+        Detail = "Dialog text",
+        Button = "Button label",
+        // Optionally renders a form within the dialog
+        FormModel = typeof(ConfirmationDialogModel)
+    };
+}
+
+</code></pre>
+</div>
+
+<p>Additionally, the dialog can also display an arbitrary form. Typically, you would want to offer a multiple-choice selector that allows you to further control how the back end processes the submitted data.</p>
+<p>The form must be defined within a dedicated model class and annotated with <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>. <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">Validation rules</a> are also supported.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add forms to configuration dialogs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ConfirmationDialogFormModel
+{
+    [RequiredValidationRule]
+    [RadioGroupComponent(Inline = false, Order = 1,
+         Options = $"submit;Submit\r\nsubmitandlog;Submit and log\r\n")]
+    public string ChooseOne { get; set; } = "option1";
+}
+
+</code></pre>
+</div>
+
+<p>To access the data during form submit, use <code>GetValidatedConfirmationModel&lt;T&gt;</code>. The method can only be called after the form model has been received from the client. Suitable places are the <code>FinalizeInfoObject</code>, and <code>SetFormData</code> methods (see <a href="#lifecycle-of-edit-and-create-ui-pages">Lifecycle of edit and create UI pages</a>). </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Control back-end flow based on confirmation form data</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+protected override async Task SetFormData(UserInfo infoObject, IFormFieldValueProvider fieldValueProvider) 
+{
+    // The system binds the form from the confirmation dialog to the model &lt;T&gt;
+    var confirmationDialogFormData = GetValidatedConfirmationModel&lt;ConfirmationDialogFormModel&gt;();
+
+    // Decide the evaluation flow based on the submitted data
+    if (string.Equals(confirmationDialogFormData.ChooseOne, "submitandlog", StringComparison.OrdinalIgnoreCase))
+    {
+        // Logs the submitted data
+        // logger is an instance of ILogger&lt;T&gt; injected using dependency injection
+        logger.LogInformation(new EventId(0, "SUBMIT"), $"Submitted data {confirmationDialogFormData}");
+    }
+
+    await base.SetFormData(infoObject, fieldValueProvider); 
+}
+
+</code></pre>
+</div>
+
+<p></p>
+<h2 id="use-edit-pages-to-create-new-objects">Use edit pages to create new objects</h2>
+<p>You can use the edit page template to create new Xperience objects. Such pages must inherit from the <code>CreatePage&lt;TInfo, TRedirectPage&gt;</code> base class, where:</p>
+<ul>
+<li>
+<strong>TInfo</strong> – the <strong>*Info</strong> object that represents the entity in the system (e.g., existing system object types such as <code>UserInfo</code>, or custom object types).</li>
+<li>
+<strong>TRedirectPage</strong> – the page to which users get redirected after creating the object.
+<ul>
+<li>By default, the system automatically appends the created object’s identifier to the redirect URL. As a result, you can only redirect to other edit pages that work with the created object (expect its identifier in their URL structure).</li>
+<li>You can modify this behavior by overriding the <code>GetSubmitSuccessResponse</code> method. See <a href="#change-redirection-behavior">Change redirection behavior</a>.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// UI page used to create user objects. After a user is created, redirects to the user edit page.
+public class UserCreatePage : CreatePage&lt;UserInfo, UserEdit&gt;
+{
+    // Mandatory constructor providing required services via dependency injection
+    public UserCreatePage(IFormComponentMapper formComponentMapper, IFormDataBinder formDataBinder, IPageLinkGenerator pageLinkGenerator)
+            : base(formComponentMapper, formDataBinder, pageLinkGenerator)
+    {
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="assign-editing-forms-to-object-create-pages">Assign editing forms to object create pages</h3>
+<p>To specify which form the create page displays, use the <code>UIFormName</code> property and assign the <strong>Code name</strong> of the desired UI form:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Reserved UI form code names</strong></p>
+<p>If the object type contains a UI form with the <strong>create</strong> code name, that form gets used automatically without needing to be set via <code>UIFormName</code>. Other forms need to be set directly.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override Task ConfigurePage()
+{
+    // Assigns the 'officecreate' UI form to the page. The assignment is case-insensitive.
+    PageConfiguration.UIFormName = "officecreate";
+
+    return base.ConfigurePage();
+}
+
+</code></pre>
+</div>
+
+<h3 id="change-redirection-behavior">Change redirection behavior</h3>
+<p>By default, the system automatically appends the created object’s identifier to the redirect URL. As a result, you can only redirect to other edit pages that work with the created object (expect its identifier in their URL structure). You can modify this behavior by overriding the <code>GetSubmitSuccessResponse</code> method. To generate URLs to other pages in the administration, use the <code>IPageLinkGenerator</code> service. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#generate-urls-to-other-administration-pages">Page URL generation</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Change create page redirection behavior</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Overrides the default redirection behavior with custom logic
+protected override Task&lt;ICommandResponse&gt; GetSubmitSuccessResponse(OfficeUserInfo savedInfoObject, ICollection&lt;IFormItem&gt; items)
+{
+    string navigationUrl = pageLinkGenerator.GetPath&lt;OfficeWorkers&gt;(
+        new PageParameterValues
+            {
+                { typeof(OfficeEditSection), ParentId }
+            });
+
+    return Task.FromResult((ICommandResponse)NavigateTo(navigationUrl));
+}
+
+</code></pre>
+</div>
+
+<p>If the object create page is located in a page structure with multiple parameterized URL slugs, you need to provide all but the ID of the currently created object via <code>AdditionalLinkParameters</code>. Add all parameters in the order they appear in the resulting URL.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Specify additional URL parameters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets the identifier of the parent from the URL (dictated by the UI page hierarchy)
+[PageParameter(typeof(IntPageModelBinder), typeof(OfficeEditSection))]
+public int ParentId { get; set; }
+
+...
+
+public override Task ConfigurePage()
+{
+    // Full URL when redirected: ~/admin/officeManagement/list/&lt;parentID&gt;/officeopenpositions/&lt;createdObjectID&gt;/edit
+    AdditionalLinkParameters.Add(
+        new PageParameterValues
+            {
+                { typeof(OfficeEditSection), ParentId }
+            });
+
+    return base.ConfigurePage();
+}
+
+</code></pre>
+</div>
+
+<h2 id="reference---pageconfiguration">Reference - PageConfiguration</h2>
+<p>The following table provides a reference of all template configuration options available via the <code>PageConfiguration</code> property.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>BackLink</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>If set and the page is not displayed in a dialog, renders a back arrow above the form that redirects users to the specified page.</p>
+<p>Use <code>IPageLinkGenerator</code> to <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#generate-urls-to-other-administration-pages">generate links</a> to other administration pages.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ErrorMessage</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>If set, displays the specified error message instead of the editing form.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Components</p>
+</td>
+<td colspan="1">
+<p>ICollection&lt;IFormComponentClientProperties&gt;</p>
+</td>
+<td colspan="1">
+<p>Contains the collection of <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form component</a> properties required to instantiate the editing form on the client.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>SubmitConfiguration</p>
+</td>
+<td colspan="1">
+<p>SubmitConfiguration</p>
+</td>
+<td colspan="1">
+<p>Configures the submit action. See <a href="#configure-the-submit-action">Configure the submit action</a> and <a href="#raise-a-confirmation-prompt-on-submit">Raise a confirmation prompt on submit</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>EditMode</p>
+</td>
+<td colspan="1">
+<p>FormEditMode</p>
+</td>
+<td colspan="1">
+<p>Indicates whether the form can be edited and submitted:</p>
+<ul>
+<li>
+<code>FormEditMode.Disabled</code> value disables submission</li>
+<li>
+<code>FormEditMode.Default</code> enables submission</li>
+<li>
+<code>FormEditMode.ReadOnly</code> disables submission, but the contents can be read easily</li>
+</ul>
+<p>If some of the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form components</a> on the page don’t implement the ReadOnly state, they will be displayed in the Disabled state.</p>
+<p>When the <code>EditMode</code> value set for a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form component</a> differs from the one set in <code>PageConfiguration</code>, the component is rendered according to the more restrictive of the two, following this order of precedence:</p>
+<ol type="1">
+<li><code>FormEditMode.Disabled</code></li>
+<li><code>FormEditMode.ReadOnly</code></li>
+<li><code>FormEditMode.Default</code></li>
+</ol>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Headline</p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>The page’s title.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Callouts</p>
+</td>
+<td colspan="1">
+<p>ICollection&lt;CalloutConfiguration&gt;</p>
+</td>
+<td colspan="1">
+<p>Configures an optional message box element that can be displayed above the listing. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template#add-callouts">Add callouts</a> under the listing template section.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="register-edit-pages">Register edit pages</h2>
+<p>Edit pages need to specify the <code>TemplateNames.EDIT</code> client template during <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">registration</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example edit page registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+[assembly: UIPage(
+    parentType: typeof(UserEditSection), 
+    slug: "edit", 
+    uiPageType: typeof(UserObjectEdit), 
+    name: "Edit users", 
+    templateName: TemplateNames.EDIT, 
+    order: 0)]
+
+</code></pre>
+</div>
+
+<h2 id="client-template-edit">Client template – EDIT</h2>
+<p>Edit pages must use the <code>EDIT</code> client template whose properties are represented by <code>EditTemplateClientProperties</code> (<em>Kentico.Xperience.Admin.Base</em>) on the back end.</p>
+<p>The template supports the following page commands:</p>
+<ul>
+<li>
+<strong>Change</strong> – handles the form change command. The command is invoked whenever <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility conditions</a> or field value dependencies of the form need to be reevaluated and the form re-rendered (to display or hide form fields). The arguments submitted by the command to the server are represented by <code>FormChangeCommandArguments</code>. The response expected by the client is represented by <code>FormChangeResult</code>.</li>
+<li>
+<strong>Submit</strong> – executed when the corresponding form is submitted from the client. The arguments the command sends to the server are represented by <code>FormSubmissionCommandArguments</code>. The response expected by the client is represented by <code>FormSubmissionResult</code>.</li>
+</ul>
+<h2 id="lifecycle-of-edit-and-create-ui-pages">Lifecycle of edit and create UI pages</h2>
+<p>The following diagram illustrates the lifecycle of edit and create pages, and their available customization points. Each step with a red border indicates a virtual member that can be overridden to customize the page’s behavior. </p>
+<p></p>
+<h3 id="configure-page">Configure page</h3>
+<p>The place to configure the behavior of the edit/create page. See the other topics on this page for details.</p>
+<h3 id="getformitems">GetFormItems</h3>
+<p>Provides a place to modify the initial configuration of individual form components that comprise the editing form displayed by the page before they get sent to the client. The default configuration is taken from the <a href="/documentation/developers-and-admins/customization/object-types#define-editing-forms">editing form</a> assigned to the page.</p>
+<h3 id="configuretemplateproperties">ConfigureTemplateProperties</h3>
+<p>Provides a place to modify page properties before they get sent to the client.</p>
+<h3 id="finalizeinfoobject">FinalizeInfoObject</h3>
+<p>Called immediately after the submitted data is bound to the <em>Info</em> object and before validation runs. Can be used to populate fields intentionally not editable as part of the form. For example, to configure <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">relationships</a> between objects.</p>
+<h3 id="setformdata">SetFormData</h3>
+<p>Called when saving the edited <em>Info</em> object to the database.</p>
+<h3 id="getsubmitsuccessresponse">GetSubmitSuccessResponse</h3>
+<p>Controls the page response upon a successful submit action. By default, edit pages display a “saved” prompt and create pages <a href="#change-redirection-behavior">redirect to the parent</a>.</p>
+
+</body>
+</html>

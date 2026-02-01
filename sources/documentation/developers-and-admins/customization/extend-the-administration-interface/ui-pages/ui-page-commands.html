@@ -1,0 +1,742 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI page commands</title>
+</head>
+<body>
+<p>UI page commands enable the execution of arbitrary code on the server back end from within the client-side application. Typical use cases for commands are CRUD operations on database objects (creating or deleting new users, logging events). </p>
+<p>The following diagram illustrates the basic lifecycle of a command: </p>
+<p></p>
+<ol type="1">
+<li>A client component invokes a command (e.g., as part of a user interaction with some UI element).</li>
+<li>The admin application sends a request containing command metadata together with user-specified data to the server.</li>
+<li>The server invokes a designated handler function which processes the command.</li>
+<li>The handler function returns a response back to the client (including custom data that can be further processed by the client)</li>
+</ol>
+<p>Commands are identified by their names specified in the client template. When invoked, the system uses the surrounding context (command name, page URL path) to match the command to its back-end handling method (located within the page’s <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">back-end definiton</a> or its <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">page extender</a>).</p>
+<h2 id="define-commands-within-client-templates">Define commands within client templates</h2>
+<h3 id="register-page-command-definitions">Register page command definitions</h3>
+<p>Within client templates, register page commands via <code>usePageCommand&lt;TCommandResult&gt;</code>:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Button } from "@kentico/xperience-admin-components";
+import { usePageCommand } from "@kentico/xperience-admin-base";
+
+// Declares a client template component
+export const MyTemplate = () =&gt; {
+
+...
+
+// Registers a page command via 'usePageCommand'. Returns a callback used to invoke the command.
+// When registering commands, you must provide a command name. This name needs to be unique within the context of the given client template.
+const { execute: invokeCommand } = usePageCommand&lt;TCommandResult&gt;("CommandName");
+
+...
+
+return (
+    &lt;div&gt;
+        // Invokes the command on button click, sends a request to the back end for processing
+        &lt;Button label="Get value" onClick={ () =&gt; invokeCommand() } /&gt;
+    &lt;/div&gt;
+)
+
+</code></pre>
+</div>
+
+<p>Substitute the <code>TCommandResult</code> generic parameter for a type used to hold data returned from the server. If the command is not intended to return data, set the generic to <code>void.</code></p>
+<p>When registering commands, you must provide a command name. This name needs to be unique within the context of the client template.</p>
+<p>Additionally, you can provide the following parameters to the method:</p>
+<ul>
+<li>
+<p><code>config</code> – a configuration object with the following optional properties:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>
+Parameter
+</p>
+</td>
+<td colspan="1">
+<p>
+Type
+</p>
+</td>
+<td>
+<p>
+Description
+</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>
+<code>executeOnMount</code>
+</p>
+</td>
+<td colspan="1">
+<p>
+boolean
+</p>
+</td>
+<td>
+<p>
+Indicates whether the command should be invoked automatically on <a href="https://reactjs.org/docs/react-component.html#the-component-lifecycle" target="_blank">component mount</a>. Defaults to <code>false</code>.
+</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>
+<code>before</code>
+</p>
+</td>
+<td colspan="1">
+<p>
+() =&gt; boolean | void
+</p>
+</td>
+<td colspan="1">
+<p>
+Custom action executed before the command is sent to the back end for processing. If the function returns <code>false</code>, the command will not execute. 
+</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>
+<code>after</code>
+</p>
+</td>
+<td colspan="1">
+<p>
+(commandResult: TCommandResult)<br>=&gt; void
+</p>
+</td>
+<td colspan="1">
+<p>
+Action executed after a response is received from the back-end command handler.
+</p>
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>const { execute: getData } = usePageCommand&lt;TCommandResult&gt;("CommandName", {::newline::        after: (response) =&gt; {::newline::::tab::::tab:: ::tab::// the 'response' object is of the supplied 'TCommandResult' type::newline::        ::tab::doSomething(response.data);::newline::      }::newline::});::newline::</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>
+<code>data</code>
+</p>
+</td>
+<td colspan="1">
+<p>
+TCommandData
+</p>
+</td>
+<td colspan="1">
+<p>
+Contains user-specified data to be sent to the back end as part of the command invocation. If you need to send data as part of a command, also specify the <code>TCommandData</code> type as the second generic parameter of <code>usePageCommand</code>.
+</p>
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>usePageCommand&lt;TCommandResult, TCommandData&gt;("CommandName", {::newline::::tab::data: TCommandData }::newline::);::newline::</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</li>
+<li><p><code>dependencies</code> – an array of dependencies. The command only executes when an object in the dependency list changes. Identical to the functionality within <a href="https://reactjs.org/docs/hooks-reference.html#conditionally-firing-an-effect" target="_blank">conventional React hooks</a>.</p></li>
+</ul>
+<p>When a command is invoked on the client, the admin app sends a request to the back end, which invokes a corresponding handler method <a href="#designate-command-handlers">assigned to the command</a>.</p>
+<h2 id="prepare-and-designate-command-handlers-on-the-back-end">Prepare and designate command handlers on the back end</h2>
+<h3 id="designate-command-handlers">Designate command handlers</h3>
+<p>Commands called from the client are handled by designated methods. The handling API is <strong>asynchronous and task-based</strong>. Only asynchronous methods can be used as command handlers.</p>
+<p>Decorate methods designated as command handlers with the <code>PageCommand</code> attribute. The attribute has the following optional parameters:</p>
+<ul>
+<li>
+<code>CommandName</code> – the name of the command as invoked from the client template. If not specified, defaults to the name of the handling method.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Designates the 'SetLabel' method as the handler for the 'SetLabel' page command invoked from the client template
+[PageCommand]
+public async Task&lt;ICommandResponse&gt; SetLabel()
+{
+    // Command logic...
+}
+
+// Designates the 'CommandHandler' method as the handler for the 'DeleteAll' page command invoked from the client template
+[PageCommand("DeleteAll")]
+public async Task&lt;ICommandResponse&gt; CommandHandler()
+{
+    // Command logic...
+}
+
+</code></pre>
+</div>
+
+<h3 id="formulate-command-response">Formulate command response</h3>
+<p>The system provides an API that enables you to fluently compose responses from command handlers.</p>
+<p>If you wish to make use the fluent API support, page command handler methods need to return an instance of <code>ICommandResponse</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[PageCommand]
+public async Task&lt;ICommandResponse&gt; PageCommandHandler(ClientArguments args)
+{   
+    // Instantiates a 'CommandResult' object that can be further modified by chaining provided extension methods
+    return Response();
+}
+
+</code></pre>
+</div>
+
+<p>A response may contain all of the following:</p>
+<ul>
+<li>status signalling command completion</li>
+<li>information message displayed on the client containing additional information for users</li>
+<li>data returned from the server that can be acted upon by the client</li>
+</ul>
+<p>At minimum, a command handler returns an instance of the <code>ICommandResponse</code> created by one of the following methods:</p>
+<ul>
+<li><p><code>Response</code> – notifies the client of command completion.</p></li>
+<li>
+<p><code>ResponseFrom&lt;TResult&gt;</code> – additionally carries data from the server. To be acted upon by the client. Substitute the <code>TResult</code> generic with an object representing the command response data on the server. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - send data back to the client</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Data object class representing the command handler response to the client
+  public class MyCommandResult
+  {
+      public string StringData { get; set; }
+
+      public int IntData { get; set; }
+
+      public MyCommandResult(string stringData, int intData)
+      {
+          StringData = stringData;
+          IntData = intData;
+      }
+  }
+
+  public class MyPage : Page 
+  { 
+      ... 
+
+      [PageCommand] 
+      public async Task&lt;ICommandResponse&lt;MyCommandResult&gt;&gt; MyCommand()
+      { 
+          // Obtain the data...
+
+          // Sends a response object with the data back to the client
+          return ResponseFrom(new MyCommandResult(stringData, intData));
+      } 
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>Both methods return an instance of the <code>CommandResult</code> object that can be further modified by the following extensions (<em>Kentico.Xperience.Admin.Base</em> namespace):</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Method</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>AddMessage</code></p>
+</td>
+<td>
+<p>Displays a general message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return Response().AddMessage("General message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddSuccessMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays a success message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return Response().AddSuccessMessage("Success message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddInfoMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays an info message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return Response().AddInfoMessage("Info message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddErrorMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays an error message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return Response().AddErrorMessage("Error message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddWarningMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays a warning message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return Response().AddWarningMessage("Warning message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>UseCommand</code></p>
+</td>
+<td colspan="1">
+<p>Invokes a command with the provided name on the client. Can be used, e.g., with <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template">listing pages</a> to refresh the object listing after a command has executed on the back end.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Reloads the object grid on listing pages (e.g., to display changes in displayed data)
+return Response().UseCommand('LoadData').AddInfoMessage('Objects modified.');
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h3 id="receive-data-from-client-commands">Receive data from client commands</h3>
+<p>If you need to send data from the client as part of a command, the data needs to have a corresponding strongly-typed object representing them on the back end. This object then must be present as a parameter in the method handling the given page command.</p>
+<p>The system automatically binds the received data to the object, allowing you to access it within the command handler:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Receive data from the client within a page command</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class MyCommandArguments
+{
+    public int ExtremelyImportantNumber { get; set; }
+
+    public string DistressingMessage { get; set; }
+}
+
+public class MyPage : Page
+{
+    ...
+
+    [PageCommand]
+    // Binds data received from the client to the MyCommandArguments object
+    public async Task&lt;ICommandResult&gt; MyCommand(MyCommandArguments args)
+    {
+        // Use data received from the client
+        args.DistressingMessage...
+        args.ExtremelyImportantNumber...
+
+        // Sends a response back to the client
+        return Response().AddSuccessMessage("Command data received and acted upon.");
+    }    
+}
+
+</code></pre>
+</div>
+
+<h3 id="redirect-to-another-page-after-command-execution">Redirect to another page after command execution</h3>
+<p>Instead of returning a response, the command handler method can redirect the user to another page in the admin UI. </p>
+<p>If you wish to redirect from a command handler, use the <code>NavigateTo</code> method. The method takes a parameter containing the URL of the page where the user is to be redirected. To obtain the URL of a different page in the admin UI, use <code>IPageLinkGenerator</code>. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#generate-urls-to-other-administration-pages">UI pages</a> for more information about URL generation and navigation.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Service instance obtained via dependency injection
+private readonly IPageLinkGenerator pageLinkGenerator;
+
+protected Constructor(IPageLinkGenerator pageLinkGenerator)
+{
+    this.pageLinkGenerator = pageLinkGenerator;
+}
+...
+
+[PageCommand]
+public ICommandResult MyCommandHandler()
+{
+    // Navigates to the page represented by the 'TRedirectPage' type
+    return NavigateTo(pageLinkGenerator.GetPath&lt;TRedirectPage&gt;());
+}
+
+</code></pre>
+</div>
+
+<h3 id="cancellation-token-support">Cancellation token support</h3>
+<p>Page commands must be executed asynchronously. In asynchronous environments, it is conventional to use <a href="https://docs.microsoft.com/en-us/dotnet/api/system.threading.cancellationtokensource" target="_blank">cancellation tokens</a> to enable cooperative cancellation between threads handling various long running background tasks. Page commands support the cancellation token pattern by default. The system automatically passes a cancellation token instance to command handlers that request it in their signature:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Obtain a cancellation token instance</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[PageCommand]
+// The system passes a CancellationToken token instance to all handlers that request it in their signature 
+public async Task&lt;ICommandResponse&gt; MyCommand(MyCommandArguments args, CancellationToken ct) 
+{ 
+    // Uses data received from the client and passes a cancellation token (if supported by the operation)
+    var data = await FetchDataLongRunning(args.ClientStringData, args.ClientIntData, ct);
+
+    // Sends a response back to the client 
+    return ResponseFrom(new ReturnData(data)); 
+}
+
+</code></pre>
+</div>
+
+<p>If the command handler calls logic that supports the cancellation token pattern (typically for long-running async operations), the token ensures all related threads terminate (e.g., in case the application needs to shut down) when the corresponding token source sends a request for cancellation. </p>
+<h2 id="add-permission-checks-to-page-commands">Add permission checks to page commands</h2>
+<p>You can configure page commands to evaluate user permissions before executing. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks">UI page permission checks</a> for more information.</p>
+<h2 id="example---page-command-and-its-handling-method">Example - page command and its handling method</h2>
+<p>The following code demonstrates a sample client template with a page command that fetches a string value from the back end and displays it in a label. The implementation of the command on the back end can be altered to be suitable for the specific page’s role. For example, you can return <code>DateTime</code> values, or the name of the current user.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Command definition within a client template</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React, { useState } from "react";
+import { Button } from "@kentico/xperience-admin-components";
+import { usePageCommand } from "@kentico/xperience-admin-base";
+
+// Type storing the properties of the client template
+interface LayoutProps {
+    readonly label: string;
+}
+
+// Type handling data returned from the server
+interface ResponseResult {
+    readonly label: string;
+}
+
+// Holds command name constants
+const Commands = {
+    GetString : 'GetString'
+}
+
+export const LayoutTemplate = ({ label } : LayoutProps ) =&gt; {
+
+    // Declares a state variable used to store response data from the server
+    const [labelValue, setLabelValue] = useState(label);
+
+    const { execute: invokeCommand } = usePageCommand&lt;ResponseResult&gt;(Commands.GetString, {
+        // After the command successfully executes, sets 'labelValue' to the value returned by the server
+        after: (response) =&gt; {
+            // the 'response' object is of the 'ResponseResult' type
+            setLabelValue(response.label)
+        }
+    });
+
+    return (
+        &lt;div&gt;
+            &lt;h1&gt;{labelValue}&lt;/h1&gt;
+            // Binds the command to an 'onClick' handler of a button component
+            &lt;Button label="Get value" onClick={() =&gt; invokeCommand()} /&gt;
+        &lt;/div&gt;
+    );
+}
+
+</code></pre>
+</div>
+
+<p>The following code contains an example of a command handler on the back end. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Command handler definition on the backend</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Registers a handler for the 'GetString' page command that can be invoked form the client template
+[PageCommand]
+public async Task&lt;ICommandResponse&gt; GetString()
+{            
+    return ResponseFrom(new ResponseResult { Label = DateTime.Now.ToString() })
+            .AddInfoMessage("Data returned");
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

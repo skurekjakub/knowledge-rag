@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page Builder</title>
+</head>
+<body>
+<p>Page Builder provides a user-friendly interface where non-technical users can manage content using configurable widgets prepared by the developers.</p>
+<p>Use Page Builder when you want to allow editors to create visually captivating pages and experiment with the design and layout. To learn more about scenarios suitable for the feature, see <a href="/guides/architecture/content-modeling/content-modeling-guide">Content modeling</a>.</p>
+<p></p>
+<p>To start using Page Builder:</p>
+<ol type="1">
+<li><a href="#enable-the-page-builder-feature">Enable the Page Builder feature</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Create pages with editable areas</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Implement and register widgets</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Implement and register sections (layouts for widgets)</a></li>
+</ol>
+<h2 id="page-builder-components">Page Builder components</h2>
+<p>The Page Builder framework consists of several components, which fit together in the following hierarchy. Additionally, widget zones can contain any number of widgets.</p>
+<p></p>
+<section id="editable-areas">
+<h4>Editable areas</h4>
+<p>Editable areas are the top-level layout component and contain one or more sections. You can learn how to add editable areas to a view on the <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Create pages with editable areas</a> page.</p>
+</section>
+<section id="sections">
+<h4>Sections</h4>
+<p>Page sections specify the visual layout of widget zones. They represent reusable pieces of markup that can store an arbitrary number of widget zones – areas where content creators place widgets. Sections are fully customizable, and as a developer, you have absolute freedom in the way you set each section’s layout. See <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Sections for Page Builder</a> to learn how to implement and customize page sections.</p>
+</section>
+<section id="widget-zones">
+<h4>Widget zones</h4>
+<p>Widget zones are components that allow content editors to insert widgets using the plus button. Widget zones are defined in the views of sections.</p>
+</section>
+<section id="widgets">
+<h4>Widgets</h4>
+<p>Widgets are reusable components that can be easily manipulated by content editors and other non-technical users. Widgets give non-technical users more power and flexibility when adjusting page content, in addition to basic editing of text and images. By working with widgets, users can decide which components are placed on pages and where. You can learn more about widget development and customization on the <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a> page. The default system widgets are listed on the <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">Reference - Default Page Builder widgets</a> page.</p>
+</section>
+<h2 id="enable-the-page-builder-feature">Enable the Page Builder feature</h2>
+<p>To use Page Builder, you need to enable it as a feature in your Xperience project.</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio.</p></li>
+<li>
+<p>Enable the Page Builder feature by performing the following calls in your application’s startup class.</p>
+<ol type="1">
+<li><p>Within <code>AddKentico</code>, call <code>UsePageBuilder</code>.</p></li>
+<li><p>Add the content types you want to use Page Builder with into <code>PageBuilderOptions.ContentTypeNames</code>. You can use the <code>CONTENT_TYPE_NAME</code> property from <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated classes</a> to access the content type identifier.</p></li>
+<li>
+<p>Make sure your middleware pipeline reflects the sample below.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Web.Mvc;
+ using Kentico.Content.Web.Mvc;
+ using Kentico.PageBuilder.Web.Mvc;  
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ ...  
+
+ builder.Services.AddKentico(features =&gt;
+ {     
+     features.UsePageBuilder(new PageBuilderOptions
+     {
+         ContentTypeNames = new[]
+         {
+             // Enables Page Builder for content types using their generated classes
+             LandingPage.CONTENT_TYPE_NAME,
+             ContactsPage.CONTENT_TYPE_NAME
+         }
+     }); 
+ });  
+
+ builder.Services.AddControllersWithViews();
+
+ ...
+
+ // Middleware pipeline configuration
+ WebApplication app = builder.Build();
+
+ app.InitKentico();
+ app.UseStaticFiles();
+ app.UseKentico();
+
+ ...
+
+ app.Kentico().MapRoutes();
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+<li>
+<p>(Optional) Edit the project’s <strong>Views\_ViewImports.cshtml</strong> file (or a more specific file, depending on your configuration) and add a <em>using</em> statement for the <code>Kentico.PageBuilder.Web.Mvc</code> namespace (together with any other frequently used namespaces).</p>
+<ul>
+<li><p>The namespace allows you to easily access Page Builder extension methods in the code of your views.</p></li>
+<li>
+<p>Alternatively, you can add <em>using</em> statements for the namespace directly in the code of individual views.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>_ViewImports.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @using Kentico.Web.Mvc
+  @using Kentico.PageBuilder.Web.Mvc
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Some extension methods from the Page Builder API are also provided as ASP.NET Core Tag Helpers. See <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Reference - Tag Helpers</a> for details. You can include Tag Helpers in your <strong>_ViewImports.cshtml</strong> files using the <code>@addTagHelper</code>directive (in the same manner as adding using statements). This makes the included Tag Helpers available within all views that fall under the corresponding <em>_ViewImports.cshtml</em> file in the hierarchy. </p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>_ViewImports.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @* Adds all Tag Helpers from the Kentico.Content.Web.Mvc assembly *@
+  @addTagHelper *, Kentico.Content.Web.Mvc
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>The basic Page Builder feature is now enabled. You can prepare pages with <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable areas</a> in your project and start developing <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a> and <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a>.</p>
+<h2 id="page-builder-security">Page Builder security</h2>
+<h3 id="content-security-policy">Content Security Policy</h3>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP" target="_blank">Content Security Policy</a> (CSP) is a security policy implemented by all modern browsers that provides an additional layer of security to detect and mitigate certain types of attacks, including cross site scripting (XSS).</p>
+<p>CSP is currently supported in Xperience by Kentico with certain limitations. It is possible to use CSP on certain pages, but any HTML document that includes any of the following:</p>
+<ul>
+<li>Page Builder content</li>
+<li>Widgets <a href="/documentation/developers-and-admins/development/builders/page-builder/render-widgets-in-code">rendered in code</a> (including the <em>Form</em> widget)</li>
+</ul>
+<p>requires enabling <strong>unsafe-eval</strong> and <strong>unsafe-inline</strong> CSP attributes, which needs to be considered carefully.</p>
+
+</body>
+</html>

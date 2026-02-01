@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Example - Widget development</title>
+</head>
+<body>
+<p>The following scenario will guide you through the process of developing a simple Page Builder widget step-by-step with full code samples. For more detailed information about the underlying development principles, see our general pages about developing <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widget properties</a> and <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editors</a>.</p>
+<p>When finished, the widget displays a simple message with a number of your choice. The number is set via a widget property and can be modified through an inline property editor or the properties dialog. The widget can be added to an editable area and displayed on the live site.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>To be able to use the widget in Page Builder, you need to <a href="/documentation/developers-and-admins/development/builders/page-builder">enable the Page Builder feature</a> and <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">set up an editable area</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced widget example</strong></p>
+<p>For a detailed walkthrough showing how to create a more complex widget, see the <a href="/guides/development/page-builder/define-advanced-widget">Define an advanced widgets</a> guide.</p>
+</div>
+
+<h2 id="widget">Widget</h2>
+<p>Create a <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widget</a> with one modifiable integer <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">property</a>.</p>
+<h3 id="property-model">Property model</h3>
+<p>Create a property model <strong>NumberWidgetProperties.cs</strong> in the <em>~/Component/Widgets/NumberWidget</em> folder:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Forms.Web.Mvc;
+using Kentico.PageBuilder.Web.Mvc;
+
+namespace LearningKitCore.Components.PageBuilder.Widgets.NumberWidget
+{
+    public class NumberWidgetProperties : IWidgetProperties
+    {
+        // Defines a property and sets its default value
+        // Assigns the default Xperience number input component, which allows users to enter
+        // a numeric value for the property in the widget's configuration dialog
+        [NumberInputComponent(Order = 0, Label = "Number")]
+        public int Number { get; set; } = 22;
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="partial-view">Partial view</h3>
+<p>Create a partial view <strong>_NumberWidget.cshtml</strong> in the <em>~/Components/Widgets/NumberWidget</em> folder:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@using Kentico.PageBuilder.Web.Mvc
+
+@using LearningKitCore.Components.PageBuilder.InlineEditors.NumberEditor
+@using LearningKitCore.Components.PageBuilder.Widgets.NumberWidget
+
+@inject IPageBuilderDataContextRetriever pageBuilderContext
+
+@model ComponentViewModel&lt;NumberWidgetProperties&gt;
+
+&lt;h3 style="background-color: #dddddd;"&gt;The number you chose for today is: @Model.Properties.Number&lt;/h3&gt;
+
+@* Shows an inline editor when rendered in the edit mode of the Pages application in Xperience *@
+@if (pageBuilderContext.Retrieve().GetMode() == PageBuilderMode.Edit)
+{
+    var inlineEditorModel = new NumberEditorModel
+    {
+        @* Use the nameof() operator to get the name of the edited property from the widget property model *@
+        PropertyName = nameof(NumberWidgetProperties.Number),
+        Number = @Model.Properties.Number
+    };
+
+    &lt;partial name="~/Components/InlineEditors/NumberEditor/_NumberEditor.cshtml" model="inlineEditorModel" /&gt;
+}
+</code></pre>
+</div>
+
+<h3 id="widget-registration">Widget registration</h3>
+<p>Register the widget into the system using the <strong>RegisterWidget</strong> assembly attribute:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+[assembly: RegisterWidget("LearningKit.Widgets.NumberWidget",
+                         "Number selector",
+                         typeof(NumberWidgetProperties),
+                         customViewName: "~/Components/Widgets/NumberWidget/_NumberWidget.cshtml")]
+</code></pre>
+</div>
+
+<h2 id="inline-editor">Inline editor</h2>
+<p>Implement an <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editor</a> able to modify the <em>Number</em> integer property.</p>
+<h3 id="model">Model</h3>
+<p>Create an editor model <strong>NumberEditorModel.cs</strong> in the <em>~/Components/InlineEditors/NumberEditor</em> folder:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+namespace LearningKitCore.Components.PageBuilder.InlineEditors.NumberEditor
+{
+    public class NumberEditorModel
+    {
+        public string PropertyName { get; set; }
+
+        public int Number { get; set; }
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="partial-view-1">Partial view</h3>
+<p>Create a partial view <strong>_NumberEditor.cshtml</strong> in the <em>~/Components/InlineEditors/NumberEditor</em> folder:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Web.Mvc
+
+@model LearningKitCore.Components.PageBuilder.InlineEditors.NumberEditor.NumberEditorModel
+
+@using (Html.Kentico().BeginInlineEditor("number-editor", Model.PropertyName))
+{
+    &lt;div style="position: absolute; top: 0px; right: 0px;"&gt;
+        &lt;button id="plus-btn" type="button"&gt;+&lt;/button&gt;
+        &lt;button id="minus-btn" type="button"&gt;-&lt;/button&gt;
+    &lt;/div&gt;
+}
+</code></pre>
+</div>
+
+<h3 id="javascript">JavaScript</h3>
+<p>Create a JavaScript file <strong>number-editor.js</strong> in the <em>~/wwwroot/PageBuilder/Admin/InlineEditors/NumberEditor</em> folder (this example assumes the default configuration of the system’s bundling support, see <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>):</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+(function () {
+    // Registers the 'number-editor' inline property editor within the page builder scripts
+    window.kentico.pageBuilder.registerInlineEditor("number-editor", {
+        init: function (options) {
+            var editor = options.editor;
+
+            // Click action for the 'Plus' button
+            editor.querySelector("#plus-btn").addEventListener("click", function () {
+                // Creates a custom event that notifies the widget about a change in the value of a property
+                var event = new CustomEvent("updateProperty", {
+                    detail: {
+                        value: options.propertyValue + 1,
+                        name: options.propertyName
+                    }
+                });
+                editor.dispatchEvent(event);
+            });
+
+            // Click action for the 'Minus' button
+            editor.querySelector("#minus-btn").addEventListener("click", function () {
+                var event = new CustomEvent("updateProperty", {
+                    detail: {
+                        value: options.propertyValue - 1,
+                        name: options.propertyName
+                    }
+                });
+                editor.dispatchEvent(event);
+            });
+        }
+    });
+})();
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The location of the script file under <em>~/wwwroot/PageBuilder/Admin/InlineEditors/NumberEditor</em> ensures that the script is automatically linked in the administration interface on <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">pages containing editable areas</a> (within a bundle of inline editor scripts).</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Dancing Goat sample site</strong></p>
+<p>If you implement this example on the <em>Dancing Goat</em> sample site, you need to manually trigger the <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components#sample-bundling-and-minification-process">bundling process</a> to include component scripts in the administration interface. You need to do the following:</p>
+<ol type="1">
+<li>Run the <code>pageBuilder</code> <a href="https://learn.microsoft.com/en-us/aspnet/core/client-side/using-grunt" target="_blank">Grunt task</a> available in the sample site to manually trigger the bundling process.</li>
+<li>Clear cached web content in your browser.</li>
+</ol>
+</div>
+
+<h3 id="result">Result</h3>
+<p></p>
+
+</body>
+</html>

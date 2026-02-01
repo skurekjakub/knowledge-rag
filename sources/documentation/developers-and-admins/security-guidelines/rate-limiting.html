@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Rate limiting</title>
+</head>
+<body>
+<p>Rate limiting restricts the number of requests that can be served by the application or its specific endpoints within a given window of time. This protects against denial-of-service and other brute-force attacks.</p>
+<p>By default, Xperience provides a rate limiter for all endpoints used as part of the administration user management functionality, such as the sign-in or password reset page. For more information and related configuration options, see <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#rate-limiting-for-user-management-endpoints">Rate limiting for user management endpoints</a>.</p>
+<p>Individual projects have different security requirements and traffic loads, so Xperience does <strong>not</strong> use a global rate limiter or provide rate limiting for any other endpoints by default. However, developers can use the <a href="https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit" target="_blank">ASP.NET Core Rate limiting middleware</a> to set up their own rate limiting policies based on specific project requirements. For example, you can consider rate limiting for:</p>
+<ul>
+<li>Custom <a href="/documentation/developers-and-admins/development/registration-and-authentication">live site member registration and authentication</a> endpoints</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Email subscription and unsubscription</a> endpoints (<em>/Kentico.Emails</em>)</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-assets">Content item asset retrieval</a> endpoint (<em>/getContentAsset</em>)</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">GraphQL API</a> endpoints for headless channels (<em>/graphql</em>)</li>
+</ul>
+<h2 id="set-up-rate-limiting">Set up rate limiting</h2>
+<p>Use the <a href="https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit" target="_blank">ASP.NET Core Rate limiting middleware</a> to set up and enable rate limiting. You can select any required rate limiter algorithm for each endpoint.</p>
+<p>For existing <strong>Xperience endpoints</strong>, you need to create a global rate limiter with partitioned limiters for the endpoints that you wish to cover. Use conditions based on the URL path of the given endpoints to return an appropriate rate limiter policy. Return <code>RateLimitPartition.GetNoLimiter("")</code> as the global limiter’s default policy unless you wish to apply rate limiting to your entire application.</p>
+<p>For <strong>custom endpoints</strong> where you have full control over the endpoint’s route registration, you can use any preferred approach to enable rate limiting (for example the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.ratelimiterendpointconventionbuilderextensions.requireratelimiting" target="_blank">RequireRateLimiting</a> method).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Rate limiter policy conflicts</strong></p>
+<p>Carefully consider which endpoints are affected when adding rate limiters. For example, rate limiting for the <em>/admin</em> URL path would apply to all endpoints within the Xperience administration, including the system’s administration user management endpoints, which have a <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#rate-limiting-for-user-management-endpoints">rate limiting policy applied by default</a>. If an endpoint has multiple rate limiting policies, the more restrictive policy is applied.</p>
+</div>
+
+<p>The following code demonstrates how to set up rate limiting for several endpoints:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Configure rate limiting for endpoints</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// ...
+
+builder.Services.AddRateLimiter(options =&gt;
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create&lt;HttpContext, string&gt;(context =&gt;
+    {
+        // The HTTP context is used to create partitioned rate limiters
+        // The requests's URL path is checked to determine rate limiter policies
+        var path = context.Request.Path.Value;
+
+        // Sets rate limiting for custom '/account' endpoints
+        if (path.StartsWith("/account", StringComparison.OrdinalIgnoreCase))
+        {
+            // Always specify a unique partition key ("membership_account_endpoint" in this example)
+            return RateLimitPartition.GetTokenBucketLimiter("membership_account_endpoint", partition =&gt;
+            new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 100,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(6),
+                TokensPerPeriod = 10,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 50
+            });
+        }
+
+        // Sets rate limiting for headless channel GraphQL API endpoints
+        if (path.StartsWith("/graphql", StringComparison.OrdinalIgnoreCase))
+        {
+            // Always specify a unique partition key ("headless_endpoint" in this example)
+            return RateLimitPartition.GetTokenBucketLimiter("headless_endpoint", partition =&gt;
+            new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 1000,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(6),
+                TokensPerPeriod = 50,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+        }
+
+        // Sets the global rate limiting policy for all endpoints - in this case no rate limiter.
+        // The global policy must be less restrictive than partitioned rate limiters for specific endpoints,
+        // otherwise the global restrictions overwrite the policy of individual endpoints.
+        return RateLimitPartition.GetNoLimiter("");
+    });
+});
+</code></pre>
+</div>
+
+<p>To enable your custom rate limiting policies, call <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.ratelimiterapplicationbuilderextensions.useratelimiter" target="_blank">UseRateLimiter</a> in the application’s middleware pipeline. The rate limiting middleware must be enabled <strong>before</strong> you call <code>UseKentico()</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Enable rate limiting middleware</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// ...
+
+var app = builder.Build();
+
+app.InitKentico();
+
+// ...
+
+// Enables rate limiting middleware for custom policies
+// Must be called before UseKentico()
+app.UseRateLimiter();
+
+// ...
+
+app.UseKentico();
+</code></pre>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Track email statistics</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>To get the most out of your <a href="/documentation/business-users/digital-marketing/emails">email communication</a>, it is important to determine the effectiveness of individual emails and optimize them according to the results. To help you achieve this, the system tracks sent emails and monitors the reactions of recipients.</p>
+<p>Xperience by Kentico provides the following types of analytics for emails:</p>
+<ul>
+<li>
+<a href="#email-statistics">Statistics</a> – data such as the number of sent emails, email opens and clicked links. These statistics are anonymous, collected without connecting actions to individual recipients (with the exception of bounced emails).</li>
+<li>
+<a href="#contact-activities-for-emails">Contact activities</a> – actions performed by individual email recipients, specifically link clicks. Depending on your project’s <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking/log-email-activities">implementation</a>, email activities are only logged for recipients who agree to be tracked, for example based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>).</li>
+</ul>
+<p>Because contact activities are not always logged for all recipients, you may observe discrepancies between the number of logged activities and the email’s overall statistics (which are anonymously logged for all recipients).</p>
+<h2 id="limitations-and-prerequisites">Limitations and prerequisites</h2>
+<p>To track statistics and activities for emails, the application must be <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">properly configured</a>. If statistics or activities are not being logged for your emails, contact your project’s administrator or developers.</p>
+<p>Tracking is only possible for emails created using an email channel application in Xperience. Statistics and activities are not tracked for draft emails.</p>
+<p>If an email is deleted and later <a href="/documentation/business-users/recycle_bin#restore-deleted-items">restored</a>, the statistics and contact activities are no longer available for this email.</p>
+<h2 id="email-statistics">Email statistics</h2>
+<h3 id="sent-emails">Sent emails</h3>
+<p>The most basic email statistic tracks how many times an email was sent. This statistic does not always guarantee that the email was actually delivered to the recipient. Only that the email was successfully sent from the Xperience platform, e.g., to an SMTP server or SendGrid for further mailing.</p>
+<p>In certain cases, the same email can be sent multiple times to a single recipient, for example if a visitor submits a form with an autoresponder multiple times with the same email address. In these scenarios, each sending of the email is logged separately.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email sending statistics for SaaS projects</strong></p>
+<p>To see more comprehensive email sending statistics, visit <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#email-metrics">Email metrics</a> in the <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a>.</p>
+</div>
+
+<h3 id="email-opens">Email opens</h3>
+<p>Email opens are an important metric, tracking the number of recipients who actually opened the email. Multiple opens by a single recipient are not counted, unless the email was sent multiple times to the same recipient.</p>
+<p>The system tracks opens by embedding a small, invisible pixel image into the content of emails. When this image is requested from the server, the system counts the email as opened for the given recipient.</p>
+<ul>
+<li>Emails are only counted as opened if the email client of the recipient allows the loading of images. As a result, the indicated number of opened emails may be slightly lower than the actual amount.</li>
+<li>If the recipient clicks on a link contained in the email, the system counts the email as opened even if images are blocked.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Apple Mail impact on open rate reliability</strong></p>
+<p>On September 20, 2021, Apple launched their Mail Privacy Protection (MPP) feature. Xperience by Kentico cannot reliably track the open rate for recipients who use the <strong>Apple Mail</strong> app with the MPP feature enabled. This also includes users who use other email services, with their inbox linked to Apple Mail.</p>
+<p>MPP anonymizes email tracking by automatically fetching emails, along with all contained images (including the tracking pixel). As a result, the system identifies emails as opened even if they remain unread in the user’s inbox.</p>
+<p>Depending on your recipient demographics and the percentage of users with Apple Mail clients, Apple MPP may significantly impact the reliability of the open rate statistics. To mitigate this, we strongly recommend evaluating your emails based on <a href="#clicked-links">clicked links</a>.</p>
+</div>
+
+<h3 id="clicked-links">Clicked links</h3>
+<p>One of the best ways to measure the effectiveness of emails is to track when recipients click links in the content. The primary goal of most emails is to get recipients to click a prominent call to action link.</p>
+<p>When sending out emails, the system converts all links in the content of the email (and its template) to tracking links. When a recipient clicks a tracking link, the system logs a record of the event, and then redirects the user to the link’s original target.</p>
+<p>Currently, the reports in Xperience by Kentico provide the following link click data for each email:</p>
+<ul>
+<li>
+<strong>Click rate</strong> – the percentage of recipients who clicked at least one link within the content of the email.</li>
+<li>
+<strong>Unique clicks</strong> – the number of recipients who clicked at least one link.</li>
+</ul>
+<p>Separate click data for individual links is not available in the anonymous email statistics. However, you can also track link clicks as <a href="#contact-activities-for-emails">email activities</a>, which contain information about individual recipients and links.</p>
+
+<div>
+
+</div>
+<div>
+<p><a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Unsubscribe links</a> in emails of the <strong>Regular</strong> type are excluded from tracking.</p>
+</div>
+
+<h3 id="delivered-emails">Delivered emails</h3>
+<p><strong>Note</strong>: Delivered email statistics are only available for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a> sent to subscribed recipients.</p>
+<p>When an email cannot be delivered successfully, an automatic reply informing about the problem is returned (<a href="https://en.wikipedia.org/wiki/Bounce_message" target="_blank">bounced</a>) back to the sender or another designated address. Tracking bounced emails allows the system to identify addresses that do not correctly receive emails, which helps keep your recipient lists healthy and protects your sender reputation.</p>
+<p>If an email address reaches the allowed limit for temporary delivery problems (soft bounces) or if a permanent delivery problem is encountered (a hard bounce), the given contact switches to the <strong>Bounced</strong> status and is excluded when sending further email. If necessary, marketers can <strong>Reset bounces</strong> for individual contacts from the <strong>Email marketing</strong> section of the contact’s profile in the <strong>Contact management</strong> application.</p>
+<p>The delivery rate for an email is calculated by subtracting the bounce count from the total number of sent emails.</p>
+<h3 id="unsubscribe-rate">Unsubscribe rate</h3>
+<p><strong>Note</strong>: Unsubscribe rate statistics are only available for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a> sent to subscribed recipients.</p>
+<p>Most types of email tracking focus on “positive” actions, such as email opens and clicked links. However, it is also important to know which emails cause a negative reaction among your recipients.</p>
+<p>The unsubscribe rate statistic shows the percentage and exact number of recipients who used the email’s <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">unsubscribe link</a>, and will no longer receive emails sent to the given recipient list. The system calculates the unsubscribe rate from the number of successfully delivered emails.</p>
+<p>If an email has a high unsubscription rate, focus on identifying the problems. You can then make improvements in the content of future emails. or take other steps to recover the relationship with your recipients.</p>
+<h3 id="spam-reports">Spam reports</h3>
+<p><strong>Note</strong>: Spam report statistics are only available for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a> sent to subscribed recipients.</p>
+<p>Only available when using <a href="/documentation/developers-and-admins/configuration/email-configuration">SendGrid</a> to send emails.</p>
+<p>The spam reports statistic shows how many recipients marked the email as spam in their email client. Xperience by Kentico loads the spam report statistics from SendGrid – see <a href="https://docs.sendgrid.com/glossary/spam-reports" target="_blank">Spam Reports</a> for more information.</p>
+<h3 id="view-statistics-for-emails">View statistics for emails</h3>
+<p>You can view statistics for emails in email channel applications.</p>
+<p>The list of emails provides an overview where you can compare the effectiveness of your emails according the <a href="#email-opens">open</a> and <a href="#clicked-links">click</a> rate.</p>
+<p>To view detailed statistics for a specific email, select the email in the appropriate email channel application and switch to the <strong>Statistics</strong> view mode in the options panel on the right. Here you can find an <em>Engagement funnel</em> of the email’s recipients, showing how many emails were sent, and the number of unique opens and clicks.</p>
+<p>You can also view sending statistics of emails in the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#email-metrics">Email metrics</a> application in the <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a> (for projects <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed to the Xperience SaaS</a>).</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Statistic delay</strong></p>
+<p>The reports do not display emails statistics in real time as they are logged. The system calculates logged email statistics periodically every 30 minutes, so there may be a delay between updates of the displayed statistics.</p>
+<p>You can trigger the recalculation manually for individual emails by clicking the <strong>Refresh</strong> button in the top right of the <strong>Statistics</strong> view mode.</p>
+</div>
+
+<h2 id="contact-activities-for-emails">Contact activities for emails</h2>
+<p>The system can track <em>Email click</em> <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">activities</a>, which represent link clicks performed by individual email recipients. Depending on your project’s <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking/log-email-activities">implementation</a>, email activities are only logged for recipients who agree to be tracked, for example based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Comparing email activities and statistics</strong></p>
+<p>Because contact activities are not always logged for all recipients, you may observe discrepancies between the number of logged activities and the email’s overall statistics (which are anonymously logged for all recipients).</p>
+</div>
+
+<p>To view logged activities for a specific email, select the email in the appropriate email channel application and switch to the <strong>Contact activities</strong> view mode in the options panel on the right. Here, you can see information about the contact (recipient) who performed each click. The <strong>Value</strong> column displays the URL of the clicked link.</p>
+<p></p>
+<p>Email activities allow you to:</p>
+<ul>
+<li>
+<a href="/documentation/business-users/digital-marketing/contact-groups">Segment contacts into groups</a> by using “Email click” conditions</li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization">Personalize content</a></li>
+<li>Make decisions based on the actions that your audience takes when viewing email channel content. Such decisions can be automated by including “Email click” conditions in <a href="/documentation/business-users/digital-marketing/automation">automation processes</a>.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>You can also view email activities in the general list of logged <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a> in the <em>Contact management</em> application.</p>
+</div>
+
+
+</body>
+</html>

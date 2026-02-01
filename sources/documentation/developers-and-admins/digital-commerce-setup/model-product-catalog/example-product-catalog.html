@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Example - product catalog</title>
+</head>
+<body>
+<p>This page demonstrates a practical implementation of a product catalog using the <a href="/documentation/business-users/content-hub">content hub</a> to store products as <a href="/documentation/business-users/content-hub/content-items">reusable content items</a>. The example follows the <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">product catalog modeling recommendations</a> and showcases how to:</p>
+<ul>
+<li>Define a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> for common product fields</li>
+<li>Create a product <a href="/documentation/developers-and-admins/development/content-types">content type</a> that implements the schema</li>
+<li>Use <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomies</a> for product categorization</li>
+<li>Retrieve and display products using the <a href="/documentation/developers-and-admins/api/content-item-api">content retriever API</a>
+</li>
+</ul>
+<h2 id="content-model-overview">Content model overview</h2>
+<p>The example catalog uses the following content model structure:</p>
+<ul>
+<li>
+<strong>ProductFields</strong> – a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> containing common product properties (name, description, price, category).</li>
+<li>
+<strong>ProductSKU</strong> – a <a href="/documentation/developers-and-admins/development/content-types">content type</a> that implements the ProductFields schema and represents individual products.</li>
+<li>
+<strong>ProductCategory</strong> – a <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomy</a> for organizing products into categories.</li>
+</ul>
+<p></p>
+<p>This structure allows you to:</p>
+<ul>
+<li>Reuse the ProductFields schema across multiple product types if needed.</li>
+<li>Query products by their shared fields using the schema interface.</li>
+<li>Filter products by category using taxonomy tags.</li>
+</ul>
+<h2 id="reusable-field-schema">Reusable field schema</h2>
+<p>The <code>ProductFields</code> reusable field schema defines the common fields shared by all products. When you <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generate code for the schema</a>, you get an interface that content types can implement:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Generated ProductFields interface</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Defines a contract for content types with the &lt;see cref="ICodesamplesProductFields"/&gt; reusable schema assigned.
+    /// &lt;/summary&gt;
+    public interface ICodesamplesProductFields
+    {
+        /// &lt;summary&gt;
+        /// Code name of the reusable field schema.
+        /// &lt;/summary&gt;
+        public const string REUSABLE_FIELD_SCHEMA_NAME = "Codesamples.ProductFields";
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldsName.
+        /// &lt;/summary&gt;
+        public string ProductFieldsName { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldsDescription.
+        /// &lt;/summary&gt;
+        public string ProductFieldsDescription { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldsPrice.
+        /// &lt;/summary&gt;
+        public decimal ProductFieldsPrice { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldCategory.
+        /// &lt;/summary&gt;
+        public IEnumerable&lt;TagReference&gt; ProductFieldCategory { get; set; }
+    }</code></pre>
+</div>
+
+<p>The schema includes:</p>
+<ul>
+<li>
+<code>ProductFieldsName</code> – the display name of the product</li>
+<li>
+<code>ProductFieldsDescription</code> – a detailed product description</li>
+<li>
+<code>ProductFieldsPrice</code> – the base price of the product</li>
+<li>
+<code>ProductFieldCategory</code> – taxonomy tags for categorization</li>
+</ul>
+<h2 id="product-content-type">Product content type</h2>
+<p>The <code>ProductSKU</code> content type implements the <code>ICodesamplesProductFields</code> interface, inheriting all fields from the reusable schema. The generated code provides a strongly-typed class for working with product data:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Generated ProductSKU class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>   /// &lt;summary&gt;
+    /// Represents a content item of type &lt;see cref="ProductSKU"/&gt;.
+    /// &lt;/summary&gt;
+    [RegisterContentTypeMapping(CONTENT_TYPE_NAME)]
+    public partial class ProductSKU : IContentItemFieldsSource, ICodesamplesProductFields
+    {
+        /// &lt;summary&gt;
+        /// Code name of the content type.
+        /// &lt;/summary&gt;
+        public const string CONTENT_TYPE_NAME = "Codesamples.ProductSKU";
+
+
+        /// &lt;summary&gt;
+        /// Represents system properties for a content item.
+        /// &lt;/summary&gt;
+        [SystemField]
+        public ContentItemFields SystemFields { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldsName.
+        /// &lt;/summary&gt;
+        public string ProductFieldsName { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldsDescription.
+        /// &lt;/summary&gt;
+        public string ProductFieldsDescription { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldsPrice.
+        /// &lt;/summary&gt;
+        public decimal ProductFieldsPrice { get; set; }
+
+
+        /// &lt;summary&gt;
+        /// ProductFieldCategory.
+        /// &lt;/summary&gt;
+        public IEnumerable&lt;TagReference&gt; ProductFieldCategory { get; set; }
+    }</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The <code>[RegisterContentTypeMapping]</code> attribute automatically registers the class with the <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">content retriever</a>, enabling you to query products using the strongly-typed <code>ProductSKU</code> class.</p>
+</div>
+
+<h2 id="retrieve-products">Retrieve products</h2>
+<p>Use the <code>IContentRetriever</code> service to query products from the content hub. The following examples demonstrate common retrieval patterns.</p>
+<h3 id="retrieve-all-products">Retrieve all products</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve all products</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Retrieves all products from the content hub.
+    /// &lt;/summary&gt;
+    public async Task&lt;List&lt;ProductModel&gt;&gt; GetAllProductsAsync()
+    {
+        var products = await contentRetriever.RetrieveContent&lt;ProductSKU, ProductModel&gt;(
+            GetContentParameters(),
+            additionalQueryConfiguration: null,
+            new RetrievalCacheSettings(cacheItemNameSuffix: "AllProducts"),
+            configureModel: async (container, productSKU) =&gt; await MapToProductModelAsync(productSKU)
+        );
+
+        return products.ToList();
+    }</code></pre>
+</div>
+
+<p>The <code>RetrieveContent</code> method:</p>
+<ul>
+<li>Accepts the content type (<code>ProductSKU</code>) and a target model type (<code>ProductModel</code>) as generic parameters</li>
+<li>Uses <code>RetrieveContentParameters</code> to specify the language and preview mode</li>
+<li>Supports caching through <code>RetrievalCacheSettings</code>
+</li>
+<li>Transforms content items to view models using the <code>configureModel</code> delegate</li>
+</ul>
+<h3 id="retrieve-a-single-product">Retrieve a single product</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve product by GUID</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Retrieves a product by its content item GUID.
+    /// &lt;/summary&gt;
+    public async Task&lt;ProductModel?&gt; GetProductByGuidAsync(Guid contentItemGuid)
+    {
+        var products = await contentRetriever.RetrieveContentByGuids&lt;ProductSKU, ProductModel&gt;(
+            [contentItemGuid],
+            GetContentParameters(),
+            additionalQueryConfiguration: null,
+            new RetrievalCacheSettings(cacheItemNameSuffix: $"ByGuid|{contentItemGuid}"),
+            configureModel: async (container, productSKU) =&gt; await MapToProductModelAsync(productSKU)
+        );
+
+        return products.FirstOrDefault();
+    }</code></pre>
+</div>
+
+<p>Use <code>RetrieveContentByGuids</code> when you have the content item’s GUID, which is useful for product detail pages or when working with URL-based routing.</p>
+<h3 id="filter-products-by-category">Filter products by category</h3>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve products by category</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Retrieves products by category using taxonomy tag GUID.
+    /// &lt;/summary&gt;
+    public async Task&lt;List&lt;ProductModel&gt;&gt; GetProductsByCategoryAsync(Guid categoryTagGuid)
+    {
+        var products = await contentRetriever.RetrieveContent&lt;ProductSKU, ProductModel&gt;(
+            GetContentParameters(),
+            query =&gt; query.Where(where =&gt; where
+                .WhereContainsTags(
+                    nameof(ICodesamplesProductFields.ProductFieldCategory),
+                    [categoryTagGuid])),
+            new RetrievalCacheSettings(cacheItemNameSuffix: $"ByCategory|{categoryTagGuid}"),
+            configureModel: async (container, productSKU) =&gt; await MapToProductModelAsync(productSKU)
+        );
+
+        return products.ToList();
+    }</code></pre>
+</div>
+
+<p>The <code>WhereContainsTags</code> method filters products that have a specific taxonomy tag assigned. Pass the field name and an array of tag GUIDs to match.</p>
+<h2 id="retrieve-categories">Retrieve categories</h2>
+<p>Use the <code>ITaxonomyRetriever</code> service to retrieve category tags for navigation and filtering:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve product categories</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Service for retrieving product categories from the ProductCategory taxonomy.
+/// &lt;/summary&gt;
+public class CategoryService : CachedServiceBase
+{
+    public const string PRODUCT_CATEGORY_TAXONOMY = "Codesamples.ProductCategory";
+
+    private readonly ITaxonomyRetriever taxonomyRetriever;
+    private readonly ICacheDependencyBuilderFactory cacheDependencyBuilderFactory;
+
+    public CategoryService(
+        ITaxonomyRetriever taxonomyRetriever,
+        IProgressiveCache progressiveCache,
+        ICacheDependencyBuilderFactory cacheDependencyBuilderFactory)
+        : base(progressiveCache)
+    {
+        this.taxonomyRetriever = taxonomyRetriever;
+        this.cacheDependencyBuilderFactory = cacheDependencyBuilderFactory;
+    }
+
+    /// &lt;summary&gt;
+    /// Retrieves all product categories from the ProductCategory taxonomy with caching.
+    /// &lt;/summary&gt;
+    public async Task&lt;List&lt;CategoryModel&gt;&gt; GetCategoriesAsync()
+    {
+        return await LoadWithCacheAndDependency(async (cacheSettings) =&gt;
+        {
+            // Loads taxonomy data
+            var taxonomyData = await taxonomyRetriever.RetrieveTaxonomy(PRODUCT_CATEGORY_TAXONOMY, "en");
+
+            var result = taxonomyData.Tags
+                .Select(tag =&gt; new CategoryModel
+                {
+                    TagGuid = tag.Identifier,
+                    Name = tag.Title
+                })
+                .OrderBy(n =&gt; n.Name)
+                .ToList();
+
+            // Set cache dependency - clear cache when the taxonomy changes
+            var dependencyBuilder = cacheDependencyBuilderFactory.Create();
+            cacheSettings.CacheDependency = dependencyBuilder
+                .ForInfoObjects&lt;TaxonomyInfo&gt;()
+                    .ByCodeName(PRODUCT_CATEGORY_TAXONOMY)
+                    .Builder()
+                .Build();
+
+            return result;
+        },
+        cacheMinutes: CacheConstants.LongCacheDurationMinutes,
+        cacheItemNameParts: ["commerce", "categories", PRODUCT_CATEGORY_TAXONOMY]);
+    }
+}</code></pre>
+</div>
+
+<p>The taxonomy retriever returns all tags within the specified taxonomy, which you can use to build category menus or filter controls.</p>
+<h2 id="map-products-to-view-models">Map products to view models</h2>
+<p>When displaying products, map the content item data to a view model that includes calculated fields such as discounted prices. The following example integrates with the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation service</a> to apply <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">catalog promotions</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Map product to view model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Maps a ProductSKU content item to a ProductModel using price calculation service to determine discounts.
+    /// &lt;/summary&gt;
+    private async Task&lt;ProductModel&gt; MapToProductModelAsync(ProductSKU productSKU)
+    {
+        var basePrice = productSKU.ProductFieldsPrice;
+        
+        // Use price calculation service in Catalog mode to check for catalog promotions
+        var calculationRequest = new CodesamplesPriceCalculationRequest
+        {
+            Items = [new CodeSamplesPriceCalculationRequestItem
+            {
+                ProductIdentifier = new ProductIdentifier { Identifier = productSKU.SystemFields.ContentItemID },
+                Quantity = 1
+            }],
+            LanguageName = "en",
+            Mode = PriceCalculationMode.Catalog
+        };
+
+        var calculationResult = await priceCalculationService.Calculate(calculationRequest);
+        var resultItem = calculationResult.Items.FirstOrDefault();
+        
+        // Check if a catalog promotion was applied by looking at PromotionData
+        var appliedPromotion = resultItem?.PromotionData?.CatalogPromotionCandidates
+            ?.FirstOrDefault(c =&gt; c.Applied);
+        bool isDiscounted = appliedPromotion != null;
+        
+        // Get the final price after any catalog discounts
+        decimal finalPrice = resultItem?.LineSubtotalAfterLineDiscount ?? basePrice;
+        
+        return new ProductModel
+        {
+            ContentItemGuid = productSKU.SystemFields.ContentItemGUID,
+            Id = productSKU.SystemFields.ContentItemID,
+            Name = productSKU.ProductFieldsName,
+            Description = productSKU.ProductFieldsDescription,
+            Price = finalPrice,
+            ListPrice = isDiscounted ? basePrice : null,
+            Category = productSKU.ProductFieldCategory?.FirstOrDefault()?.Identifier.ToString() ?? string.Empty
+        };
+    }</code></pre>
+</div>
+
+<p>This approach:</p>
+<ul>
+<li>Calculates the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#catalog-price-calculation">final catalog price</a> after applying any active <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">catalog discounts</a>.</li>
+<li>Preserves the original list price for display (e.g., for showing strikethrough pricing).</li>
+<li>Extracts category information from taxonomy tags.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>For better performance in product listings, consider <a href="/documentation/developers-and-admins/development/caching/data-caching">caching</a> the price calculation results or performing bulk calculations for multiple products at once.</p>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Example - Color selector UI form component</title>
+</head>
+<body>
+<p>This page provides a step-by-step example demonstrating the process of creating, configuring, and registering a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form component</a> in the system. The component renders a color selector and returns the selected color in the hexadecimal format. The example implementation also ensures that the component is displayed in a non-editable <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components#editmode-on-the-front-end">state</a> when required by the admin UI.</p>
+<p>For example, when used in <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">Page Builder widget properties</a>, the component can enable users to set the color of some part or element rendered by the widget. See the following screenshot for an illustration.</p>
+<p></p>
+<p>If you have not yet done so, prepare your development environment according to <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">Prepare your environment for admin development</a>. UI form components consist of both back-end and front-end code, so you’ll need to prepare a custom JavaScript module as well.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom code best practices</strong></p>
+<p>We recommend separating admin UI customizations into a dedicated class library project. Using separate assemblies keeps the code intended for the admin UI separate from your site implementation. It also provides a convenient place to embed compiled JS modules with client code and simplifies certain <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">advanced deployment scenarios</a>.</p>
+</div>
+
+<p>After your environment is set up, implement the component’s back-end definition.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ColorSelectorFormComponent.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Threading.Tasks;
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+using Kentico.Xperience.Admin.Base.Forms;
+
+namespace Acme.Web.Admin.UIFormComponents.ColorSelector
+{
+    [ComponentAttribute(typeof(ColorSelectorComponentAttribute))]
+    public class ColorSelectorFormComponent : FormComponent&lt;ColorSelectorFormComponentClientProperties, string&gt;
+    {
+        // The name of client React component to invoke, without the 'FormComponent' suffix
+        public override string ClientComponentName =&gt; "@acme/web-admin/ColorSelector";
+
+        protected override Task ConfigureClientProperties(ColorSelectorFormComponentClientProperties clientProperties)
+        {
+            base.ConfigureClientProperties(clientProperties);
+
+            if (string.IsNullOrEmpty(clientProperties.Value))
+            {
+                // Initial state handling.
+                // Sets the default value of the component (white) if no color was selected on the client.
+                clientProperties.Value = "#FFFFFF";
+            };
+
+            return Task.CompletedTask;
+        }
+    }
+
+    // Client properties class
+    public class ColorSelectorFormComponentClientProperties : FormComponentClientProperties&lt;string&gt;
+    {
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Next, define the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component attribute</a> used for annotating other properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ColorSelectorComponentAttribute.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+// The component doesn't define any custom configuration properties.
+// The default attribute definition is therefore sufficient.
+public class ColorSelectorComponentAttribute : FormComponentAttribute
+{
+}
+
+</code></pre>
+</div>
+
+<p>Finally, write the React component that renders the user interface. The component makes use of a color picker from the <a href="https://github.com/omgovich/react-colorful" target="_blank">react-colorful</a> library.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>package.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+"dependencies": {
+    "react-colorful": "^5.x.x"
+  },
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Color selector component front-end (ColorSelectorFormComponent.tsx)</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React, { useState } from 'react';
+
+// Imports a color selector component from react-colorful
+import { HexColorPicker } from "react-colorful";
+
+import { FormComponentProps } from '@kentico/xperience-admin-base';
+import { FormEditMode, FormItemWrapper } from '@kentico/xperience-admin-components';
+
+export const ColorSelectorFormComponent = (props: FormComponentProps) =&gt; {
+
+    const handleOnChange = (value: string) =&gt; {
+        // If 'onChange' is undefined, do nothing
+        if (props.onChange) {
+            // Passes the new user input to a parent component where all field 
+            // values are maintained. 'value' emitted by the color picker's onChange 
+            // event stores the most up to date input of the component.
+            props.onChange(value);
+        }
+    };
+
+    // Renders the color selector in a state 
+    // corresponding to the 'editMode' value passed through 'props'.
+    const renderColorSelector = () =&gt; {
+        if (props.editMode === FormEditMode.ReadOnly) {
+            return (
+                &lt;div&gt; 
+                    The selected color is 
+                    &lt;span style={{ color : props.value.toString() }}&gt;{props.value}&lt;/span&gt;.
+                &lt;/div&gt;
+            );
+        }
+
+        else if (props.editMode === FormEditMode.Disabled) {
+            return (
+                renderDisabledSelector()
+            );
+        }
+
+        else {
+            // Renders the color selector in an editable state 
+            // and ensures the propagation of the selected value.
+            return &lt;HexColorPicker color={props.value} onChange={handleOnChange}/&gt;;
+        }
+    };
+    
+    // Renders the color selector in a disabled state which prevents editing 
+    // and interaction with the component.
+    const renderDisabledSelector = () =&gt; {
+        return (
+            &lt;div style={{ position: "relative", display: "inline-block" }}&gt;
+                &lt;HexColorPicker color={props.value}/&gt;
+                &lt;div
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(255,255,255,0.5)",
+                    zIndex: 10,
+                    }}
+                /&gt;
+            &lt;/div&gt;
+        );
+    };
+
+    // Renders the color selector and wraps it in 'FormItemWrapper' to ensure
+    // the component works correctly inside forms.
+    return (
+        &lt;FormItemWrapper
+            label={props.label}
+            explanationText={props.explanationText}
+            invalid={props.invalid}
+            validationMessage={props.validationMessage}
+            markAsRequired={props.required}
+            labelIcon={props.tooltip ? 'xp-i-circle' : undefined}
+            labelIconTooltip={props.tooltip}
+            editMode={props.editMode}
+        &gt;
+            {renderColorSelector()}
+        &lt;/FormItemWrapper&gt;
+    );
+};
+
+</code></pre>
+</div>
+
+<p>To make the component available from the admin UI, it must be exported from the client module’s <strong>entry.tsx</strong>:</p>
+
+<div>
+<div>
+<div>
+<span>TSX</span>
+</div>
+<strong>entry.tsx</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Export the full path to the component file
+export * from './form-components/ColorSelectorFormComponent';
+</code></pre>
+</div>
+
+<p>The UI form component is ready for use in <a href="/documentation/developers-and-admins/development/builders">builder component dialogs</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">model-driven UI forms</a>. To enable usage in the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, register the component using <code>RegisterFormComponent</code>. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Form component registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+[assembly: RegisterFormComponent("Acme.UIFormComponents.ColorSelector", 
+                                 typeof(ColorSelectorFormComponent),
+                                 "Color selector")]
+</code></pre>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,690 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Output caching</title>
+</head>
+<body>
+<p>Output caching can significantly improve the performance and scalability of an application by reducing the server-side work required to generate page output. Caching works best with content that changes infrequently and is expensive to generate.</p>
+<p>Xperience supports caching for standard page content and the output of <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>.</p>
+<ul>
+<li><a href="#cache-page-output">Caching page output</a></li>
+<li><a href="#cache-the-output-of-page-builder-widgets">Caching the output of Page Builder widgets</a></li>
+</ul>
+<h2 id="cache-page-output">Cache page output</h2>
+<p>You can cache the output of pages using the <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/cache-tag-helper" target="_blank">cache Tag Helper</a> provided by ASP.NET Core. The Tag Helper is highly flexible, allowing for configuration of cache priority, expiration, optional deactivation of the caching functionality, etc.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Cache Tag Helper usage example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+&lt;cache priority="High" expires-sliding="@TimeSpan.FromSeconds(60)" vary-by-user="true"&gt;
+    @* Cached content... *@
+&lt;/cache&gt;
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>To ensure the correct behavior of <a href="/documentation/developers-and-admins/development/builders/form-builder">Forms</a>, the system automatically disables output caching of pages containing a <em>Form</em> widget.</p>
+</div>
+
+<h3 id="add-cache-dependencies">Add cache dependencies</h3>
+<p>When cached content contains objects from the Xperience database, you need to ensure the cache is cleared whenever such objects are modified to always display the most up-to-date information. For this purpose, the system allows you to specify <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">cache dependencies</a> on system objects from within <code>cache</code> Tag Helper sections. Cache dependencies instruct the application to automatically clear cached data when referenced objects are modified.</p>
+<p>Specify cache dependencies by adding the <code>cache-dependency</code> Tag Helper within sections encapsulated by the <code>cache</code> tag. The helper provides two attributes:</p>
+<ul>
+<li>
+<code>cache-keys</code> – an array of cache dependency dummy keys.</li>
+<li>
+<code>enabled</code> – indicates whether the dependencies get injected. Enabled by default. See <a href="#control-cache-dependency-injection">Control cache dependency injection</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Adding cache dependencies on Xperience objects</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@* Adds the Tag Helper to the view *@
+@addTagHelper Kentico.Web.Mvc.Caching.CacheDependencyTagHelper, Kentico.Web.Mvc
+
+@{
+    // Creates cache dummy keys targeting all member objects in the system
+    var cacheKeys = new[] { "cms.member|all" };
+}
+
+&lt;cache&gt;
+    @* Ensures that contents of this cached section are evicted whenever any member in the system or the /Home page is modified *@
+    &lt;cache-dependency cache-keys="@cacheKeys" /&gt;
+
+    Time: @DateTime.Now
+&lt;/cache&gt;
+
+</code></pre>
+</div>
+
+<h3 id="control-cache-dependency-injection">Control cache dependency injection</h3>
+<p>The <code>cache-dependency</code> Tag Helper can be programmatically enabled or disabled via its <code>enabled</code> attribute. This can be paired together with the <code>enabled</code> attribute of the <code>cache</code> Tag Helper to eliminate unnecessary overhead when caching is disabled:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Websites.Routing
+
+@inject IWebsiteChannelContext WebsiteChannelContext
+
+@{
+    // Adds a cache dependency on all pages of the my.article content type that exist on 'mysite'
+    var articlesCacheKeys = new[] { "webpageitem|bychannel|mychannel|bycontenttype|my.article|all" };
+
+    // Checks whether the page is accessed in preview mode (in a website channel application in the admin UI)
+    var cacheEnabled = !WebsiteChannelContext.IsPreview;
+}
+
+@* Enables or disables the cache and cache dependencies based on a dynamic condition (caching is disabled for preview mode in this case) *@
+&lt;cache enabled="@cacheEnabled"&gt;
+    &lt;cache-dependency cache-keys="@articlesCacheKeys" enabled="@cacheEnabled" /&gt;
+    @* Custom logic (e.g., render all articles) *@
+&lt;/cache&gt;
+</code></pre>
+</div>
+
+<h2 id="cache-different-versions-of-page-output">Cache different versions of page output</h2>
+<p>In some cases, pages serve different content based on various conditions. Typical scenarios are multilingual websites or pages that leverage <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization">content personalization</a>. Another case is caching within <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">page templates</a>, which are then used for different pages that have their own specific content.</p>
+<p>To ensure that output caching works correctly in these scenarios, you need to take additional steps and adjust your application to cache separate output versions. Configure output cache varying by setting the <code>vary-by</code> attributes of the <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/cache-tag-helper" target="_blank">cache Tag Helper</a>.</p>
+<p>The following examples demonstrate how you can vary the output cache:</p>
+<ul>
+<li><a href="#page-template-content">Page template content</a></li>
+<li><a href="#request-cookie-levels">Selected cookie level</a></li>
+</ul>
+<h3 id="page-template-content">Page template content</h3>
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">Page templates</a> allow different pages to use the same general layout or share fixed sections of content. However, parts of the template typically load data from the actual page, so the final content differs for each page.</p>
+<p>If you use the <code>cache</code> Tag Helper for the page-specific sections of a page template, you need to <strong><em>ensure that every page stores its own version of the cache</em></strong>.</p>
+<p>We recommend using the <code>vary-by-route</code> attribute of the <code>cache</code> <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/cache-tag-helper" target="_blank">Tag Helper</a>. Pages have their own unique route, regardless of the shared page template. Set the <code>vary-by-route</code> attribute’s value to the <code>CacheVaryByConstants.ROUTE_URL_SLUG</code> constant. The constant stores the name of the route parameter that holds the URL slug value for page routes.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Caching within a page template</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc;
+
+...
+
+&lt;cache expires-after="@TimeSpan.FromMinutes(5)" vary-by-culture="true" vary-by-route="@CacheVaryByConstants.ROUTE_URL_SLUG"&gt;
+    @* Cached content... *@
+&lt;/cache&gt;
+
+</code></pre>
+</div>
+
+<h3 id="request-cookie-levels">Request cookie levels</h3>
+<p>Xperience classifies cookies into several levels according to their purpose via <a href="/documentation/developers-and-admins/data-protection/cookies">cookie levels</a>. If you display different content to visitors based on their preferred cookie level, you can vary the cache accordingly.</p>
+<p>Use the <code>ICurrentCookieLevelProvider</code> service to obtain the cookie level for the current request and pass it to the view via a model class:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Controller class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Helpers;
+
+public async Task&lt;ActionResult&gt; Index([FromServices] ICurrentCookieLevelProvider cookieLevelProvider)
+{
+    // Gets the cookie level for the current request
+    string varyByCookieLevel = $"CookieLevel={cookieLevelProvider.GetCurrentCookieLevel()}";
+
+    var viewModel = new HomeIndexViewModel
+    {
+        VaryByCookieLevel = varyByCookieLevel
+    };
+
+    return View(viewModel);
+}
+
+</code></pre>
+</div>
+
+<p>In the view, assign the cookie level to the <code>vary-by</code> attribute of the <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/cache-tag-helper" target="_blank">Cache Tag Helper</a>:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>View template</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@* Ensures a separate cache entry for every cookie level detected in requests *@
+&lt;cache vary-by="@Model.VaryByCookieLevel"&gt;
+    ...
+&lt;/cache&gt;
+
+</code></pre>
+</div>
+
+<p>If you wish to vary the cache according to multiple variables, you can pass a string containing the concatenated name-value pairs of all variables. The framework creates a separate entry for each unique string.</p>
+<h2 id="cache-the-output-of-page-builder-widgets">Cache the output of Page Builder widgets</h2>
+<p>Page Builder <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a> can be configured to automatically cache their output. The bulk of the caching configuration is performed in <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable areas</a>. This allows developers to create flexible caching strategies for individual pages.</p>
+<p>To enable and configure caching for a widget:</p>
+<ol type="1">
+<li>
+<p>Set the <code>AllowCache</code> property of the <code>RegisterWidget</code> attribute to <code>true</code> for the selected widget. This marks the widget as cacheable for individual editable areas.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ [assembly: RegisterWidget("CompanyName.CustomWidget", typeof(CustomWidgetViewComponent), "Custom widget", AllowCache = true)]
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Enable and configure caching within individual editable areas in your project.</p>
+<ol type="1">
+<li><p>Enable caching for the editable area via the <code>AllowWidgetOutputCache</code> property of the <code>EditableAreaOptions</code> object. The property indicates whether the output of individual widgets placed into the area can be cached. This value is combined with the <code>AllowCache</code> property of contained widgets to determine whether caching should be enabled. <code>false</code> by default.</p></li>
+<li>
+<p>Select a caching strategy for the editable area via the following properties of the <code>EditableAreaOptions</code> object:<br>
+<code>WidgetOutputCacheExpiresOn</code> – a <code>DateTimeOffset</code> value that sets the absolute expiration date for cached content.<br>
+<code>WidgetOutputCacheExpiresAfter</code> – a <code>TimeSpan</code> value that sets the duration from the time of the first request when the content was cached.<br>
+<code>WidgetOutputCacheExpiresSliding</code> – a <code>TimeSpan</code> value that defines a sliding window of expiration for the cached content. Content not accessed within the specified time frame is evicted.</p>
+
+<div>
+
+</div>
+<div>
+<p>These configuration options can also be set via the <a href="/documentation/developers-and-admins/development/reference-tag-helpers">editable-area Tag Helper</a>.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @using Kentico.PageBuilder.Web.Mvc
+ @using Kentico.Web.Mvc
+
+ @{ 
+     // Sets the sliding expiration for cached widgets to two minutes
+     var options = new EditableAreaOptions() { AllowWidgetOutputCache = true,
+                                               WidgetOutputCacheExpiresSliding = TimeSpan.FromMinutes(2) };
+ }
+
+ @await Html.Kentico().EditableAreaAsync("area1", options)
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+<li><p>The system automatically adds a <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">cache dependency</a> tied to pages where the widget is rendered – when the content of the page is modified, the cached output of individual widgets is evicted.</p></li>
+</ol>
+<p>You have configured caching for your widget. To further customize the caching behavior, you can:</p>
+<ul>
+<li><a href="#add-custom-cache-dependencies">Specify additional cache dependencies for the widget</a></li>
+<li><a href="#cache-personalized-widget-output">Configure caching for personalized content</a></li>
+</ul>
+<h3 id="add-custom-cache-dependencies">Add custom cache dependencies</h3>
+<p>The system automatically adds a <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">cache dependency</a> on the page where the widget is rendered. In addition, widget developers can provide additional cache dependencies when developing a widget. However, this approach requires access to the component view model and is therefore only supported for <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets based on view components</a>.</p>
+<p>Cache dependencies can be added within the view component’s <code>Invoke</code> (<code>InvokeAsync</code>) method via the <code>CacheDependencies</code> property of the <code>ComponentViewModel</code> parameter. Pass a string collection of desired cache dependency keys into the object’s <code>CacheKeys</code> property:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc;
+
+public async Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;AttachmentListWidgetProperties&gt; viewModel)
+{
+    // Adds a cache dependency on all page attachments
+    viewModel.CacheDependencies.CacheKeys = new [] { "cms.attachment|all" };
+    ...
+}
+
+</code></pre>
+</div>
+
+<h3 id="cache-personalized-widget-output">Cache personalized widget output</h3>
+<p>When using caching to improve the performance of your website, you need to take additional steps to ensure that the output cache correctly stores personalized widget output. Because personalized widgets serve different content based on various personalization conditions, you need to adjust your application to cache separate output versions according to the widget’s available <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization">personalization criteria</a>.</p>
+<p>For this purpose, the system provides the <code>CacheVaryBy</code> attribute. The attribute allows you to specify which request variables affect the contents of the cache. From the specified variables, the system constructs a cache key under which it caches the widget output corresponding to the particular configuration. Should  any of the request values change, the output is cached as a separate entry in the cache. The lifetime and eviction strategy of individual entries is controlled by the caching configuration of the corresponding editable area. </p>
+<p>The <code>CacheVaryBy</code>  attribute must decorate the <strong>view component</strong> class of the corresponding widget. As such, only <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets based on view components</a> support this approach.</p>
+<p>The attribute supports the following personalization variables:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>VaryByUser</code></p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td>
+<p>Varies the cache based on the current <a href="/documentation/developers-and-admins/development/registration-and-authentication">application user</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>VaryByCulture</code></p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td>
+<p>Varies the cache based on the current request culture. Enabled by default.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByHost</code></p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td colspan="1">
+<p>Varies the cache based on the current host (the domain and port number of the server to which the request is being sent).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByCookieLevel</code></p>
+</td>
+<td colspan="1">
+<p>bool</p>
+</td>
+<td colspan="1">
+<p>Varies the cache based on the <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> of the current request.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByQuery</code></p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Varies the cache based on parameters in the URL query string.</p>
+<p>Specify a comma-delimited set of query string parameters used to vary the cached content.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByCookie</code></p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Varies the cache based on cookie values.</p>
+<p>Specify a comma-delimited set of cookie names used to vary the cached content. </p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByHeader</code></p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Varies the cache based on request headers.</p>
+<p>Specify a comma-delimited set of request headers used to vary the cached content.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByRoute</code></p>
+</td>
+<td colspan="1">
+<p>string</p>
+</td>
+<td colspan="1">
+<p>Varies the cache based on route data parameters.</p>
+<p>Specify a comma-delimited set of application route data parameters used to vary the cached content.</p>
+<p><strong>Example</strong></p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Startup.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+endpoints.MapControllerRoute( name: "default", 
+                              pattern: "{controller=Home}/{action=Index}/{Make?}/{Model?}");
+
+</code></pre>
+</div>
+</div>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WidgetViewComponent.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[CacheVaryBy(VaryByRoute="Make;Model")]
+public class WidgetViewComponent : ViewComponent
+
+</code></pre>
+</div>
+</div>
+<p><strong>Note</strong>: For pages that use <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">content tree-based routing</a>, you can access the name of the route parameter that holds the URL slug value for page routes in the <code>CacheVaryByConstants.ROUTE_URL_SLUG</code> constant.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>VaryByOptionTypes</code></p>
+</td>
+<td colspan="1">
+<p>Type[]</p>
+</td>
+<td colspan="1">
+<p>An array of <code>System.Type</code>  values referencing custom <em>vary by</em> implementations.</p>
+<p>You can implement custom vary by conditions that suit your particular scenarios. See <a href="#implement-custom-personalization-options">Implement custom personalization options</a>.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>CacheVaryBy usage example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc;
+
+[CacheVaryBy(VaryByUser = true, VaryByCookie = "cookie_1,cookie_2", VaryByCookieLevel = true, VaryByCulture = false, VaryByHeader = "header_1,header_2",
+    VaryByHost = true, VaryByQuery = "query_param1,query_param2", VaryByRoute = "param_1,param_2")]
+public class MyWidgetViewComponent : ViewComponent
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The example above configures caching for a broad range of variables contained within each request. This is unnecessary in most cases. You should cache according to personalization conditions used by your widgets.</p>
+<p>Always balance website performance, memory usage on the server, and the risk of displaying incorrect cached content.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Automatic widget cache varying</strong></p>
+<p>By default, the system stores separate output cache versions of widgets for every <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/develop-personalization-condition-types">widget personalization variant</a>. This ensures that cached widgets automatically display the correct content when using the native personalization features, and no handling is required from developers.</p>
+</div>
+
+<h3 id="implement-custom-personalization-options">Implement custom personalization options</h3>
+<p>In addition to the variables supported by the <code>CacheVaryBy</code> attribute, you can implement cache personalization based on other request variables. Such custom personalization options need to be developed as separate classes implementing the <code>ICacheVaryByOption</code> interface. The interface describes a <code>GetKey</code> method that must return a string containing a key-value pair identifying the personalization variable and its value for the current request. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc
+
+public class VaryByOption : ICacheVaryByOption
+{
+    // Returns a key identifying the cache variant
+    public string GetKey()
+    {
+        return $"MyKey={ComputeVariable()}";
+    };
+
+    private string ComputeVariable()
+    {
+        // custom logic...
+        return myVariable;
+    };
+}
+
+</code></pre>
+</div>
+
+<h4 id="example">Example</h4>
+<p>The following example implements a personalization option that partitions the cache based on the currently authenticated user’s first name. This approach leads to fewer redundant cache entries in scenarios where the output does not vary per object, but rather according to properties whose values are shared among multiple objects. As a result, it creates a more economical caching strategy that consumes less application memory.</p>
+<p>Note that this example assumes an <a href="/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects">extended member class</a> with a <code>FirstName</code> property.</p>
+<p>Create a new class, implement the <code>ICacheVaryByOption</code> interface, and define the <code>GetKey</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>VaryByUserFirstName.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class VaryByUserFirstName : ICacheVaryByOption
+{
+    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly UserManager&lt;ExtendedApplicationUser&gt; userManager;
+
+    public VaryByUserFirstName(IHttpContextAccessor httpContextAccessor,
+                          UserManager&lt;ExtendedApplicationUser&gt; userManager)
+    {
+        this.httpContextAccessor = httpContextAccessor;
+        this.userManager = userManager;
+    }
+
+    public string GetKey()
+    {
+        // Gets the currently authenticated member
+        var user = userManager.
+                        FindByIdAsync(httpContextAccessor.HttpContext.User.
+                            FindFirstValue(userManager.Options.ClaimsIdentity.UserIdClaimType)).Result;
+
+        string userFirstName = user?.FirstName ?? String.Empty;
+
+        return $"UserFirstName={userFirstName}";
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Pass the created <code>VaryByUserName</code> class to the <code>CacheVaryBy</code> attribute in your widget’s view component:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>MyWidgetViewComponent.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc;
+
+// Caches a separate output for each distict user name
+[CacheVaryBy(typeof(VaryByUserFirstName))] 
+public class MyWidgetViewComponent : ViewComponent
+
+</code></pre>
+</div>
+
+<p>The application now creates a distinct cache entry for each user with a unique first name that views content rendered by your widget. </p>
+
+</body>
+</html>

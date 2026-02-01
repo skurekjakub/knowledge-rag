@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page permission management</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>This page describes permissions that are applied only within the Xperience administration. For restricting access to pages on the live site, see <a href="/documentation/business-users/website-content/secure-pages">Secure pages</a>.</p>
+</div>
+
+<p>As your Xperience websites grow, your content editors may start to form multiple teams, each responsible for a different part of a website. To prevent editors from unintentionally affecting the work of others in unexpected ways (e.g., by accidentally moving a page in the content tree), letting users access and edit only the content they are responsible for may become necessary. Moreover, your website may contain pages with sensitive content that not all editors should have access to.</p>
+<p>Page permissions allow you to grant permissions to roles for website channels, specific content tree sections, and individual pages and folders in the form of an <a href="https://en.wikipedia.org/wiki/Access-control_list" target="_blank">access-control list</a> (ACL). The permissions are always propagated from a parent page, with the <a href="#allow-users-to-work-with-website-channel-content">website’s root</a> representing the prime parent, to all its children until a child page <a href="#edit-page-permissions">breaks</a> this inheritance.</p>
+<p>You can grant the following types of page permissions:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Permission</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Display</p>
+</td>
+<td>
+<p>Allows users to see pages and folders in the content tree and see their names in the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#page-selector">page selector</a> and other <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">UI form components</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Read</p>
+</td>
+<td>
+<p>Allows users to view the content of pages and link to them through the page selector and other UI form components.</p>
+<p>The permission is required on the <em>source location</em> when <a href="#page-permissions-for-moving-pages">moving pages</a>.</p>
+<p>Users with the permission can also create <a href="/documentation/developers-and-admins/configuration/shareable-preview-urls">shareable preview URLs</a> for the given page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Create</p>
+</td>
+<td>
+<p>Allows users to create new pages and folders, including their language variants, in the content tree under the current item.</p>
+<p>The permission is required on the <em>target location</em> when <a href="#page-permissions-for-moving-pages">moving pages</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Update</p>
+</td>
+<td>
+<p>Allows users to modify pages, folders and their properties other than page permissions.</p>
+<p>The permission is required on the <em>source location</em> when <a href="#page-permissions-for-moving-pages">moving pages</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete</p>
+</td>
+<td>
+<p>Allows users to delete pages and folders.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Synchronize</p>
+</td>
+<td>
+<p>Allows users to <a href="/documentation/business-users/content-sync">synchronize</a> pages from one instance of Xperience to another.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="allow-users-to-work-with-website-channel-content">Allow users to work with website channel content</h2>
+<p>To allow users to access and work with pages and folders in a website channel:</p>
+<ol type="1">
+<li>Allow users to access the website channel application by <a href="/documentation/developers-and-admins/configuration/users/role-management#assign-permissions-to-roles">granting</a> the <em>Access channel</em> permission in the <strong>Role management</strong> application to the desired roles.</li>
+<li>Open the website channel application.</li>
+<li>On the website’s root, select the <strong>Properties -&gt; Channel permissions</strong> tab.</li>
+<li>
+<strong>Add roles</strong> that should have access to the website channel.
+
+<div>
+
+</div>
+<div>
+The <a href="/documentation/developers-and-admins/configuration/users/role-management">Administrator role</a> and roles with the <em>Manage permissions</em> permission always have all page permissions for all pages in a channel.
+</div>
+</li>
+<li>In the matrix, select the desired permissions for each role.</li>
+<li>
+<strong>Save permissions</strong>.</li>
+</ol>
+<p>The users in the selected roles can now access and work with all pages in the channel according to the specified permissions.</p>
+<p></p>
+<h2 id="edit-page-permissions">Edit page permissions</h2>
+<p>Based on your project’s requirements and <a href="#allow-users-to-work-with-website-channel-content">setup of page permissions</a>, you may need to change the permissions of certain roles for specific pages or content tree subsections. You can define new page permissions by <em>breaking the inheritance</em> of permissions on a particular page. The newly defined permissions are then propagated to all the page’s children in the content tree.</p>
+<p>While editing page permissions, you can remove previously added roles (or add new ones) only for the content tree subsection. Just note that when adding new roles, the users in the role <strong>need to have</strong> the <em>Display</em> permission granted to the website’s root via at least one of their roles.</p>
+<p>To edit page permissions for a subsection of the content tree:</p>
+<ol type="1">
+<li>In the website channel application, select the page on which you want to break the inheritance of page permissions.</li>
+<li>Select the <strong>Properties -&gt; Permissions</strong> tab.</li>
+<li>
+<strong>Break inheritance</strong>.</li>
+<li>Add or remove roles and select their permissions.</li>
+<li>
+<strong>Save permissions</strong>.</li>
+</ol>
+<p>The new page permissions are now set for the current page and all its children until a child page breaks this new inheritance.</p>
+<p></p>
+<p>After breaking the inheritance, the page and its children won’t be affected by any changes to the permissions of any pages higher up in the content tree hierarchy. Therefore, when making updates to page permissions that should affect the entire channel, you need to update the permissions on the website’s root and all the pages that break the inheritance. To keep the management of page permissions as easy as possible, we recommend breaking the inheritance only where it’s necessary and <a href="#restore-page-permission-inheritance">restoring the inheritance</a> whenever possible.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Role hierarchy</strong></p>
+<p>You can create a hierarchy of roles whose page permissions build upon each other.</p>
+<p>For example, you may have an <em>Editor</em> role in your project that has privileges to manage most of the website’s content. However, not all editors should have permission to delete and update existing product pages. To navigate this, you can create and assign a <em>Products editor</em> role on top of the general <em>Editor</em> role to picked users and grant the new role only the required permissions.</p>
+<p></p>
+</div>
+
+<h2 id="restore-page-permission-inheritance">Restore page permission inheritance</h2>
+<p>The requirements for page permissions used in your website channels may change over time. When a page that <a href="#edit-page-permissions">breaks the inheritance</a> no longer needs to do so, we recommend that you make the page inherit the permissions from its parent again by <em>restoring the inheritance</em>. This will help you keep the number of pages on which you need to manage page permissions to the necessary minimum.</p>
+<p>To restore the inheritance of page permissions for a page and its children:</p>
+<ol type="1">
+<li>In the website channel application, select the page whose inheritance you want to restore.</li>
+<li>Select the <strong>Properties -&gt; Permissions</strong> tab.</li>
+<li>
+<strong>Restore inheritance</strong>.</li>
+</ol>
+<p>The page and its children now inherit the permissions of the page’s parent until a child page breaks the restored inheritance.</p>
+<h2 id="page-permissions-for-moving-pages">Page permissions for moving pages</h2>
+<p>The system doesn’t provide a dedicated page permission for moving pages. Instead, users need to have the following permissions granted to move a page:</p>
+<ul>
+<li>
+<em>Read</em> and <em>Update</em> for the page they want to move (source location). The users also need to have these permissions for all the children of the page.</li>
+<li>
+<em>Create</em> page permission on the page’s new parent (target location).</li>
+</ul>
+<p>Under certain circumstances, moving a page may affect the permissions of the page and its children:</p>
+<ul>
+<li>If the page had permissions different from those of its parent (it was breaking the inheritance), the page and its children preserve their permissions.</li>
+<li>If the page inherited permissions from its parent, the page and all its children now inherit permissions from the new parent. If the <em>new parent</em> has permissions different from those of the <em>old parent</em>, this also changes which roles have access and other permissions for the page and its children.</li>
+</ul>
+
+</body>
+</html>

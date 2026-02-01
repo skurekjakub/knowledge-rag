@@ -1,0 +1,421 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Rich text inline editors</title>
+</head>
+<body>
+<p>Xperience provides a rich text <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editor</a> that allows users to input content using conventional word processor features. The editor is based on the <a href="https://froala.com/wysiwyg-editor/" target="_blank">Froala</a> WYSIWYG editor.</p>
+
+<div>
+
+</div>
+<div>
+<p>This page describes how to work with the rich text editor as an <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editor</a> for <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">Page Builder widget properties</a>.</p>
+<p>To learn about other rich text editor scenarios, see:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/builders/email-builder/inline-editors-email-builder-widgets#rich-text-inline-editor">Inline editors for Email Builder widgets</a> –using the rich text inline editor for Email Builder widget properties.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">Rich text editor configuration</a> – modifying the editor used by the Xperience administration in general.</li>
+</ul>
+</div>
+
+<h2 id="add-rich-text-inline-editors-to-widgets">Add rich text inline editors to widgets</h2>
+<p>To add the rich text inline editor to a Page Builder widget, edit the view of the desired widget and call the <code>Html.Kentico().RichTextEditor()</code> extension method. Pass the name of the edited property (use the <code>nameof</code> expression) as the method’s parameter. When rendering the output of the rich text editor for the live site, use the <code>Html.Kentico().ResolveRichText</code> extension method to correctly resolve links within the rich text content.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - View of a widget</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Web.Mvc
+
+// A model that contains the properties of a custom rich text editing widget
+@model ComponentViewModel&lt;CustomWidgetProperties&gt;
+
+...
+
+// Only show the editor in the edit mode (Pages application)
+@if (Context.Kentico().PageBuilder().GetMode() == PageBuilderMode.Edit)
+{
+    // Displays the inline editor
+    Html.Kentico().RichTextEditor(nameof(Model.Properties.RichTextContent));
+}
+else
+{
+    // Displays the HTML content of the property
+    &lt;div class="fr-view"&gt;
+        @Html.Raw(Html.Kentico().ResolveRichText(Model.Properties.RichTextContent))
+    &lt;/div&gt;
+}
+
+</code></pre>
+</div>
+
+<p>The inline editor can now be used to edit the selected property of the desired widget.</p>
+
+<div>
+
+</div>
+<div>
+<p>To ensure the inline rich text editor’s formatting and CSS styles are applied correctly to the editor’s HTML output, use the <code>fr-view</code> class in the HTML wrapper element of the editor’s content.</p>
+</div>
+
+<h2 id="html-allowed-in-the-editor">HTML allowed in the editor</h2>
+<p>To improve the security of the system, the editor sanitizes all user input and discards any HTML tags, attributes and URI values that are not allowed. See the <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration#html-allowed-in-the-editor">list of allowed HTML</a>, which is shared with the editor used by the Xperience administration.</p>
+<h2 id="customize-rich-text-editor-toolbars">Customize rich text editor toolbars</h2>
+<p>To provide a better experience for content editors, you can customize the toolbar of the rich text editor to display a specific set of buttons and formatting options.</p>
+<p>To customize the editor toolbar, you need to:</p>
+<ol type="1">
+<li><a href="#define-toolbar-configurations">Define toolbar configurations</a></li>
+<li><a href="#assign-configurations-to-inline-editors">Assign configurations to inline editors</a></li>
+</ol>
+<h3 id="define-toolbar-configurations">Define toolbar configurations</h3>
+<p>Within your project, create a JavaScript file for toolbar configurations. We recommended storing toolbar configuration files under a suitable directory in the <em>~/wwwroot/Scripts</em> folder.</p>
+<p>In this file, define the <a href="https://froala.com/wysiwyg-editor/docs/options" target="_blank">toolbar options</a> for each configuration as seen in the following code example.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+(function (pageBuilder) {
+    var richTextEditor = pageBuilder.richTextEditor = pageBuilder.richTextEditor || {};
+    var configurations = richTextEditor.configurations = richTextEditor.configurations || {};
+    // Overrides the "default" configuration of the Rich text widget, assuming you have not specified a different configuration
+    // The below configuration adds the h5 and h6 values to the paragraphFormat and removes the code value. Also sets the toolbar to be visible without selecting any text.
+    configurations["default"] = {
+        toolbarVisibleWithoutSelection: true,
+        paragraphFormat: {
+            N: "Normal",
+            H1: "Headline 1",
+            H2: "Headline 2",
+            H3: "Headline 3",
+            H4: "Headline 4",
+            H5: "Headline 5",
+            H6: "Headline 6",
+        },
+    };
+
+    // Defines a new configuration for a simple toolbar with only formatting
+    // options and disables the inline design of the toolbar
+    configurations["simple"] = {
+        toolbarButtons: ['paragraphFormat', '|', 'bold', 'italic', 'underline', '|', 'align', 'formatOL', 'formatUL'],
+        paragraphFormatSelection: true,
+        toolbarInline: false
+    };
+})(window.kentico.pageBuilder);
+
+</code></pre>
+</div>
+
+<p>Certain plugins that can be included within toolbars were adjusted for the Xperience environment (e.g., <code>insertImage</code> and <code>insertLink</code>)<em>,</em> but these plugins override the corresponding Froala plugins and you can use the default code names to include them in your custom toolbar configurations.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editor plugins</strong></p>
+<p>In addition to the <a href="https://froala.com/wysiwyg-editor/docs/options" target="_blank">listed options</a>, you can use the Xperience <code>insertDynamicText</code> option in your toolbar configurations (to allow editors to include personalized text).</p>
+<p>You can also add further options by <a href="#implement-custom-plugins-for-the-editor">implementing plugins</a> for the Froala editor.</p>
+</div>
+
+<h3 id="assign-configurations-to-inline-editors">Assign configurations to inline editors</h3>
+<p>There are two ways to assign different toolbar configurations to widget inline editors:</p>
+<ul>
+<li>Link different configurations to specific pages</li>
+<li>Specify multiple configurations and reference them from custom rich text widgets</li>
+</ul>
+<p>You can combine both approaches. For example, you can create a script to customize the default <strong>Rich text</strong> widget and render it on specific pages. Then you can create an additional script where you define configurations for custom widgets and render this script globally through a shared layout.</p>
+<h4 id="customize-the-toolbar-based-on-location">Customize the toolbar based on location</h4>
+<p>Any rich text widget, including the default <strong>Rich text</strong> widget, can be customized to use a different toolbar depending on its location. For example, you can configure it to display one toolbar on the home page and a different toolbar on landing pages.</p>
+<p>Edit the view of the page where you want to apply the customization and register the desired configuration script. The toolbar configuration script needs to be included <strong>after</strong> Page Builder scripts.</p>
+
+<div>
+
+</div>
+<div>
+<p>To customize the toolbar of the default <strong>Rich text</strong> widget, override the <em>default</em> configuration <code>pageBuilder.richTextEditor.configurations['default']</code> in the script.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+
+...
+
+@* Registers Page Builder scripts *@
+@await Html.Kentico().PageBuilderScriptsAsync()
+
+@* Registers the toolbar configuration script *@
+@if (Context.Kentico().PageBuilder().GetMode() == PageBuilderMode.Edit)
+{
+    &lt;script src="~/Scripts/MyToolbarConfigurations.js"&gt;&lt;/script&gt;
+}
+
+</code></pre>
+</div>
+
+<h4 id="customize-the-toolbar-of-custom-widgets">Customize the toolbar of custom widgets</h4>
+<p>Custom widgets containing the rich text inline editor can be configured to display a specific toolbar configuration. When rendering the rich text inline editor in the view of a widget, specify the configuration name as an additional parameter of the <code>RichTextEditor</code>  method. If you do not specify a configuration, the <code>default</code>   configuration is used.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Components.Web.Mvc.InlineEditors
+
+@* Adds the rich text inline editor, using the 'custom' toolbar configuration *@
+@Html.Kentico().RichTextEditor(editablePropertyName, "custom");
+
+</code></pre>
+</div>
+
+<p>To make your toolbar configuration available for all pages, include the corresponding script in your site’s main layout (e.g., <em>~/Views/Shared/_Layout.cshtml</em> ). The toolbar configuration script must be included <strong>after</strong> Page Builder scripts.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+
+...
+
+@* Registers Page Builder scripts *@
+@await Html.Kentico().PageBuilderScriptsAsync()
+
+@* Registers the toolbar configuration script *@
+@if (Context.Kentico().PageBuilder().GetMode() == PageBuilderMode.Edit)
+{     
+    &lt;script src="~/Scripts/MyToolbarConfigurations.js"&gt;&lt;/script&gt; 
+}
+
+</code></pre>
+</div>
+
+<h2 id="implement-custom-plugins-for-the-editor">Implement custom plugins for the editor</h2>
+<p>You can provide any missing features your editors require via plugins. </p>
+<p>Froala plugins are defined in JavaScript files. Within your project, create a JavaScript file for your plugin. We recommended storing plugin files under a suitable directory in the <em>~/wwwroot/Scripts</em> folder. To implement your required functionality, follow the <a href="https://froala.com/wysiwyg-editor/docs/concepts/custom/plugin" target="_blank">Froala plugin development documentation</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Community plugins not supported</strong></p>
+<p><a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">Plugins available for download directly</a> on Froala’s website and other community sourced plugins are not supported in the inline editor version of the rich text editor. Such plugins can only be added to the editor <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">used in the admin UI</a>.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+(function (pageBuilder) {
+    var richTextEditor = pageBuilder.richTextEditor = pageBuilder.richTextEditor || {};
+
+    // Retrieves the collection of plugins
+    var plugins = richTextEditor.plugins = richTextEditor.plugins || [];
+    // Creates a plugin
+    var myFirstPlugin = function (FroalaEditor) {
+            // Registers the plugin under 'myFirstPlugin'
+            FroalaEditor.RegisterCommand("myFirstPlugin", { ... });
+            ...
+        };
+    // Adds the plugin to the collection
+    plugins.push(myFirstPlugin);
+})(window.kentico.pageBuilder);
+
+</code></pre>
+</div>
+
+<p>To make the plugins available for rich text inline editors across the entire site, include the scripts into the website’s main layout (e.g. <em>~/Views/Shared/_Layout.cshtml</em>). The scripts must be included <strong>after</strong> <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> scripts.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+
+@* Renders Page Builder scripts *@
+@await Html.Kentico().PageBuilderScriptsAsync()
+
+@* Renders plugin scripts *@
+@if (Context.Kentico().PageBuilder().GetMode() == PageBuilderMode.Edit)
+{     
+    &lt;script src="~/Scripts/MyPlugin.js"&gt;&lt;/script&gt;  
+}
+
+</code></pre>
+</div>
+
+<p>After you create a new plugin, reference it by its assigned name in a <a href="#define-toolbar-configurations">toolbar configuration</a> to make it available in the rich text editor.</p>
+<h3 id="example-creating-a-custom-toolbar-button">Example – Creating a custom toolbar button</h3>
+<p>The following example shows how to create a simple plugin that replaces occurrences of the word ‘you’ with ‘Thou’ and makes it available for use within inline editors.</p>
+<p>Create a new JavaScript file: <em>~/wwwroot/Scripts/sampleButtonPlugin.js</em></p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>sampleButtonPlugin.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+(function (pageBuilder) {
+    var richTextEditor = pageBuilder.richTextEditor = pageBuilder.richTextEditor || {};
+
+    // Retrieves the collection of plugins
+    var plugins = richTextEditor.plugins = richTextEditor.plugins || [];
+    // Creates a new Sample Button
+    var sampleButtonPlugin = function (FroalaEditor) {
+            FroalaEditor.DefineIcon("sampleButtonIcon", { SVG_KEY: "help" });
+            FroalaEditor.RegisterCommand("sampleButton", {
+                title: "Sample Button",
+                icon: "sampleButtonIcon",
+                callback: function () {
+                      var htmlContent = this.html.get();
+                      htmlContent=htmlContent.replace(/you/gi, 'Thou');
+                      this.html.set(htmlContent);
+                }
+            });
+        };
+    // Adds the plugin to the collection
+    plugins.push(sampleButtonPlugin);
+
+    // Retrieves the collection of toolbar configurations
+    var configurations = richTextEditor.configurations = richTextEditor.configurations || {};
+    // Overrides the default toolbar configuration to display the plugin button
+    configurations["default"] = {
+        toolbarButtons: ['paragraphFormat', '|', 'sampleButton', 'bold', 'italic', 'underline', '|', 'align', 'formatOL', 'formatUL']
+    };
+})(window.kentico.pageBuilder);
+
+</code></pre>
+</div>
+
+<p>Register the JavaScript file in the site’s global layout (<em>~/Views/Shared/_Layout.cshtml</em>).</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>_Layout.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@if (Context.Kentico().PageBuilder().GetMode() == PageBuilderMode.Edit)
+{
+    &lt;script src="~/Scripts/sampleButtonPlugin.js"&gt;&lt;/script&gt;   
+}
+
+</code></pre>
+</div>
+
+<p>The functionality is now available under the ‘?’ button in the editor of the default <strong>Rich text</strong> widget.</p>
+
+</body>
+</html>

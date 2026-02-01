@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GDPR compliance</title>
+</head>
+<body>
+<p>The General Data Protection Regulation (GDPR) is a regulation on the protection and free movement of personal data of all individuals within the European Union. The regulation was put together by the European Parliament and the Council of the European Union and is effective from the 25th of May 2018. The regulation applies to organizations that collect or process data from EU residents or cooperate with EU-based organizations that process the data on their behalf.</p>
+<p>For example, you need to comply with the GDPR in the following cases:</p>
+<ul>
+<li>Your company uses Xperience by Kentico and is based in the EU.</li>
+<li>You provide products or services to customers based in the EU.</li>
+<li>A company that provides you with services such as system administration, hosting, or help desk is based in the EU.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>For more information about the GDPR, see the <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679" target="_blank">Official Journal of the European Union</a>.</p>
+</div>
+
+<p>Xperience provides features and guidelines to help you comply with the regulation. For more information, see the following sub-sections and pages:</p>
+<ul>
+<li><a href="#manage-personal-data">Manage personal data</a></li>
+<li><a href="#secure-personal-data">Secure personal data</a></li>
+<li><a href="/documentation/developers-and-admins/data-protection/consent-management">Consent management</a></li>
+<li><a href="/documentation/developers-and-admins/data-protection/consent-development">Consent development</a></li>
+</ul>
+<h2 id="manage-personal-data">Manage personal data</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>The <strong>Data protection</strong> application does not provide any data collection or erasure functionality by default. These features require exact knowledge of how your website gathers, processes and stores personal data. Your developers need to implement the functionality based on the specifics of your website and any other legal requirements that you wish to fulfill.</p>
+<p>For a technical implementation guide, see:</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/data-protection/personal-data-collection">Personal data collection</a></li>
+<li><a href="/documentation/developers-and-admins/data-protection/personal-data-erasure">Personal data erasure</a></li>
+</ul>
+</div>
+
+<h3 id="collect-personal-data">Collect personal data</h3>
+<p>The <strong>Data protection</strong> application allows you to search for personal data related to a specific person (data subject). The data is typically available both as human-readable text and in a machine-readable format (such as JSON or XML). You can use the data collection features if you need to provide stored personal data to a data subject or transfer personal data to an external system or application.</p>
+<ol type="1">
+<li>Open the <strong>Data protection</strong> application in the Xperience administration.</li>
+<li>Select the <strong>Data portability</strong> tab (for data in a machine-readable format) or <strong>Right to access</strong> tab (for data in a human-readable format).</li>
+<li>Fill in the available inputs to identify the user (data subject) whose personal data you wish to find. By default, you can input an email address.</li>
+<li>Select <strong>Search</strong>.</li>
+</ol>
+<p>The system collects the personal data related to the specified identifiers and displays it in the selected format.</p>
+<h3 id="erase-personal-data">Erase personal data</h3>
+<p>To delete personal data related to a specific data subject from the system:</p>
+<ol type="1">
+<li>Open the <strong>Data protection</strong> application in the Xperience administration..</li>
+<li>Select the <strong>Right to be forgotten</strong> tab.</li>
+<li>Fill in the available inputs to identify the user (data subject) whose personal data you wish to delete. By default, you can input an email address.</li>
+<li>Select <strong>Search</strong>.</li>
+<li>Check whether the displayed results contain the data you wish to delete and select <strong>Select data to delete</strong>.</li>
+<li>Configure the available parameters in the <strong>Delete personal data</strong> dialog.</li>
+<li>Select <strong>Delete</strong>.</li>
+</ol>
+<p>The specified data is removed. You can verify the result by selecting <strong>Search</strong> again with the same identifiers.</p>
+<h2 id="secure-personal-data">Secure personal data</h2>
+<p>To comply with personal data laws, regulations, and guidelines, such as the GDPR, it might be necessary to protect your data at rest, i.e., the digital data stored physically on a server, hard drive, etc. This type of protection (typically using encryption) prevents malicious parties from taking advantage of personal data in cases where the physical medium holding the data is stolen or accessed in an unauthorized way.</p>
+<p>The following data encryption technologies are recommended if you wish to secure your Xperience database on a physical level.</p>
+<h3 id="transparent-data-encryption">Transparent Data Encryption</h3>
+<p><a href="https://docs.microsoft.com/en-us/sql/relational-databases/security/encryption/transparent-data-encryption" target="_blank">Transparent Data Encryption (TDE)</a> is a feature of Microsoft SQL server that ensures real-time I/O encryption and decryption of data and log files. By using TDE, the data is encrypted via an <a href="https://docs.microsoft.com/en-us/sql/relational-databases/security/encryption/choose-an-encryption-algorithm" target="_blank">encryption algorithm</a>, such as AES, without requiring any changes in the related application. Encryption of the database files is performed at the page level, and it does not increase the size of the encrypted database.</p>
+<p>Transparent Data Encryption is available only in the <strong>Enterprise</strong> edition of MS SQL server (for on-premise or hosted database servers). If you use Azure SQL Database, <a href="https://docs.microsoft.com/en-us/sql/relational-databases/security/encryption/transparent-data-encryption-azure-sql" target="_blank">TDE is available</a>, and all newly created SQL databases are encrypted by default using service-managed TDE.</p>
+<h3 id="bitlocker">BitLocker</h3>
+<p>If you have full control over the server hosting your Xperience database, you can use the <a href="https://docs.microsoft.com/en-us/windows/device-security/bitlocker/bitlocker-overview" target="_blank">BitLocker</a> full disk encryption feature. BitLocker is available in supported Windows and Windows Server operating systems. It is intended to be used with a Trusted Platform Module (TPM) cryptoprocessor version 1.2 or later. BitLocker integrates with the operating system and protects the system and data from being misused in case of a theft, loss, or inappropriate decommission of the computer.</p>
+
+</body>
+</html>

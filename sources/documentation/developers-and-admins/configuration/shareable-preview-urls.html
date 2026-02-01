@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Shareable preview URLs</title>
+</head>
+<body>
+<p><em>Shareable preview URLs</em> let editors share the page previews with contributors who can’t access the administration, allowing the external contributors to see the changes that are not yet visible on the live site. Users need the <em>Read</em> <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">permission</a> to create a shareable preview URL.</p>
+<p>Anybody with the link can access the shareable preview. If your project uses Google Analytics or similar tracking tools, we recommend <a href="#exclude-shareable-preview-from-analytics">excluding</a> the shareable URLs from tracking to avoid unintentional leaks of the URLs to search engines.</p>
+<p>The feature is not available for pages excluded from <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">content tree-based routing</a> and for pages with a <a href="/documentation/developers-and-admins/development/registration-and-authentication#mvc-authorization-flows-and-preview-mode">custom authorization scheme</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>The shareable preview URLs are created under the domain where the project is running. If your project limits access to certain environments (<em>QA</em>, <em>Staging</em>) and editors generate the URLs from these environments, make sure that the external reviewers can access the shareable preview URLs.</p>
+</div>
+
+<h2 id="expiration">Expiration</h2>
+<p>Shareable preview URLs expire after a certain amount of time. The intended workflow is that editors create these URLs for pages in the <em>Draft</em> step and the system automatically invalidates the corresponding URLs when the page is <a href="/documentation/business-users/website-content/edit-and-publish-pages#publish-pages">published</a>. As a safeguard, the URLs also automatically expire after a <a href="#change-automatic-expiration">configurable</a> expiration period, even if the page hasn’t been published yet.</p>
+<p>For completeness, a shareable preview URL is invalidated when any of these conditions is met:</p>
+<ul>
+<li>The <a href="#change-automatic-expiration">configured</a> automatic expiration period elapses.</li>
+<li>A user <a href="/documentation/business-users/website-content#stop-sharing-the-preview-of-a-page">stops sharing</a> the preview and therefore invalidates all associated shareable preview URLs.</li>
+<li>The page is published or unpublished.</li>
+<li>A <strong>new version</strong> of the page is created, for example, by:
+<ul>
+<li>
+<a href="/documentation/business-users/website-content/edit-and-publish-pages#revert-changes">reverting</a> to the currently published version.</li>
+<li>
+<a href="/documentation/business-users/content-versioning">restoring</a> a previously published version.</li>
+<li>creating a new version for an <a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublish-pages">unpublished</a> page.</li>
+<li>editing a <a href="/documentation/business-users/website-content/edit-and-publish-pages#publish-pages">published page</a>.</li>
+</ul>
+</li>
+<li>The page is <a href="/documentation/business-users/website-content/delete-pages">deleted</a>.</li>
+</ul>
+<p>When users continue to make edits on a page in the <em>Draft</em> status or a custom workflow step, the URL stays valid and the changes are reflected on the preview if saved. <a href="/documentation/business-users/website-content/edit-and-publish-pages#scheduled-publishing">Scheduling</a> a page for publishing does not immediately invalidate its shareable preview URLs and they are disabled only when the page is published.</p>
+<p>To invalidate all shareable preview URLs in the system, <a href="#disable-shareable-preview">disable</a> the feature in the <strong>Settings</strong> application.</p>
+<h3 id="url-changes">URL changes</h3>
+<p>Shareable preview URLs rely on the page’s <a href="/documentation/business-users/website-content/manage-page-urls">canonical URL</a>. If the page’s canonical URL changes, the preview link stops working. Shareable URLs generated after the change work normally unless further modified. Note that the canonical URL may change when the page is <a href="/documentation/business-users/website-content/edit-and-publish-pages#move-pages">moved</a> or a parent page is <a href="/documentation/business-users/website-content/edit-and-publish-pages#rename-pages">renamed</a>.</p>
+<h3 id="change-automatic-expiration">Change automatic expiration</h3>
+<p>By default, shareable preview URLs automatically expire after 7 days if not <a href="#expiration">invalidated earlier</a>. To change this setting:</p>
+<ol type="1">
+<li>In the <strong>Settings</strong> application, go to <strong>Content</strong> → <strong>URLs and SEO</strong>.</li>
+<li>Set the desired <strong>Expiration time</strong> under <strong>Shareable preview URLs</strong>.
+<ul>
+<li>You can set ‘0’ to prevent the default automatic expiration, however the URLs can still expire due to <a href="#expiration">other reasons</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>From now on, the set automatic expiration applies to newly created shareable URLs. Existing links expire based on the setting that was in place when they were generated.</p>
+<h2 id="disable-shareable-preview">Disable shareable preview</h2>
+<p>By default, shareable preview URLs are enabled. You can disable the feature, which also invalidates all existing shareable URLs in the system.</p>
+<p>To disable the shareable preview URLs:</p>
+<ol type="1">
+<li>In the <strong>Settings</strong> application, go to <strong>Content</strong> → <strong>URLs and SEO</strong>.</li>
+<li>Clear the <strong>Allow shareable preview URLs for pages</strong> checkbox.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<h2 id="verify-if-a-page-has-an-active-shareable-preview-url">Verify if a page has an active shareable preview URL</h2>
+<p>To find out if a page preview has any active shareable preview URLs:</p>
+<ol type="1">
+<li>Locate the selected page in a website channel application.</li>
+<li>Go to the <strong>URLs</strong> tab.</li>
+<li>Under <strong>Shareable preview URL</strong>, verify whether the page is shared or not.</li>
+</ol>
+<h2 id="exclude-shareable-preview-from-analytics">Exclude shareable preview from analytics</h2>
+<p>If you’re using Google Analytics or other similar tools, we recommend excluding the shareable preview URLs from tracking to prevent unintentional leaking of the URLs to search engines.</p>
+<p>You can achieve this, for example, by not including the tracking scripts in the <em>Views</em> for pages in preview mode (impacts both the internal <a href="/documentation/business-users/website-content#preview">preview mode</a> and the shareable preview):</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>_ArticleLayout.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using CMS.Websites.Routing
+...
+
+@inject IWebsiteChannelContext websiteChannelContext;
+
+...
+
+@if (websiteChannelContext.IsPreview)
+{
+    // custom logic to prevent the execution of analytics scripts
+}
+</code></pre>
+</div>
+
+<p>If you’re using the <a href="https://github.com/Kentico/xperience-by-kentico-tag-manager" target="_blank">Xperience by Kentico tag manager</a> integration, you can choose to not include tracking scripts on preview pages, which applies to both the administration and shareable preview.</p>
+
+</body>
+</html>

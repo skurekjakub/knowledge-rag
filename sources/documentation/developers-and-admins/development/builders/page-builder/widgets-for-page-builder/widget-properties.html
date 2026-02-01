@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Widget properties</title>
+</head>
+<body>
+<p>When developing <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Page Builder widgets</a>, you can define properties that allow content editors to adjust the widget content or behavior directly in the administration interface. Users interact with widget properties through the widget configuration dialog or inline editors, which you need to implement.</p>
+<p>Use the following process to develop properties for a widget:</p>
+<ol type="1">
+<li>
+<a href="#create-property-models">Create a model class that defines the widget properties</a>.</li>
+<li>Allow content editors to modify the widget properties:
+<ul>
+<li><a href="#define-the-configuration-dialog">Define the configuration dialog</a></li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">Implement inline editors</a></li>
+</ul>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Configuration dialog and inline editors</strong></p>
+<p>You can combine the configuration dialog and inline editors in a single widget.</p>
+</div>
+
+<ol start="3" type="1">
+<li>
+<a href="#handle-properties-in-widget-code">Handle the properties in the widget’s code</a>.</li>
+<li>(Optional) <a href="#access-widget-properties-in-post-actions">Add support for POST actions</a>.</li>
+</ol>
+<p>To see a scenario with full code samples which will guide you through the process of developing a simple widget with a property, visit <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/example-widget-development">Example - Widget development</a>. For a detailed walkthrough showing how to create a more complex widget, see the <a href="/guides/development/page-builder/define-advanced-widget">Define an advanced widgets</a> guide.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Areas</strong></p>
+<p>Widgets are designed as global components. Adding related files, such as property model classes, into Areas is not supported and may lead to unexpected behavior.</p>
+</div>
+
+<h2 id="create-property-models">Create property models</h2>
+<p>The properties of a widget must be defined within a model class that implements the IWidgetProperties interface (available in the <code>Kentico.PageBuilder.Web.Mvc</code> namespace).</p>
+<p>Specify each widget property by creating a corresponding property in the model class. You can also set default values for the properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class CustomWidgetProperties : IWidgetProperties
+{
+    // Defines a property and sets its default value
+    public int Number { get; set; } = 22;
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>You can use the <code>Newtonsoft.Json.JsonIgnore</code> attribute to exclude dynamically computed widget properties from database serialization.</p>
+</div>
+
+<p>We recommend storing widget property models in the <em>~/Components/Widgets/&lt;widget name&gt;</em> folder together with other files required by the widget.</p>
+<h2 id="define-the-configuration-dialog">Define the configuration dialog</h2>
+<p>The configuration dialog is a simple way to allow content editors to set values for widget properties. In the property model class, you need to define editing form components for widget properties that you want to make editable in the configuration dialog. You can use the system’s <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">default form components</a> or develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form components</a>.</p>
+<ol type="1">
+<li><p>Edit the widget’s property model class in your Core project.</p></li>
+<li>
+<p>Define the visual interface of the configuration dialog:</p>
+<ul>
+<li>
+<p>Assign <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to desired properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  [TextInputComponent(Order = 0, Label = "Text")]
+  public string Text { get; set; }
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>Users can now click the <strong>Configure</strong> () icon when <a href="/documentation/business-users/website-content/widgets-and-page-builder">working with widgets in the administration interface</a>. This opens the widget properties dialog, and the configured property values affect the appearance and functionality of the widget on the live site.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editing components with links to content items</strong></p>
+<p>If you decorate any widget property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> or use an <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editor</a> that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a>), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the widget property.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced property options</strong></p>
+<p>You can add dynamic <a href="/documentation/developers-and-admins/development/builders/builder-component-properties-visibility-and-validation">visibility conditions and validation</a> that restricts how and when properties are displayed in the widget configuration dialog.</p>
+</div>
+
+<h2 id="handle-properties-in-widget-code">Handle properties in widget code</h2>
+<p>For properties to have an effect on a widget’s appearance or functionality, you need to retrieve their values and reflect them in the widget’s output code or logic. The required steps depend on the development approach used to create the widget (see <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a> for more information).</p>
+<h3 id="basic-widgets">Basic widgets</h3>
+<p>For basic widgets that consist only of a partial view file and a properties class, handle the property values in the widget’s partial view.</p>
+<p>The view must use the generic <code>ComponentViewModel&lt;TPropertyModel&gt;</code> class as its model, with the appropriate property model class as the generic type parameter. The system ensures that property values configured for the currently processed widget are passed to the view. Retrieve the property values from the model’s <code>Properties</code>  member, which returns an object of the specified property model class.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+
+@model ComponentViewModel&lt;CustomWidgetProperties&gt;
+
+&lt;p&gt;The value of the widget's 'Number' property is: @Model.Properties.Number&lt;/p&gt;
+
+</code></pre>
+</div>
+
+<h3 id="widgets-based-on-a-view-component">Widgets based on a view component</h3>
+<p>To work with widget properties in view components, the component’s <code>Invoke</code> or <code>InvokeAsync</code> method signature must declare the <code>ComponentViewModel&lt;TPropertiesType&gt;</code> parameter, with the appropriate property model class as the generic type.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// The signature of a view component's InvokeAsync method for widgets with custom properties
+public Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomWidgetProperties&gt; widgetProperties)
+
+</code></pre>
+</div>
+
+<p>The widget’s properties are accessible via the Properties property of the ComponentViewModel parameter, which contains an object of the specified property model class. The property values are loaded from the current configuration of the processed widget.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets the value of a widget property from within a component's Invoke method
+int propertyValue = widgetProperties.Properties.Number;
+
+</code></pre>
+</div>
+
+<p>You can then adjust the flow of your logic based on the values of various properties, or pass them to the component’s view using an appropriate view model.</p>
+
+<div>
+
+</div>
+<div>
+<p>Do not directly pass the property model to your widget views. Passing data to views is the responsibility of the widget’s view model. For this reason, we strongly recommend keeping the models separate.</p>
+</div>
+
+<h2 id="access-widget-properties-in-post-actions">Access widget properties in POST actions</h2>
+<p>Basic POST requests do not by default contain widget properties data. To access the properties of a widget during POST actions (in the <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">class</a> handling POST requests), you first need to include the properties into the data submitted by the corresponding HTML form in the widget’s output. Call the <code>Html.Kentico().ComponentPropertiesData</code> extension method (or its <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper</a> equivalent) within the given form tag in your widget view.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Content.Web.Mvc
+
+...
+
+&lt;form asp-controller="WidgetPostController" asp-action="HandlePost" method="post"&gt;
+    ...
+
+    @Html.Kentico().ComponentPropertiesData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden field that persists the widget’s current properties configuration.</p>
+<p>On the server, access the widget’s properties in the corresponding controller class via the <code>IPageBuilderComponentPropertiesRetriever</code> service and its <code>Retrieve&lt;TWidgetProperties&gt;</code> method. Specify the widget’s properties class as the method’s generic parameter: </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Controller class handling the request</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Contains an instance of the IPageBuilderComponentPropertiesRetriever service (e.g., obtained via dependency injection)
+private readonly IPageBuilderComponentPropertiesRetriever componentPropertiesRetriever;
+
+// Gets the properties of the widget as a strongly typed object 
+NumberWidgetProperties properties = componentPropertiesRetriever.Retrieve&lt;NumberWidgetProperties&gt;();
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

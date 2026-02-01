@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Headless content</title>
+</head>
+<body>
+<p>Headless content items store content that is intended for distribution to channels outside of the system through a headless API (<a href="https://graphql.org/" target="_blank">GraphQL</a>). This way, you can consolidate your various channels, like mobile apps, web apps, kiosks, etc. into the Xperience ecosystem. When modeling headless content, one headless item usually represents one unit of the presentation layer (page, screen, navigation, etc.) in the channel to which you provide the data. </p>
+<p>Headless items for each channel are managed in respective headless channel applications – by default, the name of the application corresponds to the name of the channel. The application enables you to create, delete or edit the content and properties of headless items. It also provides intuitive headless item lifecycle management.</p>
+<p></p>
+<h2 id="create-headless-items">Create headless items</h2>
+<p>To create a new headless item:</p>
+<ol type="1">
+<li>Open a headless channel application.</li>
+<li>Select <strong>New headless item</strong>.<br>
+</li>
+<li>Enter the headless item name.</li>
+<li>Select a content type from the list of available content types.<br>
+</li>
+<li>Select <strong>Continue</strong>.</li>
+<li>Enter the values required by the selected content type.
+<ul>
+<li>In many cases, headless items will have fields that allow you to add content by selecting reusable content items (blocks of text, images, etc.). See <a href="/documentation/business-users/content-hub">Content hub</a> to learn more. When selecting reusable content items, note that secured items with the <strong>Requires authentication</strong> flag enabled are not included in headless content.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> or <strong>Publish</strong> the new headless item.
+<ul>
+<li>Saving creates a <em>Draft</em> of the headless item.</li>
+<li>Publishing immediately sets the headless item to the <em>Published</em> status.</li>
+</ul>
+</li>
+</ol>
+<p>The headless item is now created. Keep in mind that only <em>Published</em> items are available through the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">headless API</a>.</p>
+<h2 id="clone-headless-items">Clone headless items</h2>
+<p>Cloning a headless item allows you to create a new item with the same data. You can clone all <a href="#translate-headless-items">language variants</a> of an item or just a selected one.</p>
+<p>To clone a headless item:</p>
+<ol type="1">
+<li>Open a headless channel application.</li>
+<li>
+<a href="#find-headless-items">Find</a> the item you want to clone.</li>
+<li>Select the <strong>Clone</strong> () action. </li>
+<li>Enter the new headless item name. This name will be used for all language variants.
+<ul>
+<li>The default name is <em>(Clone) {original name}</em>.</li>
+</ul>
+</li>
+<li>If you want to clone only the current language variant of the item, clear the <strong>Clone all language variants</strong> checkbox. By default, all language variants are cloned.</li>
+<li>Select <strong>Clone</strong>.</li>
+</ol>
+<p>The new item is created in the <em>Draft</em> step, where you can <a href="#edit-headless-items">edit</a> it. The item needs to be <a href="#publish-headless-items">published</a> to be available through the headless API.</p>
+<h2 id="find-headless-items">Find headless items</h2>
+<p>A headless channel application may contain a large number of headless items. The search bar allows you to find headless items with a name or content type matching the entered text.</p>
+<p>You can also <strong>Filter</strong> the list of headless items to display only selected content types, items with specific statuses, or items containing specific tags.</p>
+<p></p>
+<h2 id="edit-headless-items">Edit headless items</h2>
+<p>To edit a headless item:</p>
+<ol type="1">
+<li>Open a headless channel application.</li>
+<li>Select the headless item you want to edit.
+<ul>
+<li>Use the search bar or filter to <a href="#find-headless-items">find headless items</a>.</li>
+<li>If you have <a href="/documentation/developers-and-admins/configuration/languages">multiple languages</a> set up, select the language in which you want to edit the headless item from the language switcher.</li>
+</ul>
+</li>
+<li>Make sure the headless item is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.
+<ul>
+<li>When a headless item is <em>Published</em>, select <strong>Edit item</strong> to move the headless item to the <em>Draft</em> step.<br>
+</li>
+<li>When a headless item is <em>Unpublished</em>, select <strong>Create new version</strong> to move the headless item to the <em>Draft</em> step.<br>
+</li>
+</ul>
+</li>
+<li>Edit the fields of the headless item.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The headless item is now edited.</p>
+<h2 id="preview-headless-items">Preview headless items</h2>
+<p>As headless content can have different presentations on multiple platforms, it is not possible to include a preview of headless items directly within Xperience. To see how your content will appear on a specific platform, you need to preview the content directly in the target environment.</p>
+<p>You can use the <strong>Preview button</strong> to quickly get to your preview environment. The button links to a single URL, as it is not currently possible to assign a specific URL for each headless item separately.</p>
+<p>However, before you can make use of the Preview button, you need to ask your administrators to set up a <strong><a href="/documentation/developers-and-admins/configuration/headless-channel-management">Preview URL</a></strong> in the channel settings. The button is present only once the Preview URL is set up. </p>
+<h2 id="revert-changes-made-to-a-headless-item">Revert changes made to a headless item</h2>
+<p>After creating a new version of a headless item, the item goes through a new editing cycle with the <em>Draft</em> step and optionally other <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow steps</a>.</p>
+<p>At any time before the new version is published, you can revert the item back to the last <em>Published</em> status. All changes made in any workflow step will be lost.</p>
+<ol type="1">
+<li>Open a headless channel application.</li>
+<li>Select the headless item whose changes you want to revert.
+<ul>
+<li>Use the search bar or filter to <a href="#find-headless-items">find headless items</a>.</li>
+</ul>
+</li>
+<li>Expand the <strong>Publish</strong> or <strong>Change workflow step</strong> menu.</li>
+<li>Select <strong>Revert to published</strong> to revert the changes.</li>
+</ol>
+<p></p>
+<p>The headless item is now reverted to its <em>Published</em> status.</p>
+<h2 id="publish-headless-items">Publish headless items</h2>
+<p>Headless items can be published under the following conditions:</p>
+<ul>
+<li>If the headless item’s content type is under <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a>, the item must be in the last step of the workflow, or you need to belong to a role with full control for the given workflow (this allows you to publish items from any step).</li>
+<li>For headless items that are not under workflow, the item must be in the <em>Draft</em> step.</li>
+</ul>
+<p>In order to publish a headless item:</p>
+<ol type="1">
+<li>Open a headless channel application.</li>
+<li>Select the headless item you want to publish.
+<ul>
+<li>Use the search bar or filter to <a href="#find-headless-items">find headless items</a>.</li>
+</ul>
+</li>
+<li>Make sure the headless item has the <em>Draft</em> status, or is in a <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a> from which you are allowed to publish the item.
+<ul>
+<li>When a headless item is <em>Unpublished</em>, select <strong>Create new version</strong> to move the headless item to the <em>Draft</em> step.<br>
+</li>
+</ul>
+</li>
+<li>
+<strong>Publish</strong> the headless item. For items under workflow, select <strong>Change workflow step</strong> and choose the <strong>Publish</strong> step.
+<ul>
+<li>
+<p>If the headless item has fields linking to reusable content items or pages, the cascade publishing dialog opens. You can view all linked items that are currently not <em>Published</em>. Select any of the listed items to publish them together with the headless item. To learn more about cascade publishing, see <a href="/documentation/business-users/content-hub/content-items#cascade-publishing">Work with content items</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Cascade publishing is only supported for reusable content items (managed in <em>Content hub</em>) and pages linked through the <em>Combined content selector</em> component. Headless items or pages linked through fields using the <em>Headless item selector</em> or <em>Page selector</em> components are not included in the cascade publishing dialog.</p>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>The headless item is now <em>Published</em> and available through the headless API.</p>
+<h2 id="translate-headless-items">Translate headless items</h2>
+<p>Before you can translate individual headless items in your project into other languages, you need to set those up in the <strong>Languages</strong> application. For detailed info on how to configure multiple languages in Xperience, see <a href="/documentation/developers-and-admins/configuration/languages">Languages</a>.</p>
+<p>Afterward, you can start to translate and create language variants of your items: </p>
+<ol type="1">
+<li><p>Open a headless channel application.</p></li>
+<li>
+<p>In the header bar, open the language switcher.<br>
+</p>
+
+<div>
+
+</div>
+<div>
+<p>The language switcher is available only if two or more languages are set up.</p>
+</div>
+</li>
+<li><p>Select the language to translate headless items into.</p></li>
+<li>
+<p>Select the headless item to translate.</p>
+<ul>
+<li>
+<p>Use the search bar or filter to <a href="#find-headless-items">find headless items</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Untranslated headless items are visually marked by the <em>Not translated</em> (<span></span>) status.</p>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>Enter the translated name of the headless item. You can now choose one of the following options:</p>
+<ul>
+<li>
+<strong>Copy content from another language</strong> is the preselected option. By default, the closest language in the <a href="/documentation/developers-and-admins/configuration/languages">fallback chain</a>  is preselected. You can choose a different language from the drop-down list. This option lets you prefill the headless item fields with the content available in the chosen language. If a linked item does not have a translated or published version, a warning will be displayed, and a fallback language variant of the item will be used.</li>
+<li>
+<strong>Create empty headless item</strong> allows you to create an empty headless item with blank fields. Linked items need to be re-linked, and files need to be re-uploaded into the new language variant of the translated headless item.<br>
+</li>
+</ul>
+</li>
+<li><p>Select <strong>Continue</strong>.</p></li>
+<li><p>Enter the translated values of the headless item’s fields.</p></li>
+<li><p><strong>Save</strong> the translated content item.</p></li>
+</ol>
+<p>You have now successfully translated the headless item. Note that the new language variant is now only a <em>Draft</em> until you <a href="#publish-headless-items">publish</a> it.</p>
+<h2 id="unpublish-headless-items">Unpublish headless items</h2>
+<p>Unpublished headless items are not available through the headless API, but you can still access them from the administration.</p>
+<p>To unpublish a headless item:</p>
+<ol type="1">
+<li>Open a headless channel application.</li>
+<li>Select a headless item you want to unpublish.
+<ul>
+<li>You can only unpublish headless items that are already <em>Published</em>. See how to <a href="#publish-headless-items">publish headless items</a>.</li>
+<li>Use the search bar or filter to <a href="#find-headless-items">find headless items</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Unpublish</strong> the headless item.</li>
+<li>Expand the <strong>Edit item</strong> menu and select <strong>Unpublish</strong>.<br>
+</li>
+</ol>
+<p>The headless item is now <em>Unpublished</em>.</p>
+<p>To edit or re-publish an unpublished headless item, use the <strong>Create new version</strong> action for the headless item. This creates a new version of the item in the <em>Draft</em> step.</p>
+<h2 id="restore-previous-versions-of-headless-items">Restore previous versions of headless items</h2>
+<p>See <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">Content versioning</a> for more information. You can restore previously published versions of headless items only when versioning is <a href="/documentation/developers-and-admins/configuration/content-versioning-configuration">configured</a>.</p>
+<h2 id="delete-headless-items">Delete headless items</h2>
+
+<div>
+
+</div>
+<div>
+<p>In the current version of Xperience by Kentico, deleted headless items can be <a href="/documentation/business-users/recycle_bin">restored</a>. If you’re using a version older than 30.12.0, deleting a headless item is a non-reversible action.</p>
+</div>
+
+<p>To delete a headless item:</p>
+<ol type="1">
+<li><p>Open a headless channel application.</p></li>
+<li>
+<p>Locate the headless item you want to delete.</p>
+<ul>
+<li>Use the search bar or filter to <a href="#find-headless-items">find headless items</a>.</li>
+</ul>
+</li>
+<li><p>Select <strong>Move to recycle bin</strong> ().</p></li>
+</ol>
+<p></p>
+<p>You have successfully deleted the headless item. You can find it in the recycle bin and <a href="/documentation/business-users/recycle_bin#restore-deleted-items">restore</a> it later.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you have translated the headless item into multiple languages, this process deletes only the current language variant of the item. In order to delete the headless item completely, you need to delete its variants in all languages. Deleting the last language variant of the headless item deletes it permanently from the system. </p>
+</div>
+
+<h2 id="restore-deleted-headless-items">Restore deleted headless items</h2>
+<p>The current version of Xperience by Kentico allows you to restore deleted headless items from the recycle bin. See <a href="/documentation/business-users/recycle_bin#restore-deleted-items">Restore deleted items</a> for more information. If you’re using a version older than 30.12.0, recovering deleted content is not possible.</p>
+<h2 id="headless-items-lifecycle">Headless items lifecycle</h2>
+<p>Headless items can have one of the following statuses:</p>
+<ul>
+<li> <strong>Draft (Initial)</strong> – new headless items that have not been published yet.
+<ul>
+<li>Can only be accessed through the headless API when using an <a href="/documentation/developers-and-admins/configuration/headless-channel-management#manage-api-keys">API key</a> with the <em>Headless content - Draft</em> access type.</li>
+</ul>
+</li>
+<li> <strong>Published</strong> – headless items that are ready for use.
+<ul>
+<li>You can query published items using the headless API.</li>
+</ul>
+</li>
+<li> <strong>Draft (New version)</strong> – headless items that have already been published, but a new version is being edited.
+<ul>
+<li>Can only be accessed through the headless API when using an <a href="/documentation/developers-and-admins/configuration/headless-channel-management#manage-api-keys">API key</a> with the <em>Headless content - Draft</em> access type.</li>
+<li>If queried with an API key using the <em>Headless content - Published</em> access type, the previously published version is returned.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/workflows">Custom workflow step</a> (the item is being edited, “between” the <em>Draft</em> and <em>Published</em> status)
+<ul>
+<li>The item is accessible via the headless API as described for the <em>Draft</em> status.</li>
+</ul>
+</li>
+<li> <strong>Unpublished</strong> – headless items that were previously published, but are no longer available through the headless API.</li>
+<li> <strong>Not translated</strong> – headless items that are not yet translated into the currently selected language.
+<ul>
+<li>If <a href="/documentation/developers-and-admins/configuration/languages">language fallbacks</a> are set up, the headless items are accessible through the headless API in their fallback variants.</li>
+</ul>
+</li>
+</ul>
+<p>The following diagram illustrates the default headless items lifecycle in a simplified way:</p>
+<p></p>
+
+</body>
+</html>

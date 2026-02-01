@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>User management</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>This page describes user management specific to Xperience by Kentico projects. For management of users within Xperience Portal projects, see <a href="/documentation/developers-and-admins/saas/xperience-portal#users">Xperience Portal</a>.</p>
+</div>
+
+<p>User accounts are required to access the Xperience administration. After signing in, users can work with the available features – <a href="/documentation/business-users/website-content">manage website content</a>, set up <a href="/documentation/business-users/digital-marketing">digital marketing</a> and <a href="/documentation/developers-and-admins/data-protection">data protection</a> functionality, design <a href="/documentation/business-users/digital-marketing/forms">forms</a>, etc.</p>
+<p>Table of contents:</p>
+<ul>
+<li><a href="#default-user-accounts">Default user accounts</a></li>
+<li><a href="#manage-users">Manage users</a></li>
+<li><a href="#user-passwords">User passwords</a></li>
+<li><a href="#multi-factor-authentication">Multi-factor authentication</a></li>
+<li><a href="#account-lockout">Account lockout</a></li>
+</ul>
+<h2 id="default-user-accounts">Default user accounts</h2>
+<p>The system contains the following user accounts by default:</p>
+<ul>
+<li>
+<strong>Administrator</strong> – the initial administrator account that can perform any action.</li>
+<li>
+<strong>Public</strong> – represents an anonymous visitor. Present in the system but not visible or editable in user management UIs.</li>
+</ul>
+<h2 id="manage-users">Manage users</h2>
+<p>Users are classified into two groups:</p>
+<ul>
+<li>
+<strong>Live site users (members)</strong> – regular visitors that register on a live site managed by Xperience. See <a href="/documentation/developers-and-admins/development/registration-and-authentication">Registration and authentication</a> to learn how to work with these users.</li>
+<li>
+<strong>Admin UI users</strong> – users that have access to the administration UI and directly interface with Xperience (e.g., content creators, administrators, marketers).</li>
+</ul>
+<p>You can invite new admin UI users and manage user accounts via the <strong>Users</strong> application.</p>
+<p>Select <strong>New user</strong> to <a href="#invite-users">add a new user</a>, or select an existing user in the list to <a href="#edit-users">edit their details</a>.</p>
+<p>The user listing also allows you to perform the following actions:</p>
+<ul>
+<li>Delete () user accounts.</li>
+<li>Enable/Disable user accounts. Account status can be seen in the <strong>Status</strong> column.</li>
+<li>Resend invitation emails. Only available for users with the <em>Invited</em> or <em>Invitation expired</em> status.</li>
+</ul>
+<h3 id="invite-users">Invite users</h3>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>User invitations are done via email. Your application must have an email client (for example an SMTP server or SendGrid) configured for system emails. For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a>.</p>
+</div>
+
+<p>When inviting new users, you need to enter the user’s email address and assign them a <a href="/documentation/developers-and-admins/configuration/users/role-management">system role</a>.</p>
+<p>Invited users receive a <a href="/documentation/developers-and-admins/configuration/notifications">notification email</a> containing a URL that allows them to finish the registration process. The email message content and metadata can be customized to better suit your desired language and tone.</p>
+<h3 id="edit-users">Edit users</h3>
+<p>To <strong>edit</strong> a user, select the row that represents them in the listing. When editing users, you can modify the following properties:</p>
+<ul>
+<li>
+<strong>User name</strong> – the name used when signing in. Cannot contain white space or special characters. The user name must be unique across all users in the system.</li>
+<li>
+<strong>First, Last name</strong> – the names of the person using the account.</li>
+<li>
+<strong>Email</strong> – the email address connected with the account.</li>
+<li>
+<strong>Role</strong> – one of the two predefined system roles associated with the account.</li>
+<li>
+<strong>Enabled</strong> – indicates if the user account is active, allowing the user to sign in.</li>
+</ul>
+<h3 id="import-users">Import users</h3>
+<p>If you wish to import or migrate users from another system or external source, developers can leverage the <a href="/api/configuration/users">user API</a>.</p>
+<p>When creating users, be sure to set the <code>UserInfo.UserAdministrationAccess</code> property to <code>true</code>, which is required for users to access the administration interface and be displayed in the <em>Users</em> application.</p>
+<p>To transfer users from an older version of Xperience, you can use the <a href="/documentation/developers-and-admins/upgrade-to-xperience-by-kentico/migration-toolkit#kentico-migration-tool">Kentico Migration Tool</a>.</p>
+<h2 id="user-passwords">User passwords</h2>
+<p>Passwords are a critical part of any authentication process. Users must set their password when they finalize their registration into the system.</p>
+<h3 id="password-policy">Password policy</h3>
+<p>The system can be configured to use a password policy, which means that new passwords entered by users are validated according to a certain set of requirements. Passwords that do not meet the specified conditions are rejected. See <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#password-options">Password options</a> to learn how to set password policies.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Default admin UI password policy</strong></p>
+<p>By default, Xperience sets the following requirements for passwords:</p>
+<ul>
+<li>At least 8 characters</li>
+<li>At least one uppercase character, lowercase character, a digit, and non-alphanumeric character</li>
+</ul>
+</div>
+
+<p>The policy is applied:</p>
+<ul>
+<li>When newly invited users choose a password for their account on the registration page.</li>
+<li>In all parts of the administration interface where a new password can be entered. Most commonly, this is the <strong>Account</strong> → <strong>Password</strong> tab opened when selecting your account icon in the admin UI.</li>
+<li>When resetting user passwords via <strong>Forgotten password</strong> on the Xperience administration sign in page.</li>
+</ul>
+<h3 id="password-storage-format">Password storage format</h3>
+<p>The system stores user passwords in the database in an encrypted format, using the <a href="https://en.wikipedia.org/wiki/PBKDF2" target="_blank">PBKDF2</a> key derivation standard. A cryptographic function is applied to the original password input (with a salt).</p>
+<h3 id="change-password">Change password</h3>
+<p>After signing in to the administration, any user can change their own account’s password. Editing passwords is not possible for other users.</p>
+<ol type="1">
+<li>Select your account menu and open the <strong>Account</strong> page.</li>
+<li>Switch to the <strong>Password</strong> tab.</li>
+<li>Enter your current password and the new one.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>You now need to use the new password when signing in.</p>
+<h3 id="reset-password">Reset password</h3>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>The password reset process uses emails. Your application must have an email client (for example an SMTP server or SendGrid) configured for system emails. For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a>.</p>
+</div>
+
+<p>If editors or other administration interface users forget their password, they may reset it, provided they have access to the email address specified for their account. They can do so via the <em>Forgotten password</em> link on the administration sign-in page.</p>
+<p>Password reset requires email approval from the affected user. When submitting a password reset request, users must enter their <strong>email address</strong>. The request affects only the user account with the corresponding email address. If the entered email address does not match any registered user, no email gets sent.</p>
+<p>The password reset email content and metadata can be customized to better suit your desired language and tone. See the <a href="/documentation/developers-and-admins/configuration/notifications">Notifications</a> documentation to learn more.</p>
+<p>The main security benefits of this approach are:</p>
+<ul>
+<li>Passwords are not directly included in the email, so they cannot be read by potential attackers.</li>
+<li>The reset links are only valid temporarily. The validity period can be set via <code>AdminIdentityOptions.EmailOptions.LinkExpiration</code>. See <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#linkexpiration">LinkExpiration</a>.</li>
+<li>After someone uses a password reset link and completes the password reset, it becomes invalid and cannot be accessed again.</li>
+</ul>
+<h2 id="multi-factor-authentication">Multi-factor authentication</h2>
+<p>The Xperience administration supports multi-factor authentication (MFA), which adds an extra layer of security to the sign-in process. With MFA, users need to verify their identity by providing a <strong>passcode</strong> in addition to the basic username and password. This MFA feature only applies to the administration’s built-in <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication">forms authentication</a> (<a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-external-authentication">external authentication providers</a> have their own MFA features and configuration).</p>
+<p>To sign in with MFA enabled, users need an authenticator app that supports the <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password" target="_blank">Time-based One-time Password</a> (TOTP) algorithm. For example, <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank">Google Authenticator</a> or <a href="https://www.microsoft.com/en-us/security/mobile-authenticator-app" target="_blank">Microsoft Authenticator</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>The authenticator application must be compatible with <a href="https://datatracker.ietf.org/doc/html/rfc6238" target="_blank">RFC 6238</a>.</p>
+</div>
+
+<h3 id="enable-mfa">Enable MFA</h3>
+<p>Multi-factor authentication can be enabled and configured by developers in the application’s code. To learn more, see <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#multifactorauthenticationoptions">MultiFactorAuthenticationOptions</a>.</p>
+<h3 id="mfa-authentication-process">MFA authentication process</h3>
+<h4 id="initial-mfa-setup">Initial MFA setup</h4>
+<p>Once MFA is enabled for your application, you need to go through the following steps when <strong>signing in for the first time</strong> or when <a href="#invite-users">registering a new account</a>:</p>
+<ol type="1">
+<li><p>Enter your username and password.</p></li>
+<li>
+<p>The system verifies the credentials and displays a <strong>Multi-factor authentication</strong> setup page.</p>
+<p></p>
+</li>
+<li>
+<p>Link the Xperience application into your preferred TOTP authenticator app using one of the following options:</p>
+<ul>
+<li>Scan the displayed QR code</li>
+<li>Manually enter the <strong>Secret key</strong> into the app</li>
+</ul>
+</li>
+<li>
+<p>Generate an MFA passcode in the authenticator app.</p>
+<ul>
+<li>Passcodes for the Xperience MFA feature are <strong>6 digits</strong> long and have a validity period of <strong>30 seconds</strong>.</li>
+</ul>
+</li>
+<li><p>Enter the passcode into the Xperience MFA page.</p></li>
+<li>
+<p>The system displays a <strong>Recovery code</strong>. Save the recovery code in a secure location.</p>
+<ul>
+<li>The recovery code can be used <strong>once</strong> to sign in without providing an MFA passcode. This allows you to <a href="#reset-multi-factor-authentication-for-individual-users">reset MFA authentication</a> for your user account if you lose access to your authenticator.</li>
+</ul>
+</li>
+<li><p><strong>Continue</strong> into the Xperience administration.</p></li>
+</ol>
+<h4 id="mfa-sign-in">MFA sign-in</h4>
+<p>After you have set up MFA for your account, subsequent sign-ins are simpler and only consist of the following steps:</p>
+<ol type="1">
+<li>Enter your username and password.</li>
+<li>Generate an MFA passcode in your authenticator app and enter it into the sign-in form
+<ul>
+<li>Alternatively, you can sign in using the one-time recovery code.</li>
+</ul>
+</li>
+</ol>
+<h3 id="reset-multi-factor-authentication-for-individual-users">Reset multi-factor authentication for individual users</h3>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>The multi-factor authentication reset process uses <a href="/documentation/developers-and-admins/configuration/notifications">notification emails</a>. Your application must have an email client (for example an SMTP server or SendGrid) configured for system emails. For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a>.</p>
+</div>
+
+<p>If you lose access to your authenticator app, you need to reset your MFA secret key:</p>
+<ol type="1">
+<li>Sign in to the Xperience administration using your one-time recovery code.</li>
+<li>Open the <strong>Account</strong> application.</li>
+<li>Select <strong>Reset multi-factor secret key</strong> on your account’s <strong>General</strong> tab. </li>
+<li>Select <strong>Reset</strong> in the confirmation dialog.</li>
+</ol>
+<p>The system sends an email with a link that allows you to repeat the <a href="#initial-mfa-setup">MFA setup</a> and connect a new authenticator app.</p>
+<ul>
+<li>MFA reset links are only valid temporarily. The validity period can be set via <code>AdminIdentityOptions.EmailOptions.LinkExpiration</code>. See <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#linkexpiration">LinkExpiration</a>.</li>
+<li>MFA reset links are invalidated after a successful MFA reset.</li>
+</ul>
+<p>If you do not have a valid recovery code, the only option is to contact an administrator with <a href="/documentation/developers-and-admins/configuration/users/role-management">permissions</a> to manage users in Xperience. Such administrators can reset the MFA secret key for any user account:</p>
+<ol type="1">
+<li>Open the <strong>Users</strong> application.</li>
+<li>Select the user whose MFA secret key you want to reset.</li>
+<li>Select <strong>Reset multi-factor secret key</strong> on the <strong>General</strong> tab.</li>
+<li>Select <strong>Reset</strong> in the confirmation dialog.</li>
+</ol>
+<p>The system sends the MFA reset email to the given user’s email address.</p>
+
+<div>
+
+</div>
+<div>
+<p>The content of the MFA reset email can be customized in the <a href="/documentation/developers-and-admins/configuration/notifications">Notifications</a> application.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>When a user’s MFA secret key is reset, authentication is <strong>disabled</strong> for the account (for security reasons). The account is unblocked only after the user sets up MFA again via the link in the reset email.</p>
+</div>
+
+<h2 id="account-lockout">Account lockout</h2>
+<p>Attackers may try to compromise user accounts through brute force, for example by repeatedly attempting to sign in with common password variants. The Xperience administration provides an account lockout mechanism to protect against such attacks (in addition to features like <a href="#multi-factor-authentication">Multi-factor authentication</a>).</p>
+<p>By default, the system locks accounts after <strong>5</strong> consecutive failed attempts to sign in. Authentication for the locked account is then blocked for <strong>5 minutes</strong>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Configure account lockout</strong></p>
+<p>The account lockout functionality can be adjusted by developers in the application’s code. To learn more, see <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#lockout-options">Lockout options</a>.</p>
+</div>
+
+<h3 id="unlock-accounts">Unlock accounts</h3>
+<p>When a user’s account is locked, the system sends a notification to the user’s email address. This notification contains a link that allows the user to immediately unlock their account. The content of the notification email can be customized to suit your desired language and design in the <a href="/documentation/developers-and-admins/configuration/notifications">Notifications</a> application.</p>
+<p>Account unlock links are only valid temporarily and become invalidated after the account is successfully unlocked. The validity period can be set via <code>AdminIdentityOptions.EmailOptions.LinkExpiration</code>. See <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication#linkexpiration">LinkExpiration</a>.</p>
+<p>Accounts are also automatically unlocked if a user <a href="#change-password">resets their password</a>.</p>
+
+</body>
+</html>

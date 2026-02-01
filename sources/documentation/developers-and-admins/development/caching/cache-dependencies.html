@@ -1,0 +1,1118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Cache dependencies</title>
+</head>
+<body>
+<p>Cache dependencies inform the system whenever the source data of a cached entity changes and prompt it to revoke the corresponding cache entry.</p>
+<p>To create dependencies between cached data and its source, the system uses <strong>dummy cache keys</strong>. Dummy keys are cache items without any data that target objects or groups of objects. Each time an object is modified, the system touches all dummy keys that correspond to the object, which clears all cache items targeting at least one of the touched keys.</p>
+<p>For example, assume an <em>Articles</em> page with the <em>/Articles</em> path in the content tree of a website channel <em>News</em>. On this page, there are short snippets of various articles, placed as the page’s children (<em>/Articles/Best cities to live in</em>, <em>/Articles/New theme park in Georgia</em>, etc.). As is good practice, all article snippets displayed on the page are cached.</p>
+<p>Whenever any of the child pages change, the cache needs to be notified in order to revoke the cached article snippets; otherwise, the <em>Articles</em> page continues displaying outdated content. To notify the cache, we introduce a <em>dummy cache key dependency</em> on the key <code>webpageitem|bychannel|News|childrenofpath|/Articles</code> when <a href="/documentation/developers-and-admins/development/caching/data-caching">caching the data</a>. With this dependency, any change to child pages on the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#filter-pages-based-on-content-tree-structure">tree path</a> <em>/Articles</em> under the channel <em>News</em> removes the corresponding cached article snippet from the cache, prompting the system to load fresh data from the database on a subsequent request.</p>
+<p>The system provides the <code>CacheDependencyBuilder</code> API that allows you to generate cache dependency keys from retrieved data (<a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">pages</a>, <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items">content items</a>, <a href="/documentation/business-users/media-libraries">media files</a>, etc.) and use them when <a href="/documentation/developers-and-admins/development/caching/data-caching">caching data</a>.</p>
+<h2 id="cachedependencybuilder-api">CacheDependencyBuilder API</h2>
+<p><code>CacheDependencyBuilder</code> provides a fluent API for building cache dependencies from retrieved data. The API works with collections of system objects such as pages and content items retrieved via <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">content item query</a> or info objects retrieved via <a href="/documentation/developers-and-admins/api/database-table-api">database APIs</a> and returns a <code>CMSCacheDependency</code> object that plugs into <a href="/documentation/developers-and-admins/development/caching/data-caching">IProgressiveCache</a>.</p>
+<h3 id="create-the-builder-instance">Create the builder instance</h3>
+<p>Use <code>ICacheDependencyBuilderFactory</code> to create instances of the <code>CacheDependencyBuilder</code> class.</p>
+<p>It is important to create a new <code>CacheDependencyBuilder</code> instance for each distinct cache dependency you intend to build. The builder object is stateful; if you reuse the same instance for multiple, unrelated dependency creation processes, it will retain and accumulate the dependencies from all previous calls. This results in a final <code>CMSCacheDependency</code> object that includes dependencies from all data processed by that single builder instance, potentially leading to incorrect or overly broad cache invalidation. Therefore, always request a fresh builder instance from the <code>ICacheDependencyBuilderFactory</code> for every new dependency set you need to define.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Set up an ICacheDependencyBuilderFactory instance</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="11"><code>
+using CMS.Helpers;
+
+public class MyClass
+{
+    private readonly ICacheDependencyBuilderFactory cacheDependencyBuilderFactory;
+
+    public MyClass(ICacheDependencyBuilderFactory cacheDependencyBuilderFactory)
+    {
+        // Injects a factory object used to
+        // create 'CacheDependencyBuilder' instances.
+        this.cacheDependencyBuilderFactory = cacheDependencyBuilderFactory;
+    }
+}
+</code></pre>
+</div>
+
+<h2 id="build-cache-dependencies">Build cache dependencies</h2>
+<p>The API allows you to construct cache dependencies via the following extension methods:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Extension method</p>
+</td>
+<td>
+<p>Namespace</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>ForContentItems</p>
+</td>
+<td>
+<p>CMS.ContentEngine</p>
+<hr>
+<p>Kentico.Content.Web.Mvc – Web application-specific extensions</p>
+</td>
+<td>
+<p>Creates cache dependencies on <a href="/documentation/business-users/content-hub/content-items">content items</a>. See <a href="#content-items">Content items</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ForWebPageItems</p>
+</td>
+<td>
+<p>CMS.Websites</p>
+<hr>
+<p>Kentico.Content.Web.Mvc – Web application-specific extensions</p>
+</td>
+<td>
+<p>Creates cache dependencies on <a href="/documentation/developers-and-admins/development/content-types">pages</a>. See <a href="#pages">Pages</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ForReusableFieldSchemas</p>
+</td>
+<td>
+<p>CMS.ContentEngine</p>
+</td>
+<td>
+<p>Creates cache dependencies on <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>. See <a href="#reusable-field-schemas">Reusable field schemas</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ForInfoObjects<t></t></p>
+</td>
+<td>
+<p>CMS.DataEngine</p>
+</td>
+<td>
+<p>Creates cache dependencies on <a href="/documentation/developers-and-admins/api/database-table-api">info object instances</a>. See <a href="#info-objects">Info objects</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ForSettingKeys</p>
+</td>
+<td>
+<p>CMS.DataEngine</p>
+</td>
+<td>
+<p>Creates cache dependencies on <a href="/documentation/developers-and-admins/configuration/settings">setting keys</a>. See <a href="#settings-keys">Settings keys</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ForMediaFiles</p>
+</td>
+<td>
+<p>CMS.MediaLibrary</p>
+</td>
+<td>
+<p>Creates cache dependencies on <a href="/documentation/business-users/media-libraries">media files</a>. See <a href="#media-files">Media files</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>AddDependency</p>
+</td>
+<td>
+<p>CMS.Helpers</p>
+</td>
+<td>
+<p>Not an extension method, available on the builder instance by default. Allows you to add a manually specified dependency to the set of constructed keys; for example, on a <a href="#additional-dependencies">collection of linked items</a>. See <a href="/documentation/developers-and-admins/development/caching/cache-dependencies-reference">Reference - Cache dependency keys</a> for an overview of supported cache dependencies and their required format.</p>
+</td>
+</tr>
+</table>
+
+<p>The final cache dependencies are created by calling <code>Build</code> on the dependency builder instance after specifying all requirements. The method returns a <code>CMSCacheDependency</code> instance that can be passed to <code>IProgressiveCache</code> when <a href="/documentation/developers-and-admins/development/caching/data-caching">caching data</a>.</p>
+
+<div>
+<pre data-line="10"><code>
+using CMS.Helpers;
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+    // Specify all dependencies and call Build(), which
+    // finalizes the dependency object for use in caching APIs
+    .Build();
+</code></pre>
+</div>
+
+<h3 id="content-items">Content items</h3>
+<p>The <code>ForContentItems</code> method by default allows you to create dependencies per individual <strong>published</strong> content items, across all items of a particular content type, or across all content items in the system. To capture not just changes to published items, but to all <a href="/documentation/developers-and-admins/configuration/workflows">workflow state</a> transitions, set the optional <code>inAllWorkflowStates</code> parameter of <code>ForContentItems</code> to <code>true</code>.</p>
+<h4 id="all-items">All items</h4>
+<p>The following API creates a dependency on all content items in the system; the corresponding cached entry is removed every time any content item in the system is modified.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on all content items</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.ContentEngine;
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+// Creates a cache dependency on all content items in the system
+CMSCacheDependency dependency = cacheDependencyBuilder
+
+  // By default, this targets only published content items.
+  // To track changes across all workflow states,
+  // use: .ForContentItems(inAllWorkflowStates: true)
+  .ForContentItems()
+
+    // Add a dependency key that targets all content items.
+    // Any change to any published content item will invalidate
+    // caches using this dependency. (Or any content item in any
+    // workflow state if 'inAllWorkflowStates' was set to true).
+    //
+    // Example key (published): "contentitem|all"
+    // Example key (all states): "contentitem|allstates|all"
+    .All()
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h4 id="by-content-type">By content type</h4>
+<p>Use the <code>ByContentType&lt;T&gt;</code> API to target all items of a specific <a href="/documentation/developers-and-admins/development/content-types">reusable content type</a>. Note that to target a content type, the example uses its corresponding <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated class</a>. The API offers additional overloads of the <code>ByContentType</code> method that target the content type by its code name (with identical usage).</p>
+<p>When targeting language variants, use the language code name as specified in the <a href="/documentation/developers-and-admins/configuration/languages">Languages</a> application. To create a dependency on the language from the current request, use the <code>ByContentTypeWithLanguageContext&lt;T&gt;</code> extension from the <code>Kentico.Content.Web.Mvc</code> namespace.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on reusable content items</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.ContentEngine;
+using Kentico.Content.Web.Mvc;
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForContentItems()
+
+    // Dependency that targets *all published language variants*
+    // of the 'Coffee' content type.
+    // Invalidates the cache if *any* published 'Coffee' item is
+    // modified, created, or deleted.
+    // Example key: "contentitem|bycontenttype|&lt;CoffeeCodeName&gt;"
+    .ByContentType&lt;Coffee&gt;()
+
+    // Dependency that targets *only the specified language variant*
+    // ('spanish') of the 'Coffee' content type. 
+    // Invalidates the cache if the 'spanish' language variant of *any* published
+    // 'Coffee' item is modified, created, or deleted.
+    //
+    // Example key (using lang: 'spanish'): 
+    // "contentitem|bycontenttype|&lt;CoffeeCodeName&gt;|spanish"
+    .ByContentType&lt;Coffee&gt;("spanish")
+
+    // Add dependency key: Targets the 'Coffee' content type,
+    // but *only* for the language from the current request context.
+    // Invalidates the cache if the language variant (matching the
+    // request's language) of *any* published 'Coffee' item changes.
+    //
+    // Example key (if request lang: 'spanish'):
+    // "contentitem|bycontenttype|&lt;CoffeeCodeName&gt;|spanish"
+    .ByContentTypeWithLanguageContext&lt;Coffee&gt;()
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h4 id="by-idguidcodename">By ID/GUID/CodeName</h4>
+<p>The following API creates dependencies on collections of specific content items. Only by modifying one of the provided content items is the corresponding cache entry removed. The <code>ByGuid</code>, <code>ById</code>, <code>ByCodeName</code> methods can take either GUIDs, IDs, and CodeNames or collections of <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated object classes</a>.</p>
+<p>The <code>WithLanguageContext</code> variants of these methods create dependencies on the content language taken from the current request. These extensions can be found in the <code>Kentico.Content.Web.Mvc</code> namespace.</p>
+<p>Treat the code example only as a preview of the available API. In real implementations, choose only one of these identifiers to create the cache dependency.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on items using ID/GUID/CodeName</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.ContentEngine;
+using Kentico.Content.Web.Mvc;
+
+// Assume a collection of content items on which to create the dependency
+IEnumerable&lt;Coffee&gt; contentItems = GetContentItems();
+
+string languageName = "spanish";
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForContentItems()
+
+    // Targets each content item in the provided collection
+    // using their IDs.
+    // Cache invalidates if *any* of these specific items
+    // in *any* language change.
+    //
+    // Example key:
+    // "contentitem|byid|&lt;itemID&gt;"
+    .ById(contentItems)
+
+    // Targets *only the specified language variant* ('spanish')
+    // for each item in the provided collection using item ID.
+    // Cache invalidates if *any* of these specific
+    // items in the *spanish* language variant change.
+    //
+    // Example key (using lang: 'spanish'):
+    // "contentitem|byid|&lt;itemID&gt;|spanish"
+    .ById(contentItems, languageName)
+
+    // Targets each item in the provided collection using their ID 
+    // and the language from the *current request context*.
+    //
+    // Example key (if request lang: 'spanish'):
+    // "contentitem|byid|&lt;itemID&gt;|spanish"
+    .ByIdWithLanguageContext(contentItems)
+
+    // Targets each content item in the provided collection using
+    // their GUIDs. Cache invalidates if *any* of these specific
+    // items in *any* language change.
+    //
+    // Example key:
+    // "contentitem|byguid|&lt;itemGUID&gt;"
+    .ByGuid(contentItems)
+
+    // Targets *only the specified language variant* ('spanish')
+    // for each item in the provided collection using item GUID.
+    // Cache invalidates if *any* of these items in the *spanish*
+    // language variant change.
+    //
+    // Example key (using lang: 'spanish'):
+    // "contentitem|byguid|&lt;itemGUID&gt;|spanish"
+    .ByGuid(contentItems, languageName)
+
+    // Targets each item in the provided collection using their GUID
+    // and the language from the *current request context*.
+    //
+    // Example key (if request lang: 'spanish'):
+    // "contentitem|byguid|&lt;itemGUID&gt;|spanish"
+    .ByGuidWithLanguageContext(contentItems)
+
+    // Targets each content item in the provided collection
+    // using their code names. Cache invalidates if *any* of
+    // these items in *any* language change.
+    //
+    // Example key:
+    // "contentitem|byname|&lt;itemCodeName&gt;"
+    .ByCodeName(contentItems)
+
+    // Targets *only the specified language variant* ('spanish') for each item in the
+    // provided collection using item code names. Cache invalidates if *any* of these
+    // items in the *spanish* language variant change.
+    //
+    // Example key (using lang: 'spanish'):
+    // "contentitem|byname|&lt;itemCodeName&gt;|spanish"
+    .ByCodeName(contentItems, "spanish")
+
+    // Targets each item in the provided collection using their code names 
+    // and the language from the *current request context*.
+    //
+    // Example key (if request lang: 'spanish'):
+    // "contentitem|byname|&lt;itemCodeName&gt;|spanish"
+    .ByCodeNameWithLanguageContext(contentItems)
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h4 id="by-reusable-field-schema-usage">By reusable field schema usage </h4>
+<p>Use the <code>ByReusableFieldSchema</code> method to create cache dependencies targeting all content items with specific <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> assigned. Provide the schema name (or a collection of schema names). This method also supports an optional language parameter, which can scope the selection to only specific <a href="/documentation/developers-and-admins/configuration/languages">language variants</a> of items using the schema.</p>
+<p>For web applications, the <code>ByReusableFieldSchemaWithLanguageContext</code> extension allows you to wire contextual dependencies based on the language from the current request. The extension is located in the <code>Kentico.Content.Web.Mvc</code> namespace.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on content items by reusable field schemas</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.ContentEngine;
+using Kentico.Content.Web.Mvc;
+
+// Assume the following contextual values
+string schemaName = "My.ReusableSchema";
+string languageName = "spanish";
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForContentItems()
+
+    // Targets *all published language variants* of content items that use
+    // the specified reusable field schema. 
+    // Cache invalidates if *any* published content item using this schema
+    // is modified, created, or deleted.
+    //
+    // Example key: "contentitem|byschema|&lt;schemaName&gt;"
+    .ByReusableFieldSchema(schemaName)
+
+    // Targets *only the specified language variant* ('spanish') of
+    // content items using the specified schema. Cache invalidates if
+    // the 'spanish' variant of *any* published item using this schema changes.
+    //
+    // Example key (using lang: 'spanish'): 
+    // "contentitem|byschema|&lt;schemaName&gt;|spanish"
+    .ByReusableFieldSchema(schemaName, languageName)
+
+    // Targets items using the specified schema, but *only* for the language
+    // determined from the current request context.
+    // Cache invalidates if the language variant (matching the request's language)
+    // of *any* published item using the specified schema changes.
+    //
+    // Example key (if request lang: 'spanish'):
+    // "contentitem|byschema|&lt;schemaName&gt;|spanish"
+    .ByReusableFieldSchemaWithLanguageContext(schemaName)
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h3 id="pages">Pages</h3>
+<p>The <code>ForWebPageItems</code> method allows you to create dependencies per individual <strong>published</strong> <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">web page items</a>, all pages of a specific content type, or across all pages in the system. To capture not just changes to published pages, but to all <a href="/documentation/developers-and-admins/configuration/workflows">workflow state</a> transitions, set the optional <code>inAllWorkflowStates</code> parameter of <code>ForWebPageItems</code> to <code>true</code>.</p>
+<h4 id="all-pages">All pages</h4>
+<p>The following API creates a dependency on all pages in the system. Corresponding cache items associated with this dependency are evicted every time any page in the system is modified.</p>
+<p>The <code>All</code> method optionally allows a <code>channelName</code> parameter that limits the created dependency to all pages belonging to the specified <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>. For web applications, the <code>AllWithChannelContext</code> extension allows you to wire contextual dependencies based on the channel from the current request. The extension is located in the <code>Kentico.Content.Web.Mvc</code> namespace.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on all pages</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Websites;
+using Kentico.Content.Web.Mvc;
+
+string channelName = "MyChannel"
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+// Creates a cache dependency on all pages in the system
+CMSCacheDependency dependency = cacheDependencyBuilder
+
+  // Specify that the dependencies are related to web page items.
+  // By default, this tracks changes only to the published pages.
+  // To track changes across all workflow states, use: 
+  // .ForWebPageItems(inAllWorkflowStates: true)
+  .ForWebPageItems()
+
+    // Targets *all* web page items across *all* channels.
+    // Cache invalidates if *any* matching page in *any* channel
+    //  is modified, created, or deleted.
+    // Example key (published): "webpageitem|all"
+    // Example key (all states): "webpageitem|allstates|all"
+    .All()
+
+    // Targets *all* web page items but *only* within the specified 'channelName'.
+    // Cache invalidates if *any* matching page *within the specified channel*
+    // is modified, created, or deleted.
+    // Example key (published): "webpageitem|bychannel|&lt;channelName&gt;|all"
+    // Example key (all states): "webpageitem|allstates|bychannel|&lt;channelName&gt;|all"
+    .All(channelName)
+
+    // Targets *all* Web Page Items but scopes the dependency *only*
+    // to the website channel determined from the *current request context*.
+    // Cache invalidates if *any* matching page *within the current request's
+    // channel* is modified, created, or deleted.
+    //
+    // Example key (published, if request is for 'MyChannel'): 
+    // "webpageitem|bychannel|mychannel|all"
+    // Example key (all states, if request is for 'MyChannel'):
+    // "webpageitem|bychannel|mychannel|allstates|all"
+    .AllWithChannelContext();
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h4 id="by-content-type-1">By content type</h4>
+<p>The following API targets all pages of a specific <a href="/documentation/developers-and-admins/development/content-types">content type</a>. Note that to target the content type, the example uses its <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated class</a>. The API offers additional overloads of the <code>ByContentType&lt;T&gt;</code> method that target the content type by its code name (with identical usage).</p>
+<p>When using <code>ByContentType</code>, you <strong>must</strong> scope the dependency to a specific <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>. When targeting language variants, use the language code name as specified in the <a href="/documentation/developers-and-admins/configuration/languages">Languages</a> application.</p>
+<p>In web applications, you can use extension methods capable of wiring dependencies based on the current request context. See the examples below. The extensions are located in the <code>Kentico.Content.Web.Mvc</code> namespace.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on pages of specific type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Websites;
+using Kentico.Content.Web.Mvc;
+
+string channelName = "mychannel";
+string languageName = "spanish";
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForWebPageItems()
+
+    // Targets *all published language variants* of 'CoffeeDetailPage'
+    // pages within the specified 'channelName'.
+    // Invalidates the cache if *any* page of the 'CoffeeDetailPage' 
+    // content type within 'channelName' changes.
+    //
+    // Example generated key: 
+    // "webpageitem|bychannel|&lt;channelName&gt;|bycontenttype|&lt;CoffeeDetailPageCodeName&gt;"
+    .ByContentType&lt;CoffeeDetailPage&gt;(channelName)
+
+    // Targets *only the specified language variant* of pages with
+    // the 'CoffeeDetailPage' content type within the specified 'channelName'.
+    // Invalidates the cache if the 'languageName' variant of *any* page based
+    // on the 'CoffeeDetailPage' content type within 'channelName' changes.
+    //
+    // Example generated dependency:
+    // "webpageitem|bychannel|&lt;channelName&gt;|bycontenttype|&lt;CoffeeDetailPageCondeName&gt;|&lt;languageName&gt;"
+    .ByContentType&lt;CoffeeDetailPage&gt;(channelName, languageName)
+
+    // --- Context-Aware Dependencies (Require Kentico.Content.Web.Mvc) ---
+
+    // Targets 'CoffeeDetailPage' pages, using the language determined
+    // from the *current request context*.
+    // Invalidates the cache if the language variant (matching the request's language)
+    // of *any* 'CoffeeDetailPage' page within the specified channel changes.
+    // 
+    // Example generated key (if lang: 'spanish'):
+    // "webpageitem|bychannel|mychannel|bycontenttype|&lt;CoffeeDetailPageCondeName&gt;|spanish"
+    .ByContentTypeWithLanguageContext&lt;CoffeeDetailPage&gt;(channelName)
+
+    // Targets 'CoffeeDetailPage' pages, using the channel determined from 
+    // the *current request context*. Includes *all languages* within that channel.
+    // Invalidates the cache if *any* language variant of *any* 'CoffeeDetailPage'
+    // page within the request's channel changes.
+    // 
+    // Example generated key (if channel: 'mychannel'): 
+    // "webpageitem|bychannel|mychannel|bycontenttype|&lt;CoffeeDetailPageCondeName&gt;"
+    .ByContentTypeWithChannelContext&lt;CoffeeDetailPage&gt;()
+
+    // Targets 'CoffeeDetailPage' pages, using *both* the channel
+    // *and* the language determined from the *current request context*.
+    // Cache invalidates if the language variant (matching the request's language)
+    // of *any* 'CoffeeDetailPage' page within the request's channel changes.
+    //
+    // Example generated key (if channel: 'mychannel', lang: 'spanish'):
+    // "webpageitem|bychannel|mychannel|bycontenttype|&lt;CoffeeDetailPageCondeName&gt;|spanish"
+    .ByContentTypeWithContext&lt;CoffeeDetailPage&gt;()
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h4 id="by-idguidcodename-1">By ID/GUID/CodeName</h4>
+<p>The following API methods create cache dependencies that target specific collections of pages, identified by their GUID, ID, or CodeName. Corresponding cache entries are invalidated only when one of the specifically referenced pages is modified.</p>
+<p>The <code>ByGuid</code>, <code>ById</code>, and <code>ByCodeName</code> methods accept either collections of the respective identifiers (GUIDs, IDs, CodeNames) or collections of the corresponding <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated object classes</a>. For web application scenarios, <code>WithLanguageContext</code> variants of these methods are available in the <code>Kentico.Content.Web.Mvc</code> namespace; they generate dependencies automatically scoped to the language identified from the current request.</p>
+<p>Treat the subsequent code example only as a preview of the available API methods. In real-world implementations, you should select only one identifier type (GUID, ID, or CodeName) when defining the cache dependency.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on pages using ID/GUID/CodeName</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Websites;
+using Kentico.Content.Web.Mvc;
+
+// Assume a collection of pages on which to create the dependency
+IEnumerable&lt;CoffeeDetailPage&gt; webPages = GetDependencies();
+
+string languageName = "spanish";
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+// NOTE: The example below chains dependencies based on multiple identifiers 
+// for demonstration. In a real implementation, you would typically choose
+// *one* identifier type (GUID, ID, or CodeName) and its relevant
+// language/context variations for a specific cache item.
+CMSCacheDependency dependency = cacheDependencyBuilder
+    .ForWebPageItems()
+
+        // --- Dependencies by ID ---
+
+        // Targets each web page item in the provided collection
+        // using their IDs.
+        // Invalidates the cache if *any* of these specific items
+        // in *any* language change.
+        // Example key: "webpageitem|byid|&lt;itemID&gt;"
+        .ById(webPages)
+
+
+        // Targets *only the specified language variant* for each
+        // page using its ID.
+        // Invalidates the cache if *any* of these specific items in
+        // 'languageName' language change.
+        // Example key: "webpageitem|byid|&lt;itemID&gt;|&lt;languageCodeName&gt;"
+        .ById(webPages, languageName)
+
+
+        // Targets each web page item usign its ID and the language
+        // from the *current request context*.
+        // Invalidates the cache if *any* of these specific
+        // items in the request's language change.
+        //
+        // Example key (if request lang: 'spanish'):
+        // "webpageitem|byid|&lt;itemID&gt;|spanish"
+        .ByIdWithLanguageContext(webPages)
+
+        // --- Dependencies by GUID ---
+
+        // Targets each web page item in the 'webPages' collection
+        // using their GUID.
+        // Cache invalidates if *any* of these specific pages change.
+        // Example key: "webpageitem|byguid|&lt;itemGUID&gt;"
+        .ByGuid(webPages)
+
+        // Targets *only the specified language variant* for each 
+        // web page item usign its GUID.
+        // Cache invalidates if the specified language variant of
+        // *any* specified page changes.
+        // Example key: "webpageitem|byguid|&lt;itemGUID&gt;|&lt;languageCodeName&gt;"
+        .ByGuid(webPages, languageName)
+
+        // Targets each web page item using its GUID and
+        // the language from the *current request context*.
+        // Invalidates the cache if the language variant (matching request)
+        // of *any* specified page changes.
+        //
+        // Example key (if request lang: 'spanish'):
+        // "webpageitem|byguid|&lt;itemGUID&gt;|spanish"
+        .ByGuidWithLanguageContext(webPages)
+
+        // --- Dependencies by code name ---
+
+        // Targets each web page item in the 'webPages'
+        // collection using its code name.
+        // Invalidates the cache if *any* of these specific pages change.
+        // Example key: "webpageitem|byname|&lt;itemCodeName&gt;"
+        .ByCodeName(webPages)
+
+        // Targets *only the specified language variant* for
+        // each item using its code name.
+        // Invalidates the cache if *any* of these specific pages change.
+        // Example key: "webpageitem|byname|&lt;itemCodeName&gt;|&lt;languageCodeName&gt;"
+        .ByCodeName(webPages, languageName)
+
+        // Targets each item using its code name and the language
+        // from the *current request context*.
+        // Invalidates the cache if *any* of these specific pages change.
+        //
+        // Example key (if request lang: 'spanish'):
+        //"webpageitem|byname|&lt;itemCodeName&gt;|spanish"
+        .ByCodeNameWithLanguageContext(webPages)
+
+        .Builder()
+    .Build();
+</code></pre>
+</div>
+
+<h4 id="by-content-tree-path">By content tree path</h4>
+<p>The following API uses the position in the <a href="/documentation/business-users/website-content">channel content tree</a> to create cache dependencies. Whenever pages on the specified path are modified, the corresponding cache entry is removed. The examples include the resulting cache dependency keys, which can also be constructed directly - see <a href="/documentation/developers-and-admins/development/caching/cache-dependencies-reference">Reference - Cache dependency keys</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on content tree path</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Websites;
+using Kentico.Content.Web.Mvc;
+
+// Assume a page on which to create the dependency
+CoffeeDetailPage article = GetDependencies();
+
+// Creates a path object targeting only the specific page
+// identified by its content tree path. Any change to this
+// specific page will invalidate caches using this dependency.
+CacheDependencyPath singlePagePath =
+  CacheDependencyPath.Single(article.SystemFields.WebPageItemTreePath);
+
+// Creates a path object targeting all children on all levels
+// under the specified page's content tree path. Any change to
+// any child page under 'article' will invalidate caches using this dependency.
+CacheDependencyPath childPagesPath =
+  CacheDependencyPath.Children(article.SystemFields.WebPageItemTreePath);
+
+// Defines an explicit channel name. Used when you want to tie the dependency
+// to a specific channel, regardless of the current request's context.
+string channelName = "MyChannel";
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForWebPageItems()
+
+    // Dependency on a specific page path within a specific channel.
+    // Example key:
+    // "webpageitem|bychannel|&lt;channelName&gt;|bypath|&lt;treePath&gt;"
+    .ByPath(singlePagePath, channelName)
+
+    // Dependency on all children under the path within a specific channel.
+    // Example key: 
+    // "webpageitem|bychannel|&lt;channelName&gt;|childrenofpath|&lt;treePath&gt;"
+    .ByPath(childPagesPath, channelName)
+
+    // Dependency on a specific page path, specific channel,
+    // and the language from the current request.
+    //
+    // Example generated key (if request lang: 'spanish'):
+    // "webpageitem|bychannel|&lt;channelName&gt;|bypath|&lt;treePath&gt;|spanish"
+    .ByPathWithLanguageContext(singlePagePath, channelName)
+
+    // Dependency on a specific page path, automatically using
+    // the website channel associated with the current request.
+    //
+    // Example generated key (if request channel: 'MyChannel'):
+    // "webpageitem|bychannel|mychannel|bypath|&lt;treePath&gt;"
+    .ByPathWithChannelContext(singlePagePath)
+
+    // Dependency on a specific page path, automatically using both
+    // the channel and language from the current request.
+    //
+    // Example generated key (if request channel: 'MyChannel', lang: 'spanish'):
+    // "webpageitem|bychannel|mychannel|bypath|&lt;treePath&gt;|spanish"
+    .ByPathWithContext(singlePagePath)
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h4 id="by-reusable-field-schema-usage-1">By reusable field schema usage </h4>
+<p>To create dependencies targeting all pages using specific <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>, use the <code>ByReusableFieldSchema</code> method. Provide the schema name (or a collection of schema names) and the required <code>channelName</code>. This method also supports an optional <code>languageName</code> parameter to target only specific language variants.</p>
+<p>For web application scenarios, <code>WithContext</code> variants of these methods are available in the <code>Kentico.Content.Web.Mvc</code> namespace. They generate dependencies automatically scoped to the language or website channel identified from the current request.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on pages via reusable field schemas</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Websites;
+using Kentico.Content.Web.Mvc;
+
+// Assumed values
+string schemaName = "My.Schema";
+string channelName = "MyChannel";
+string languageName = "spanish";
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForWebPageItems()
+
+    // Targets *all published language variants* of pages within the
+    // specified 'channelName' that use the specified 'schemaName'.
+    // Cache invalidates if *any* matching page (using the schema,
+    // in the channel) is modified, created, or deleted.
+    //
+    // Example generated key:
+    // "webpageitem|bychannel|&lt;channelName&gt;|byschema|&lt;schemaName&gt;"
+    .ByReusableFieldSchema(schemaName, channelName)
+
+    // Targets *only the specified language variant* ('languageName')
+    // of pages within the specified 'channelName' that use the specified 'schemaName'.
+    // Cache invalidates if the 'languageName' variant of *any* matching page
+    // (using the schema, in the channel) changes.
+    //
+    // Example generated key:
+    // "webpageitem|bychannel|&lt;channelName&gt;|byschema|&lt;schemaName&gt;|&lt;languageName&gt;"
+    .ByReusableFieldSchema(schemaName, channelName, languageName)
+
+    // --- Context-aware extensions (under Kentico.Content.Web.Mvc) ---
+
+    // Targets pages using the specified 'schemaName' within the explicit 'channelName',
+    // scoped automatically to the language variant from the current request context.
+    // Cache invalidates if the request context's language variant of *any* matching page
+    // (using the schema, in the specified channel) changes.
+    //
+    // Example generated key (if request language is 'spanish'):
+    // "webpageitem|bychannel|&lt;channelName&gt;|byschema|&lt;schemaName&gt;|spanish"
+    .ByReusableFieldSchemaWithLanguageContext(schemaName, channelName)
+
+    // Targets pages using the specified 'schemaName' within the channel derived
+    // from the current request context, scoped explicitly to the specified 'languageName'.
+    // Cache invalidates if the specified 'languageName' variant of *any* matching page
+    // (using the schema, in the request's channel) changes.
+    //
+    // Example generated key (if request channel is 'MyChannel', lang: 'spanish'):
+    // "webpageitem|bychannel|mychannel|byschema|&lt;schemaName&gt;|spanish"
+    .ByReusableFieldSchemaWithChannelContext(schemaName, languageName)
+
+    // Targets pages using the specified 'schemaName', automatically scoped to *both*
+    // the channel *and* the language derived from the current request context.
+    // Cache invalidates if the request context's language variant of *any* matching page
+    // (using the schema, in the request's channel) changes.
+    //
+    // Example generated key (if request is for 'MyChannel', lang: 'spanish'):
+    // "webpageitem|bychannel|mychannel|byschema|&lt;schemaName&gt;|spanish"
+    .ByReusableFieldSchemaWithContext(schemaName)
+
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<h3 id="reusable-field-schemas">Reusable field schemas</h3>
+<p>The <code>ForReusableFieldSchemas</code> method allows you to create dependencies directly on <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>. Any change to the specified schema definition (e.g., adding or removing fields, changing assigned content types) will touch the corresponding dummy key and invalidate the associated cache item.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on reusable field schemas</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assume schema names
+string schemaName = "My.SchemaA";
+IEnumerable&lt;string&gt; schemaNames = new [] { "My.SchemaB", "My.SchemaC" };
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+  cacheDependencyBuilderFactory.Create();
+
+// Creates a cache dependency on the specified reusable field schemas by name
+CMSCacheDependency dependency = cacheDependencyBuilder
+  .ForReusableFieldSchemas()
+    // Creates a dependency using the name of the schema
+    .ByName(schemaName)
+    // Creates dependencies using a collection of schema names
+    .ByName(schemaNames)
+    .Builder()
+  .Build();
+</code></pre>
+</div>
+
+<p>The preceding example creates dependencies on the schemas <code>My.SchemaA</code>, <code>My.SchemaB</code>, and <code>My.SchemaC</code>. Modifying any of these schemas will invalidate the cached item associated with this dependency.</p>
+<h3 id="info-objects">Info objects</h3>
+<p>The <code>ForInfoObjects&lt;T&gt;</code> method creates cache dependencies on <a href="/documentation/developers-and-admins/api/database-table-api">info object</a> instances of <code>T</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on all objects</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+// Creates a dependency on all member accounts in the system
+CMSCacheDependency cacheDependency = cacheDependencyBuilder
+    .ForInfoObjects&lt;MemberInfo&gt;()
+        .All()
+        .Builder()
+    .Build();
+</code></pre>
+</div>
+
+<p>The preceding example creates a cache dependency on all <a href="/documentation/developers-and-admins/development/registration-and-authentication">MemberInfo</a> objects in the system.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on specific object instances</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Sample data containing the currently authenticated member account
+MemberInfo currentMember = GetCurrentMember();
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency cacheDependency = cacheDependencyBuilder
+    .ForInfoObjects&lt;MemberInfo&gt;()
+        .ById(currentMember.MemberID)
+        .Builder()
+    .Build();
+</code></pre>
+</div>
+
+<p>The preceding example creates a dependency on the currently authenticated <a href="/documentation/developers-and-admins/development/registration-and-authentication">member account</a>. To retrieve the currently authenticated member account, see <a href="/documentation/developers-and-admins/development/registration-and-authentication#retrieve-the-currently-authenticated-member">Retrieve the currently authenticated member</a>.</p>
+<p>The <code>ForInfoObjects</code> API allows creating dependencies using object:</p>
+<ul>
+<li>identifiers – the <code>ById</code> method</li>
+<li>GUIDs – the <code>ByGuid</code> method</li>
+<li>code names – the <code>ByCodeName</code> method</li>
+</ul>
+<h3 id="settings-keys">Settings keys</h3>
+<p>The <code>ForSettingKeys</code> method allows you to create dependencies on <a href="/documentation/developers-and-admins/configuration/settings">settings</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create dependencies on setting keys</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+// Creates a cache dependency on system settings
+CMSCacheDependency dependency = cacheDependencyBuilder
+    .ForSettingKeys()
+        .ByCodeName("CMSCIEnabled")
+        .Builder()
+    .Build();
+</code></pre>
+</div>
+
+<p>The preceding example creates a dependency on the <a href="/documentation/developers-and-admins/ci-cd">Continuous Integration</a> setting.</p>
+<p><code>ForSettingKeys</code> works only with default system settings. To create dependencies on <a href="/guides/development/customizations-and-integrations/create-basic-module">custom settings</a>, add a dependency on the custom <a href="#info-objects">info object</a> representing your settings.</p>
+<h3 id="media-files">Media files</h3>
+
+<div>
+
+</div>
+<div>
+<p><strong>Media libraries sunset</strong></p>
+<p>Media libraries have been officially sunset, and their related API members have been marked as obsolete. Support for media libraries will continue for one more year (until July 24, 2026), after which the feature and all associated APIs will be completely removed.</p>
+<p>See <a href="/guides/architecture/media-libraries-migration-guidance">Media library migration</a> for instructions on how to migrate your media library files to <a href="/documentation/business-users/content-hub">Content hub</a>.</p>
+</div>
+
+<p>The <code>ForMediaFiles</code> method allows you to create dependencies on <a href="/documentation/developers-and-admins/configuration/media-library-configuration">media library</a> files.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a dependency on media library files</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Sample media file on which to create the dependency
+MediaFileInfo mediaFile = GetMediaFile();
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+// Creates a cache dependency on the provided media file
+CMSCacheDependency dependency = cacheDependencyBuilder
+    .ForMediaFiles()
+        // Pass either a single GUID or a collection
+        .ByGuid(mediaFile.FileGUID)
+        .Builder()
+    .Build();
+</code></pre>
+</div>
+
+<p>The preceding example creates a dependency on a media library file using its GUID. See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-from-media-libraries">Retrieve content from media libraries</a> for an overview of the media library data retrieval API.</p>
+<h3 id="additional-dependencies">Additional dependencies</h3>
+<p>To add dependencies on other keys that cannot be created using <code>CacheDependencyBuilder</code> APIs, use the <code>AddDependency</code> method. A common scenario is including dependencies on linked items. See: <a href="/documentation/developers-and-admins/development/caching/data-caching#cache-dependencies-on-linked-content-items">Cache dependencies on linked content items</a>.</p>
+<p>The method also provides an overload that allows you to add a <code>CMSCacheDependency</code> object directly to the dependencies stored in the <code>CacheDependencyBuilder</code> instance. Useful when you already have a <code>CMSCacheDependency</code> object and want to include its keys and file names in the current dependency set.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Specify additional dependencies</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="3,6,14-15"><code>
+// Additional dependency keys, for example on linked items
+// obtained from 'ILinkedItemsDependencyAsyncRetriever'
+IEnumerable&lt;string&gt; linkedDependencies = GetLinkedDependencies();
+
+// Assume an existing CMSCacheDependency object
+CMSCacheDependency existingDependency = GetExistingDependency();
+
+// Creates a new instance of 'CacheDependencyBuilder'
+CacheDependencyBuilder cacheDependencyBuilder =
+    cacheDependencyBuilderFactory.Create();
+
+CMSCacheDependency dependency = cacheDependencyBuilder
+    // Adds the keys from 'linkedDependencies' to the final result
+    .AddDependency(linkedDependencies)
+    .AddDependency(existingDependency)
+    .Build();
+</code></pre>
+</div>
+
+<p>See the <a href="/documentation/developers-and-admins/development/caching/cache-dependencies-reference">cache dependency key reference</a> for information about supported key constructions.</p>
+
+</body>
+</html>

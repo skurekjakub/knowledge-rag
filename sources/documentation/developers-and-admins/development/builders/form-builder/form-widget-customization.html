@@ -1,0 +1,885 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form widget customization</title>
+</head>
+<body>
+<p>This page describes how you can customize the markup of forms rendered using the <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">Form Page Builder widget</a>. The page is divided into the following sections:</p>
+<ul>
+<li>
+<a href="#customize-the-html-markup-of-rendered-forms">Customize the HTML markup of rendered forms</a> – describes how to set static, project-wide rendering configurations used when forms or form fields are rendered.</li>
+<li>
+<a href="#contextually-modifying-form-markup">Contextually modify form markup</a> – introduces events that you can handle to dynamically modify markup when forms or individual form fields are rendered (based on the current context, such as the field type, properties, or form name).</li>
+<li>
+<a href="#examples">Examples</a> – provides a set of sample form customization use cases.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: If you only need to add custom content wrapped around the default form markup, you can use widget nesting and create an extended form widget. To learn more, see <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/extend-widgets">Extend widgets</a>.</p>
+</div>
+
+<h2 id="customize-the-html-markup-of-rendered-forms">Customize the HTML markup of rendered forms</h2>
+<h3 id="form-markup">Form markup</h3>
+<p>Forms rendered using the Form widget are by default wrapped by an empty <code>&lt;div&gt;</code> block element. You can customize the markup of forms rendered using the widget by setting the static <code>FormWidgetRenderingConfiguration.Default</code> property. </p>
+<p>The <code>FormWidgetRenderingConfiguration</code> type exposes a group of properties you can configure to customize the markup surrounding the form, as well as the HTML attributes of the form’s <em>Submit</em> button and <code>&lt;form&gt;</code> HTML element.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>FormWrapperConfiguration</code></p>
+</td>
+<td>
+<p><a href="#Formwidgetcustomization-FormWrapperRenderingConfiguration">FormWrapperRenderingConfiguration</a></p>
+</td>
+<td>
+<p>Specifies the HTML element (and its attributes) wrapping the entire form. If <code>null</code><em>,</em> no wrapping element is rendered for forms. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>FormHtmlAttributes</code></p>
+</td>
+<td>
+<p><code>IDictionary&lt;string, object&gt;</code></p>
+</td>
+<td>
+<p>Specifies HTML attributes applied to the <code>&lt;form&gt;</code> HTML element.</p>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>Setting the id attribute of forms</strong></p>
+<p>You can use this property to set the <code>id</code> attribute of the form element, which is by default randomly generated. However, note that this sets the identical <code>id</code> for <strong>ALL</strong> form widget instances. As a result, you can place no more than one form via the <em>Form</em> widget per page. </p>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>SubmitButtonHtmlAttributes</code></p>
+</td>
+<td>
+<p><code>IDictionary&lt;string, object&gt;</code></p>
+</td>
+<td>
+<p>Specifies HTML attributes applied to the submit button.</p>
+</td>
+</tr>
+</table>
+
+<p> <code>FormWrapperConfiguration</code> is of the <code>FormWrapperRenderingConfiguration</code>type, which holds information about HTML elements wrapping each form. It exposes the following properties:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>ElementName</code></p>
+</td>
+<td>
+<p><code>string</code></p>
+</td>
+<td>
+<p>The name of the HTML element wrapping the form.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>HtmlAttributes</code></p>
+</td>
+<td>
+<p><code>IDictionary&lt;string, object&gt;</code></p>
+</td>
+<td>
+<p>A dictionary of attributes of the <code>ElementName</code>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ChildConfiguration</code></p>
+</td>
+<td>
+<p><code>ElementRenderingConfiguration</code></p>
+</td>
+<td>
+<p>May hold additional <a href="#Formwidgetcustomization-ElementRenderingConfiguration">ElementRenderingConfigurations</a>. Use this property when you wish to nest multiple wrapping elements.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>CustomHtmlEnvelopeString</code></p>
+</td>
+<td colspan="1">
+<p><code>string</code></p>
+</td>
+<td colspan="1">
+<p>Adds custom HTML content before or after the form wrapper. The HTML string needs to contain the <code>FormWrapperRenderingConfiguration.CONTENT_PLACEHOLDER</code> constant to mark where you wish to render the form wrapper and the body of the form. See <a href="#content_placeholder-usage">CONTENT_PLACEHOLDER usage</a> for an example.</p>
+<p><strong>Note</strong>: Content of the <code>CustomHtmlEnvelopeString</code> is only rendered once per page load. The form wrapper elements and form body may be rendered repeatedly, for example when form validation fails or when processing field visibility conditions.</p>
+</td>
+</tr>
+</table>
+
+<p>For illustration, the following pseudocode shows the configurable HTML structure of each form:</p>
+
+<div>
+<pre><code>
+
+&lt;FormWrapperConfiguration&gt;
+    &lt;FORM&gt;
+        &lt;FORM_FIELD_A&gt;
+        &lt;FORM_FIELD_B&gt;
+        ...
+        &lt;SUBMIT_BUTTON&gt;
+    &lt;/FORM&gt;
+&lt;/FormWrapperConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h3 id="form-field-markup">Form field markup</h3>
+<p>By default, each form field section contains placeholder <code>&lt;div&gt;</code> block elements. You can customize the wrapping HTML markup and the attributes of each form field by modifying the <code>FormFieldRenderingConfiguration.Widget</code>property.</p>
+<p><code>FormFieldRenderingConfiguration</code> exposes a collection of properties you can configure to alter the HTML markup of the rendered form, its form fields, and each field’s subsections, such as label or explanation text:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td colspan="1">
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>RootConfiguration</code></p>
+</td>
+<td>
+<p><a href="#Formwidgetcustomization-ElementRenderingConfiguration">ElementRenderingConfiguration</a></p>
+</td>
+<td colspan="1">
+<p>Specifies the HTML element (and its attributes) wrapping the label and corresponding input element. If <code>null</code><em>,</em> no wrapping element is rendered for the given form field.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>LabelWrapperConfiguration</code></p>
+</td>
+<td>
+<p><code>ElementRenderingConfiguration</code></p>
+</td>
+<td colspan="1">
+<p>Specifies the HTML element (and its attributes) wrapping the labelelement.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>LabelHtmlAttributes</code></p>
+</td>
+<td colspan="1">
+<p><code>IDictionary&lt;string, object&gt;</code></p>
+</td>
+<td colspan="1">
+<p>Specifies HTML attributes applied to the labelelement.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ColonAfterLabel</code></p>
+</td>
+<td>
+<p><code>bool</code></p>
+</td>
+<td colspan="1">
+<p>Indicates whether a colon ‘:’ character is rendered after the text of the label element. Set to <code>true</code> by default.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>EditorWrapperConfiguration</code></p>
+</td>
+<td colspan="1">
+<p><code>ElementRenderingConfiguration</code></p>
+</td>
+<td colspan="1">
+<p>Specifies the HTML element (and its attributes) wrapping the field’s input, validation message, and explanation text. If <code>null</code><em>,</em> no wrapping HTML element is rendered.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>EditorHtmlAttributes</code></p>
+</td>
+<td colspan="1">
+<p><code>IDictionary&lt;string, object&gt;</code></p>
+</td>
+<td colspan="1">
+<p>Specifies HTML attributes applied to the field’s input element.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>ComponentWrapperConfiguration</code></p>
+</td>
+<td colspan="1">
+<p><code>ElementRenderingConfiguration</code></p>
+</td>
+<td colspan="1">
+<p>Specifies the HTML element (and its attributes) wrapping the field’s input element.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>ExplanationTextWrapperConfiguration</code></p>
+</td>
+<td colspan="1">
+<p><code>ElementRenderingConfiguration</code></p>
+</td>
+<td colspan="1">
+<p>Specifies the HTML element (and its attributes) wrapping the explanation text – a short message usually rendered under the input fields – of the component. If <code>null</code><em>,</em> no wrapping HTML element is rendered.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>SuppressValidationMessages</code></p>
+</td>
+<td colspan="1">
+<p><code>bool</code></p>
+</td>
+<td colspan="1">
+<p>Indicates whether validation messages are rendered individually for each form field.</p>
+</td>
+</tr>
+</table>
+
+<p> Some properties of <code>FormWidgetRenderingConfiguration</code> and <code>FormFieldRenderingConfiguration</code> are of the <code>ElementRenderingConfiguration</code>type, which is used to specify the wrapping HTML element. <code>ElementRenderingConfiguration</code> exposes the following properties:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p><code>ElementName</code></p>
+</td>
+<td colspan="1">
+<p><code>string</code></p>
+</td>
+<td colspan="1">
+<p>The name of the HTML element wrapping the given form field component.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>HtmlAttributes</code></p>
+</td>
+<td>
+<p><code>IDictionary&lt;string, object&gt;</code></p>
+</td>
+<td>
+<p>Contains attributes of the <code>ElementName</code>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>ChildConfiguration</code></p>
+</td>
+<td>
+<p><code>ElementRenderingConfiguration</code></p>
+</td>
+<td>
+<p>May hold additional<code>ElementRenderingConfigurations</code>. Use this property to nest multiple wrapping elements for a given form field section.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>CustomHtml</code></p>
+</td>
+<td>
+<p><code>IHtmlString</code></p>
+</td>
+<td>
+<p>Sets custom HTML markup instead of the corresponding <code>ElementRenderingConfiguration</code>. The HTML string needs to contain <code>ElementRenderingConfiguration.CONTENT_PLACEHOLDER</code> to mark where you wish to render the remaining sub-elements within the given wrapping element. See <a href="#content_placeholder-usage">CONTENT_PLACEHOLDERusage</a> for an example.</p>
+<p><strong>Note</strong>: If the <code>CustomHtml</code>property is set, the system <strong>disregards</strong>the element and HTML attributes specified in <code>ElementName</code> and <code>HtmlAttribute</code>and renders the value of this property as <strong>raw HTML</strong> instead. Moreover, further nesting of additional configurations via <code>ChildConfiguration</code> becomes disabled.</p>
+</td>
+</tr>
+</table>
+
+<p>For illustration, the following pseudocode shows the configurable structure of individual form fields:</p>
+
+<div>
+<pre><code>
+
+&lt;RootConfiguration&gt;
+    &lt;LabelWrapperConfiguration&gt;
+         &lt;LABEL&gt;
+    &lt;/LabelWrapperConfiguration&gt;
+    &lt;EditorWrapperConfiguration&gt;
+        &lt;ComponentWrapperConfiguration&gt;
+            &lt;EDITOR&gt;
+            &lt;VALIDATION MESSAGE&gt;
+        &lt;/ComponentWrapperConfiguration&gt;
+        &lt;ExplanationTextWrapperConfiguration&gt;
+            &lt;EXPLANATION TEXT&gt;
+        &lt;/ExplanationTextWrapperConfiguration&gt;
+    &lt;/EditorWrapperConfiguration&gt;
+&lt;/RootConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h2 id="contextually-modifying-form-markup">Contextually modifying form markup</h2>
+<p>In addition to setting the global rendering configuration, you can modify forms and form fields as they are being rendered. This allows you to adjust the resulting markup (accessibility or data attributes, CSS classes, etc.) based on contextual information. For example, you can adjust form markup based on the properties of specific fields or the name of the form. The system provides the following two events that fire when forms or form fields are rendered:</p>
+<ul>
+<li>
+<a href="#formwidgetrenderingconfiguration.getconfiguration">FormWidgetRenderingConfiguration.GetConfiguration</a> – fired when a form inserted using the <em>Form</em> Page Builder widget is rendered.</li>
+<li>
+<a href="#formfieldrenderingconfiguration.getconfiguration">FormFieldRenderingConfiguration.GetConfiguration</a> – fired when individual form fields are rendered.</li>
+</ul>
+<h3 id="formwidgetrenderingconfiguration.getconfiguration">FormWidgetRenderingConfiguration.GetConfiguration</h3>
+<p><strong>Namespace</strong>: Kentico.Forms.Web.Mvc.Widgets</p>
+<p>Fired when a form inserted via the <em>Form</em> widget is rendered. The <code>GetFormWidgetRenderingConfigurationEventArgs</code> event arguments allow you to access or modify:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type (and select properties)</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>Configuration</code></p>
+</td>
+<td>
+<p><code>FormWidgetRenderingConfiguration</code></p>
+</td>
+<td>
+<p>The rendering configuration of the form. See <a href="#form-markup">Form markup</a> for a detailed description of the <code>FormWidgetRenderingConfiguration</code> type.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>Form</code></p>
+</td>
+<td>
+<p><code>BizFormInfo</code></p>
+<ul>
+<li><code>Form</code></li>
+<li><code>FormName</code></li>
+<li><code>FormDisplayName</code></li>
+</ul>
+</td>
+<td>
+<p>The system object representing the form. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>FormComponents</code></p>
+</td>
+<td>
+<p><code>IEnumerable&lt;FormComponent&gt;</code></p>
+</td>
+<td>
+<p>Contains a collection of form fields being rendered on this request. This collection can change when rendering forms containing <a href="/documentation/business-users/digital-marketing/forms/use-smart-fields-in-forms">smart fields</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>FormWidgetProperties</code></p>
+</td>
+<td>
+<p><code>FormWidgetProperties</code></p>
+</td>
+<td>
+<p>Contains the properties of the current <a href="/documentation/business-users/digital-marketing/forms">Form widget</a> instance.</p>
+</td>
+</tr>
+</table>
+
+<p>See <a href="#add-contextual-markup-to-forms">Add contextual markup to forms</a> for an example.</p>
+<h3 id="formfieldrenderingconfiguration.getconfiguration">FormFieldRenderingConfiguration.GetConfiguration</h3>
+<p><strong>Namespace</strong>: Kentico.Forms.Web.Mvc</p>
+<p>Fired whenever a form field is being rendered (on the live site or when viewing pages in a website channel application). The <code>GetFormFieldRenderingConfigurationEventArgs</code> event arguments allow you to access or modify:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Type (and select properties)</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>Configuration</code></p>
+</td>
+<td colspan="1">
+<p><code>FormFieldRenderingConfiguration</code></p>
+</td>
+<td>
+<p>The rendering configuration of the form field. See <a href="#form-field-markup">Form field markup</a> for a detailed description of the <code>FormFieldRenderingConfiguration</code>type.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>FormComponent</code></p>
+</td>
+<td colspan="1">
+<p><code>FormComponent</code></p>
+<ul>
+<li><code>BaseProperties</code></li>
+<li><code>Definition</code></li>
+</ul>
+</td>
+<td>
+<p>Allows you to access type and configuration information of the rendered form component.</p>
+<p><code>BaseProperties</code> holds the component’s properties, such as the field’s required status, label, and explanation text, as configured via the Form Builder’s <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">properties panel</a> or programmatically using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component attributes</a>.</p>
+<p><code>Definition</code> holds information under which the corresponding form component was <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">registered into the system</a>, such as its <code>identifier</code>, <code>name</code>, or <code>description</code>.</p>
+</td>
+</tr>
+</table>
+
+<p>To access contextual information about the form field, use <code>GetBizFormComponentContext</code>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+BizFormComponentContext context = e.FormComponent.GetBizFormComponentContext();
+
+</code></pre>
+</div>
+
+<p>You can access the code and display names, as well as other system data of the form containing the currently processed form field via <code>BizFormComponentContext.FormInfo</code>.</p>
+<p>See <a href="#add-contextual-markup-to-form-fields">Add contextual markup to form fields</a> for an example.</p>
+<h2 id="examples">Examples</h2>
+<p>This section contains a set of examples demonstrating usage of the form customization API:</p>
+<ul>
+<li>
+<a href="#set-global-rendering-configurations">Set global rendering configurations</a> – shows how to set a static, project-wide configuration using <code>FormFieldRenderingConfiguration</code> and <code>FormWidgetRenderingConfiguration</code>.</li>
+<li>
+<code>CONTENT_PLACEHOLDER</code> <a href="#content_placeholder-usage">usage</a> – demonstrates the impact of setting <code>CustomHtml</code> on the resulting HTML structure.</li>
+<li>
+<a href="#add-contextual-markup-to-forms">Adding contextual markup to forms</a> – uses the <a href="#formwidgetrenderingconfiguration.getconfiguration">FormWidgetRenderingConfiguration.GetConfiguration</a> event to contextually modify form markup.</li>
+<li>
+<a href="#add-contextual-markup-to-form-fields">Adding contextual markup to form fields</a> – uses the <a href="#formfieldrenderingconfiguration.getconfiguration">FormFieldRenderingConfiguration.GetConfiguration</a> event to contextually modify form field markup.</li>
+</ul>
+<h3 id="set-global-rendering-configurations">Set global rendering configurations</h3>
+<p>We recommend setting the rendering configurations during the live site project’s startup. For example, within the initialization code of a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Forms.Web.Mvc.Widgets;
+
+namespace FormBuilderCustomizations
+{
+    public class FormBuilderStaticMarkupConfiguration
+    {
+        public static void SetGlobalRenderingConfigurations()
+        {
+            // Modifies the default FormFieldRenderingConfiguration for the 'Form' widget
+            // Specifying a new FormFieldRenderingConfiguration instance completely replaces the default Kentico configuration
+            FormFieldRenderingConfiguration.Widget.RootConfiguration =
+                 new ElementRenderingConfiguration
+                 {
+                     ElementName = "div",
+                     HtmlAttributes = { { "class", "form-field" } }
+                 };
+
+            FormFieldRenderingConfiguration.Widget.ExplanationTextWrapperConfiguration =
+                 new ElementRenderingConfiguration
+                 {
+                     ElementName = "div",
+                     HtmlAttributes = { { "class", "explanation-text" } }
+                 };
+
+            // Sets a new rendering configuration for the 'Form' widget, adding attributes
+            // to the form element and the submit button and wrapping the form in two 'div' blocks
+            FormWidgetRenderingConfiguration.Default = new FormWidgetRenderingConfiguration
+            {
+                // Form element HTML attributes
+                FormHtmlAttributes = { { "formattribute", "attributevalue" } },
+
+                // Submit button HTML attributes
+                SubmitButtonHtmlAttributes = { { "class", "submit-button" } },
+
+                // Elements wrapping the Form element
+                FormWrapperConfiguration = new FormWrapperRenderingConfiguration
+                {
+                    ElementName = "div",
+                    HtmlAttributes = { { "class", "form-widget-form" } },
+                    // Adds an additional div element wrapper
+                    ChildConfiguration = new ElementRenderingConfiguration
+                    {
+                        ElementName = "div"
+                    }
+                }
+            };
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Call the <code>SetGlobalRenderingConfigurations</code> method on application start. For example, as part of <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module initialization code</a>.</p>
+<p>Forms displayed via the <em>Form</em> widget are now rendered using the modified rendering configurations.</p>
+<h3 id="content_placeholder-usage">CONTENT_PLACEHOLDER usage</h3>
+<p>The <code>CONTENT_PLACEHOLDER</code> property, part of <code>FormFieldRenderingConfiguration</code> and <code>FormWrapperRenderingConfiguration</code>, acts as a marker that tells the system where to render the inner HTML markup in case <code>CustomHtml</code> (or <code>CustomHtmlEnvelopeString</code>) is set as part of the configuration.</p>
+<p>For example, modifying <code>FormFieldRenderingConfiguration</code> in the following manner:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+FormFieldRenderingConfiguration.Widget.EditorWrapperConfiguration.CustomHtml =
+                MvcHtmlString.Create($"&lt;div data-customhtml=\"Replacing EditorWrapperConfiguration\"&gt;{ElementRenderingConfiguration.CONTENT_PLACEHOLDER}&lt;/div&gt;");
+
+</code></pre>
+</div>
+
+<p>Results in this HTML structure for form fields:</p>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;RootConfiguration&gt;
+    &lt;LabelWrapperConfiguration&gt;
+         &lt;LABEL&gt;
+    &lt;/LabelWrapperConfiguration&gt;
+    // Any existing 'EditorWrapperConfiguration' is discarded and its markup gets replaced
+    // CONTENT_PLACEHOLDER indicates where the inner markup is placed - wrapped by a 'div' element in this case.
+    &lt;div data-customhtml="Replacing EditorWrapperConfiguration"&gt; 
+        &lt;ComponentWrapperConfiguration&gt;
+            &lt;EDITOR&gt;
+            &lt;VALIDATION MESSAGE&gt;
+        &lt;/ComponentWrapperConfiguration&gt;
+        &lt;ExplanationTextWrapperConfiguration&gt;
+            &lt;EXPLANATION TEXT&gt;
+        &lt;/ExplanationTextWrapperConfiguration&gt;
+    &lt;/div&gt;
+&lt;/RootConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h3 id="add-contextual-markup-to-forms">Add contextual markup to forms</h3>
+<p>The following example uses the <a href="#formwidgetrenderingconfiguration.getconfiguration">FormWidgetRenderingConfiguration.GetConfiguration</a> event to:</p>
+<ul>
+<li>Render the <strong>name</strong> of the form above the form element using <code>CustomHtmlEnvelopeString</code>.</li>
+<li>Contextually assign additional attributes only to the <strong>ContactUs</strong> form’s <em>Submit</em> button.</li>
+</ul>
+<p>Register a new <code>FormWidgetInjectMarkup</code> handler for the <code>FormWidgetRenderingConfiguration.GetConfiguration.Execute</code> event:</p>
+<p>Call the <code>RegisterEventHandlers</code> method on application start. For example, as part of <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module initialization code</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Web.Mvc;
+
+using Kentico.Forms.Web.Mvc.Widgets;
+
+namespace FormBuilderCustomizations
+{
+    public class FormWidgetMarkupInjection
+    {
+
+        public static void RegisterEventHandlers()
+        {
+            FormWidgetRenderingConfiguration.GetConfiguration.Execute += FormWidgetInjectMarkup;
+        }
+
+        private static void FormWidgetInjectMarkup(object sender, GetFormWidgetRenderingConfigurationEventArgs e)
+        {
+            e.Configuration.FormWrapperConfiguration = new FormWrapperRenderingConfiguration
+            {
+                // Renders the form's name above the form using the 'CustomHtmlEnvelope' property
+                // FormWrapperRenderingConfiguration.CONTENT_PLACEHOLDER acts as a placeholder for the form's body in the resulting markup
+                CustomHtmlEnvelope = MvcHtmlString.Create($@"&lt;h1&gt;{e.Form.FormDisplayName}&lt;/h1&gt; {FormWrapperRenderingConfiguration.CONTENT_PLACEHOLDER}")
+            };
+
+            // Sets additional attributes only for specific forms. Since the 'class' attribute is fairly
+            // common, checks if the key is already present and inserts or appends the key accordingly.
+            if (e.Form.FormName.Equals("ContactUs", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (e.Configuration.SubmitButtonHtmlAttributes.ContainsKey("class"))
+                {
+                    e.Configuration.SubmitButtonHtmlAttributes["class"] += " contactus-submit-button";
+                }
+                else
+                {
+                    e.Configuration.SubmitButtonHtmlAttributes["class"] = "contactus-submit-button";
+                }
+            }
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="add-contextual-markup-to-form-fields">Add contextual markup to form fields</h3>
+<p>The following example uses the <a href="#formfieldrenderingconfiguration.getconfiguration">FormFieldRenderingConfiguration.GetConfiguration</a> event to:</p>
+<ul>
+<li>Add the semantic <code>aria-required</code> WAI-ARIA and <em>required</em> HTML5 attributes to form fields marked as <strong>Required</strong> via the Form Builder properties panel, and append a red asterisk after the field’s label using CSS.</li>
+<li>Assigns additional attributes to <code>TextArea</code> fields, provided the form contains any.</li>
+<li>Adds additional attributes to fields that are part of the <strong>ContactUs</strong> form.</li>
+</ul>
+<p>Register a new <code>KenticoComponentMarkupInjection</code> handler for the <code>FormFieldRenderingConfiguration.GetConfiguration.Execute</code>event:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+
+using Kentico.Forms.Web.Mvc;
+
+namespace FormBuilderCustomizations
+{
+    public class FormFieldMarkupInjection
+    {
+        public static void RegisterEventHandlers()
+        {
+            // Contextually customizes the markup of rendered form fields
+            FormFieldRenderingConfiguration.GetConfiguration.Execute += InjectMarkupIntoKenticoComponents;
+        }
+
+        private static void InjectMarkupIntoKenticoComponents(object sender, GetFormFieldRenderingConfigurationEventArgs e)
+        {
+            // Only injects additional markup into default Kentico form components
+            if (!e.FormComponent.Definition.Identifier.StartsWith("Kentico", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return;
+            }
+
+            // Adds WAI-ARIA and HTML5 accessibility attributes to form fields marked as 'Required' via the Form Builder interface
+            AddAccessibilityAttributes(e);
+
+            // Assigns additional attributes to 'TextArea' fields
+            AddFieldSpecificMarkup(e);
+
+            // Assigns additional attributes to fields rendered as part of a specified form
+            AddFormSpecificMarkup(e);
+        }
+
+        private static void AddAccessibilityAttributes(GetFormFieldRenderingConfigurationEventArgs e)
+        {
+            if (e.FormComponent.BaseProperties.Required)
+            {
+                // Adds the 'aria-required' and 'required' attributes to the component's 'input' element
+                e.Configuration.EditorHtmlAttributes["aria-required"] = "true";
+                e.Configuration.EditorHtmlAttributes["required"] = "";
+
+                // Appends an asterisk to the component's 'Label' element. Since the class attribute is fairly
+                // common, checks if the key is already present and inserts or appends the key accordingly.
+                if (e.Configuration.LabelHtmlAttributes.ContainsKey("class"))
+                {
+                    e.Configuration.LabelHtmlAttributes["class"] += " required-field-red-star";
+                }
+                else
+                {
+                    e.Configuration.LabelHtmlAttributes["class"] = "required-field-red-star";
+                }
+            }
+        }
+
+        private static void AddFieldSpecificMarkup(GetFormFieldRenderingConfigurationEventArgs e)
+        {
+            // Sets a custom CSS class for the wrapping element of 'TextAreaComponent' type form fields
+            if (e.FormComponent is TextAreaComponent)
+            {
+                if (e.Configuration.RootConfiguration.HtmlAttributes.ContainsKey("class"))
+                {
+                    e.Configuration.RootConfiguration.HtmlAttributes["class"] += " text-area-styles";
+                }
+                else
+                {
+                    e.Configuration.RootConfiguration.HtmlAttributes["class"] = "text-area-styles";
+                }
+            }
+        }
+
+        private static void AddFormSpecificMarkup(GetFormFieldRenderingConfigurationEventArgs e)
+        {
+            // Gets the context of the Form for which the field is being rendered
+            BizFormComponentContext context = e.FormComponent.GetBizFormComponentContext();
+
+            // Modifies only form fields rendered as part of the 'ContactUs' form
+            if (context.FormInfo.FormName.Equals("ContactUs", StringComparison.InvariantCultureIgnoreCase))
+            {
+                e.Configuration.ColonAfterLabel = false;
+                e.Configuration.EditorHtmlAttributes["data-formname"] = context.FormInfo.FormDisplayName;
+            }
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Add the <code>required-field-red-star</code> class that renders a red asterisk after a required field’s label to your website’s CSS:</p>
+
+<div>
+<div>
+<div>
+<span>CSS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+.required-field-red-star::after {
+    content: "*";
+    color: red;
+}
+
+</code></pre>
+</div>
+
+<p>Call the <code>RegisterEventHandlers</code> method on application start. For example, as part of <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module initialization code</a>.</p>
+
+</body>
+</html>

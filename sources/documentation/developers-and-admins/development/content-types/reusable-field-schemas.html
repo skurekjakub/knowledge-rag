@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reusable field schemas</title>
+</head>
+<body>
+<p>When modeling site content, you may encounter situations where specific groups of fields keep repeating across content types. For example, each web page content type might need a basic set of fields such as title, date, and excerpt text. Or a set of fields dedicated to search engine optimization and social media promotion, such as for the Open Graph protocol or a specific platform (Twitter, etc.).</p>
+<p>Reusable field schemas save you from having to repeatedly define similar fields across multiple content types. Instead, each schema can define a set of fields, often dedicated to a specific use case or scenario, that you then link to content types as required. All changes you make to a schema – adding, removing, or renaming a field, for example – get immediately reflected in all linked content types.</p>
+<h2 id="create-and-assign-reusable-field-schemas">Create and assign reusable field schemas</h2>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application and switch to the <strong>List of reusable field schemas</strong> tab.</li>
+<li>Select <strong>New reusable field schema</strong>.</li>
+<li>Enter the schema display name, code name, and description</li>
+<li>
+<strong>Save</strong> the schema.</li>
+<li>On the <strong>Fields</strong> tab, define schema fields using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.
+<ul>
+<li>There are a couple of things to keep in mind when naming fields – see <a href="/documentation/developers-and-admins/development/content-types#field-naming-guidelines">Field naming guidelines</a>
+</li>
+<li>Note: We strongly recommend prefixing all field names with the name of the reusable schema. For example, for a schema <strong>SEOFields</strong>, use <strong>SEOFieldsTitle</strong>, <strong>SEOFieldsDescription</strong>, <strong>SEOFieldsTags</strong>, and so on. This is to prevent column name conflicts between different schemas. See <a href="#remarks">Remarks</a> for details.</li>
+</ul>
+</li>
+</ol>
+<p>To assign created schemas to a content type:</p>
+<ol type="1">
+<li>Edit a content type in the <strong>Content types</strong> application.</li>
+<li>On the <strong>Fields</strong> tab, select <strong>Add reusable schema</strong>.</li>
+<li>Select the schemas you want to assign and <strong>Confirm</strong>.</li>
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Regenerate code files</a> for the modified content type to access the added schema fields in your model classes.</li>
+</ol>
+<p>This adds new bar items with the <em>Reusable field schema</em> label to the content type field listing. Each item represents a single schema and lists all fields that it contains.</p>
+<p></p>
+<p>The system treats fields assigned via reusable schemas as regular content type fields. You can retrieve and filter them via <a href="/documentation/developers-and-admins/api/content-item-api">Content Item</a> and <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">GraphQL</a> queries or access them <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates#content-type-field-macros">using macros in email templates</a>.</p>
+<h2 id="unassign-reusable-field-schemas">Unassign reusable field schemas</h2>
+<p>To unassign a reusable field schema, remove it via the content type <strong>Fields</strong> tab when editing content types in the <strong>Content types</strong> application.</p>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application and edit a content type.</li>
+<li>Switch to the fields tab.</li>
+<li>Find schema fields by the <em>Reusable field schema</em> label and remove them using the recycle bin () icon.
+<ul>
+<li>Unassigning a schema also <strong>deletes all data</strong> stored by the removed schema fields for the corresponding content type.</li>
+</ul>
+</li>
+</ol>
+<h2 id="delete-reusable-field-schemas">Delete reusable field schemas</h2>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application and switch to the <strong>List of reusable field schemas</strong> tab.</li>
+<li>Delete the schema using the recycle bin () icon.
+<ul>
+<li>Note that you cannot delete a schema that is currently assigned to at least one content type. Unassign the schema from all content types first.</li>
+</ul>
+</li>
+</ol>
+<p>This removes the schema from the system.</p>
+<h2 id="remarks">Remarks</h2>
+<h3 id="field-count-limitations">Field count limitations</h3>
+<p>All schema fields are stored in the <em>CMS_ContentItemCommonData</em> table. SQL tables have a maximum limit of 1024 columns per table. Therefore, a hard limit exists on the number of columns that can be defined for reusable schemas in a single instance. </p>
+<h3 id="field-name-collisions">Field name collisions</h3>
+<p>All schema fields are stored in the <em>CMS_ContentItemCommonData</em> table. When defining schema fields, prefix each field with the name of the corresponding schema to prevent column name collisions on the SQL level.</p>
+
+</body>
+</html>

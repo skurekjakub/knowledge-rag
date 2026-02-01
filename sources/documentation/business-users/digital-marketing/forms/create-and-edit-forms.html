@@ -1,0 +1,386 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Create and edit forms</title>
+</head>
+<body>
+<p>You can create new forms in the <strong>Forms</strong> application:</p>
+<ol type="1">
+<li>Open the <strong>Forms</strong> application.</li>
+<li>Select <strong>New form</strong>.</li>
+</ol>
+<p>The system creates a new form and opens the <strong>Form Builder</strong>.</p>
+<p>Form Builder is a graphical interface for designing forms in Xperience. Editors modify the overall form layout, add various types of fields, and adjust their position in the form. The resulting form appears as it will display on the live site.</p>
+<p></p>
+<p>Using Form Builder, editors can:</p>
+<ul>
+<li><a href="#set-form-layout">Set form layout</a></li>
+<li><a href="#add-fields">Add fields</a></li>
+<li><a href="#move-and-reorder-fields">Move and reorder fields</a></li>
+<li><a href="#delete-fields">Delete fields</a></li>
+<li><a href="#set-the-submit-button-text">Set the submit button text</a></li>
+</ul>
+<p>In addition to the <em>Form Builder</em> interface, the system allows you to:</p>
+<ul>
+<li><a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">Access form submissions collected from users</a></li>
+<li><a href="#configure-form-properties-and-behavior">Configure general form properties and behavior</a></li>
+<li><a href="#actions-after-form-submission">Choose actions that occur after the form is submitted</a></li>
+<li><a href="#form-submission-notifications">Configure notifications about form submissions for administration users</a></li>
+<li><a href="#automation-and-autoresponders">Set up autoresponders or advanced email automation after form submission</a></li>
+<li><a href="#track-usage-of-forms">Track usage of forms</a></li>
+<li><a href="#synchronize-forms">Synchronize forms</a></li>
+<li><a href="#segment-contacts-based-on-form-submissions">Segment contacts based on form submissions</a></li>
+</ul>
+<h2 id="set-form-layout">Set form layout</h2>
+<p>The layout of a form is composed of sections. Each section contains one or more zones to which you can <a href="#add-fields">add fields</a>.</p>
+<p>The system provides a <strong>Default</strong> section that organizes fields in a basic single-column layout. The project’s developers may prepare additional types of sections that allow you to create more advanced form layouts.</p>
+<p>To edit the layout of a form, add or adjust sections using gray UI elements:</p>
+<ul>
+<li>
+<strong>Add section</strong> – select a gray <em>plus</em> button located on the left to insert a new section. The list of available section types depends on the implementation of your project.</li>
+<li>
+<strong>Move section</strong> – hover over a section and drag it by the handle among the section buttons on the right.</li>
+<li>
+<strong>Change section type</strong> – you can change the type of a section to adjust the form’s layout. Hover over the section you want to modify, select the <em>Change section type</em> button, and select the section type you wish to use.</li>
+<li>
+<strong>Configure section</strong> – opens a dialog where you can set values for properties that affect the content, appearance, or behavior of the section. The <em>Configure</em> button is only available for sections with configurable properties. Check with your project’s administrators or developers for more information about the available section types and their properties.</li>
+<li>
+<strong>Delete section</strong> – hover over the section you want to remove and select the delete button on the right. This also deletes all form fields in the section, which can lead to a loss of data in existing forms.</li>
+</ul>
+<p></p>
+<p>Changes made to sections are saved automatically. After creating the required form layout through sections, you can <a href="#move-and-reorder-fields">move fields</a> between the resulting zones.</p>
+<h2 id="add-fields">Add fields</h2>
+<p>Select the purple <em>plus</em> buttons in the form editing area to add new fields. The <strong>Fields</strong> dialog opens, which allows you to add fields from two categories:</p>
+<ul>
+<li>
+<strong>Featured</strong> – offers fields frequently included in forms, preconfigured for easy and quick use. Many featured fields automatically map the submitted information to the <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> representing the visitor in the system (for visitors who give <a href="/documentation/developers-and-admins/data-protection/consent-management">consent</a>). See the <a href="#Createandeditforms-ContactMapping">contact attribute mapping</a> section for more details.</li>
+<li>
+<strong>New field</strong> – allows editors to select a basic field type and configure the field from scratch. Information collected by these fields is not automatically used by the system (unless <a href="#Createandeditforms-ContactMapping">configured otherwise</a>), but can be <a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">accessed in the form’s submissions</a>.</li>
+</ul>
+<p></p>
+<p>The form saves automatically each time a new field is added. </p>
+
+<div>
+
+</div>
+<div>
+<p>After creating a new field, we recommend setting an appropriate <strong>Name</strong> property based on the field’s purpose. By default, the <em>Name</em> is generated based on the type of the selected field. Changing the value later once the form starts collecting data can be problematic.</p>
+<p>See <a href="#field-properties">Field properties</a> for details.</p>
+</div>
+
+<h3 id="hide-featured-fields">Hide featured fields</h3>
+<p>If any of the featured fields are not relevant for your forms, you can hide them from the <em>Fields</em> dialog that appears when adding new form fields:</p>
+<ol type="1">
+<li>Switch to the <strong>Featured fields</strong> tab in the left-side navigation menu of the <strong>Forms</strong> application.</li>
+<li>Toggle the <strong>Visibility in forms</strong> switcher for the corresponding featured fields.</li>
+</ol>
+<h3 id="field-properties">Field properties</h3>
+<p>Fields in the form are configurable. You can change a field’s label, tooltip, default value, and other properties depending on the field type via the <strong>properties dialog</strong>.</p>
+<ol type="1">
+<li>Select the field you wish to configure.</li>
+<li>Open the properties dialog by selecting configure ().<br>
+</li>
+<li>Select <strong>Apply</strong> to save your changes.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Smart fields</strong></p>
+<p>You can configure fields to behave as “smart fields”, which means they are only displayed on repeated views of a form as a replacement for other fields that the visitor has already filled in. For more information, see <a href="/documentation/business-users/digital-marketing/forms/use-smart-fields-in-forms">Use smart fields in forms</a>.</p>
+</div>
+
+<h3 id="map-form-submission-to-contact-attributes"> Map form submission to contact attributes</h3>
+<p>Xperience can use the information collected via forms to update <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> representing website visitors in the system. If a visitor submits a form, the system automatically transfers the entered values into the data of a matching contact (for visitors who give <a href="/documentation/developers-and-admins/data-protection/consent-management">consent</a>). You can also use the same approach to update the data of existing contacts when a visitor provides new information.</p>
+<p>Mapping links a form field to a specific contact attribute. You control how form fields are mapped via the <strong>Mapped to contact attribute</strong> <a href="#field-properties">field property</a>.</p>
+<p></p>
+<p>For example, if the form has a field where users enter their email address, you can map this field to the <strong>Email</strong> contact attribute. When a user submits the form, the system automatically saves the field’s value as the email address of the contact representing the given user.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contact mapping and featured fields</strong></p>
+<p>Certain <em>featured</em> fields are preconfigured to map to the corresponding contact attribute (e.g., First name, Last name, Email). The mapping can be changed. You can view and modify the field’s configuration using the <a href="#field-properties">properties dialog</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Contact email changes</strong></p>
+<p>If you have the <em>Overwrite existing contact information with submitted data</em> option enabled on the form’s <a href="#configure-form-properties-and-behavior">General tab</a>, it is possible for visitors to change their contact information by submitting data into mapped fields. However, because a contact’s email address is its main identifier in Xperience, the system <strong>does not allow the email to be changed</strong> based on data submitted through forms.</p>
+<p>If you have a form field mapped to the <em>Email</em> contact attribute, and a visitor submits a different value than the associated contact’s current email address, all related field updates are performed for a different contact. Either an existing contact that matches the submitted email value is used, or a new contact is created.</p>
+<p>In these cases, the given visitor’s associated contact remains unchanged, but all subsequent actions, such as logging of the <em>Form submission</em> <a href="/documentation/business-users/digital-marketing/contact-activities">activity</a> and triggering of <a href="/documentation/business-users/digital-marketing/automation">automation processes</a>, are done for the “other” contact that matches the submitted email address.</p>
+</div>
+
+<h3 id="field-visibility">Field visibility</h3>
+<p>Form Builder allows you to configure when and how form fields are displayed to users. Fields can either be always visible, hidden, or have conditional visibility. Visibility conditions are always based on the value of another <strong>reference field</strong> in the form. For example, a “Company name” field can be configured to only appear when users select “Business” in a preceding “Account type” field. This helps keep forms clean and relevant for individual users.</p>
+<p>To set the visibility of fields in Form Builder:</p>
+<ol type="1">
+<li>Select the field whose visibility you want to configure.</li>
+<li>Open the properties dialog by selecting configure ().</li>
+<li>Navigate down to the <strong>Visibility</strong> section.</li>
+<li>Select one of the available options:
+<ul>
+<li>
+<strong>Always</strong> – the field is always visible. This is the default state for all fields.</li>
+<li>
+<strong>Conditional</strong> – the field is displayed based on a selected reference field and condition. This option is not offered for the first field in the form (since no reference fields are available).</li>
+<li>
+<strong>Hidden</strong> – the field is never displayed in the form on the live site. Hidden fields allow you to remove a field from the form while preserving the field’s data in existing <a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">form submissions</a>. Hidden fields can also be used by developers to <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-form-events">set form values programmatically</a>.</li>
+</ul>
+</li>
+<li>For the <strong>Conditional</strong> option, continue with the following configuration:
+<ol type="1">
+<li>Select a <strong>Reference field</strong>. This field’s value is checked by the visibility condition.
+<ul>
+<li>The reference field must always be placed “above” the field with the condition. If your form has an advanced layout, e.g., with multiple columns, you may need to consult with your project’s developers to understand the order of fields.</li>
+</ul>
+</li>
+<li>Select a <strong>Condition</strong> (<em>Equal to</em>, <em>Contains</em>, <em>Is empty</em>, etc.).
+<ul>
+<li>The available conditions depend on the type of the reference field.</li>
+<li>Each form field can only have one visibility condition.</li>
+</ul>
+</li>
+<li>Enter the <strong>Value</strong> against which the reference field will be evaluated (the <em>Value</em> input is not provided for some conditions, such as <em>Is empty</em>).</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+The value is <strong>not case-sensitive</strong>. For example, an <em>Equal to</em> condition with a <em>Value</em> set to “copilot” is fulfilled even if the input in the reference field is “coPilot”.
+</div>
+
+</li>
+<li>Select <strong>Apply</strong> to save your changes.</li>
+</ol>
+<p>The Form Builder interface displays the following icons to indicate field visibility:</p>
+<ul>
+<li> for fields with <em>Conditional</em> visibility</li>
+<li>
+<i></i> for hidden fields</li>
+</ul>
+<p>The field’s visibility configuration is now applied when users view the form on the live site. If using <em>Conditional</em> visibility, the field only appears when the reference field fulfills the given condition.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Behavior of fields hidden by visibility conditions</strong></p>
+<p>When a field’s visibility condition is not met, the field is <strong>not rendered</strong> anywhere in the form’s output code (there is no hidden input).</p>
+<p><a href="#field-validation">Validation</a> does not occur for hidden fields.</p>
+<p>If a field is visible when the form is initially displayed, but later becomes hidden before the form is submitted, any data entered into the field is <strong>not included</strong>. The <a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">form submission</a> instead stores an empty value (for non-required fields) or the field’s <strong>default value</strong> (for required fields).</p>
+</div>
+
+<h3 id="field-validation">Field validation</h3>
+<p>Validation rules restrict which values can be submitted into form fields. For example, validation can limit the maximum number of characters or the maximum numerical value a user can enter into a field.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Validation of empty values</strong></p>
+<p>The system skips the evaluation of validation rules for form fields that are submitted with an unfilled value. If you wish to enforce user input for a particular field, mark it as <strong>Required</strong> in the field’s <a href="#field-properties">properties dialog</a>.</p>
+</div>
+
+<p>To add validation rules to fields in Form Builder:</p>
+<ol type="1">
+<li>Select a field.</li>
+<li>Open the properties dialog by selecting configure ().</li>
+<li>Navigate down to the <strong>Validation</strong> section and select <strong>Add rule</strong>.</li>
+<li>Select a rule and <strong>Continue</strong>.
+<ul>
+<li>The available validation rules depend on the type of the form field.<br>
+</li>
+</ul>
+</li>
+<li>Set the validation criteria by filling in the rule’s properties, e.g., the maximum length of the text input.</li>
+<li>(Optional) Enter the <strong>Error message</strong> text.
+<ul>
+<li>This text is displayed to users when the field’s value does not meet the rule’s requirements. If you leave the message empty, a default one will be generated based on the rule’s current configuration. You can check the generated error message text in the list of applied rules after you <em>Save</em>.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> to apply the rule to the field.<br>
+</li>
+<li>Repeat the process if you wish to add multiple validation rules for a single field.
+<ul>
+<li>When adding multiple validation rules, be careful not to create contradictory validation criteria that would prevent users from entering any value.</li>
+</ul>
+</li>
+<li>Select <strong>Apply</strong> to save your changes.</li>
+</ol>
+<p>The added validation requirements are now evaluated whenever a user submits the form. If the input is not valid, the form submission fails and the error message text appears next to the field. The user can adjust the value and submit the form again.</p>
+<p>Validation only works for visible fields. Fields that are hidden as a result of their <a href="#field-visibility">visibility configuration</a> are not validated.</p>
+<h2 id="move-and-reorder-fields">Move and reorder fields</h2>
+<p>To change the order of existing fields or move them between different zones in the form layout:</p>
+<ol type="1">
+<li>Select a field in the form.</li>
+<li>Drag the field by the <em>handle</em> () or the header that appears when you select a field.</li>
+</ol>
+<h2 id="delete-fields">Delete fields</h2>
+<p>To delete fields from the form:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Removing fields from forms with existing submissions</strong></p>
+<p>Removing a field from a form with existing submissions also deletes all data the field gathered over its lifetime.</p>
+<p>If you wish to remove a field while preserving its data, you can set the field’s <a href="#field-visibility">visibility</a> to <strong>Hidden</strong>.</p>
+</div>
+
+<ol type="1">
+<li>Select the field you wish to remove.</li>
+<li>Select the delete (<i></i>) icon in the upper right.</li>
+<li>Confirm the removal via the popup dialog.</li>
+</ol>
+<h2 id="set-the-submit-button-text">Set the submit button text</h2>
+<p>Every form contains a button that allows users to submit the entered data. The submit button is positioned at the bottom of the form and cannot be moved.</p>
+<p></p>
+<p>The Form Builder allows editors to change the text of the submit button’s label:</p>
+<ol type="1">
+<li>Hover over the submit button at the bottom of the form.</li>
+<li>Open the button’s properties dialog by selecting configure ().</li>
+<li>Enter the desired text into the <strong>Submit button text</strong> property.</li>
+<li>Select <strong>Apply</strong> to save the change.</li>
+</ol>
+<h2 id="configure-form-properties-and-behavior">Configure form properties and behavior</h2>
+<p>After you create a form or when editing an existing form, you can define the following properties by selecting <strong>General</strong> in the options panel on the right:</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="1">
+<p>Property</p>
+</td>
+<td colspan="1">
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Form name</p>
+</td>
+<td>
+<p>Used in the administration and when <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">adding forms</a> to pages via the <strong>Forms</strong> widget.</p>
+<p>New forms have an automatically generated name based on the current date and time, for example: <em>Form (2022-12-02_12:00)</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name</p>
+</td>
+<td>
+<p>An identifier of the form. Used internally by the system and by developers.</p>
+<p>Changes of the form code name will break existing forms <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">placed onto pages</a> via the Form widget. You need to reselect the form in these widgets after the change.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Table name</p>
+</td>
+<td>
+<p>The database table storing the collected submissions. Used by developers.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Class name</p>
+</td>
+<td colspan="1">
+<p>A globally unique identifier of the form. Used by developers.</p>
+<p>The class name is updated automatically whenever the form’s code name is changed. Such changes break any existing <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">code files generated for the form</a>. Developers need to update or regenerate the code.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Overwrite existing contact information with submitted data</p>
+</td>
+<td colspan="1">
+<p>If selected, form submissions by known <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> update already collected contact information. If disabled, only empty contact attributes are filled.</p>
+</td>
+</tr>
+</table>
+
+<p>Select <strong>Save</strong> to confirm any changes.</p>
+<h2 id="actions-after-form-submission">Actions after form submission</h2>
+<p>There are several possible actions that can occur after a user submits a form on the live site – <em>Display text</em>, <em>Redirect to page</em>, <em>Redirect to URL</em>. The action is configured when <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">placing individual forms</a> onto a website channel page.</p>
+<h2 id="form-submission-notifications">Form submission notifications</h2>
+<p>The system can be configured to send notifications to selected administration users whenever a visitor on the live site submits a particular form. See <a href="/documentation/developers-and-admins/configuration/notifications#form-submission-notifications">Form submission notifications</a>.</p>
+<h2 id="automation-and-autoresponders">Automation and autoresponders</h2>
+<p>You can enable a basic form autoresponder or set up advanced email automation. This allows you to automatically send one or more email messages to every user who submits the form.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email field requirement</strong></p>
+<p>To send autoresponder emails or automated email follow-ups, the form must contain a field that allows users to submit their email address. The autoresponder can only be enabled if a form field is <a href="#Createandeditforms-ContactMapping">mapped</a> to the <strong>Email</strong> contact attribute in the <strong>Form Builder</strong>.</p>
+</div>
+
+<h3 id="autoresponders">Autoresponders</h3>
+<p>When editing a form in the <strong>Forms</strong> application, select <strong>Autoresponder</strong> in the options panel on the right. To send a simple autoresponder email, select one of the following <strong>Autoresponder</strong> options:</p>
+<ul>
+<li>
+<strong>Select email</strong> – sends an email prepared in an email channel application in the Xperience administration. This option is recommended for most scenarios. See <a href="/documentation/business-users/digital-marketing/emails">Emails</a> for more information.</li>
+<li>
+<strong>Custom</strong> – for scenarios that require advanced or dynamic autoresponder content. Sends a <a href="/documentation/developers-and-admins/digital-marketing-setup/custom-form-autoresponder-emails">custom autoresponder</a> email prepared by developers, with any required content, including values that the user entered into the form. Note that the system does not <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">track statistics</a> for custom form autoresponder emails.</li>
+</ul>
+<p></p>
+<p>Select <strong>Save</strong> to confirm any changes.</p>
+<h3 id="automation-processes">Automation processes</h3>
+<p>If you wish to set up a more advanced email scenario when a form is submitted, you can create an <a href="/documentation/business-users/digital-marketing/automation">automation process</a> in the <strong>Forms</strong> application via the <strong>Automation</strong> tab in the options panel on the right. This allows you to send a series of multiple emails, add waiting intervals, or send different emails based on conditions.</p>
+<p></p>
+<p>Once completed and enabled, the automation process is then triggered for any user who submits the form.</p>
+<h2 id="track-usage-of-forms">Track usage of forms</h2>
+<p>The Content reuse locator feature helps you track where each form is <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">displayed</a>. This can be useful if you are considering deleting a form or making significant changes, particularly if your project contains a large number of pages with forms.</p>
+<ol type="1">
+<li>Open the <strong>Forms</strong> application.
+<ul>
+<li>The <strong>In use</strong> column in the form listing indicates whether a form is displayed on at least one page.</li>
+</ul>
+</li>
+<li>Select the form you want to track.</li>
+<li>Navigate to the <strong>Used in</strong> tab.</li>
+</ol>
+<p>The tab displays a list of all pages that use this form in their <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder content</a> (via the <em>Form</em> widget). You can expand the <strong>Related items</strong> column for the listed pages to view any content items or pages that reference the given page and use the form indirectly.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tracking limitations</strong></p>
+<p>Form usage tracking does <strong>not include</strong> pages that <a href="/documentation/developers-and-admins/development/builders/page-builder/render-widgets-in-code">render</a> the form directly in their code.</p>
+<p><a href="/documentation/developers-and-admins/configuration/notifications#form-submission-notifications">Form submission notifications</a> set up for the form are also not covered by the tracking.</p>
+<p>To see a list of <a href="/documentation/business-users/digital-marketing/automation">automation processes</a> that are triggered by the form’s submission, switch to the <strong>Form Builder</strong> tab and select the <strong>Automation</strong> view mode.</p>
+</div>
+
+<h2 id="synchronize-forms">Synchronize forms</h2>
+<p>Xperience allows you to easily transfer forms and their <a href="#add-fields">field configuration</a> from one instance of Xperience by Kentico to another.</p>
+<p>Currently, form synchronization does <strong>not</strong> include:</p>
+<ul>
+<li><a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">Form submission data</a></li>
+<li>
+<a href="#autoresponders">Autoresponder settings</a> of the form</li>
+<li>
+<a href="#automation-processes">Automation processes</a> related to the form</li>
+<li><a href="/documentation/developers-and-admins/configuration/notifications#form-submission-notifications">Form submission notifications</a></li>
+<li>
+<a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#hide-featured-fields">Visibility configuration</a> of featured form fields</li>
+</ul>
+<p>For detailed information and instructions, see <a href="/documentation/business-users/content-sync">Content sync</a>.</p>
+<h2 id="segment-contacts-based-on-form-submissions">Segment contacts based on form submissions</h2>
+<p>You can use forms to segment your contacts. For example, you can build a <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> for visitors who have submitted the <em>Contact Us</em> form.</p>
+<p></p>
+
+</body>
+</html>

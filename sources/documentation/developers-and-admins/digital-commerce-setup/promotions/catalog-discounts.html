@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Catalog discounts</title>
+</head>
+<body>
+<p>Catalog discounts allow you to create custom promotion rules that apply discounts to products during <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation</a>. Catalog discounts are evaluated for each product in a shopping cart or order and automatically apply the best available discount.</p>
+<p>Use catalog discounts to implement:</p>
+<ul>
+<li>Percentage-based discounts (e.g., 10% off all coffees)</li>
+<li>Fixed amount discounts (e.g., $5 off selected products)</li>
+<li>Category-based promotions (e.g., discounts on all products in a category)</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Catalog discounts are for unit price discounts only</strong></p>
+<p>Catalog discounts are exclusively intended for <strong>unit price discounts</strong>. Performing other modifications inside custom promotion rules, such as adding extra items to the order or modifying the cart contents, may disrupt the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">calculation pipeline</a> and produce invalid results.</p>
+</div>
+
+<h2 id="promotion-types">Promotion types</h2>
+<p>The system supports the following types of promotions:</p>
+<ul>
+<li>
+<strong>Catalog discounts</strong> – Apply discounts to individual products. Each product can have at most one catalog promotion applied. The system automatically selects the promotion that provides the highest discount.</li>
+<li>
+<strong>Order discounts</strong> – Apply discounts to the entire order based on its contents (for example, percentage discounts for orders above given total price). See <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/order-discounts">Order discounts</a>.</li>
+</ul>
+<p>Both catalog and order discounts can optionally require <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/coupon-codes">coupon codes</a> for redemption. When configured with a coupon code, the promotion is only applied if the customer enters the matching code during checkout.</p>
+<h2 id="catalog-promotion-rule-overview">Catalog promotion rule overview</h2>
+<p>A <strong>promotion rule</strong> defines the logic for determining whether a catalog discount applies to a product and how to calculate the discount amount. You implement promotion rules as classes that inherit from <code>CatalogPromotionRule</code>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Terminology – Discounts vs. Promotions</strong></p>
+<p>In the administration interface, catalog discounts are managed under <strong>Promotions → Catalog discounts</strong>. However, in code, the related classes use “Promotion” in their names (e.g., <code>CatalogPromotionRule</code>, <code>CatalogPromotionCandidate</code>). This is because the underlying system uses a unified promotion framework.</p>
+</div>
+
+<h3 id="promotion-candidate">Promotion candidate</h3>
+<p>A <strong>promotion candidate</strong> represents a potential discount that could be applied to a product. When a promotion rule evaluates a product, it returns a <code>CatalogPromotionCandidate</code> containing the calculated discount amount. The <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation pipeline</a> collects all candidates and selects the best one.</p>
+<h3 id="promotion-rule-properties">Promotion rule properties</h3>
+<p>Promotion rules can define configurable properties that store managers set when creating promotions in the administration interface. Properties are defined in a separate class implementing <code>IPromotionRuleProperties</code> and are decorated with <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to generate the UI.</p>
+<h3 id="promotion-selection-logic">Promotion selection logic</h3>
+<p>When multiple catalog promotions could apply to a product, the system automatically selects the best promotion based on the following criteria:</p>
+<ol type="1">
+<li>The promotion with the highest <code>UnitPriceDiscountAmount</code> is selected.</li>
+<li>If two promotions have equal discount amounts, the most recently activated promotion takes precedence. This may in rare cases skew redemption statistics tracked in the admin UI.</li>
+</ol>
+<p>Catalog promotions are <strong>not stackable</strong>, only one catalog promotion can be applied per product.</p>
+<h2 id="create-catalog-promotion-rules">Create catalog promotion rules</h2>
+<p>Implementing a catalog promotion rule involves creating two components:</p>
+<ol type="1">
+<li>
+<strong>Properties class</strong> – Defines configurable settings that store managers can adjust in the administration interface (e.g., discount percentage, eligible categories). The properties class implements <code>IPromotionRuleProperties</code> or inherits from <code>CatalogPromotionRuleProperties</code>.</li>
+<li>
+<strong>Logic class</strong> – Contains the rule’s evaluation logic to determine if a product is eligible for the discount and calculates the discount amount. The logic class inherits from <code>CatalogPromotionRuleBase</code> or <code>CatalogPromotionRule</code>.</li>
+</ol>
+<p>These two components work together: the properties class stores the configuration, and the logic class uses those configured values to evaluate products during price calculation.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Sample implementation</strong></p>
+<p>See <strong>DancingGoatCatalogPromotionRule.cs</strong> in the Dancing Goat <a href="/documentation/developers-and-admins/installation#available-project-templates">project template</a> for a sample implementation of a catalog discount rule.</p>
+</div>
+
+<h3 id="define-promotion-rule-properties">Define promotion rule properties</h3>
+<p>The system provides <code>CatalogPromotionRuleProperties</code> as a base class with common properties already defined:</p>
+<ul>
+<li>
+<strong>DiscountValueType</strong> – Dropdown to select percentage or fixed discount</li>
+<li>
+<strong>DiscountValue</strong> – Decimal input for the discount amount</li>
+</ul>
+<p>You can inherit from this base class to include these standard fields and add your own custom properties. Use <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> annotations to generate the input fields for each property.</p>
+<p>The following example assumes a <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">product catalog</a> modeled using <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomies</a>. It allows store admins to apply the promotion broadly per category:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Promotion rule properties extending the base class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Properties for configuring a catalog discount based on product category.
+/// Extends &lt;see cref="CatalogPromotionRuleProperties"/&gt; to include standard discount fields.
+/// &lt;/summary&gt;
+public class CatalogDiscountBasedOnProductCategoryProperties
+    : CatalogPromotionRuleProperties
+{
+    // DiscountValue and DiscountValueType properties
+    // are inherited from CatalogPromotionRuleProperties
+
+    /// &lt;summary&gt;
+    /// Product categories eligible for the discount.
+    /// &lt;/summary&gt;
+    [TagSelectorComponent(
+        CategoryService.PRODUCT_CATEGORY_TAXONOMY,
+        Label = "Product categories",
+        Order = 1)]
+    public IEnumerable&lt;TagReference&gt; ProductCategories { get; set; } = Enumerable.Empty&lt;TagReference&gt;();
+}</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The base class properties use negative <code>Order</code> values (e.g., -90, -80) to ensure they appear at the top of the form. Keep this in mind when positioning custom properties.</p>
+</div>
+
+<p>Alternatively, you can directly implement <code>IPromotionRuleProperties</code> if you need full control over all configuration properties used by the rule.</p>
+<h3 id="implement-the-promotion-rule">Implement the promotion rule</h3>
+<p>The framework provides two base classes for catalog promotion rules:</p>
+<ul>
+<li>
+<strong>CatalogPromotionRule</strong> – Use when your properties class inherits from <code>CatalogPromotionRuleProperties</code>. Provides built-in helper methods that work with the base properties.</li>
+<li>
+<strong>CatalogPromotionRuleBase</strong> – Use when you need fully custom properties implementing <code>IPromotionRuleProperties</code> directly. You must implement all discount calculation logic yourself.</li>
+</ul>
+<p>Both base classes use the same generic type parameters:</p>
+<ol type="1">
+<li>
+<code>TPromotionRuleProperties</code> – The rule’s <a href="#define-promotion-rule-properties">properties class</a>. Must inherit from <code>CatalogPromotionRuleProperties</code> for <code>CatalogPromotionRule</code>, or implement <code>IPromotionRuleProperties</code> for <code>CatalogPromotionRuleBase</code>.</li>
+<li>
+<code>TProductIdentifier</code> – The product identifier type – <code>ProductIdentifier</code> or a <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization#extend-data-transfer-objects">derived type</a>.</li>
+<li>
+<code>TPriceCalculationRequest</code> – The price calculation request type.</li>
+<li>
+<code>TPriceCalculationResult</code> – The price calculation result type.</li>
+</ol>
+<p><a href="#register-the-promotion-rule">Register</a> the rule using <code>RegisterPromotionRuleAttribute</code> with the following parameters:</p>
+<ol type="1">
+<li>A unique string identifier for the rule.</li>
+<li>
+<code>PromotionType.Catalog</code> to indicate this is a catalog promotion.</li>
+<li>A display name shown in the administration interface.</li>
+</ol>
+<p>When your properties class inherits from <code>CatalogPromotionRuleProperties</code>, use <code>CatalogPromotionRule</code> to access built-in helper methods:</p>
+<ul>
+<li>
+<code>GetDiscountAmount(unitPrice)</code> – Calculates the discount based on <code>DiscountValueType</code> and <code>DiscountValue</code> from the base properties. Handles both percentage and fixed discounts, ensuring the discount never exceeds the unit price.</li>
+<li>
+<code>GetDiscountValueLabel()</code> – Returns a formatted label for display (e.g., “10%” or “$5.00”).</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Catalog promotion rule with built-in helpers</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System.Linq;
+
+using CMS.Commerce;
+
+using Kentico.Xperience.Admin.DigitalCommerce;
+
+using Codesamples.Commerce;
+
+/// &lt;summary&gt;
+/// Catalog promotion rule that applies discounts to products in selected categories.
+/// Uses custom &lt;see cref="ProductDataWithCategory"/&gt; through custom result type.
+/// &lt;/summary&gt;
+public class CatalogDiscountBasedOnProductCategoryPromotionRule
+    : CatalogPromotionRule&lt;CatalogDiscountBasedOnProductCategoryProperties,
+                           ProductIdentifier,
+                           CodesamplesPriceCalculationRequest,
+                           CodesamplesPriceCalculationResult&gt;
+{
+    public override CatalogPromotionCandidate? GetPromotionCandidate(
+        ProductIdentifier productIdentifier,
+        IPriceCalculationData&lt;CodesamplesPriceCalculationRequest, CodesamplesPriceCalculationResult&gt; calculationData)
+    {
+        // Gets the result item for the current product
+        var resultItem = calculationData.Result.Items
+            .FirstOrDefault(i =&gt; i.ProductIdentifier == productIdentifier);
+
+        if (resultItem?.ProductData is not CodesamplesProductData codesamplesProduct)
+        {
+            return null;
+        }
+
+        // Checks if the product belongs to any of the
+        // categories selected when creating the rule
+        // Compare by Identifier (Guid) instead of TagReference equality
+        bool isInEligibleCategory = codesamplesProduct.Categories
+            .Intersect(Properties.ProductCategories)
+            .Any();
+
+        if (!isInEligibleCategory)
+        {
+            return null;
+        }
+
+        // Calculates the discount using the built-in helper method
+        // Handles both percentage and fixed discounts based on DiscountValueType
+        decimal discountAmount = GetDiscountAmount(codesamplesProduct.UnitPrice);
+
+        return new CatalogPromotionCandidate
+        {
+            UnitPriceDiscountAmount = discountAmount
+        };
+    }
+}</code></pre>
+</div>
+
+<p>Note that the rule implementation uses <code>CodeSamplesPriceCalculationResult</code> to expose the product category data via a <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization#extend-data-transfer-objects">customized</a> <code>ProductData</code> object:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Customized data objects</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4"><code>// Extended product data that includes category information for promotion evaluation
+public record CodesamplesProductData : ProductData
+{
+    public IEnumerable&lt;TagReference&gt; Categories { get; init; } = [];
+}
+
+// Price calculation result item enforcing usage of the modified CodesamplesProductData
+public sealed class CodeSamplesPriceCalculationResultItem
+    : PriceCalculationResultItemBase&lt;ProductIdentifier, CodesamplesProductData&gt;
+{
+}
+
+/// Price calculation result for code samples.
+public class CodeSamplesPriceCalculationResult
+    : PriceCalculationResultBase&lt;CodeSamplesPriceCalculationResultItem&gt;
+{
+}</code></pre>
+</div>
+
+<p>After implementing and registering a catalog promotion rule:</p>
+<ol type="1">
+<li>The promotion rule appears in the administration interface when <a href="/documentation/business-users/manage-commerce-stores">creating new catalog discounts</a>.</li>
+<li>Store managers can configure the promotion and set activation dates.</li>
+<li>Active promotions are automatically evaluated during price calculation.</li>
+<li>The best promotion is applied to each eligible product.</li>
+</ol>
+<h3 id="register-the-promotion-rule">Register the promotion rule</h3>
+<p>Use the <code>RegisterPromotionRuleAttribute</code> assembly attribute to register your promotion rule in the system. Without registration, the rule will not appear in the administration interface.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register a catalog promotion rule</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>[assembly: RegisterPromotionRule&lt;CatalogDiscountBasedOnProductCategoryPromotionRule&gt;(
+    identifier: "CatalogDiscountBasedOnProductCategory",
+    promotionType: PromotionType.Catalog,
+    name: "Discount based on product category")]</code></pre>
+</div>
+
+<h3 id="filter-promotion-applicability">Filter promotion applicability</h3>
+<p>Override the <code>IsApplicable</code> method to add high-level conditions that determine whether the promotion should be evaluated at all. This method runs <strong>once per promotion</strong> before iterating through products, making it useful for performance optimization when you can skip the entire promotion early.</p>
+<p>The evaluation pipeline works as follows:</p>
+<ol type="1">
+<li>
+<strong>Get active promotions</strong> – The system retrieves all active catalog promotions.</li>
+<li>
+<strong>Check IsApplicable</strong> – For each promotion, <code>IsApplicable</code> is called once. If it returns <code>false</code>, the promotion is skipped entirely.</li>
+<li>
+<strong>Evaluate products</strong> – For promotions that pass, <code>GetPromotionCandidate</code> is called for each product in the cart.</li>
+<li>
+<strong>Select best promotion</strong> – The system selects the promotion with the highest discount for each product.</li>
+</ol>
+<p>Use <code>IsApplicable</code> for checks that apply to the entire promotion context (not individual products). For example, to check if the customer is registered as a <a href="/documentation/developers-and-admins/development/registration-and-authentication">member</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Check if a customer is a registered member</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;CustomerInfo&gt; customerInfoProvider;
+
+    public CatalogDiscountBasedOnProductCategoryPromotionRule(
+        IInfoProvider&lt;CustomerInfo&gt; customerInfoProvider)
+    {
+        this.customerInfoProvider = customerInfoProvider;
+    }
+
+    public override async Task&lt;bool&gt; IsApplicable(
+        IPriceCalculationData&lt;PriceCalculationRequest, PriceCalculationResult&gt; calculationData,
+        CancellationToken cancellationToken)
+    {
+        // Gets the customer associated with the order
+        CustomerInfo customer = await customerInfoProvider.GetAsync(
+            calculationData.Request.CustomerId, cancellationToken);
+
+        // Checks if a mapping between the customer and a member exists
+        bool customerRegistered = customer?.CustomerMemberID &gt; 0;
+
+        return customerRegistered;
+    }</code></pre>
+</div>
+
+<h2 id="access-promotion-data-in-calculation-results">Access promotion data in calculation results</h2>
+<p>After price calculation, you can access promotion information from the result to display discount details to customers or for reporting purposes.</p>
+<p>Promotion candidates are stored in the <code>PromotionData.PromotionCandidates</code> collection on each result item. The collection contains all evaluated promotions, with the <code>Applied</code> property indicating which promotion was selected:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Access promotion data from calculation results</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    public async Task DisplayPromotionInfo(
+        PriceCalculationRequest request,
+        CancellationToken cancellationToken)
+    {
+        // Calculates the price
+        PriceCalculationResult calculationResult =
+            await priceCalculationService.Calculate(request, cancellationToken);
+
+        // Gets the promotion applied per item
+        foreach (var item in calculationResult.Items)
+        {
+            // Finds the applied catalog promotion (if any)
+            var appliedPromotion = item.PromotionData?.CatalogPromotionCandidates
+                .FirstOrDefault(p =&gt; p.Applied);
+
+            if (appliedPromotion != null)
+            {
+                // Access promotion details via the PromotionCandidate property
+                var candidate = appliedPromotion.PromotionCandidate;
+                decimal discountAmount = candidate.UnitPriceDiscountAmount;
+
+                // Work with the data...
+            }
+        }
+    }</code></pre>
+</div>
+
+<h2 id="extend-promotion-candidate-objects">Extend promotion candidate objects</h2>
+<p>You can extend <code>CatalogPromotionCandidate</code> to include additional data needed for display or business logic. The <a href="/documentation/developers-and-admins/installation#available-project-templates">Dancing Goat</a> sample project uses this approach with <code>DancingGoatCatalogPromotionCandidate</code> to store a display label for showing discount information to customers.</p>
+<p>To access the custom promotion candidate in calculation results, cast the <code>PromotionCandidate</code> property:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Access custom promotion candidate</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    public async Task ProcessCustomPromotionCandidate(
+        PriceCalculationRequest request,
+        CancellationToken cancellationToken)
+    {
+        // Calculates the price
+        PriceCalculationResult calculationResult
+            = await priceCalculationService.Calculate(request, cancellationToken);
+
+        foreach (PriceCalculationResultItem item in calculationResult.Items)
+        {
+            IPriceCalculationPromotionCandidate&lt;CatalogPromotionCandidate&gt;? appliedPromotion = item.PromotionData?.CatalogPromotionCandidates
+                .FirstOrDefault(p =&gt; p.Applied);
+
+            // Checks if the candidate is a custom 'DisplayableCatalogPromotionCandidate'
+            // and works with the results
+            if (appliedPromotion?.PromotionCandidate
+                    is DisplayableCatalogPromotionCandidate displayable)
+            {
+                string label = displayable.DisplayLabel;
+                // Process the label...
+            }
+        }
+    }</code></pre>
+</div>
+
+
+</body>
+</html>

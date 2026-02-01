@@ -1,0 +1,825 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Configuration keys</title>
+</head>
+<body>
+<p> In addition to the settings available in the Xperience administration, the system’s functionality can be adjusted via low-level application settings. These application settings are managed using ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a>.</p>
+<p>By default, Xperience projects contain an <strong>appsettings.json</strong> file for this purpose. Unless otherwise specified, Xperience application setting keys are added to the first level of the configuration hierarchy (i.e., directly under the root JSON object in the <em>appsettings.json</em> file).</p>
+<p>The <em>appsettings.json</em> file also contains the database connection string.</p>
+<p>You can use multiple application settings files to configure different values for <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects#application-settings-for-different-saas-deployment-environments">each environment</a>.</p>
+<p>The following configuration categories are available:</p>
+<ul>
+<li><a href="#general-settings">General settings</a></li>
+<li><a href="#continuous-integration-and-deployment-settings">Continuous Integration and Deployment settings</a></li>
+<li><a href="#contact-management-settings">Contact management settings</a></li>
+<li><a href="#headless-api-settings">Headless API settings</a></li>
+<li><a href="#connection-string">Connection string</a></li>
+<li><a href="#other-settings">Other settings</a></li>
+</ul>
+<h2 id="general-settings">General settings</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Default</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMSForbiddenURLValues</p>
+</td>
+<td>
+<p>Specifies characters that are forbidden in page URLs (see <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">content tree-based routing</a>). Forbidden characters are automatically replaced by the character specified in the <strong>Forbidden characters replacement</strong> setting in <strong>Settings → URLs and SEO</strong>.</p>
+<p>By default, the following characters are forbidden:</p>
+<p>\/:*?“&lt;&gt;|&amp;%.’#[]+=„“ and the space and tab characters.</p>
+<p>If you add this key, its value overrides the default forbidden character set. You can either allow some of the forbidden characters or add new ones.</p>
+<p>We recommend keeping the default characters forbidden, since they may prevent URLs from working correctly.</p>
+<p>This key cannot be used to <a href="/documentation/developers-and-admins/development/routing/configure-forbidden-url-characters#allow-the-slash-character-in-vanity-urls">configure</a> the support for the slash character (‘/’) in <a href="/documentation/business-users/website-content/manage-page-urls">vanity URLs</a>.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSForbiddenURLValues": "$\\/:?&amp;quot;&amp;lt;&amp;gt;|&amp;amp;%.&amp;apos;#[] ="
+
+</code></pre>
+</div>
+</div>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSHashStringSalt</p>
+</td>
+<td>
+<p>Sets the <a href="https://en.wikipedia.org/wiki/Salt_%28cryptography%29" target="_blank">salt</a> value the system uses in hash functions, for example when creating <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">macro signatures</a>. If a specific hash salt value is not assigned during the installation of a new Xperience project, the key is set to a random <a href="https://en.wikipedia.org/wiki/GUID" target="_blank">GUID</a>.</p>
+<p>If you plan to deploy your project to the<a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment"> SaaS environment</a>, use the hash salt value provided in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</p>
+<p><strong>Note</strong>: Changing the hash salt on an instance with defined content may prevent macros from resolving correctly. If you encounter such problems, you must <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">re-sign macros</a> (the system then creates the hashes using the new salt).</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSHashStringSalt": "eb2d6fac-8b9e-427c-b98b-3c562dffbb35",
+
+</code></pre>
+</div>
+</div>
+</td>
+<td>
+<p>Random GUID</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSImageExtensions</p>
+</td>
+<td>
+<p>Specifies the file extensions that the system recognizes as image files. For example, files of these types are offered in the <em>Insert image</em> dialog of the <a href="/documentation/business-users/rich-text-editor">rich text editor</a>.</p>
+<p>Note: If this key is not configured, the system attempts to automatically detect and support any media image file type. Adding the key disables the automatic detection, and only the explicitly listed file types are supported as images.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSImageExtensions": "bmp;gif;ico;png;wmf;jpg;jpeg;tiff;tif;webp;svg;avif"
+
+</code></pre>
+</div>
+</div>
+</td>
+<td>
+<p>bmp;gif;ico;png;<br>
+wmf;jpg;jpeg;tiff;<br>
+tif;webp;svg;avif;<br>
+jfif;jfi;jif;jpe;dib</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSLogKeepPercent</p>
+</td>
+<td>
+<p>The size of the system’s <a href="/documentation/developers-and-admins/configuration/event-log">event log</a> is limited by the <strong>Settings → System → Event log size</strong> setting. This key determines the extra percentage of events that is retained in the log over the specified limit. This percentage of the oldest events is deleted by batch when the percentage is exceeded.</p>
+<p>For example, if the event log size is 1000 and the <em>CMSLogKeepPercent</em> is 20, the event log can contain up to 1200 events, and the 200 oldest events are deleted when the log size reaches 1201.</p>
+<p>If the key is set to 0, the event log retains the exact number of records specified by the limit.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSLogKeepPercent": 20,
+
+</code></pre>
+</div>
+</div>
+</td>
+<td>
+<p>10</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSBuilderScriptsIncludeJQuery</p>
+</td>
+<td>
+<p>Determines whether the system links the jQuery 3.5.1 library to live site pages containing <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> content or <a href="/documentation/business-users/digital-marketing/forms">forms</a>.</p>
+<div>
+<div>
+<p><em>jQuery</em> is considered deprecated and will be phased out completely in one of the future major releases. The library will not be updated, even in the case of new vulnerability disclosures. Projects with custom components that rely on the library should consider referencing an external implementation to prevent possible issues in the future.</p>
+</div>
+</div>
+<p>Set to <em>true</em> if you want to include jQuery on pages with Page Builder and Form Builder content. See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components#link-jquery-as-part-of-builder-scripts">Bundle static assets of builder components</a>.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+    "CMSBuilderScriptsIncludeJQuery": true
+} 
+</code></pre>
+</div>
+</div>
+</td>
+<td>
+<p>false</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSEnableAira</p>
+</td>
+<td>
+<p>Enables <a href="/documentation/business-users/aira">AIRA</a> globally. By default, AIRA is enabled.</p>
+<p>Set to <em>false</em> to <a href="/documentation/developers-and-admins/configuration/aira-configuration#disable-aira-globally">disable AIRA</a> globally in your project.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+    "CMSEnableAira": false
+} 
+</code></pre>
+</div>
+</div>
+</td>
+<td>
+<p>true</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceConfigurationkeys-KeysTop">&gt; Back to list of configuration key categories</a></p>
+<h2 id="continuous-integration-and-deployment-settings">Continuous Integration and Deployment settings</h2>
+<p>You can use the following keys to configure the <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> and <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> features:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td colspan="1">
+<p>Default</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>CMSCIEncoding</p>
+</td>
+<td colspan="1">
+<p>Sets the character encoding used when the CI/CD features generate non-binary files in the repository folder. The key supports values matching the encoding names listed in the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding" target="_blank">Encoding Class</a> article.</p>
+<p>Changing the value of the <em>CMSCIEncoding</em> key does not update the encoding type of existing files in the repository folder. To fully update the encoding of the repository content, you need to:</p>
+<ul>
+<li>Run complete serialization for all objects.</li>
+<li>Manually update the encoding type of your repository configuration file.</li>
+</ul>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSCIEncoding": "utf-16",
+
+</code></pre>
+</div>
+</div>
+</td>
+<td colspan="1">
+<p>utf-8</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>CMSCIRepositoryPath</p>
+</td>
+<td colspan="1">
+<p>Sets the location of the <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> file repository root folder. The key’s value must be an absolute or relative path of a folder on a local drive, or a network location for which the application has sufficient permissions.</p>
+<p>The specified location is used when serializing object data to the file system and when restoring data back to the database. The key also allows you to set a shared Continuous Integration repository when developing multiple projects with the same database.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSCIRepositoryPath": "C:\\ExternalSourceControl\\CIRepository",
+
+</code></pre>
+</div>
+</div>
+</td>
+<td colspan="1">
+<p>App_Data\CIRepository</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceConfigurationkeys-KeysTop">&gt; Back to list of configuration key categories</a></p>
+<h2 id="contact-management-settings">Contact management settings</h2>
+<p>By adding the following keys, you can configure the behavior of <a href="/documentation/business-users/digital-marketing/contact-management">contact management</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td colspan="1">
+<p>Default</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>CMSProcessContactActionsInterval</p>
+</td>
+<td colspan="1">
+<p>Sets the interval (in seconds) in which contact data and activities are batch processed by the system. Consider raising the interval if your system processes a large number of activities.</p>
+<p>The interval affects the following:</p>
+<ul>
+<li>How often the application saves logged activities and contact detail updates from the memory into the database.</li>
+<li>How often the system recalculates data that could be affected by activities and contact updates, such as contact groups.</li>
+</ul>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSProcessContactActionsInterval": 30,
+
+</code></pre>
+</div>
+</div>
+</td>
+<td colspan="1">
+<p>10</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>CMSCreateContactActionsLogWorker</p>
+</td>
+<td colspan="1">
+<p>If enabled, all applications in <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">multi-instance environments</a> recalculate contact groups.</p>
+<p>If you wish to improve performance, you can set this key to <em>false</em> for one or more of your instances, and the recalculation will be disabled for them.</p>
+<p><strong>Note</strong>: If you set the key value to <em>false</em> for all of your application instances, the recalculation will be disabled completely.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSCreateContactActionsLogWorker": false,
+
+</code></pre>
+</div>
+</div>
+</td>
+<td colspan="1">
+<p>true</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceConfigurationkeys-KeysTop">&gt; Back to list of configuration key categories</a></p>
+<h2 id="headless-api-settings">Headless API settings</h2>
+<p>The following keys configure the behavior of the GraphQL API and Tracking API for all <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a>.</p>
+<p>The configuration keys for the headless API must be placed under the <code>CMSHeadless</code> section in the configuration hierarchy.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Headless API configuration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+  ...
+
+  "CMSHeadless": {
+    "AllowIntrospection": true,
+    "GraphQlEndpointPath": "/api",
+    "Caching": {
+      "AbsoluteExpiration": "360"
+    }
+  }
+}
+</code></pre>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Default</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Enable</p>
+</td>
+<td>
+<p>Specifies whether headless channel endpoints are enabled (both <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">GraphQL API</a> and <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">Tracking API</a> endpoints).</p>
+</td>
+<td>
+<p>true</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EnableTracking</p>
+</td>
+<td>
+<p>Specifies whether <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">Tracking API</a> endpoints are enabled. Allows you to disable the tracking API while keeping the GraphQL API enabled. The default value is <em>true</em>.</p>
+</td>
+<td>
+<p>true</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EnableComplexity</p>
+</td>
+<td>
+<p>Specifies whether <a href="https://typegraphql.com/docs/complexity.html" target="_blank">complexity analysis</a> is enabled.</p>
+</td>
+<td>
+<p>true</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EnableUnionQueryOptimization</p>
+</td>
+<td>
+<p>Specifies whether performance optimizations are enabled for GraphQL queries that retrieve data with fields linking to a large number of possible content types (e.g. fields with the <em>Pages and reusable content data</em> type). This prevents timeout errors for queries that load data with a very large number of linked content types.</p>
+<p>The performance gains vary based on the structure of your content model. If you are not satisfied with the performance of your GraphQL queries (e.g., when using a very simple content model), you can try disabling the performance optimizations by setting the key to <em>false</em>.</p>
+</td>
+<td>
+<p>true</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MaxFieldCycleDepth</p>
+</td>
+<td>
+<p>Specifies the maximum allowed depth of field cycles in a GraphQL query.</p>
+</td>
+<td>
+<p>5</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>AllowIntrospection</p>
+</td>
+<td>
+<p>Specifies whether <a href="https://graphql.org/learn/introspection/" target="_blank">GraphQL introspection</a> is enabled (<code>__schema</code> queries and GUI tools for exploring the schema).</p>
+</td>
+<td>
+<p>false</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GraphQlEndpointPath</p>
+</td>
+<td>
+<p>Specifies the slug used in headless channel GraphQL endpoint URLs. Must include the leading slash (‘<em>/</em>’).</p>
+</td>
+<td>
+<p>/graphql</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CorsAllowedOrigins</p>
+</td>
+<td>
+<p>Specifies domains that are allowed origins for <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank">CORS</a> (Cross-Origin Resource Sharing). See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content#cross-origin-resource-sharing">Retrieve headless content</a> to learn more.</p>
+<p>Note: We recommend configuring allowed origins for CORS in the <strong>Settings</strong> application within the Xperience administration, via the <strong>Content → Headless → Allowed origins</strong> setting. The setting overrides any values set in your application’s configuration file or startup options.</p>
+</td>
+<td>
+<p>“”</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CorsAllowedHeaders</p>
+</td>
+<td>
+<p>Indicates which HTTP headers are allowed for content retrieval requests. If not set, all headers are allowed by default. See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content#cross-origin-resource-sharing">Retrieve headless content</a> to learn more.</p>
+</td>
+<td>
+<p>All headers</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Caching</p>
+</td>
+<td>
+<p>Contains options which allow you to customize caching behavior for headless content. The default values provide optimal caching performance for most projects.</p>
+<ul>
+<li>
+<code>Enable</code> – a boolean value that specifies whether caching is enabled. The default value is <em>true</em>.</li>
+<li>
+<code>UseRequestCacheControlHeaders</code> – a boolean property that specifies whether caching respects the <em>Cache-Control</em> header of individual requests. The default value is <em>true</em>.</li>
+<li>
+<code>AddResponseCacheControlHeaders</code> – a boolean property that specifies whether caching sets the <em>Cache-Control</em> response header. The default value is <em>true</em>.</li>
+<li>
+<code>UseCacheDependencies</code> – a boolean property that specifies whether caching uses cache dependencies to flush the cache when data in a cached response changes. The default value is <em>true</em>.</li>
+<li>
+<code>AbsoluteExpiration</code> – specifies the maximum expiration time for a cache entry in minutes. The default value is 12 hours.</li>
+<li>
+<code>SlidingExpiration</code> – specifies a sliding expiration date for cache entries in minutes. Cannot exceed the value of <code>AbsoluteExpiration</code>. The default value is 1 hour.</li>
+<li>
+<code>SizeLimit</code> – maximum size for in-memory cache in bytes. The default value is 100 megabytes.</li>
+</ul>
+</td>
+<td>
+<p>See Description</p>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceConfigurationkeys-KeysTop">&gt; Back to list of configuration key categories</a></p>
+<h2 id="connection-string">Connection string</h2>
+<p>The database used by Xperience is specified by the <strong>CMSConnectionString</strong> connection string.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  ...
+  "ConnectionStrings": {
+    "CMSConnectionString": "Data Source=myserver;Initial Catalog=Xperience;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;" },
+  ...
+}
+
+</code></pre>
+</div>
+
+<h2 id="other-settings">Other settings</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Default</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>AdminRedirectOptions</p>
+</td>
+<td>
+<p>Used when configuring a dedicated <a href="/documentation/developers-and-admins/configuration/administration-domain-configuration#set-up-an-administration-domain-redirect">administration domain</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAdminClientModuleSettings</p>
+</td>
+<td>
+<p>Configures the client module in the Xperience web application. See section <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development#add-the-boilerplate-to-an-xperience-project">Add the boilerplate to an Xperience project</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSDeleteTemporaryUploadFilesOlderThan</p>
+</td>
+<td>
+<p>Sets the interval (in hours) at which the system deletes the contents of the temporary folder that stores files uploaded through the <em>Upload file</em> <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components#configure-the-upload-file-component">component</a> in Form Builder. See section <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components#protect-against-denial-of-service">Protect against Denial of Service</a> for more information.</p>
+</td>
+<td>
+<p>2</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSPhysicalFilesCacheMinutes</p>
+</td>
+<td>
+<p>Sets client cache expiration time (in minutes) for physical files served by Xperience through the <em>GetResource</em> handler. See <a href="/documentation/developers-and-admins/development/caching/file-caching">File caching</a> for more information.</p>
+</td>
+<td>
+<p>10 080<br>
+(1 week)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSStorageProviderAssembly</p>
+</td>
+<td>
+<p>Configures the assembly name of a <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/custom-file-system-providers">custom file system provider</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAzureAccountName, CMSAzureSharedKey</p>
+</td>
+<td>
+<p>Specifies the account name and the primary access key for Azure Blob storage. Used in the process of <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#azure-blob-storage-for-private-cloud-deployments">mapping</a> parts of the file system to Azure Blob storage when deploying to <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAzureTempPath, CMSAzureCachePath, CMSAzureBlobEndPoint, CMSAzurePublicContainer, CMSDownloadBlobTimeout</p>
+</td>
+<td>
+<p>Keys used for <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#optional-application-settings-for-azure-storage">optional application settings for Azure storage</a>. Applicable only for <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud deployments</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>WebsiteChannelDomains</p>
+</td>
+<td>
+<p>Configures <a href="/documentation/developers-and-admins/configuration/website-channel-management#domain-aliases-and-environment-specific-domains">domain overrides</a> for website channels when using <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>EmailChannelDomains</p>
+</td>
+<td>
+<p>Configures domain overrides for <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-domains-in-private-cloud-environments">email channels</a> when using <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>HeadlessChannelUrls</p>
+</td>
+<td>
+<p>Configures <a href="/documentation/developers-and-admins/configuration/headless-channel-management#configure-preview-url-overrides">URL overrides</a> for headless channels.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>SystemSmtpOptions</p>
+</td>
+<td>
+<p>Used to configure SMTP server for system emails and notifications that do not belong under a specific email channel. Contains the <code>Server</code> option with nested options <code>Host</code>, <code>Port</code>, <code>Username</code>, <code>Password</code> and optional encoding options. See <a href="/documentation/developers-and-admins/configuration/email-configuration#smtp-servers">SMTP servers</a> for details and for information about configuration of specific email channels.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>SmtpOptions</p>
+</td>
+<td>
+<p>Used for setting the fallback SMTP configuration for system emails, notifications and and all email channels without their own dedicated configuration. Contains the <code>Server</code> option with nested options <code>Host</code>, <code>Port</code>, <code>Username</code>, <code>Password</code> and optional encoding options. See <a href="/documentation/developers-and-admins/configuration/email-configuration#smtp-servers">SMTP servers</a> for details and for information about configuration of specific email channels.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>SystemSendGridClientOptions</p>
+</td>
+<td>
+<p>Used for configuration of system emails and notification that don’t belong to a specific channel when using <a href="/documentation/developers-and-admins/configuration/email-configuration#self-managed-sendgrid-integration">SendGrid integration for private cloud environments</a>. You can configure SendGrid for other email channels in a similar way.</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>SystemEmailOptions</p>
+</td>
+<td>
+<p>Configures the <a href="/documentation/developers-and-admins/configuration/email-configuration#global-sending-domain-for-system-emails">global sending domain for system emails</a>, i.e. sending domain for all notications and other system emails that are not created under a specific email channel.</p>
+<p>The specified domain is used when sending system emails and notifications if only the local part of the sender address is set (e.g., via the <strong>Notifications</strong> application).</p>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<p>BouncedEmailsGlobalOptions</p>
+</td>
+<td>
+<p>Contains the <code>SoftBounceLimit</code> option that limits the number of soft bounces allowed before an email address is excluded when sending emails to any recipient list. Used when setting up <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">email tracking</a>. Applicable only if you send emails using an SMTP server. See section <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking#smtp-server">SMTP server</a> for information about configuration of <code>BouncedEmailsOptions</code> for every email channel.</p>
+</td>
+<td>
+</td>
+</tr>
+</table>
+
+<p><a href="#ReferenceConfigurationkeys-KeysTop">&gt; Back to list of configuration key categories</a></p>
+
+</body>
+</html>

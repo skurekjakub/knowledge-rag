@@ -1,0 +1,544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Set up content tree-based routing</title>
+</head>
+<body>
+<p>Content tree-based routing handles URL generation and routing for pages in website channels. A URL is granted to pages upon creation based on their name and position in the content tree. For a detailed overview, see <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">Content tree-based routing</a>.</p>
+<p>This page describes the steps needed to fully integrate the routing feature into your project.</p>
+<p>The routing scheme requires <a href="/documentation/developers-and-admins/development/content-types">content types</a> for pages with the <em>Include in routing</em> option set. The option indicates that you want pages created from this content type to be accessible using a URL. When used with content tree-based routing, the system automatically generates URLs for new pages.</p>
+<p>When handling content types with the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> feature enabled, there are a couple of additional prerequisites to keep in mind when setting up the routing scheme. See <a href="#Setupcontenttreebasedrouting-PageBuilder">Handle Page Builder-enabled content types</a>.</p>
+<h2 id="set-up-routing"> Set up routing</h2>
+<p>When developing views for pages you need to provide your own controller together with a view model. This grants you full control over the data and processing logic. You can execute arbitrary code within the controller, pass additional data required by the view, or switch between different views as needed.</p>
+<p>When configuring routing, you need to:</p>
+<ol type="1">
+<li>
+<a href="#Setupcontenttreebasedrouting-RoutingOverview">Decide which content types and sections of the content tree will be managed using your route</a>.</li>
+<li>
+<a href="#Setupcontenttreebasedrouting-CustomRouteImp">Implement the controller logic</a> (together with view models and views).</li>
+<li>
+<a href="#Setupcontenttreebasedrouting-RoutingOverview">Register the controllers in the system together with the routes for which they are responsible</a>.</li>
+</ol>
+<h3 id="page-routing-overview"> Page routing overview</h3>
+<p>When a request targets the URL of a page in the content tree of a website channel, the system reroutes the request to a matching custom controller. A matching controller is found based on the content type and tree path (location in the content tree) of the requested page. You provide this information using the <code>RegisterWebPageRoute</code> assembly attribute (<code>Kentico.Content.Web.Mvc.Routing</code> namespace). </p>
+<p>The <code>RegisterWebPageRoute</code> attribute requires the following parameters:</p>
+<ul>
+<li>
+<strong>ContentTypeName</strong> – the code name of the content type this controller handles. The code name is in the <em>namespace.codename</em> format. Both are set during content type creation. <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Generated classes</a> expose the class name under the <code>CONTENT_TYPE_NAME</code> constant.</li>
+<li>
+<strong>MarkedType</strong> – the <code>System.Type</code> of the controller assigned to handling the requests for the content type.</li>
+</ul>
+<p>When a controller is registered using only these required parameters, the system invokes the controller’s <code>Index</code> action in response to all requests matched with pages of the supplied content type.</p>
+<p>To further tailor the response, you can provide additional parameters when registering the route:</p>
+<ul>
+<li>
+<strong>Path</strong> – the tree path of an item in the content tree for which you want to use this controller. Use this property if you wish to provide special handling for a particular page.
+<ul>
+<li>If there are multiple matches to a single request, the longest (most specific) path wins.</li>
+<li>If not specified, the registered controller is used to respond to all requests for pages of the corresponding content type.</li>
+</ul>
+</li>
+<li>
+<strong>ActionName</strong> – allows you to target which controller action responds to the matched request. If not specified, the default <code>Index</code> action is used.</li>
+<li>
+<strong>WebsiteChannelNames</strong> – allows you to specify a list of website channels for which you want to use this controller.
+<ul>
+<li>If not specified, the registered controller is used to respond to all requests for pages from all website channels.</li>
+</ul>
+</li>
+</ul>
+<p>The registration parameters can be combined, for example, to:</p>
+<ul>
+<li>have multiple content types handled by a single controller and action on specific website channels</li>
+<li>have multiple content types handled by a single controller and different actions</li>
+<li>have a single content type handled by different controllers depending on the location of specific pages in the content tree</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Multiple identical registrations</strong></p>
+<p>Multiple identical registrations are not supported (e.g., registering multiple controllers with the same path and action for a single content type). If the system detects duplicate registrations, it throws an exception during application startup.</p>
+</div>
+
+<h4 id="examples">Examples</h4>
+<p>The following are examples of route registrations:</p>
+<p><strong>Multiple content types - single controller - single action - specific website channels</strong></p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Requests for all pages in the 'DancingGoatPages' and 'DancingGoatBetaPages' website channels that are of the 'Coffee', 'Brewer' and 'ElectricGrinder' content types are handled using the 'Detail' action of the Articles controller
+[assembly: RegisterWebPageRoute(Coffee.CONTENT_TYPE_NAME, typeof(ArticlesController), ActionName = "Detail", WebsiteChannelNames = new[] {"DancingGoatPages", "DancingGoatBetaPages"})]
+[assembly: RegisterWebPageRoute(Brewer.CONTENT_TYPE_NAME, typeof(ArticlesController), ActionName = "Detail", WebsiteChannelNames = new[] {"DancingGoatPages", "DancingGoatBetaPages"})]
+[assembly: RegisterWebPageRoute(ElectricGrinder.CONTENT_TYPE_NAME, typeof(ArticlesController), ActionName = "Detail", WebsiteChannelNames = new[] {"DancingGoatPages", "DancingGoatBetaPages"})]
+
+</code></pre>
+</div>
+
+<p><strong>Multiple content types - single controller - different actions</strong></p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Requests for all pages of the 'ArticleSection' content type are handled using the 'Index' action of the Articles controller
+[assembly: RegisterWebPageRoute(ArticleSection.CONTENT_TYPE_NAME, typeof(ArticlesController))]  
+// Requests for all pages of the 'Article' content type are handled using the 'Show' action of the Articles controller
+[assembly: RegisterWebPageRoute(Article.CONTENT_TYPE_NAME, typeof(ArticlesController), ActionName = "Show")]
+
+</code></pre>
+</div>
+
+<p><strong>Single content type - multiple controllers - each for a different page in the content tree</strong></p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Requests for a page of the 'ProductSection' content type located at '/Articles/Brewers' is handled using the 'Index' action of the Brewers controller
+[assembly: RegisterWebPageRoute(ArticlesSection.CONTENT_TYPE_NAME, typeof(BrewersController), Path = "/Articles/Brewers")]
+// Requests for a page of the 'ProductSection' content type located at '/Articles/Grinders' is handled using the 'Index' action of the Grinders controller
+[assembly: RegisterWebPageRoute(ArticlesSection.CONTENT_TYPE_NAME, typeof(GrindersController), Path = "/Articles/Grinders")]
+// Requests for a page of the 'ProductSection' content type located at '/Articles/Coffees' is handled using the 'Index' action of the Coffees controller
+[assembly: RegisterWebPageRoute(ArticlesSection.CONTENT_TYPE_NAME, typeof(CoffeesController), Path = "/Articles/Coffees")]
+
+</code></pre>
+</div>
+
+<h3 id="implement-routing"> Implement routing</h3>
+<p>As described in the previous section, routes require a controller that takes over when the request matches certain criteria. When the system delegates handling to such a controller, the rest of the processing logic is completely in your hands. You can run any custom code within the controller, pass any type of required data to the view, or switch between completely different views based on the current scenario.</p>
+<p>The development process for routing follows standard MVC practices:</p>
+<ol type="1">
+<li><p>Create a new controller class in your project.</p></li>
+<li>
+<p>Implement the <code>Index</code> action and any other required actions.</p>
+<ul>
+<li>
+<p>If you need to work with the data context of the currently requested page, use the <code>Retrieve</code> method of the <code>IWebPageDataContextRetriever</code> interface. The method returns a <code>WebPageDataContext</code> object exposing a <code>WebPage</code> property, which gives you access to the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the page. If you need to load the content fields of the page, <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page object</a> using the <a href="/documentation/developers-and-admins/api/content-item-api/content-retriever-api">ContentRetriever API</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // An instance of IWebPageDataContextRetriever (e.g., obtained via dependency injection)
+  private readonly IWebPageDataContextRetriever retriever;
+
+  // Access the current page data
+  var page = retriever.Retrieve().WebPage;
+
+  // Access the properties of the page object     
+  int webPageId = page.WebPageItemID;
+  int languageId = page.LanguageID;
+  string languageName = page.LanguageName;
+  int contentTypeId = page.ContentTypeID;
+  string contentTypeName = page.ContentTypeName;
+  int channelId = page.WebsiteChannelID;
+  string channelName = page.WebsiteChannelName; 
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li><p>Create any required view model classes used to pass data from the controller to the view.</p></li>
+<li>
+<p>Create views required by the controller actions.</p>
+<ul>
+<li>
+<p>The output must be a full HTML page, so the view must include the following:</p>
+<ul>
+<li>Full HTML markup, including the <code>html</code>, <code>head</code>, and <code>body</code> elements</li>
+<li>Links to all necessary resources, such as stylesheets and scripts</li>
+</ul>
+</li>
+<li><p>Use MVC layouts with the view for any shared output code (for example your site’s main layout).</p></li>
+</ul>
+</li>
+<li><p><a href="#Setupcontenttreebasedrouting-RoutingOverview">Register</a> the route in the system.</p></li>
+</ol>
+<p>The registered controller handles the requests matching the criteria specified in the route registration attribute.</p>
+<h2 id="handle-page-builder-enabled-content-types"> Handle Page Builder-enabled content types</h2>
+<p>For content types that use content tree-based routing and also have <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> enabled, you need to ensure certain prerequisites, depending on the use of <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">page templates</a>.</p>
+<ul>
+<li>If the page is based on a page template:
+<ul>
+<li>
+<p>The controller action handling the request needs to return a <code>TemplateResult</code> object. You do not need to provide any additional information to the constructor. The page to render is retrieved from information provided by the router when handling the request.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  return new TemplateResult();
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>If the page is NOT based on a page template:
+<ul>
+<li>The view needs to include <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Page Builder scripts and styles</a> to ensure page content is loaded correctly (either directly or through the assigned layout).</li>
+</ul>
+</li>
+</ul>
+<h2 id="handle-post-actions">Handle POST actions</h2>
+<p>Content tree-based routing automatically works for GET requests, but does not handle POST requests. You need to manually register corresponding routes for all POST actions in your project.</p>
+<p>For example, you can use attribute routing to target POST actions within controllers handling routes. Targeting specific actions lowers the risk of accidentally registering routes that capture a broader spectrum of requests than intended, resulting in potential routing issues.</p>
+<h3 id="access-the-data-of-the-current-page">Access the data of the current page</h3>
+<p>The data of the current page (name, custom fields, etc.) is by default not accessible in controller actions that handle POST requests. Such requests don’t contain sufficient information to identify the page from which they originate. </p>
+<p>To access the page data in POST actions, you need to include information about the current page into the data submitted by the corresponding form by calling the <code>Html.Kentico().PageData</code> extension method within the given <code>form</code> tag.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Web.Mvc
+@using Kentico.PageBuilder.Web.Mvc
+
+@using (Html.BeginForm("HandlePost", "RouteController", FormMethod.Post))
+{
+    ...
+
+    @Html.Kentico().PageData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+}
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden form field that persists information about the current page. The page data can be retrieved via the <code>IWebPageDataContextRetriever</code> service and <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">content item API</a> in the corresponding controller action.</p>
+<p>Obtain an instance of the <code>IWebPageDataContextRetriever</code> service (using dependency injection) and call its <code>Retrieve</code> method. The returned object’s <code>WebPage</code> property contains basic information about the current page, which you can use to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the current page object</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// An instance of IWebPageDataContextRetriever (e.g., obtained via dependency injection)
+private readonly IWebPageDataContextRetriever retriever;
+
+// Access the current page data
+var page = retriever.Retrieve().WebPage;
+
+// Access the properties of the page object  
+int webPageId = page.WebPageItemID;
+int languageId = page.LanguageID;
+string languageName = page.LanguageName;
+int contentTypeId = page.ContentTypeID;
+string contentTypeName = page.ContentTypeName;
+int channelId = page.WebsiteChannelID;
+string channelName = page.WebsiteChannelName; 
+
+</code></pre>
+</div>
+
+<h2 id="retrieve-generated-page-urls-using-the-api">Retrieve generated page URLs using the API</h2>
+<p>URLs generated for pages can be retrieved using the API. See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">Retrieve page URLs</a> to learn about the available options.</p>
+<h2 id="combine-content-tree-based-and-asp.net-routing">Combine content tree-based and ASP.NET routing</h2>
+<p>Using content tree-based routing does not exclude your projects from using the conventional routing framework provided by ASP.NET Core. If content tree-based routing does not match an incoming URL to any of the site’s pages, it delegates the request to routes registered further down the routing table.</p>
+<p>At this point, request processing continues using the conventional routing model with the framework attempting to match the request to site-specific routes. See the following diagram for illustration.</p>
+<p></p>
+<p>You can take advantage of this if you wish to serve pages with content that does not need to be stored and managed in Xperience. For example when creating dynamic pages such as search interfaces with search results, or other pages with fully data-driven content. </p>
+<h3 id="preserving-thread-language-across-routing-modes">Preserving thread language across routing modes</h3>
+<p>On multilingual pages, the language for the <strong>handling thread</strong> is supplied by the router (based on the <a href="/documentation/developers-and-admins/configuration/languages">language</a> code name of the requested page). If you wish to invoke custom actions from the context of a page served by the router – that is, you wish to construct a URL that maps to a custom route defined for your application – you need to ensure the <strong>thread language</strong> of the handling thread matches the language supplied by the router. Otherwise, when opening links handled by custom actions, users may be redirected to a different language variant of the page.</p>
+<p>For this purpose, the system provides the <code>LanguageNameRouteValuesKey</code> property. The property can be set using the <code>WebPageRoutingOptions</code> object when <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/enable-content-tree-based-routing">enabling the content tree-based routing feature</a> (provided as an optional parameter to the <code>UseWebPageRouting</code> method).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+builder.Services.AddKentico(features =&gt;
+{
+    // Enables content tree-based routing
+    features.UseWebPageRouting(new WebPageRoutingOptions {LanguageNameRouteValuesKey = "lang"});
+});
+
+</code></pre>
+</div>
+
+<p>The <code>LanguageNameRouteValuesKey</code> property:</p>
+<ul>
+<li>Sets the name of the key under which the language code of the current router-handled page is stored in the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.web.routing.routevaluedictionary" target="_blank">RouteValueDictionary</a> object of the request.</li>
+<li>Enables the framework to retrieve the current language from route values when building URLs corresponding to your custom routes. The routes need to contain a wildcard parameter expecting a language code, with a name matching the key set in this property.</li>
+</ul>
+<h4 id="example">Example</h4>
+<p>The following example demonstrates the usage of the <code>LanguageNameRouteValuesKey</code> property on the registration of a single site-specific route.</p>
+<p>First, set the <code>LanguageNameRouteValuesKey</code> property when enabling content tree-based routing:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddKentico(features =&gt;
+{
+    // Enables content tree-based routing
+    features.UseWebPageRouting(new WebPageRoutingOptions {LanguageNameRouteValuesKey = "lang"});
+});
+
+</code></pre>
+</div>
+
+<p>Then, register a route containing a wildcard parameter matching the key set in the <code>LanguageNameRouteValuesKey</code> property – <em>{lang}</em> in this case.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+var app = builder.Build();
+
+app.MapControllerRoute(
+    name: "MyRoute",
+    pattern: "{lang}/{controller}/{action}"
+);
+
+</code></pre>
+</div>
+
+<p>Now, when building URLs to the “MyRoute” route from the context of pages served by content tree-based routing (e.g., using <code>UrlHelper.Action("Index", "CustomController")</code>), the framework:</p>
+<ol type="1">
+<li>Matches the route “MyRoute.”</li>
+<li>Searches the <code>RouteValues</code> object for entries corresponding to the wildcards provided in the URL template. The <em>language</em> key is set and populated by the router when serving the source page.</li>
+<li>Generates a fully qualified URL preserving the language of the original page.</li>
+</ol>
+<h3 id="manually-initialize-page-data-context">Manually initialize page data context</h3>
+<p>Some Xperience features, such as <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a>, require context data that is automatically available from the current page when using content tree-based routing. If you use custom .NET routing to display <a href="/documentation/business-users/website-content">pages</a> from a website channel’s content tree, you need to manually initialize the page data context to use such features.</p>
+<p>Use the <code>IWebPageDataContextInitializer</code> service and supply the context via the properties of the <code>RoutedWebPage</code> parameter. Get the required data by <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieving the page</a> related to the given route.</p>
+
+<div>
+
+</div>
+<div>
+<p>Only initialize page data context for custom routes that are associated with a page in the Xperience content tree.</p>
+<p>Otherwise you will not be able to set all <code>RoutedWebPage</code> properties (e.g., the <code>WebPageItemID</code>). Working with incomplete page data context may result in errors.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Initializing page data context in a custom route controller</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.ContentEngine;
+using CMS.DataEngine;
+using CMS.Websites;
+
+using Kentico.Content.Web.Mvc;
+
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+public class CustomRouteController : Controller
+{
+    private readonly IContentRetriever contentRetriever;
+    private readonly IInfoProvider&lt;ContentLanguageInfo&gt; languageProvider;
+    private readonly IInfoProvider&lt;ChannelInfo&gt; channelProvider;
+    private readonly IInfoProvider&lt;WebsiteChannelInfo&gt; websiteChannelProvider;
+    private readonly IWebPageDataContextInitializer webPageDataContextInitializer;
+
+    public CustomRouteController(
+        IContentRetriever contentRetriever,
+        IInfoProvider&lt;ContentLanguageInfo&gt; languageProvider,
+        IInfoProvider&lt;ChannelInfo&gt; channelProvider,
+        IInfoProvider&lt;WebsiteChannelInfo&gt; websiteChannelProvider,
+        IWebPageDataContextInitializer webPageDataContextInitializer)
+    {
+        // Gets instances of required services using dependency injection
+        this.contentRetriever = contentRetriever;
+        this.languageProvider = languageProvider;
+        this.channelProvider = channelProvider;
+        this.websiteChannelProvider = websiteChannelProvider;
+        this.webPageDataContextInitializer = webPageDataContextInitializer;
+    }
+
+    public async Task&lt;IActionResult&gt; Index()
+    {
+        // Retrieves the website channel page associated with the custom route
+        // Assuming 'ArticlePage' is the generated model class for the page's content type
+        var page = (await contentRetriever.RetrievePages&lt;ArticlePage&gt;(
+            new RetrievePagesParameters
+            {
+                PathMatch = PathMatch.Single("/Custom/Page/Path"),
+            })).FirstOrDefault();
+
+        // Prepares a RoutedWebPage object with the required page data 
+        RoutedWebPage routedWebPage = GetRoutedWebPage(page.SystemFields);
+
+        // Initializes the page data context
+        webPageDataContextInitializer.Initialize(routedWebPage);
+
+        return View();
+    }
+
+    // Returns a RoutedWebPage object with data from the system fields of a page
+    private RoutedWebPage GetRoutedWebPage(WebPageFields pageSystemFields)
+    {
+        var webPageItemId = pageSystemFields.WebPageItemID;
+        var webPageItemGuid = pageSystemFields.WebPageItemGUID;
+        var contentTypeId = pageSystemFields.ContentItemContentTypeID;
+        var languageId = pageSystemFields.ContentItemCommonDataContentLanguageID;
+        var websiteChannelId = pageSystemFields.WebPageItemWebsiteChannelId;
+        var channelId = websiteChannelProvider.Get(websiteChannelId).WebsiteChannelChannelID;
+        var channelName = channelProvider.Get(channelId).ChannelName;
+
+        return new RoutedWebPage
+        {
+            WebPageItemID = webPageItemId,
+            WebPageItemGUID = webPageItemGuid,
+            LanguageID = languageId,
+            LanguageName = languageProvider.Get(languageId).ContentLanguageName,
+            ContentTypeID = contentTypeId,
+            ContentTypeName = DataClassInfoProvider.GetClassName(contentTypeId),
+            WebsiteChannelID = websiteChannelId,
+            WebsiteChannelName = channelName
+        };
+    }
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

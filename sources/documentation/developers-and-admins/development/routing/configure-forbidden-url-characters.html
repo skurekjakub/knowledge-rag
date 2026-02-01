@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Configure forbidden URL characters</title>
+</head>
+<body>
+<p>In URLs, some characters are considered unsafe because they may be used for special purposes or could cause issues with browsers or servers. The system automatically replaces or removes forbidden characters in <a href="/documentation/business-users/website-content/manage-page-urls">URL slugs and vanity URLs</a>.</p>
+<p>By default, the following characters are forbidden:</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+\/:*?"&lt;&gt;|&amp;%.'#[]+=„“ and the space and tab characters
+
+</code></pre>
+</div>
+
+<h2 id="specify-additional-forbidden-characters">Specify additional forbidden characters</h2>
+<p>To specify additional forbidden characters:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Select the <strong>URLs and SEO</strong> category.</li>
+<li>Type the characters into the <strong>Forbidden URL characters</strong> setting (without any separator).</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>Alternatively, you can enter a <a href="http://en.wikipedia.org/wiki/Regular_expression" target="_blank">regular expression</a> into the <strong>Allowed URL characters</strong> setting to precisely specify which characters are allowed in URLs.</p>
+<h2 id="override-default-forbidden-characters">Override default forbidden characters</h2>
+<p>The default characters listed above are always forbidden unless you override the <code>CMSForbiddenURLValues</code> key in your project’s configuration file (<em>appsettings.json</em> by default). For example:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSForbiddenURLValues": "\\/:*?\"&lt;&gt;|&amp;%.'#[]+ ="
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: Support for the slash (‘/’) character in <a href="/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages">vanity URLs</a> always requires additional <a href="#allow-the-slash-character-in-vanity-urls">configuration</a>, even if the slash character is not included in the forbidden characters specified by the <code>CMSForbiddenURLValues</code> key.</p>
+</div>
+
+<p>You can either use the key to allow some of the default forbidden characters or add new ones. We <strong>strongly recommend keeping the default set of forbidden characters</strong> – entering the characters into URL values may prevent certain types of URLs from resolving correctly.</p>
+<h3 id="allow-the-slash-character-in-vanity-urls">Allow the slash (‘/’) character in vanity URLs</h3>
+<p>Support for the slash character in <a href="/documentation/business-users/website-content/manage-page-urls#manage-vanity-urls-of-pages">vanity URLs</a> can’t be configured through the <code>CMSForbiddenURLValues</code> key, but has to be enabled separately. When the setting below is enabled, the slash character is always allowed in vanity URLs, regardless of other settings.</p>
+<p>To allow the slash character in vanity URLs:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Select the <strong>URLs and SEO</strong> category.</li>
+<li>Select the <strong>Allow ‘/’ in vanity URLs</strong> setting.</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note:</strong></p>
+<p>The following vanity URL paths are always forbidden:</p>
+<ul>
+<li>paths starting with ‘/’ or ‘~/’</li>
+<li>paths ending with ‘/’</li>
+<li>paths containing multiple ‘/’ in a row (e.g., <code>vanity//path</code>)</li>
+</ul>
+</div>
+
+<h2 id="specify-forbidden-character-replacement">Specify forbidden character replacement</h2>
+<p>To specify forbidden character replacement:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Select the <strong>URLs and SEO</strong> category.</li>
+<li>Enter the character into the <strong>Forbidden character replacement</strong> setting.</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>By default, forbidden characters located at the beginning or end of the path are removed completely and consecutive forbidden characters are only replaced by a single replacement character. For example, “<em>Articles*and%%%blogs</em>” is replaced with “<em>Articles-and-blogs</em>” when using the default replacement character: ‘<em>-</em>’ hyphen. If no replacement character is specified, the underscore ‘<em>_</em>’ character is used.</p>
+
+</body>
+</html>

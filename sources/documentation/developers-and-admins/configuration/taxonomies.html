@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Taxonomies</title>
+</head>
+<body>
+<p>Taxonomies are an important tool for structuring, organizing and categorizing content. Taxonomies allow administrators to create and organize tags in a hierarchical manner. Content editors benefit from these structures by tagging pages, emails, headless and reusable items, improving navigation and connections among related information. For developers, this page explains how to leverage tags to fetch and display related content.</p>
+<p>Within the Xperience by Kentico environment, users can work with taxonomies and tags:</p>
+<ul>
+<li>
+<strong>Taxonomies</strong> are structured collections of tags that organize and categorize data into hierarchical relationships. Each taxonomy contains a hierarchical structure of related tags. Examples of taxonomies are:
+<ul>
+<li>Clothing colors (white, black, blue…)</li>
+<li>Car fuel types (petrol, diesel, hybrid…)</li>
+<li>PC features (external GPU, disc drive, tower size…).</li>
+</ul>
+</li>
+<li>
+<strong>Tags</strong> are individual keywords assigned to individual pieces of data. Tags can be assigned to individual pieces of content for multiple purposes including but not limited to modeling relationships, categorization, and organization and classification of data.</li>
+</ul>
+<p>To start using taxonomies in your project:</p>
+<ol type="1">
+<li>Create and configure <a href="#configure-taxonomies">taxonomies and tags</a>.</li>
+<li>Enable content editors to <a href="#enable-editors-to-tag-content">add tags to content</a>.</li>
+<li>Retrieve <a href="#retrieve-taxonomies-and-tagged-content">tagged content</a>.
+<ul>
+<li>You can enable editors to select what content they want to display. Add option to <a href="#add-option-to-select-tags-in-form-components">select tags in form components</a>.</li>
+</ul>
+</li>
+</ol>
+<h2 id="configure-taxonomies">Configure taxonomies</h2>
+<p>Before you enable content editors to assign tags to content, you need to create taxonomies and tags.</p>
+<ol type="1">
+<li><a href="#create-a-taxonomy">Create a taxonomy</a></li>
+<li><a href="#create-tags-in-a-taxonomy">Create tags in a taxonomy</a></li>
+</ol>
+<h3 id="create-a-taxonomy">Create a taxonomy</h3>
+<p>To create a new taxonomy:</p>
+<ol type="1">
+<li>Navigate to the <strong>Taxonomies</strong> application.</li>
+<li>Select <strong>New taxonomy</strong>.</li>
+<li>Enter details about the taxonomy.
+<ul>
+<li>
+<strong>Taxonomy name</strong> – the name that is displayed to users in the administration interface.</li>
+<li>
+<em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</li>
+<li>
+<em>(Optional)</em> <strong>Description</strong> – an explanation of the taxonomy and its intended use. This field is intended as an internal guide for other content editors to understand where the given taxonomy is used, and is not intended to be displayed publicly.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the taxonomy.</li>
+</ol>
+<p>The taxonomy is now created and you can add tags.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: When you edit an already created taxonomy, you can also localize the <em>Taxonomy name</em> field.</p>
+</div>
+
+<h3 id="create-tags-in-a-taxonomy">Create tags in a taxonomy</h3>
+<p>To create new tags:</p>
+<ol type="1">
+<li>Navigate to the <strong>Taxonomies</strong> application.</li>
+<li>Select a taxonomy under which you want to create tags.</li>
+<li>In the taxonomy tree on the left, select a node under which you want to create the new tag.</li>
+<li>Select <strong>New tag</strong>.</li>
+<li>Enter details about the tag.
+<ul>
+<li>
+<strong>Title</strong> – the name that is displayed to users and visitors.</li>
+<li>
+<em>(Optional)</em> <strong>Identifiers</strong> – specify code name if you wish to use code name different than the default.</li>
+<li>
+<em>(Optional)</em> <strong>Description</strong> – an explanation of the tag that can be displayed publicly depending on the implementation.</li>
+<li>
+<em>(Optional)</em> In the <strong>Translations</strong> section, you can localize the <em>Title</em> and <em>Description</em> fields of the tag for any <a href="/documentation/developers-and-admins/configuration/languages">languages</a> that are configured in the system.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the tag.
+<ul>
+<li>If you with to save the tag and continue creating other tags in the same location, select <strong>Save and create another</strong>.</li>
+</ul>
+</li>
+</ol>
+<h2 id="enable-editors-to-tag-content">Enable editors to tag content</h2>
+<p>You can enable content editors to add tags to items.</p>
+<p></p>
+<p>See <a href="/documentation/developers-and-admins/development/content-types#add-option-to-tag-content">Add option to tag content</a> for more information.</p>
+<h2 id="retrieve-taxonomies-and-tagged-content">Retrieve taxonomies and tagged content</h2>
+<h3 id="retrieve-content-items-with-specified-tags">Retrieve content items with specified tags</h3>
+<p>You can limit the retrieval query to only retrieve content items with the specified tags using the <code>WhereContainsTags</code> content item query parametrization method.</p>
+<p>See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#filter-content-items-based-on-tags">Retrieve content items</a> for more information.</p>
+<h3 id="add-option-to-select-tags-in-form-components">Add option to select tags in form components</h3>
+<p>You can enable content editors to select tags in builder component and administration UI component properties. Content editors can select tags in form component properties and these tags can be used to <a href="#retrieve-content-items-with-specified-tags">retrieve specific content with the selected tags</a>.</p>
+<p></p>
+<p>Add the <code>TagSelectorComponent</code> editing component to your component’s properties. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#tag-selector">Tag selector</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a> for more information.</p>
+<h3 id="retrieve-information-about-tags-and-taxonomies">Retrieve information about tags and taxonomies</h3>
+<p>If you want to display information about a particular taxonomy (e.g., a component on the live site that allows you to filter articles by their tags) you can use the <code>RetrieveTaxonomy</code> method of the <code>ITaxonomyRetriever</code> interface.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve taxonomy and tag details</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// An instance of  ITaxonomyRetriever (e.g., obtained via dependency injection)
+private readonly ITaxonomyRetriever taxonomyRetriever;
+
+// Retrieves the general TaxonomyData object for a selected taxonomy
+TaxonomyData taxonomyData = await taxonomyRetriever.RetrieveTaxonomy("ArticleCategory", "en");
+
+// Retrieves data about the taxonomy from the TaxonomyData object
+var taxonomy = taxonomyData.Taxonomy;
+string taxonomyDisplayName = taxonomy.Title;
+string taxonomyCodeName = taxonomy.Name;
+
+// Retrieves the collection of all tags within the taxonomy
+IEnumerable&lt;Tag&gt; tags = taxonomyData.Tags;
+
+// Retrieves data about a tag within the taxonomy
+Tag someTag = tags.FirstOrDefault();
+string tagDisplayName = someTag.Title;
+string tagCodeName = someTag.Name;
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Azure Blob storage</title>
+</head>
+<body>
+<p>Xperience by Kentico supports file system providers that allow you to map parts of the file system to <a href="https://azure.microsoft.com/en-us/services/storage/blobs/" target="_blank">Microsoft Azure Blob Storage</a>. You can use Blob storage when:</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">Deploying Xperience projects to the SaaS environment</a></li>
+<li><a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">Deploying to private cloud</a></li>
+<li>You need to store parts of the application file system in a shared storage. For example, shared storage is a requirement for all <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">scaled</a> Xperience deployments.</li>
+</ul>
+<p>Blob storage is particularly suitable for storing content item assets, and all other <a href="/guides/architecture/content-modeling/content-modeling-guide/store-files">unmanaged binary files</a> referenced by the Xperience application. Some application deployment environments, like <a href="https://azure.microsoft.com/en-us/products/app-service/web/" target="_blank">Azure Web Apps</a> for example, do not guarantee a persistent file system for files created outside of the original deployment package. Therefore, if Azure needs to recycle the application due to rolling infrastructure updates or unexpected outages, all but the image with the original deployment is lost. Blob storage does not suffer from these limitations, as the infrastructure ensures redundancy in case of an outage.</p>
+<p>Follow the instructions on this page to create Azure Blob storage providers for:</p>
+<ul>
+<li><a href="#azure-blob-storage-for-kenticos-saas">projects deployed to the SaaS environment</a></li>
+<li><a href="#azure-blob-storage-for-private-cloud-deployments">private cloud deployments</a></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>File name case</strong></p>
+<p>Unlike regular file systems (NTFS, VFAT), Azure Blob storage is case-sensitive. To ensure consistent behavior, Xperience automatically converts all file and folder names to lowercase when processing files on Azure storage.</p>
+</div>
+
+<h2 id="media-library-files-in-azure-blob-storage">Media library files in Azure Blob storage</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Media libraries sunset</strong></p>
+<p>Media libraries have been officially sunset. Support for media libraries will continue for one more year (until July 24, 2026), after which the feature and all associated APIs will be completely removed.</p>
+<p>Before mapping media library files to the <a href="https://azure.microsoft.com/en-us/services/storage/blobs/" target="_blank">Microsoft Azure Blob Storage</a>, consider migrating media libraries and mapping content item assets instead. See <a href="/guides/architecture/media-libraries-migration-guidance">Media library migration</a> for instructions on how to migrate your media library files to <a href="/documentation/business-users/content-hub">Content hub</a>.</p>
+</div>
+
+<p>Media library files stored in Azure Blob storage have the following limitations:</p>
+<ul>
+<li>
+<strong>Storing a large number (thousands) of media library files in a single media library can significantly affect the performance and user experience of the <a href="/documentation/business-users/media-libraries/create-media-libraries">Media libraries</a> application.</strong>
+<ul>
+<li>We recommend structuring media library files into multiple media libraries and storing at most 100 files in a single media library folder.</li>
+</ul>
+</li>
+<li>Mapping subfolders of media libraries is not supported. You can map either the directory containing the media libraries (<strong>~/assets/media</strong>), or individual media libraries (<strong>~/assets/media/&lt;MediaLibraryName&gt;</strong>).</li>
+<li>The system’s automatic clearing of files from the server-side cache does not work for files stored in an external storage. If you modify a media file, the website may still display the old version until the cache expires (unless you manually clear the application’s cache). See also: <a href="/documentation/developers-and-admins/development/caching/file-caching">File caching</a>.</li>
+</ul>
+<h2 id="azure-blob-storage-for-kenticos-saas">Azure Blob storage for Kentico’s SaaS</h2>
+<p>When developing an Xperience application that you want to <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploy to the SaaS environment</a>, you need to create an Azure Blob storage <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">provider</a> (<code>AzureStorageProvider</code>) for folders with external application files and media library files that you want to deploy with your application.</p>
+<p>Azure Blob storage is part of your <a href="/documentation/developers-and-admins/installation/licenses#licensing-xperience-by-kentico">Xperience by Kentico SaaS subscription</a> and is used when deploying projects to the SaaS environment, as storing persistent data alongside Xperience application binaries deployed in <a href="https://docs.microsoft.com/en-us/azure/app-service/overview" target="_blank">Azure App Service</a> is not recommended.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Managed and unmanaged data</strong></p>
+<p>Only data that is not handled by the <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">CI/CD features</a> and is stored outside of the Xperience database needs to be deployed to the Azure Blob Storage.</p>
+<ul>
+<li>Media library metadata is stored in the Xperience database, only the media library (binary) files are deployed.</li>
+<li>Files stored in the content item asset fields do not need to be deployed as they are handled by CI/CD.</li>
+</ul>
+</div>
+
+<h3 id="default-kentico-managed-azure-blob-storage-configuration">Default Kentico-managed Azure Blob storage configuration</h3>
+<p>Xperience provides Azure Blob storage with the required accounts as part of every subscription. <a href="/documentation/developers-and-admins/installation#create-a-project">Projects</a> created with the <code>--cloud</code> parameter contain the <strong>StorageInitializationModule.cs</strong> file with a sample storage initialization module and the <strong>Export-DeploymentPackage.ps1</strong> deployment script.</p>
+<p>The default configuration maps:</p>
+<ul>
+<li>
+<strong>~/assets</strong> (content item assets, media libraries, files uploaded via the <em>Upload file</em> <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">form component</a>) project folder to an Azure Blob storage provider for the <strong>QA</strong>, <strong>UAT</strong>, <strong>STG</strong> and <strong>Production</strong> environments. The default Azure Blob storage container name is <strong>default</strong>.
+<ul>
+<li>Use <a href="https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal" target="_blank">Azure Blob storage containers</a> to categorize files.</li>
+</ul>
+</li>
+<li>
+<strong>~/assets/media</strong> (media libraries) project folder to a <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">local storage provider</a> configured for the development environment. The media libraries are stored in the <strong>~/$StorageAssets/default/assets/media</strong> folder, and a container named <strong>default</strong>, but accessed under the <strong>~/assets/media</strong> path in your application.
+<ul>
+<li>Using local storage providers for development is a good practice, as it is not recommended to use production containers during development.</li>
+</ul>
+</li>
+</ul>
+<p>The default configuration ensures that when your application accesses the <strong>~/assets/media</strong> folder, the mapping automatically forwards the request to the <strong>~/$StorageAssets/default/assets/media</strong> folder during development. When you deploy the application to the SaaS environment, your application stores the folders in the Azure Blob storage container named <strong>default</strong>. You can use multiple containers to store files.</p>
+<p>The configuration can be further customized – see <a href="#map-folders-to-a-kentico-managed-azure-blob-storage">Map folders to a Kentico-managed Azure Blob storage</a>.</p>
+<h3 id="map-folders-to-a-kentico-managed-azure-blob-storage">Map folders to a Kentico-managed Azure Blob storage</h3>
+<p>To use a different configuration (a different container name or multiple containers for multiple folders), create, configure, and map Azure Blob storage providers and <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">local file system providers</a> for each folder:</p>
+<ol type="1">
+<li>Get a basic understanding of <a href="https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal" target="_blank">Azure Blob storage containers</a>.
+<ul>
+<li>Use container names conforming to the naming requirements in <a href="https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names" target="_blank">Container names.</a>
+</li>
+<li>Use folder structure inside containers and file name requirements conforming to <a href="https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata" target="_blank">Naming and Referencing Containers, Blobs, and Metadata</a>.</li>
+</ul>
+</li>
+<li>Edit the custom module in the <strong>StorageInitializationModule.cs</strong> file that was automatically created during <a href="/documentation/developers-and-admins/installation#create-a-project">installation</a>.</li>
+<li>Get familiar with the module code and modify it to suit your application:
+<ol type="1">
+<li>
+<p>Modify the <code>MapAzureStoragePath</code> method to map a directory to a specific Azure Blob storage provider:</p>
+<ul>
+<li><p>Use the <code>path</code> method argument to set the folder you want to map to an Azure Blob storage provider, where <code>~</code> is your project root folder.</p></li>
+<li><p>Set the <code>PublicExternalFolderObject</code> provider property to <code>true</code>, if you want the files from a container to be publicly accessible.</p></li>
+<li>
+<p>Use the <code>container_name</code> method argument to set the target Azure Blob storage container. Use a separate folder for each folder you want to deploy to a separate Azure Blob storage container.</p>
+
+<div>
+
+</div>
+<div>
+<p>Containers do not need to have an existing folder in the storage assets root folder, but need to have a valid mapping in your application – Xperience automatically ensures that the folder structure gets created in Azure Blob storage when your application tries to access those folders when deployed to Azure Blob storage.</p>
+<p>Containers in deployment environments are isolated. You can map folders in different environments to containers with identical names.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mapping a folder to an Azure Blob storage provider</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  private void MapAzureStoragePath(string path, string containerName)
+  {
+      // Creates a new StorageProvider instance for Azure Blob storage
+      var provider = AzureStorageProvider.Create();
+      // Specifies the target container
+      provider.CustomRootPath = containerName;
+      provider.PublicExternalFolderObject = false;
+
+      StorageHelper.MapStoragePath(path, provider);
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>Modify the <code>MapLocalStoragePath</code> method to create a local storage provider for storage assets. Use a separate folder for each folder you want to deploy to a separate Azure Blob storage container under <strong>~/$StorageAssets/&lt;container_name&gt;</strong>:</p>
+<ul>
+<li><p>Use the <code>path</code> method argument to set the folder you want to map to a local storage provider, where <code>~</code> is the root folder of your project,</p></li>
+<li>
+<p>Use the <code>container_name</code> method argument to set the target Azure Blob storage container. Use a separate folder for each folder you want to deploy to a separate Azure Blob storage container.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mapping a folder to a local storage provider</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  private void MapLocalStoragePath(string path, string containerName)
+  {
+      // Creates a new StorageProvider instance for local storage
+      var provider = StorageProvider.CreateFileSystemStorageProvider();
+      // A local path where to map the folder
+      provider.CustomRootPath = $"{LOCAL_STORAGE_ASSETS_DIRECTORY_NAME}/{containerName}";
+
+      StorageHelper.MapStoragePath(path, provider);
+  }
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>You can use a different root folder than <strong>$StorageAssets</strong> to store the local binary files. Change the <code>$StorageAssetsFolderName</code> variable in <strong>Export-DeploymentPackage.ps1</strong> script and the <code>LOCAL_STORAGE_ASSETS_DIRECTORY_NAME</code> variable in <strong>StorageInitializationModule.cs</strong>.</p>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>Modify the <code>OnInit()</code> method to map the folder path either to the Azure Blob storage provider or to a local storage provider, depending on the current environment.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mapping project folders to managed Azure storage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ // Changed from "$StorageAssets". "Export-DeploymentPackage.ps1" needs to reflect this.
+ private const string LOCAL_STORAGE_ASSETS_DIRECTORY_NAME = "CustomStorageAssetsFolder";
+
+ private const string CONTAINER_NAME_LIBRARIES = "media-libraries-container";
+ private const string CONTAINER_NAME_CONTENT_ITEM_ASSETS = "content-item-assets-container";
+ private const string CONTAINER_NAME_FORM_FILES = "biz-form-files-container";
+ private const string CONTAINER_NAME_DOCUMENTS = "documents-container";
+
+ // Initialization code executed on application startup
+ protected override void OnInit()
+ {
+     base.OnInit();
+     //
+     // NOTE: The "~" gets resolved into the project root
+     // NOTE: The "documents" folder is an example folder with arbitrary document files
+     //
+
+     // Mapping for SaaS deployment environments:
+     // -- media libraries to "media-libraries-container"
+     // -- content item assets to "content-item-assets-container"
+     // -- form files to "biz-form-files-container"
+     // -- "documents" folder to "documents-container"
+     //
+     if (builder.Environment.IsQa() ||
+         builder.Environment.IsUat() ||
+         builder.Environment.IsEnvironment(CloudEnvironments.Custom) ||
+         builder.Environment.IsEnvironment(CloudEnvironments.Staging) ||
+         builder.Environment.IsProduction())
+     {
+         MapAzureStoragePath("~/assets/media", CONTAINER_NAME_LIBRARIES);
+         MapAzureStoragePath("~/assets/contentitems", CONTAINER_NAME_CONTENT_ITEM_ASSETS); 
+         MapAzureStoragePath("~/assets/bizformfiles", CONTAINER_NAME_FORM_FILES);
+         MapAzureStoragePath("~/assets/documents", CONTAINER_NAME_DOCUMENTS);
+     }
+
+     // Mapping for the local development environment, under the "~/CustomStorageAssetsFolder/" folder:
+     // -- media libraries to the "media-libraries-container" folder
+     // -- "documents" folder to the "documents-container" folder
+     // NOTE: The "~/CustomStorageAssetsFolder/" folder is exported into the deployment package.
+     else    
+     {
+         MapLocalStoragePath("~/assets/media", CONTAINER_NAME_LIBRARIES);
+         MapLocalStoragePath("~/assets/documents", CONTAINER_NAME_DOCUMENTS);
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+<li>Rebuild the solution.</li>
+<li>
+<a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-with-a-deployment-package">Create and deploy the deployment package</a>.</li>
+</ol>
+<p>The binary files are now deployed according to the defined configuration and environment – either to Azure Blob storage or to local storage.</p>
+<h2 id="azure-blob-storage-for-private-cloud-deployments">Azure Blob storage for private cloud deployments</h2>
+<p>To map parts of the file system to Azure Blob storage when deploying to <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>:</p>
+<ol type="1">
+<li>
+<p>Follow these recommendations:</p>
+<ol type="1">
+<li>
+<strong>Use separate <a href="https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal" target="_blank">Azure Blob storage containers</a> for each deployment environment for the same project (for example, production and testing environments)</strong>. Such environments often contain identically named files that overwrite each other. To avoid collisions, use the <code>CustomRootPath</code> property to map folders for each environment to a different container.</li>
+<li>
+<strong>Use HTTPS to connect to Azure Blob Storage accounts</strong> (this behavior can be enabled via the <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-require-secure-transfer" target="_blank">Security transfer required</a> setting available in the <a href="https://portal.azure.com" target="_blank">Azure portal</a>). Xperience is by default configured to use HTTPS with Azure Blob Storage.
+<ul>
+<li>
+<p>If you need to use HTTP (for example because of storage accounts supporting only unencrypted (HTTP) connections), include the <a href="#optional-application-settings-for-azure-storage">CMSAzureBlobEndPoint</a> configuration key in your application’s configuration file. Set the value of the key to the full endpoint URL of the external storage account and explicitly specify the <em>HTTP</em> protocol:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  {
+  ...
+
+      "CMSAzureBlobEndPoint": "http://_StorageAccountName_.blob.core.windows.net"
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>Choose your authentication method. See <a href="#authentication-methods-for-azure-blob-storage">Authentication methods for Azure Blob storage</a> for detailed configuration options.</p></li>
+<li><p><a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a new Class Library</a> to your project and add the <strong>Kentico.Xperience.AzureStorage</strong> NuGet package as a dependency.</p></li>
+<li><p>Create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module class</a> in the created library.</p></li>
+<li>
+<p>Override the module’s <code>OnInit</code> method and for each folder that you want to store in the blob storage:</p>
+<ol type="1">
+<li><p>Create a new instance of the Azure storage provider.</p></li>
+<li><p><em>(Optional)</em> Specify the target container using the <code>CustomRootPath</code> property of the provider.</p></li>
+<li><p><em>(Optional)</em> You can specify whether you want the container to be publicly accessible using the <code>PublicExternalFolderObject</code> property of the provider. <code>True</code> means the container is publicly accessible.</p></li>
+<li>
+<p>Map the folder to the provider:</p>
+
+<div>
+
+</div>
+<div>
+As some deployment environments don’t provide a persistent file system, we recommend mapping the <strong>~/assets/</strong> project folder to prevent possible loss of files due to redeployment, swapping of slots, etc.
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mapping assets to self-managed Azure storage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ /* The following code snippet demonstrates the recommended mappings 
+ for the ~/assets/ folder mentioned in the note above. 
+ You can use the same approach to also map other folders from your project's file system. */
+
+ using CMS;
+ using CMS.DataEngine;
+ using CMS.IO;
+
+ using Kentico.Xperience.AzureStorage;
+
+ // Registers the custom module into the system
+ [assembly: RegisterModule(typeof(CustomInitializationModule))]
+
+ public class CustomInitializationModule : Module
+ {
+     // Module class constructor, the system registers the module under the name "CustomInit"
+     public CustomInitializationModule()
+         : base("CustomInit")
+     {
+     }
+
+     // Contains initialization code that is executed when the application starts
+     protected override void OnInit()
+     {
+         base.OnInit();
+
+         // Creates a new StorageProvider instance for Azure Blob storage
+         var assetsProvider = AzureStorageProvider.Create();
+
+         // Specifies the target container, the provider ensures its existence in the storage account
+         assetsProvider.CustomRootPath = "myassetscontainer";
+
+         // Makes the 'myassetscontainer' container publicly accessible
+         assetsProvider.PublicExternalFolderObject = true;
+
+         // Maps the local directory to the storage provider
+         StorageHelper.MapStoragePath("~/assets", assetsProvider);
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+<li><p><em>(Optional)</em> Set <a href="#optional-application-settings-for-azure-storage">Optional application settings for Azure storage</a>.</p></li>
+</ol>
+<p>The application deployed in the Azure instance now stores files from the <strong>~/assets</strong> project folder in the <strong>myassetscontainer</strong> Azure Blob storage container.</p>
+<h3 id="optional-application-settings-for-azure-storage">Optional application settings for Azure storage</h3>
+
+<div>
+
+</div>
+<div>
+<p>The optional application settings are applicable only for <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud deployments</a>.</p>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Key</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMSAzureTempPath</p>
+</td>
+<td>
+<p>The system uses the specified folder to store temporary files on a local disk, for example when transferring large files to or from the storage account.</p>
+<p>If not set, the system creates and uses an <strong>~/AzureTemp</strong> directory in the project’s root.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAzureTempPath": "C:\\AzureTemp"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAzureCachePath</p>
+</td>
+<td>
+<p>Specifies a folder on a local disk where files requested from the storage account are cached. This helps minimize the amount of blob storage operations, which saves time and resources.</p>
+<p>If not set, the system creates and uses an <strong>~/AzureCache</strong> directory in the project’s root.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAzureCachePath": "C:\\AzureCache"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAzureBlobEndPoint</p>
+</td>
+<td>
+<p>Sets the endpoint used for the connection to the blob service of the specified storage account. If you wish to use the default endpoint, remove the setting completely from the appropriate files.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAzureBlobEndPoint": "http://127.0.0.1:10000/devaccount"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSAzurePublicContainer</p>
+</td>
+<td>
+<p>Indicates if the blob container used to store the application’s files is public. If true, it will be possible to access files directly through the URL of the appropriate blob service, for example:</p>
+<p><strong>https://&lt;StorageAccountName&gt;.blob.core.windows.net/media/imagelibrary/logo.png</strong></p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAzurePublicContainer": true
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMSDownloadBlobTimeout</p>
+</td>
+<td>
+<p>Specifies the timeout interval in minutes for importing files from Azure Blob storage into Xperience.</p>
+<p>The default is <strong>1.5 minutes</strong>. Increase the interval if you encounter problems when importing large files (2GB+).</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample value</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSDownloadBlobTimeout": "5"
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h2 id="authentication-methods-for-azure-blob-storage">Authentication methods for Azure Blob storage</h2>
+<p>Xperience supports two authentication methods for Azure Blob storage connections:</p>
+<ul>
+<li>
+<strong>Shared key authentication</strong> – Uses the storage account name and access key.</li>
+<li>
+<strong>Managed identity authentication</strong> – Uses Microsoft Entra authentication with <a href="https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview" target="_blank">managed identities</a> . This is the recommended approach for enhanced security as it eliminates the need to store sensitive access keys in your application configuration.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Managed identity benefits</strong></p>
+<p>Managed identity authentication provides several security advantages:</p>
+<ul>
+<li>No need to store storage account keys in your application configuration</li>
+<li>Automatic credential rotation handled by Azure</li>
+<li>Fine-grained access control using Azure RBAC (Role-Based Access Control)</li>
+<li>Reduced risk of credential exposure</li>
+</ul>
+</div>
+
+<h3 id="shared-key-authentication">Shared key authentication</h3>
+<p>Specify the storage account name and primary access key in your application configuration file (<em>appsettings.json</em> by default).</p>
+<ol type="1">
+<li><p>Open the <a href="https://portal.azure.com" target="_blank">Azure Management Portal</a>.</p></li>
+<li><p>Open <strong>Storage accounts</strong>.</p></li>
+<li><p>Select your storage.</p></li>
+<li><p>Switch to the <strong>Access keys</strong> tab.</p></li>
+<li>
+<p>Use the <strong>Storage account name</strong> and one of the provided access key values.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ {
+     "CMSAzureAccountName": "StorageAccountName",
+     "CMSAzureSharedKey": "PrimaryAccessKey"
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h3 id="managed-identity-authentication">Managed identity authentication</h3>
+<p>Configure managed identity authentication using Microsoft Entra ID. This method provides enhanced security by eliminating the need to store access keys.</p>
+<ol type="1">
+<li>
+<p>Set up managed identity in Azure:</p>
+<ol type="1">
+<li><p>Enable managed identity for your Azure resources. See the <a href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/" target="_blank">Azure managed identities documentation</a>.</p></li>
+<li>
+<p>Grant the managed identity appropriate roles and permissions to your storage account:</p>
+<ul>
+<li>Role: <strong>Storage Blob Data Owner</strong>
+</li>
+<li>This <a href="https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-owner" target="_blank">built-in role</a> includes all necessary permissions for Xperience Azure Storage operations.</li>
+<li><strong><em>—OR—</em></strong></li>
+<li>Role: <strong>Storage Blob Data Contributor</strong>
+</li>
+<li>With additional permissions:
+<ul>
+<li>
+<code>Microsoft.Storage/storageAccounts/blobServices/containers/getAcl/action</code> (<a href="https://learn.microsoft.com/en-us/rest/api/storageservices/get-container-acl" target="_blank">Get Container ACL</a>)</li>
+<li>
+<code>Microsoft.Storage/storageAccounts/blobServices/containers/setAcl/action</code> (<a href="https://learn.microsoft.com/en-us/rest/api/storageservices/set-container-acl" target="_blank">Set Container ACL</a>)</li>
+</ul>
+</li>
+<li>The <a href="https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-contributor" target="_blank">Storage Blob Data Contributor role</a> provides blob read/write access but requires additional container ACL permissions for full functionality. Use this configuration to enforce the principle of least privilege.</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p>Configure storage account details in your application configuration:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ {
+     "CMSAzureAccountName": "StorageAccountName"
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Configure managed identity authentication in your application startup:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Azure.Identity;
+ using Kentico.Xperience.AzureStorage;
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ // Configure managed identity for Azure Storage
+ builder.Services.AddAzureStorageCredential(serviceProvider =&gt;
+ {
+     // For user-assigned managed identity, specify the client ID
+     return new ManagedIdentityCredential("your-user-assigned-identity-client-id");
+
+     // For system-assigned managed identity, use default constructor.
+     // Note that for system-assigned identitites to work the connected
+     // application must be deployed in Azure as well.
+     return new ManagedIdentityCredential();
+
+     // For DEVELOPMENT environments, you can also return
+     // DefaultAzureCredential for automatic credential discovery.
+     // See the Azure documentation for details.
+     return new DefaultAzureCredential();
+ });
+
+ // ...
+
+ </code></pre>
+</div>
+</li>
+</ol>
+
+</body>
+</html>

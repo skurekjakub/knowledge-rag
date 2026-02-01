@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Database table API</title>
+</head>
+<body>
+<p>Xperience stores most data in database tables. The API provides classes for managing the data of each table – an <code>Info</code> class, <code>IInfoProvider</code> interface (service), and an <code>InfoProvider</code> class.</p>
+<p></p>
+<h2 id="info-classes">Info classes</h2>
+<p>Every <code>Info</code> class is related to a specific database table. Instances of Info classes represent entries (rows) in the given table – the class serves as a container for the data of the entry. The properties of an info class correspond to the columns of the related table.</p>
+<h3 id="info-class-validation">Info class validation</h3>
+<p>When saving info objects to the database, the system validates object code name format and uniqueness. You can extend this validation by implementing info-specific rules via <code>IInfoValidator&lt;TInfo&gt;</code>. See <a href="/documentation/developers-and-admins/customization/customize-system-providers#info-object-validation">Customize system providers</a>.</p>
+<h2 id="info-class-managers">Info class managers</h2>
+<p>The system offers the following options for CRUD operations over managed database objects.</p>
+<h3 id="generic-provider-class-iinfoprovidertinfo">Generic provider class – IInfoProvider&lt;TInfo&gt;</h3>
+<p>The <code>IInfoProvider&lt;TInfo&gt;</code> and its associated extension methods provide conventional CRUD API in the form of <code>Get</code>, <code>Set</code>, and <code>Delete</code> methods and their asynchronous counterparts. The <code>Get</code> and <code>GetAsync</code> methods expose multiple overloads for retrieval via ID, GUID, or code name depending on the configuration of the corresponding object type.</p>
+<p>You can manage objects via <code>IInfoProvider&lt;TInfo&gt;</code> instances. Substitute <code>TInfo</code> for the <code>*Info</code> class you want to work with. We recommend this approach for all custom objects added to the system. For example, to obtain an instance of the content language manager, use:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Initialize a generic info object provider via dependency injection</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.DataEngine;
+
+private readonly IInfoProvider&lt;ContentLanguageInfo&gt; contentLanguageProvider;
+
+public MyClass(IInfoProvider&lt;ContentLanguageInfo&gt; contentLanguageProvider)
+{
+    this.contentLanguageProvider = contentLanguageProvider;
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>Note that not all system classes currently fully support this approach.  </p>
+</div>
+
+<p>For bulk operations, use the <code>BulkInsert</code>, <code>BulkUpdate</code>, and <code>BulkDelete</code> methods.</p>
+<p>If you cannot use dependency injection in your codebase, you can instantiate the generic provider via the static <code>CMS.DataEngine.Provider&lt;TInfo&gt;.Instance</code>.</p>
+<h3 id="dedicated-provider-classes">Dedicated provider classes</h3>
+<p>Each managed database object can have a dedicated provider class that ensures CRUD operations.</p>
+<h4 id="iinfoprovider-interfaces">IInfoProvider interfaces</h4>
+<p>Most <code>Info</code> classes have a matching <code>IInfoProvider</code> interface (service), which allows basic management of the given objects – getting, creating, updating, and deleting – using the system’s <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery</a> query syntax.</p>
+<p>You can resolve instances of <code>IInfoProvider</code> services using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> or via the <code>Provider</code> property of the corresponding <code>Info</code> class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Code example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Membership;
+
+// ...
+
+// Gets a UserInfo object representing the user with the "Andy" username
+UserInfo user = UserInfo.Provider.Get("Andy");
+
+// Saves the user's email address to a local variable
+string userEmail = user.Email;
+</code></pre>
+</div>
+
+<h4 id="infoprovider-classes">InfoProvider classes</h4>
+<p><code>InfoProvider</code> classes are the actual implementations of the <code>IInfoProvider</code> interfaces. Every provider manages the data of a specific table using the related <code>Info</code> objects.</p>
+<p>We do not recommend using <code>InfoProvider</code> classes directly for basic operations, such as getting, creating, or deleting objects. Use the corresponding <code>IInfoProvider</code> service instead.</p>
+
+</body>
+</html>

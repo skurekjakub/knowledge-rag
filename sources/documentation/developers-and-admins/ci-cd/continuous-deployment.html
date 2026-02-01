@@ -1,0 +1,424 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Continuous Deployment</title>
+</head>
+<body>
+<p>The Continuous Deployment (CD) feature enables you to use Xperience projects in automated development and deployment flows.</p>
+<p>Xperience is a standard .NET project, so its code and other files support any compatible deployment process or pipeline. However, deploying and updating content stored in the Xperience database can present more of a challenge.</p>
+<p>The Continuous Deployment feature helps address this scenario by converting content and other objects from the database into XML files in a repository on the file system. The CD repository can then be deployed together with the other project files, and restored to the database in the target environment (staging, UAT, production, etc.).</p>
+<p>Deployment with CD uses the following general process:</p>
+<ol type="1">
+<li>Prepare new projects or changes to existing ones in a development environment.</li>
+<li>Configure the development instance to correctly <a href="#synchronize-macro-signatures">synchronize macro signatures</a> with the target deployment instances.</li>
+<li>
+<a href="#generate-cd-configuration-files">Generate a CD configuration file</a> and adjust it according to your requirements.</li>
+<li>
+<a href="#store-objects-to-a-cd-repository">Store database objects to a CD repository</a> using the appropriate configuration file for your deployment.</li>
+<li>Run your deployment process or pipeline for the project. <a href="#restore-the-cd-repository-to-the-database">Restore the CD repository</a> to the target environment as part of the overall process.</li>
+</ol>
+<p>Continuous Deployment actions are performed via the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/" target="_blank">.NET command-line interface</a> (included with the .NET SDK).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Continuous Deployment is not a substitute for staging</strong></p>
+<p>Continuous Deployment is intended to be used for initial deployments and basic data manipulation. It should not be used to deploy large volumes of data.</p>
+<p><strong>DO</strong> use CD for:</p>
+<ul>
+<li>Website/email/headless channels, content types representing the content model, page tree structure, basic emails, essential content items</li>
+<li>Assets that are essential for the design and branding, such as background images, graphics, and company logos</li>
+</ul>
+<p><strong>DON’T</strong> use CD for:</p>
+<ul>
+<li>Deploying production data to the live site, such as marketing assets, images, videos, large documents, large amounts of content items</li>
+</ul>
+<p>To transfer new and updated content from an editing environment to production, we recommend using the <a href="/documentation/business-users/content-sync">Content sync</a> feature instead of CD. See <a href="/documentation/developers-and-admins/configuration/content-sync-configuration">Content sync configuration</a> to learn more about setting up content sync.</p>
+<p>When <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploying</a> a large amount of data to the <a href="/documentation/developers-and-admins/saas">SaaS environment</a>, use <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-a-large-amount-of-data-during-initial-deployments">custom restore</a>.</p>
+</div>
+
+<h2 id="generate-cd-configuration-files">Generate CD configuration files</h2>
+<p>Before creating a Continuous Deployment repository for an Xperience project, you need to prepare a configuration file that determines which types of objects are included and which operations are performed when restoring the repository. For detailed information about CD configuration files, see <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">Exclude objects from CI/CD</a>.</p>
+<p>You don’t need to write a new configuration file from nothing. Xperience provides a CLI command that generates a basic CD configuration file:</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to your Xperience project’s root directory.</p></li>
+<li>
+<p>Use <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> to execute the <code>--kxp-cd-config</code> command:</p>
+<ul>
+<li>
+<p>We recommend running the command with the <code>--no-build</code> parameter. This option saves time and avoids an unnecessary project build.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  dotnet run --no-build -- --kxp-cd-config --path "C:\CD_configs\Production\repository.config"
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Command parameter</strong></p>
+<p>The <code>--kxp-cd-config</code> command’s <code>--path</code> parameter sets the location where the CD configuration file is generated. Must include both the path and file name.</p>
+<p>Add the <code>--</code> syntax separator before any command parameters that you wish to pass directly to the Xperience application and avoid conflicts with .NET CLI parameters.</p>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>The command generates the CD configuration file in the specified location. Adjust the configuration according to your deployment requirements (see <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">Exclude objects from CI/CD</a>).</p>
+<p>Continue by using the configuration file when you <a href="#store-objects-to-a-cd-repository">store objects to a CD repository</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>CD restore mode</strong> <span id="cdrestoremode"></span></p>
+<p>The repository configuration file <strong>must</strong> contain the <code>&lt;RestoreMode&gt;</code> element. The restore mode specifies which types of object operations are performed in the target database when restoring the repository. The restore mode provides restrictive options that allow you to safely deploy to production environments, where you do not wish to delete or overwrite live data.</p>
+<p>The following <code>&lt;RestoreMode&gt;</code> values are possible:</p>
+<ul>
+<li>
+<code>Create</code> – only creates new objects. Never deletes or modifies existing objects.</li>
+<li>
+<code>CreateUpdate</code> – creates new objects and updates existing objects. Never deletes objects. This is the default option for newly generated CD repository configuration files.</li>
+<li>
+<code>Full</code> – creates new objects, updates existing objects, deletes objects that do not exist in the repository.
+<ul>
+<li>
+<strong>Note</strong> – Using this option with deployment packages containing large amounts of objects or with large amounts of data already present in the system can result in a failed restore.</li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h2 id="store-objects-to-a-cd-repository">Store objects to a CD repository</h2>
+<p>Use the following steps to store all supported objects from the database to a CD repository:</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to your Xperience project’s root directory.</p></li>
+<li>
+<p>Use <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> to execute the <code>--kxp-cd-store</code> command:</p>
+<ul>
+<li>
+<p>If your project is up-to-date and rebuilt, run the command with the <code>--no-build</code> parameter. This option saves time and avoids an unnecessary project build before the store operation.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  dotnet run --no-build -- --kxp-cd-store --repository-path "C:\Xperience_Deployments\Production\CDRepository" --config-path "C:\CD_configs\Production\repository.config"
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Command parameters</strong></p>
+The <code>--kxp-cd-store</code> command has the following parameters:
+<ul>
+<li>
+<code>--repository-path</code> – file system path of the CD repository folder, where the object files are stored. You can either create a new repository folder for your deployment or overwrite an existing CD repository.</li>
+<li>
+<code>--config-path</code> – file system path of the <a href="#generate-cd-configuration-files">CD configuration file</a>, including the file name. Required if storing objects to a new repository folder. When storing to an existing repository, the parameter is optional – if not specified, the system searches for a <strong>repository.config</strong> file in the root of the repository folder. Do not explicitly specify the <code>--config-path</code> parameter if you want to use the configuration file in the root of the repository folder.</li>
+</ul>
+<p>Add the <code>--</code> syntax separator before any command parameters that you wish to pass directly to the Xperience application and avoid conflicts with .NET CLI parameters.</p>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>When the process completes, the CD repository contains XML files with the serialized data of objects from the database, based on the specified configuration file. Objects are stored from the database specified by the <code>CMSConnectionString</code> in the application’s configuration file (<em>appsettings.json</em> by default).</p>
+<p>After the store operation, the root of the CD repository always contains a configuration file named <strong>repository.config</strong> (the content is copied/overwritten from the file provided in the <code>--config-path</code> parameter).</p>
+<p>The CD repository can then be used to <a href="#restore-the-cd-repository-to-the-database">restore the data</a> to a target environment’s database.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Source control ignore rules</strong></p>
+<p>Certain source control systems may have ignore rules, such as <em>gitignore</em>, which can unintentionally exclude files or folders used in the CI/CD repository (for example, the <em>*.class</em> and <em>*.user</em> file and folder extensions).</p>
+<p>Such rules may prevent your environment from working correctly. We recommend that you evaluate ignore rules for the repository and disable them as required.</p>
+</div>
+
+<h2 id="synchronize-macro-signatures">Synchronize macro signatures</h2>
+<p>To ensure that <a href="/documentation/developers-and-admins/configuration/macro-expressions">macro expressions</a> (for example used in <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a> conditions) have valid <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">signatures</a> and work correctly after deployment, the source instance from which you create the CD repository must use the same hash salt as the target instance.</p>
+<p>You can check and configure the hash salt in the value of the <code>CMSHashStringSalt</code> key within the project configuration file (<em>appsettings.json</em> by default). New Xperience projects have a randomly generated <a href="https://en.wikipedia.org/wiki/GUID" target="_blank">GUID</a> as their hash salt.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSHashStringSalt": "e68b9ad6-a461-4707-8e3e-ece73f03dd02",
+
+</code></pre>
+</div>
+
+<p>If you plan to <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploy to the SaaS environment</a>, use the hash salt value from your <a href="/documentation/developers-and-admins/saas/xperience-portal#hash-string-salt-for-the-xperience-portal-project">Xperience Portal project</a>.</p>
+<p>For <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">deployment to private cloud</a>, the simplest solution is to have matching <code>CMSHashStringSalt</code> values for your development project and all target deployment instances. If this is not possible, we recommend the following approach:</p>
+<ol type="1">
+<li><p>Set up <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments" target="_blank">multiple environments</a> for your development project.</p></li>
+<li><p>Prepare a separate configuration file for each deployment target, for example: <em>appsettings.Staging.json</em>, <em>appsettings.Production.json</em></p></li>
+<li><p>Get the <code>CMSHashStringSalt</code> value from your target deployment instances, and set matching values for the corresponding environments on your development instance.</p></li>
+<li>
+<p>Extend your CD process to <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-signatures">re-sign</a> macros <strong>before</strong> you <a href="#store-objects-to-a-cd-repository">store objects</a> to a repository.</p>
+<ul>
+<li><p>Select the correct environment for your deployment via the <code>--launch-profile</code> option of the <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> command used to re-sign macros.</p></li>
+<li>
+<p><strong>Note</strong>: The user account that you use to re-sign macros must also exist on the target deployment instance.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  dotnet run --launch-profile "Production" -- --kxp-resign-macros --old-salt "Old_Salt" --username administrator
+  dotnet run --no-build -- --kxp-cd-store --repository-path "C:\Xperience_Deployments\Production\CDRepository" --config-path "C:\CD_configs\Production\repository.config" 
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>With this process, any macros stored in the repository files have signatures that are valid for the target deployment instance.</p>
+<h2 id="restore-the-cd-repository-to-the-database">Restore the CD repository to the database</h2>
+<p>To ensure that the restore process works correctly, you need to <strong><em>stop the target Xperience application before restoring the CD repository</em></strong>.</p>
+<p>If the application runs during the restore process, you may encounter the following problems:</p>
+<ul>
+<li>Deadlocks or data inconsistencies if changes occur while data is being restored from the files</li>
+<li>Outdated content in the application’s cache if you restore without restarting (can cause inconsistencies in displayed content or the administration)</li>
+</ul>
+<p>Perform the following steps to transfer objects from the CD repository to the database of your deployment target:</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to your Xperience project’s root directory.</p></li>
+<li>
+<p>Use <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> to execute the <code>--kxp-cd-restore</code> command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Local development projects</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run -- --kxp-cd-restore --repository-path "C:\Xperience_Deployments\Production\CDRepository"
+
+ </code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Deployed projects with built assemblies</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ dotnet myxperienceproject.dll --kxp-cd-restore --repository-path "C:\Xperience_Deployments\Production\CDRepository"
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Command details</strong></p>
+<p>If running the restore from a deployed application containing built assemblies, use the <code>dotnet myxperienceproject.dll --kxp-cd-restore</code> command (replace the assembly with the name of your Xperience project’s DLL). For more information, see the <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-run#description" target="_blank">dotnet run documentation</a>.</p>
+The restore command must be called with the <code>--repository-path</code> parameter, which sets the file system path of the CD repository folder from which data is restored.
+</div>
+</li>
+</ol>
+<p>The restore action deserializes objects from the CD repository and updates the target database according to the <a href="#generate-cd-configuration-files">restore mode set in the repository’s configuration file</a>.</p>
+<h3 id="set-the-target-database">Set the target database</h3>
+<p>The target database of the CD restore is specified by the <code>CMSConnectionString</code> key in the configuration file of the application for which the restore command is executed (<em>appsettings.json</em> by default).</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+"ConnectionStrings": {
+    "CMSConnectionString": "Data Source=myserver;Initial Catalog=Xperience;Integrated Security=True;Persist Security Info=False;Connect Timeout=120;Encrypt=False;Current Language=English;"
+},
+
+...
+
+</code></pre>
+</div>
+
+<p>To set the CD deployment target, select an approach that best fits your development environment and deployment process or pipeline. For example:</p>
+<ul>
+<li><p>Set up an automated deployment pipeline that sets the <code>CMSConnectionString</code> key before running the restore command. You can use <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments" target="_blank">multiple environments</a> with separate configuration files.</p></li>
+<li>
+<p>Pass the connection string as a command line argument using the <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration#clcp" target="_blank">Command-line configuration provider</a> when executing <code>--kxp-cd-restore</code>:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  dotnet myxperienceproject.dll --kxp-cd-restore -- /ConnectionStrings:CMSConnectionString "..." --repository-path "C:\Xperience_Deployments\Production\CDRepository" 
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="where-to-run-the-cd-restore">Where to run the CD restore?</h3>
+<p>Depending on the hosting environment to which you are deploying, you can run the CD restore from the following locations:</p>
+<ul>
+<li>
+<strong>From your development environment</strong> – when you have your project ready for deployment, run the restore command from the given project and <a href="#set-the-target-database">specify the target production database</a>.</li>
+<li>
+<strong>From your deployment pipeline</strong> – if you use a deployment pipeline, you can set the target database and run the CD restore command within the steps of your pipeline.</li>
+<li>
+<strong>On the target environment</strong> –  if your target environment allows you to run the .NET CLI, you can include the CD repository in the deployed project files and run the restore command from the project after deployment.</li>
+</ul>
+<h4 id="deploy-content-item-asset-files">Deploy content item asset files</h4>
+<p>When running the CD restore outside of the target environment (from a local development environment or deployment pipeline), you need to take additional steps to deploy files managed as <a href="/documentation/business-users/content-hub/content-item-assets">Content item assets</a>.</p>
+<ol type="1">
+<li><p><a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers">Map</a> the <em>~/assets</em> folder to the target environment’s file system (e.g., <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a>) for the project where you run the CD restore.</p></li>
+<li>
+<p>Delete all files that you wish to deploy from the local file system’s <em>~/assets</em> folder before running the CD restore.</p>
+<ul>
+<li>For deployments to <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Storage</a> or <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>, you can instead disable the mapping’s fallback to the local folder – set the <code>EnableFallbackToLocalFileSystem</code> property of <code>AzureStorageOptions</code> or <code>AmazonStorageOptions</code> to <code>false</code> in your application’s <em>Program.cs</em> file.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.AzureStorage;
+using Kentico.Xperience.AmazonStorage;
+
+...
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddKentico( ... );
+
+// Disables the fallback to the local file system for Azure Storage
+builder.Services.Configure&lt;AzureStorageOptions&gt;(options =&gt; options.EnableFallbackToLocalFileSystem = false);
+
+// Disables the fallback to the local file system for Amazon S3
+builder.Services.Configure&lt;AmazonStorageOptions&gt;(options =&gt; options.EnableFallbackToLocalFileSystem = false);
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

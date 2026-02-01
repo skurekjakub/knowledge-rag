@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email channel management</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the email channels that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="#create-and-configure-email-channels">Channel size</a> property.</p>
+</div>
+
+<p>Email channels are a dedicated medium of communication between you and your audience. An Xperience project may contain multiple email channels, focusing on different content strategies, languages and audience engagement techniques. For example, you can have separate email channels dedicated to marketing and supporting different products or services offered by your company, each with a different different tone and style.</p>
+<p>Channels allow for a clean separation of your organization’s emails. Every email channel has <strong>its own application</strong> in the Xperience administration, where marketers <a href="/documentation/business-users/digital-marketing/emails">create and send emails</a>.</p>
+<p>The defining property of every email channel is a <em>sending domain</em>, which represents your company or brand, and is used in all <em>sender addresses</em> for the channel’s emails.</p>
+<h2 id="create-and-configure-email-channels">Create and configure email channels</h2>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application in Xperience.</li>
+<li>Select <strong>New channel</strong>.</li>
+<li>Fill in the channel properties:
+<ul>
+<li><p><strong>Channel name</strong> – the name of the channel displayed in Xperience.</p></li>
+<li>
+<p><em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</p>
+<ul>
+<li>Channel code names must be unique across all channels (of any type).</li>
+<li>In projects intended for <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS deployment</a> (created with the <code>--cloud</code> parameter), only code names with alphanumeric characters are allowed.</li>
+</ul>
+</li>
+<li><p><strong>Channel type</strong> – select <em>Email</em> as the channel type.</p></li>
+<li>
+<p><strong>Channel size</strong> – channels are available in two sizes:</p>
+<ul>
+<li>
+<em>Standard channel</em> – may contain an unlimited number of email items. Only available in the <em>Advanced</em> license tier.</li>
+<li>
+<em>Microchannel</em> – available in all license tiers, but limited to <strong>5</strong> emails per microchannel. The limit restricts the maximum number of email content items allowed in the microchannel, but not how many times these emails can be sent to recipients. Each email can link an unlimited number of <a href="/documentation/business-users/content-hub">reusable content items</a>.</li>
+</ul>
+</li>
+<li><p><strong>Content language</strong> – the <a href="/documentation/developers-and-admins/configuration/languages">language</a> of all emails in the channel.</p></li>
+<li><p><strong>Sending domain</strong> – the domain associated with the channel. This domain is used for the channel’s <a href="#add-sender-addresses">sender addresses</a>, and must be unique across all email channels.</p></li>
+<li>
+<p><strong>Email service domain</strong> – the domain used in various system links in the channel’s emails (click tracking links, the email open tracking pixel, asset URLs, subscription and unsubscription URLs). The specified domain must host an Xperience by Kentico application connected to the database where this email channel is configured. The most common setup is to use the domain of a related <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>. Alternatively, you can use the domain hosting the Xperience application where you manage your emails (if the application is publicly accessible).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email service domain format</strong></p>
+If the target application runs under a port different than <em>80</em> or with a specific URL path, both must be specified in the domain name. Do not include the URL scheme (<em>http</em> or <em>https</em>).
+</div>
+</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The email channel is now ready. If you need to configure an existing channel, open the channel again via the <strong>Channel management</strong> application and edit the values on the <strong>General</strong> tab.</p>
+<p>After you add a channel, the system automatically creates a new application matching the channel’s name in the <strong>Channels</strong> category of the administration’s application list. This is the application where users can create and view the channel’s emails.</p>
+
+<div>
+
+</div>
+<div>
+<p>For applications <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed in the SaaS environment</a>, you also need to add the channel in Xperience Portal. See <a href="#email-channels-in-the-saas-environment">Email channels in the SaaS environment</a>.</p>
+</div>
+
+<h3 id="change-channel-size-of-existing-channels">Change channel size of existing channels</h3>
+<p>You can freely change between the <em>microchannel</em> and <em>standard</em> channel size of existing channels via the <strong>General</strong> tab. Additionally, changing <em>standard</em> channels to <em>microchannels</em> does not cause any data loss in case the converted channel exceeds microchannel limits. However, you will receive a license violation warning if the resulting channel or item count oversteps the limits of your license for that particular channel type.</p>
+<h3 id="set-up-emails-in-multiple-languages">Set up emails in multiple languages</h3>
+<p>Each email channel only supports one <a href="/documentation/developers-and-admins/configuration/languages">language</a> (unlike pages in website channels or content items). Therefore, if you wish to send emails in a different language, you need to create a new email channel with a unique <strong>Sending domain</strong> for each language variant.</p>
+<h2 id="add-allowed-content-types">Add allowed content types</h2>
+<p>Every email in Xperience uses a specific <a href="/documentation/developers-and-admins/development/content-types">content type</a>. The content type defines the fields that users can edit when writing emails.</p>
+<p>To create emails under a channel, you need to prepare suitable <a href="/documentation/developers-and-admins/development/content-types">content types</a> and allow them for the channel:</p>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application in Xperience.</li>
+<li>Select your email channel.</li>
+<li>On the <strong>Allowed content types</strong> tab, <strong>Select content types</strong>.</li>
+<li>Select or clear the checkboxes to choose which content types you want to make available in the channel.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<h2 id="add-sender-addresses">Add sender addresses</h2>
+<p>Every email has a sender name and address that recipients see in their inbox. In Xperience, you prepare sender addresses in advance for each email channel. When creating <a href="/documentation/business-users/digital-marketing/emails">emails</a>, users can choose from a list of the given channel’s sender addresses.</p>
+<p>To add a sender address for an email channel:</p>
+<ol type="1">
+<li><p>Open the <strong>Channel management</strong> application in Xperience.</p></li>
+<li><p>Select your email channel.</p></li>
+<li><p>On the <strong>Sender addresses</strong> tab, select <strong>Add sender address</strong>.</p></li>
+<li>
+<p>Fill in the sender address properties:</p>
+<ul>
+<li>
+<strong>Sender name</strong> – the name of the email sender.</li>
+<li>
+<strong>Sender email address</strong> – the “From” address that recipients see in their inbox. The domain part of all sender addresses must match the sending domain of the email channel. The address must be unique across all senders under the email channel.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+<h2 id="email-domains-in-private-cloud-environments">Email domains in private cloud environments</h2>
+<h3 id="configure-sending-and-service-domains-programmatically">Configure sending and service domains programmatically</h3>
+
+<div>
+
+</div>
+<div>
+<p>Programmatic configuration of email channel domains is only supported in <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud environments</a>.</p>
+<p>For applications <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed in the SaaS environment</a>, this configuration is done automatically by the infrastructure after you add an email channel and set its domains in Xperience Portal (see <a href="#email-channels-in-the-saas-environment">Email channels in the SaaS environment</a>).</p>
+</div>
+
+<p>The sending and service domains of your email channels can be configured programmatically via the <code>EmailChannelDomainOptions</code> class using ASP.NET <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a>. This configuration <strong>is prioritized</strong> over the channel domain values set via the Xperience administration interface.</p>
+<p>For example, when configured via <code>appsettings.json</code>:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{  
+  "EmailChannelDomains": {
+    "DomainOverrides": {
+      "AcmeEmails": {
+        "SendingDomain": "mysendingdomain.com",
+        "ServiceDomain": "myservicedomain.com"
+      }
+    }
+  },
+  ...
+}
+
+</code></pre>
+</div>
+
+<p>Where <code>AcmeEmails</code> is the code name of the channel to configure.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Websites;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Apply the configuration from appsettings.json
+builder.Services.Configure&lt;EmailChannelDomainOptions&gt;(builder.Configuration.GetSection("EmailChannelDomains"));
+
+</code></pre>
+</div>
+
+<p>For channels not configured via application settings, the values specified via the administration interface are used.</p>
+<h3 id="domains-for-different-application-environments">Domains for different application environments</h3>
+<p>You can use the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options pattern</a> to set different domains per <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments" target="_blank">environment</a> by introducing corresponding <strong>appsettings.environment.json</strong> files. The following example uses different sending and service domains when running the project under the <em>Development</em> environment.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.Development.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "EmailChannelDomains": {
+    "DomainOverrides": {
+      "AcmeEmails": {
+        "SendingDomain": "localtest.com",
+        "ServiceDomain": "localhost"
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h2 id="email-channels-in-the-saas-environment">Email channels in the SaaS environment</h2>
+<h3 id="add-email-channels-in-xperience-portal">Add email channels in Xperience Portal</h3>
+<p>For applications <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed in the SaaS environment</a>, you need to add your channels in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> after you create them in the <a href="#create-and-configure-email-channels">Xperience administration</a>:</p>
+<ol type="1">
+<li>Open the <strong>Channels and Domains → Channels</strong> application in Xperience Portal.</li>
+<li>Select <strong>Add channel</strong>.</li>
+<li>Set the channel properties:
+<ul>
+<li>
+<strong>Display name</strong> – enter a name for the channel that will be displayed in Xperience Portal.</li>
+<li>
+<strong>Code name</strong> – copy the exact code name of the <a href="#create-and-configure-email-channels">email channel</a> from the <em>Channel management</em> application in the Xperience administration.</li>
+<li>
+<strong>Channel type</strong> – <em>Email</em>
+</li>
+<li>
+<strong>Channel size</strong> – select the same <a href="#create-and-configure-email-channels">channel size</a> as in the <em>Channel management</em> application in the Xperience administration.</li>
+</ul>
+</li>
+<li>Select <strong>Add channel</strong>.</li>
+</ol>
+<p>After you add an email channel, the system automatically starts configuring the sending and service domains for the deployed applications. This process may take up to several minutes. During this time you can continue configuring other channels and <a href="#add-custom-email-channel-domains">domains</a>.</p>
+<p>Once you perform all required changes to channels and domains and after the configuration is completed by the system, select the <strong>Apply changes</strong> button in the information ribbon at the top of the interface and perform a final review of the changes you are about to apply. Applying these changes triggers a restart of the affected applications.</p>
+
+<div>
+
+</div>
+<div>
+<p>You may need to manually refresh the current page for the <strong>Apply changes</strong> button to appear in the information ribbon.</p>
+</div>
+
+<p>When the configuration is finished, the email channel uses automatically generated <strong>Default</strong> domains unless you <a href="#manage-email-channel-domains-in-xperience-portal">add suitable custom domains</a> for the channel in production or staging environments.</p>
+<h3 id="manage-email-channel-domains-in-xperience-portal">Manage email channel domains in Xperience Portal</h3>
+<p>Email channels in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> use the following basic domain types:</p>
+<ul>
+<li>
+<strong>Default</strong> – a default sending and service domain is generated for every email channel and environment. Default domains are replaced when you add a custom domain.</li>
+<li>
+<strong>Custom</strong> – custom domains added for the PROD or STG environment.</li>
+</ul>
+<p>and two different kinds of domains:</p>
+<ul>
+<li>
+<strong>Sending domain</strong> (<i></i>) – the domain used for the channel’s <a href="#add-sender-addresses">sender addresses</a>.
+<ul>
+<li>Must be unique across all email channels.</li>
+<li>Emails are always sent via <a href="https://sendgrid.com/" target="_blank">Twilio SendGrid</a>. See <a href="/documentation/developers-and-admins/configuration/email-configuration#sendgrid-integration">SendGrid integration</a> for more information.</li>
+</ul>
+</li>
+<li>
+<strong>Service domain</strong> (<i></i>) – the domain name used as the base of various system URLs in the channel’s emails (click tracking links, the email open tracking pixel, asset URLs, subscription and unsubscription URLs).
+<ul>
+<li>Do not include a URL path, port number or URL scheme in the service domain.</li>
+<li>If your emails are related to a specific website, we recommend setting the email service domain to the main domain of the given <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="add-custom-email-channel-domains">Add custom email channel domains</h3>
+<p>To set a custom domain for an email channel you need to add the domain in Xperience Portal and set the corresponding DNS records in the DNS registry of your domain provider:</p>
+<ol type="1">
+<li>As a user with the <em>Tenant administrator</em> or <em>DevOps Engineer</em> <a href="/documentation/developers-and-admins/saas/xperience-portal/reference-xperience-portal-user-roles">role</a>, open the <strong>Channels and Domains → Channels</strong> application in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</li>
+<li>Select the <strong>Domains</strong> (<i></i>) action for the chosen email channel.</li>
+<li>Select <strong>Add domain</strong>.</li>
+<li>Choose the <strong>Environment</strong> (custom domains are only supported for production or staging environments).</li>
+<li>Choose the <strong>Domain kind</strong> (<em>Email sending domain</em> or <em>Service domain</em>).</li>
+<li>Enter the custom <strong>Domain name</strong> and select <strong>Next</strong>.</li>
+<li>Copy the displayed DNS records from Xperience Portal to your DNS registrar.</li>
+<li>After the settings are successfully registered with your DNS registrar, confirm the DNS configuration and select <strong>Create</strong>. This triggers a DNS validation process that takes a few minutes to finish.
+<ul>
+<li>If the DNS validation fails, double-check your DNS settings, wait a few minutes, and select <strong>Validate</strong> (<i></i>) to restart the validation. See <a href="#revalidate-custom-domain-dns-settings">Revalidate custom domain DNS settings</a>.</li>
+</ul>
+</li>
+</ol>
+<p>When the custom domain’s DNS settings are successfully validated, the domain switches to the <strong>Active</strong> status and replaces the default domain. Each email channel can only have one <em>Active</em> sending domain and one <em>Active</em> service domain.</p>
+<p></p>
+<p>The system then automatically configures the new domain settings for the deployed application. This process may take up to several minutes. During this time you can continue configuring other <a href="#add-email-channels-in-xperience-portal">channels</a> and domains. You do not need to (and cannot) configure the channel’s domain in the Xperience administration.</p>
+<p>Once you perform all required changes to channels and domains and after the configuration is completed by the system, select the <strong>Apply changes</strong> button in the information ribbon at the top of the interface and perform a final review of the changes you are about to apply. Applying these changes triggers a restart of the affected applications.</p>
+
+<div>
+
+</div>
+<div>
+<p>You may need to manually refresh the current page for the <strong>Apply changes</strong> button to appear in the information ribbon.</p>
+</div>
+
+<h3 id="domain-status">Domain status</h3>
+<p>You can check the status of a channel’s domains in the <strong>Channels and Domains → Channels</strong> application in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>. Select the <strong>Domains</strong> (<i></i>) action for a specific channel.</p>
+<ul>
+<li>
+<strong>Active</strong> – The domain is active and working. Each email channel can only have one <em>Active</em> sending domain and one <em>Active</em> service domain. Adding a new custom domain that reaches the <em>Active</em> status replaces the previous <em>Active</em> domain of the given kind.</li>
+<li>
+<strong>DNS validation failed</strong> – The DNS records are configured incorrectly, or the configuration has not yet been propagated through the DNS servers. See <a href="#revalidate-custom-domain-dns-settings">Revalidate custom domain DNS settings</a>.</li>
+<li>
+<strong>Error</strong> – A system configuration issue with the domain. Contact <a href="https://xperience.io/services/support" target="_blank">Kentico support</a>.</li>
+<li>
+<strong>Transient error</strong> – There was a temporary error while creating, validating, or deleting the domain. To recover from this status, use the <em>Revalidate</em> (<i></i>) action to resubmit the domain.</li>
+<li>
+<strong>Creating</strong> – The domain is being created.</li>
+<li>
+<strong>Pending</strong> – The domain is created, but the application settings have not been applied yet.</li>
+<li>
+<strong>Deleting</strong> – The domain is being deleted.</li>
+</ul>
+<h3 id="revalidate-custom-domain-dns-settings">Revalidate custom domain DNS settings</h3>
+<p>If you add a custom domain for a channel and its DNS validation fails, you need to revalidate the DNS settings in Xperience Portal.</p>
+<ol type="1">
+<li>Open the <strong>Channels and Domains → Channels</strong> application in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> with a <strong>Tenant administrator</strong> or <strong>DevOps Engineer</strong> role.</li>
+<li>Select the <strong>Domains</strong> (<i></i>) action for the related channel.</li>
+<li>Select <strong>Revalidate</strong> (<i></i>) to restart the domain validation for a domain.</li>
+<li>Xperience Portal displays DNS settings. Apply these settings with your DNS registrar.</li>
+<li>After the settings are successfully registered with your DNS registrar, select the checkbox confirming the DNS configuration and select <strong>Validate</strong>. This triggers a DNS validation process.</li>
+<li>Allow a few minutes for the DNS validation to finish.</li>
+<li>Check the <a href="#domain-status">domain status</a>.</li>
+</ol>
+<p>Your custom domains are now revalidated. If the issues persist, contact <a href="https://xperience.io/services/support" target="_blank">Kentico support</a>.</p>
+<h3 id="view-dns-records-of-custom-domains">View DNS records of custom domains</h3>
+<p>You can view DNS records for any custom domain in the Xperience Portal:</p>
+<ol type="1">
+<li>Open the <strong>Channels and Domains → Channels</strong> application in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a> with a <strong>Tenant administrator</strong> or <strong>DevOps Engineer</strong> role.</li>
+<li>Select the <strong>Domains</strong> (<i></i>) action for the related channel.</li>
+<li>Select the <strong>DNS records</strong> (<i></i>) action.<br>
+</li>
+</ol>
+<p>You can now see the DNS records for the domain. You can copy the values and use them, for example, with a new registrar.</p>
+<p></p>
+
+</body>
+</html>

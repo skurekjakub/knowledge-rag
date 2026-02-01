@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Create pages with editable areas</title>
+</head>
+<body>
+<p>After you enable the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder feature</a> for your Xperience application, you can start creating pages with editable areas where content editors can add content using <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Page Builder widgets</a>. Content editors can arrange widgets using predefined layouts to achieve their desired result without having to resort to coding. You can adjust the visual arrangement of widgets on a page via the following components:</p>
+<ul>
+<li>
+<strong>Editable areas</strong> – defined directly in the views of your site’s pages. They are the top-level layout component and contain one or more sections.</li>
+<li>
+<strong>Sections</strong>– customizable components that specify the visual layout of widget zones. Content editors can choose which sections to add within editable areas, and thus adjust the structure of the page. A section may contain multiple widget zones. See <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Sections for Page Builder</a>.</li>
+<li>
+<strong>Widget zones</strong> – components that allow content editors to insert widgets. Widget zones are defined in the views of sections.</li>
+</ul>
+<p></p>
+<h2 id="create-a-page">Create a page</h2>
+<ol type="1">
+<li>Open the Xperience administration.</li>
+<li>In the <strong>Content types</strong> application, set up a <a href="/documentation/developers-and-admins/development/content-types">content type</a> for which the Page Builder is enabled.</li>
+<li>In the website channel application, create a page of the appropriate content type in the content tree.</li>
+</ol>
+<h2 id="add-editable-areas-to-views">Add editable areas to views</h2>
+<p>Identify the locations on your website where you want editors to place widgets. Then define these locations by adding editable areas to the code of the corresponding views. The identifier of each editable area must be a string without white spaces that is unique within the context of the given page:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Web.Mvc
+
+&lt;div&gt;
+    @await Html.Kentico().EditableAreaAsync("area1")
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<p>You can optionally specify a default <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">section</a> for each area.</p>
+<ol type="1">
+<li>Create an <code>EditableAreaOptions</code> object.</li>
+<li>Set the object’s <code>DefaultSectionsIdentifier</code> property to match the identifier of the section which you want to use as default.</li>
+<li>Assign the object as a parameter of the <code>EditableAreaAsync</code> extension method (or its <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a>) used to render the given area.</li>
+</ol>
+<p>The default section is automatically added into new areas and in cases where an editor removes the last section from an area.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;div&gt;
+    @{
+        var optionsDefaultSection = new EditableAreaOptions
+        {
+            DefaultSectionIdentifier = "LearningKit.Sections.Col5050"
+        };
+    }
+    @await Html.Kentico().EditableAreaAsync("areaWithSection", optionsDefaultSection)
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<p>If you do not specify the default section for an area, it uses the default section configured for all Page Builder instances (either the system’s <em>Default</em> section with a single widget zone, or a custom section assigned when enabling Page Builder).</p>
+<h3 id="load-page-builder-scripts-and-styles">Load Page Builder scripts and styles</h3>
+<p>All pages with editable areas must contain scripts and CSS styles required by Page Builder and its components. To add these resources to pages, call the following extension methods (or their <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternatives</a>) in your views:</p>
+<ul>
+<li><p><code>Html.Kentico().PageBuilderScriptsAsync</code> – renders required script tags and script file links. Call before the closing <code>&lt;/body&gt;</code> tag of the page code.</p></li>
+<li>
+<p><code>Html.Kentico().PageBuilderStyles</code> – renders links for the required stylesheet files. Call within the <code>&lt;head&gt;</code> tag of the page code.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @using Kentico.Web.Mvc
+  @using Kentico.PageBuilder.Web.Mvc
+
+  &lt;html&gt;
+  &lt;head&gt;
+      ...
+      @Html.Kentico().PageBuilderStyles()
+  &lt;/head&gt;
+  &lt;body&gt;
+      ...
+      @await Html.Kentico().PageBuilderScriptsAsync()
+  &lt;/body&gt;
+  &lt;/html&gt;
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>For views with an assigned <strong>layout</strong>, we recommend using Razor <strong>sections</strong>. Sections allow you to call the methods in the appropriate part of the overall page code, but only for pages that contain editable areas.</p>
+</div>
+</li>
+</ul>
+<p>The helpers include scripts and styles used in the system’s editing interface, as well as those of individual Page Builder components (<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline property editors</a>). See the linked documentation to learn how to correctly add custom scripts and styles for your own components.</p>
+<p>After adding editable areas to views and ensuring that the pages contain the required scripts and styles, you can see Page Builder with the editable areas in the website channel applications.</p>
+<h3 id="configure-allowed-components-for-editable-areas">Configure allowed components for editable areas</h3>
+<p>You can define widget restrictions for certain areas. To limit which components (widgets or sections) can be added to a specific area:</p>
+<ol type="1">
+<li>Create an <code>EditableAreaOptions</code> object.</li>
+<li>Assign a list of strings to the object’s <code>AllowedWidgets</code> and/or <code>AllowedSections</code> property.
+<ul>
+<li>The strings must contain the identifiers of components you want to allow in the area (see <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Sections for Page Builder</a> to learn more about component identifiers). For identifiers of the default system widgets, check <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">the system widget reference</a>.</li>
+</ul>
+</li>
+<li>Assign the <code>EditableAreaOptions</code> object as a parameter of the <code>EditableAreaAsync</code> extension method used to render the given area.</li>
+</ol>
+<p>The allowed components parameters work as an allowlist – you list the components that you want to allow in the editable area, and all others are automatically excluded. When allowed components are not specified, all registered components can be added to the area. You can also set the properties to the following special values:</p>
+<ul>
+<li>
+<code>AllowedComponents.ALL</code> – all components are allowed within the editable area.</li>
+<li>
+<code>AllowedComponents.NONE</code> – no components are allowed within the editable area (equivalent to an empty list of identifiers).
+<ul>
+<li>Use the <code>NONE</code> option when limiting sections – this “locks in” the default section for the given area and completely prevents editors from adding further sections of any type.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: Prepare the identifiers of allowed components as a string array, and then assign the array to the appropriate property of the <code>EditableAreaOptions</code> object.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;div&gt;
+    @{
+        var optionsLimited = new EditableAreaOptions
+        {
+            AllowedWidgets = new[] { "LearningKit.Widgets.NumberWidget",
+                                     "LearningKit.Widgets.SomeOtherWidget" },
+            AllowedSections = AllowedComponents.ALL
+        };
+    }
+    @await Html.Kentico().EditableAreaAsync("limitedArea", optionsLimited)
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<p>When adding a new widget or section to the limited editable areas, editors can now only choose from the set of allowed components. When dragging widgets or sections between areas, the interface visually distinguishes between areas where you can and cannot drop the components.</p>
+<p>The component limiting feature is intended as a way to set guidelines for content editors, not as a security measure. When you limit an area, existing instances of widgets and sections placed in the area are not validated or removed.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Widget zone restrictions</strong></p>
+<p>Editable area restrictions of widgets are combined with any widget restrictions set for individual <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">widget zones</a>. Both sets of restrictions apply to create the final list of allowed widgets for the zone.</p>
+</div>
+
+<h2 id="retrieve-the-page-builder-configuration-for-the-current-page">Retrieve the Page Builder configuration for the current page</h2>
+<p>You can access the Page Builder configuration of the current page via the <code>IPageBuilderDataContextRetriever</code> service and its <code>Retrieve</code> method. The method returns an <code>IPageBuilderDataContext</code> object that contains the configuration in its <code>Configuration</code> property.</p>
+<p>The configuration is stored in the following nested structure:</p>
+<ul>
+<li>Page – The root of the configuration
+<ul>
+<li>EditableAreas – contains a list of all editable areas on the page
+<ul>
+<li>Sections – contains section properties and all widget zones held within
+<ul>
+<li>Zones – contains the identifier of the zone and a list of all widgets held within
+<ul>
+<li>Widgets – contains widget metadata (the widget’s identifier, type, <a href="/documentation/business-users/digital-marketing/widget-personalization">personalization variants</a>, etc.)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>PageTemplate – contains page template metadata (the template’s identifier and properties)</li>
+</ul>
+<p>You can use the configuration if you wish to develop components that react to the presence of other components on the page.</p>
+<h3 id="establish-rendering-context">Establish rendering context</h3>
+<p>To check where and in what mode the currently processed component is being rendered, use <code>IPageBuilderDataContext</code> to retrieve the Page Builder mode using the <code>GetMode</code> method.</p>
+<p>The method returns a value from the <code>PageBuilderMode</code> enumeration. Possible states:</p>
+<ul>
+<li>
+<code>Off</code> – Page Builder is not used on the page.</li>
+<li>
+<code>Edit</code> – Page Builder is initialized in the editing mode.</li>
+<li>
+<code>ReadOnly</code> – Page Builder is initialized in the <a href="/documentation/changelog#pbreadonly-29-4-0">read-only mode</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.PageBuilder.Web.Mvc;
+
+// Stores an instance of the IPageBuilderDataContextRetriever service (e.g., obtained using dependency injection)
+private readonly IPageBuilderDataContextRetriever pageBuilderDataContext;
+
+// Execute the following block only in edit mode (when editing pages in website channels)
+if (pageBuilderDataContext.Retrieve().GetMode() == PageBuilderMode.Edit)
+{
+    // Targeted custom logic
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

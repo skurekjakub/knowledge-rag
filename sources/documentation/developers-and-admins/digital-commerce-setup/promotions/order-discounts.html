@@ -1,0 +1,508 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Order discounts</title>
+</head>
+<body>
+<p>The order discount framework allows you to create custom promotion rules that apply discounts to entire orders during <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation</a>. Order discounts are evaluated based on the order’s total value or item count and automatically apply when conditions are met.</p>
+<p>Use order discounts to implement:</p>
+<ul>
+<li>Percentage-based discounts (e.g., 10% off orders over $100)</li>
+<li>Fixed amount discounts (e.g., $15 off your order)</li>
+<li>Quantity-based promotions (e.g., discounts on orders with 5+ items)</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Order discounts are for price discounts only</strong></p>
+<p>Order discounts are exclusively intended for calculating price discounts. Making other changes to the order via order discounts, such as adding extra items to the order or modifying the cart contents, may disrupt the resulting <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation</a> and produce invalid results.</p>
+</div>
+
+<h2 id="promotion-types">Promotion types</h2>
+<p>The system supports two types of promotions:</p>
+<ul>
+<li>
+<strong>Catalog discounts</strong> – Apply discounts to individual products. Each product can have at most one catalog promotion applied. See <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">Catalog discounts</a>.</li>
+<li>
+<strong>Order discounts</strong> – Apply discounts to the entire order based on its contents (for example, percentage discounts for orders above a given total price).</li>
+</ul>
+<p>Both catalog and order discounts can optionally require <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/coupon-codes">coupon codes</a> for redemption. When configured with a coupon code, the promotion is only applied if the customer enters the matching code during checkout.</p>
+<h2 id="order-promotion-rule-overview">Order promotion rule overview</h2>
+<p>A <strong>promotion rule</strong> defines the logic for determining whether a promotion applies to an order and how to calculate the discount amount. You implement promotion rules as classes that inherit from <code>OrderPromotionRule</code>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Terminology – Discounts vs. Promotions</strong></p>
+<p>In the administration interface, order discounts are managed under <strong>Promotions → Order discounts</strong>. However, in code, the related classes use “Promotion” in their names (e.g., <code>OrderPromotionRule</code>, <code>OrderPromotionCandidate</code>). This is because the underlying system uses a unified promotion framework.</p>
+</div>
+
+<h3 id="promotion-candidate">Promotion candidate</h3>
+<p>A <strong>promotion candidate</strong> represents a potential discount that could be applied to an order. When a promotion rule evaluates an order, it returns an <code>OrderPromotionCandidate</code> containing:</p>
+<ul>
+<li>
+<code>OrderDiscountAmount</code> – The calculated discount amount</li>
+</ul>
+<p>The <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation pipeline</a> collects all candidates and applies the discount to the order total.</p>
+<p>When multiple order promotions could apply to an order, the system automatically selects the best promotion based on the following criteria:</p>
+<ol type="1">
+<li>The promotion with the highest <code>OrderDiscountAmount</code> is selected.</li>
+<li>If two promotions have equal discount amounts, the most recently created promotion takes precedence. As a result, this may skew redemption statistics tracked in the admin UI in rare cases.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Order promotions are not cumulative. Only one order promotion can be applied per order.</p>
+</div>
+
+<h3 id="promotion-rule-properties">Promotion rule properties</h3>
+<p>Promotion rules can define configurable properties that store managers set when creating promotions in the administration interface. Properties are defined in a separate class implementing <code>IPromotionRuleProperties</code> and are decorated with <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to generate the UI.</p>
+<h2 id="create-order-promotion-rules">Create order promotion rules</h2>
+<p>Implementing an order promotion rule involves creating two components:</p>
+<ol type="1">
+<li>
+<strong>Properties class</strong> – Defines configurable settings that store managers can adjust in the administration interface (e.g., discount percentage, minimum requirements). The properties class implements <code>IPromotionRuleProperties</code> or inherits from <code>OrderPromotionRuleProperties</code>.</li>
+<li>
+<strong>Logic class</strong> – Contains the rule’s evaluation logic to determine if the order is eligible for the discount and calculates the discount amount. The logic class inherits from <code>OrderPromotionRuleBase</code> or <code>OrderPromotionRule</code>.</li>
+</ol>
+<p>These two components work together – the properties class stores the configuration, and the logic class uses those configured values to evaluate orders during price calculation.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Sample implementation</strong></p>
+<p>See <strong>DancingGoatOrderPromotionRule.cs</strong> in the Dancing Goat <a href="/documentation/developers-and-admins/installation#available-project-templates">project template</a> for a sample implementation of an order discount rule.</p>
+</div>
+
+<h3 id="define-promotion-rule-properties">Define promotion rule properties</h3>
+<p>The system provides <code>OrderPromotionRuleProperties</code> as a base class with common properties already defined and configurable via the administration interface:</p>
+<ul>
+<li>
+<strong>DiscountValueType</strong> – Dropdown to select percentage or fixed discount</li>
+<li>
+<strong>DiscountValue</strong> – Decimal input for the discount amount</li>
+<li>
+<strong>MinimumRequirementValueType</strong> – Radio group to select no minimum, minimum purchase amount, or minimum quantity of items</li>
+<li>
+<strong>MinimumRequirementValue</strong> – Decimal input for minimum value (visible when minimum purchase amount or minimum quantity is selected)</li>
+</ul>
+<p>You can inherit from this base class to include these standard fields and add your own custom properties. Use <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> annotations to generate the input fields for each property. The following sample demonstrates an extended properties class that inherits from <code>OrderPromotionRuleProperties</code> and</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Promotion rule properties extending the base class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Sample order promotion proerties class extending the default configrable prop
+/// set with a custom fields. Uses editing component annotations.
+/// &lt;/summary&gt;
+public class SampleOrderPromotionRuleProperties : OrderPromotionRuleProperties
+{
+    // Base class properties include: DiscountValueType, DiscountValue,
+    // MinimumRequirementValueType, MinimumRequirementValue
+
+    // Add custom properties for your business logic
+    [CheckBoxComponent(
+        Label = "Additional checkbox field",
+        Order = 1)]
+    public bool MembersOnly { get; set; }
+}</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The base class properties use negative <code>Order</code> values (e.g., -190, -180) to ensure they appear at the top of the form. Keep this in mind when positioning custom properties.</p>
+</div>
+
+<p>Alternatively, you can directly implement <code>IPromotionRuleProperties</code>, bypassing the inheritance entirely, if you need full control over all configuration properties used by the rule.</p>
+<h3 id="implement-the-promotion-rule">Implement the promotion rule</h3>
+<p>The framework provides two base classes for order promotion rules:</p>
+<ul>
+<li>
+<strong>OrderPromotionRule</strong> – Use when your properties class inherits from <code>OrderPromotionRuleProperties</code>. Provides built-in helper methods that work with the base properties, including automatic minimum requirement validation (purchase amount or item quantity).</li>
+<li>
+<strong>OrderPromotionRuleBase</strong> – Use when you need fully custom properties implementing <code>IPromotionRuleProperties</code> directly. You must implement all discount calculation and validation logic yourself.</li>
+</ul>
+<p>Both base classes use the same generic type parameters:</p>
+<ol type="1">
+<li>
+<code>TPromotionRuleProperties</code> – The rule’s <a href="#define-promotion-rule-properties">properties class</a>. Must inherit from <code>OrderPromotionRuleProperties</code> for <code>OrderPromotionRule</code>, or implement <code>IPromotionRuleProperties</code> for <code>OrderPromotionRuleBase</code>.</li>
+<li>
+<code>TPriceCalculationRequest</code> – The price calculation request type.</li>
+<li>
+<code>TPriceCalculationResult</code> – The price calculation result type.</li>
+</ol>
+<p>Register the rule using <code>RegisterPromotionRuleAttribute</code> with the following parameters:</p>
+<ol type="1">
+<li>A unique string identifier for the rule.</li>
+<li>
+<code>PromotionType.Order</code> to indicate this is an order promotion.</li>
+<li>A display name shown in the administration interface.</li>
+</ol>
+<p>When your properties class inherits from <code>OrderPromotionRuleProperties</code>, use <code>OrderPromotionRule</code> to access built-in helper methods:</p>
+<ul>
+<li>
+<code>GetDiscountAmount(linesSubtotalAfterLineDiscounts)</code> – Calculates the discount based on <code>DiscountValueType</code> and <code>DiscountValue</code> from the base properties. Handles both percentage and fixed discounts, ensuring the discount never exceeds the order subtotal.</li>
+<li>
+<code>GetDiscountValueLabel()</code> – Returns a formatted label for display (e.g., “10%” or “$5.00”).</li>
+</ul>
+<p>The following sample demonstrates a discount rule that enables only the default configuration. Since no additional configuration options are necessary, it uses the default properties class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Order promotion rule with built-in helpers</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>public class OrderPercentageDiscountRule
+    : OrderPromotionRule&lt;OrderPromotionRuleProperties,
+        PriceCalculationRequest, PriceCalculationResult&gt;
+{
+    public override OrderPromotionCandidate GetPromotionCandidate(
+        IPriceCalculationData&lt;PriceCalculationRequest, PriceCalculationResult&gt; calculationData)
+    {
+        // Gets the total price after catalog discounts
+        var totalPrice = calculationData.Result.Items
+            .Sum(i =&gt; i.LineSubtotalAfterLineDiscount);
+
+        return new OrderPromotionCandidate
+        {
+            // Calculates the discount using the built-in helper method
+            // Handles both percentage and fixed discounts based 
+            // on DiscountValueType (as configured via the admin UI)
+            OrderDiscountAmount = GetDiscountAmount(totalPrice)
+        };
+    }
+}</code></pre>
+</div>
+
+<p>After implementing and registering an order promotion rule:</p>
+<ol type="1">
+<li>The promotion rule appears in the administration interface when <a href="/documentation/business-users/manage-commerce-stores#create-a-promotion">creating new order promotions</a>.</li>
+<li>Store managers can configure the promotion properties, set minimum requirements, and set activation dates.</li>
+<li>Active promotions are automatically evaluated during price calculation.</li>
+<li>The discount is applied to eligible orders that meet the configured minimum requirements.</li>
+</ol>
+<h3 id="register-the-promotion-rule">Register the promotion rule</h3>
+<p>Use the <code>RegisterPromotionRuleAttribute</code> assembly attribute to register your promotion rule with the system. Without registration, the rule will not appear in the administration interface.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register an order promotion rule</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>[assembly: RegisterPromotionRule&lt;OrderPercentageDiscountRule&gt;(
+    "Acme.OrderPercentageDiscount",
+    PromotionType.Order,
+    "Order percentage discount")]</code></pre>
+</div>
+
+<h3 id="filter-promotion-applicability">Filter promotion applicability</h3>
+<p>Override the <code>IsApplicable</code> method to add high-level conditions that determine whether the promotion should be evaluated at all. This method runs <strong>once per promotion</strong> before calculating the discount, making it useful for performance optimization when you can skip the entire promotion early.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Built-in minimum requirement validation</strong></p>
+<p>When using <code>OrderPromotionRule</code>, the base class <code>IsApplicable</code> implementation automatically validates minimum requirements (purchase amount or item quantity) based on <code>MinimumRequirementValueType</code> and <code>MinimumRequirementValue</code> properties. You only need to override <code>IsApplicable</code> if you have additional custom conditions.</p>
+</div>
+
+<p>The evaluation pipeline works as follows:</p>
+<ol type="1">
+<li>
+<strong>Get active promotions</strong> – The system retrieves all active order promotions.</li>
+<li>
+<strong>Check IsApplicable</strong> – For each promotion, <code>IsApplicable</code> is called once. If it returns <code>false</code>, the promotion is skipped entirely.</li>
+<li>
+<strong>Calculate discount</strong> – For promotions that pass, <code>GetPromotionCandidate</code> is called to calculate the order discount.</li>
+<li>
+<strong>Apply promotion</strong> – The system applies the discount to the order total.</li>
+</ol>
+<p>Use <code>IsApplicable</code> for checks that apply to the entire promotion context. For example, to restrict a promotion to registered <a href="/documentation/developers-and-admins/development/registration-and-authentication">members</a> while keeping the built-in minimum requirement validation:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Check if a customer is a registered member</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;CustomerInfo&gt; customerInfoProvider;
+
+    public MemberOrderDiscountRule(IInfoProvider&lt;CustomerInfo&gt; customerInfoProvider)
+    {
+        this.customerInfoProvider = customerInfoProvider;
+    }
+
+    public override async Task&lt;bool&gt; IsApplicable(
+        IPriceCalculationData&lt;PriceCalculationRequest, PriceCalculationResult&gt; calculationData,
+        CancellationToken cancellationToken)
+    {
+        // Gets the customer associated with the order
+        CustomerInfo customer = await customerInfoProvider.GetAsync(
+            calculationData.Request.CustomerId, cancellationToken);
+
+        // Checks if a mapping between the customer and a member exists
+        if (customer == null || customer.CustomerMemberID &lt;= 0)
+        {
+            return false;
+        }
+
+        // Calls the rest of the logic
+        return await base.IsApplicable(calculationData, cancellationToken);
+    }</code></pre>
+</div>
+
+<p>Another common scenario is restricting a promotion to first-time customers who haven’t placed any orders yet.</p>
+<p>This rule assumes that:</p>
+<ul>
+<li>the customer is a registered site <a href="/documentation/developers-and-admins/development/registration-and-authentication">member</a>
+</li>
+<li>and has not made any orders in the store yet.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Check if a customer is a first-time buyer</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+using CMS.Commerce;
+using CMS.DataEngine;
+using Codesamples.Commerce;
+using Kentico.Xperience.Admin.DigitalCommerce;
+
+using Microsoft.AspNetCore.Http;
+
+[assembly: RegisterPromotionRule&lt;FirstTimeBuyerOrderPromotionRule&gt;(
+    identifier: FirstTimeBuyerOrderPromotionRule.IDENTIFIER,
+    promotionType: PromotionType.Order,
+    name: "First time buyer discount"
+)]
+
+public class FirstTimeBuyerOrderPromotionRule
+ : OrderPromotionRule&lt;OrderPromotionRuleProperties,
+                      CodesamplesPriceCalculationRequest,
+                      CodesamplesPriceCalculationResult&gt;
+{
+    public const string IDENTIFIER = "Acme.DigitalCommerce.FirstTimeBuyerOrderRule";
+
+    private readonly IInfoProvider&lt;OrderInfo&gt; orderProvider;
+    private readonly IHttpContextAccessor httpContextAccessor;
+
+    public FirstTimeBuyerOrderPromotionRule(
+        IInfoProvider&lt;OrderInfo&gt; orderProvider,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        this.orderProvider = orderProvider;
+        this.httpContextAccessor = httpContextAccessor;
+    }
+
+    public override async Task&lt;bool&gt; IsApplicable(
+        IPriceCalculationData&lt;CodesamplesPriceCalculationRequest,
+                              CodesamplesPriceCalculationResult&gt; calculationData,
+        CancellationToken cancellationToken)
+    {
+        bool isFirstTimeCustomer =
+            await IsFirstTimeCustomer(
+                calculationData.Request.CustomerId, cancellationToken);
+
+        // Checks the base class conditions (minimum purchase requirements)
+        return isFirstTimeCustomer
+            &amp;&amp; await base.IsApplicable(calculationData, cancellationToken);
+    }
+
+    /// &lt;summary&gt;
+    /// Determines whether the customer is making their first purchase.
+    /// Returns true for authenticated users with no previous orders.
+    /// &lt;/summary&gt;
+    private async Task&lt;bool&gt; IsFirstTimeCustomer(int customerId, CancellationToken cancellationToken)
+    {
+        // Applies only to authenticated live site members
+        bool isAuthenticated =
+            httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated
+            ?? false;
+        if (!isAuthenticated)
+        {
+            return false;
+        }
+
+        // Applies to members that aren't tracked
+        // as customers by the system
+        if (customerId == 0)
+        {
+            return true;
+        }
+
+        // If the customer exists, checks if
+        // they have any existing orders
+        var orders = await orderProvider.Get()
+            .WhereEquals(nameof(OrderInfo.OrderCustomerID), customerId)
+            .TopN(1)
+            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+
+        // Only applies to customers with no previous orders
+        return !orders.Any();
+    }
+
+    public override OrderPromotionCandidate GetPromotionCandidate(
+        IPriceCalculationData&lt;CodesamplesPriceCalculationRequest,
+                              CodesamplesPriceCalculationResult&gt; calculationData)
+    {
+        // Gets the total price after catalog discounts
+        var totalLinePriceAfterLineDiscount = calculationData.Result.Items
+            .Sum(i =&gt; i.LineSubtotalAfterLineDiscount);
+
+        // Apply discount for first-time buyers
+        return new OrderPromotionCandidate
+        {
+            OrderDiscountAmount = GetDiscountAmount(totalLinePriceAfterLineDiscount)
+        };
+    }
+}</code></pre>
+</div>
+
+<h2 id="access-promotion-data-in-calculation-results">Access promotion data in calculation results</h2>
+<p>After price calculation, you can access promotion information from the result to display discount details to customers or for reporting purposes.</p>
+<p>Order promotion candidates are stored in the <code>PromotionData.OrderPromotionCandidates</code> collection on the calculation result. Each candidate is wrapped in <code>IPriceCalculationPromotionCandidate&lt;OrderPromotionCandidate&gt;</code> which includes an <code>Applied</code> flag indicating whether the promotion was applied to the order:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Access promotion data from calculation results</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    public static async Task AccessPromotionDataExample(
+        IPriceCalculationService&lt;PriceCalculationRequest, PriceCalculationResult&gt; priceCalculationService,
+        PriceCalculationRequest request)
+    {
+        // Calculates the price
+        PriceCalculationResult calculationResult =
+            await priceCalculationService.Calculate(request);
+
+        // Gets the applied order promotion
+        IPriceCalculationPromotionCandidate&lt;OrderPromotionCandidate&gt;? appliedOrderPromotion =
+            calculationResult.PromotionData.OrderPromotionCandidates
+                .FirstOrDefault(p =&gt; p.Applied);
+
+        if (appliedOrderPromotion is not null)
+        {
+            decimal discountAmount =
+                appliedOrderPromotion.PromotionCandidate.OrderDiscountAmount;
+            // Use the discount information...
+        }
+    }</code></pre>
+</div>
+
+<h2 id="extend-promotion-candidate-objects">Extend promotion candidate objects</h2>
+<p>You can extend <code>OrderPromotionCandidate</code> to include additional data needed for display or business logic.</p>
+<p>To access the custom promotion candidate in calculation results, cast the candidate from the <code>OrderPromotionCandidates</code> collection:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Access custom promotion candidate</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    public static async Task AccessCustomCandidateExample(
+        IPriceCalculationService&lt;PriceCalculationRequest, PriceCalculationResult&gt; priceCalculationService,
+        PriceCalculationRequest request)
+    {
+        // Calculates the price
+        PriceCalculationResult calculationResult
+            = await priceCalculationService.Calculate(request);
+
+        // Gets the applied order promotion and casts to custom type
+        IPriceCalculationPromotionCandidate&lt;OrderPromotionCandidate&gt;? appliedPromotion =
+            calculationResult.PromotionData.OrderPromotionCandidates
+                .FirstOrDefault(p =&gt; p.Applied);
+
+        if (appliedPromotion is not null) {
+            // Checks if the candidate is a custom type and works with the results
+            if (appliedPromotion?.PromotionCandidate is DisplayableOrderPromotionCandidate displayable)
+            {
+                string label = displayable.DisplayLabel;
+                // Process the label...
+            }
+        }
+    }</code></pre>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Inline editors for Email Builder widgets</title>
+</head>
+<body>
+<p>Inline editors allow users to enter values for the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widget-properties">properties of Email Builder widgets</a>. They can be used as an alternative to the property configuration dialog, or in combination with it.</p>
+<p>Unlike the configuration dialog, inline editors provide interactive elements directly in the output of the widget when displayed in the Email Builder’s editing mode. For example, inline editors can range from basic value inputs to more advanced options, such as text areas with rich formatting options. Inline editors are visible only in the Xperience administration interface, but the configured property value then affects the content or appearance of the given widget in the resulting email.</p>
+<p>Each inline editor manages only a single widget property. For widgets that have multiple properties, you can add multiple inline editors into the widget’s markup.</p>
+<p>By default, the system provides a <a href="#rich-text-inline-editor">Rich text inline editor</a>. For other scenarios, you can <a href="#develop-inline-editors">develop inline editors</a> according to the requirements of your Email Builder widgets.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Inline editors for Page Builder widget properties</strong></p>
+<p>This page describes how to work with inline editors for <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widget-properties">Email Builder widget properties</a>. Inline editors are also available for <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">Page Builder widget properties</a>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom inline editors with links to content items</strong></p>
+<p>If you use an inline editor that allows users to add links to content items (other than the default <a href="#rich-text-inline-editor">Rich text inline editor</a>), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the widget property.</p>
+</div>
+
+<h2 id="develop-inline-editors">Develop inline editors</h2>
+<p>Inline editors for Email Builder widget properties consist of two main parts:</p>
+<ul>
+<li><a href="#razor-component">ASP.NET Razor component</a></li>
+<li><a href="#javascript-file">JavaScript file</a></li>
+</ul>
+<p>Additionally, you need to:</p>
+<ul>
+<li>
+<a href="#link-styles-and-scripts-for-inline-editors">Link scripts and styles</a> required by inline editors in your Email Builder templates</li>
+<li>
+<a href="#add-inline-editors-to-widgets">Add inline editors</a> to the markup of Email Builder widgets.</li>
+</ul>
+<h3 id="razor-component">Razor component</h3>
+<p>Develop inline editors as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">ASP.NET Razor components</a> and follow the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#blazor-development-best-practices">Blazor development best practices</a> for Email Builder.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Inline editors with MJML components</strong></p>
+<p>The markup of inline editors <strong>must always be standard HTML</strong>, even if your application is configured to use <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#mjml-markup">MJML markup</a> for Email Builder components. When placed into widget markup, inline editor components must be wrapped in <a href="https://documentation.mjml.io/#mj-text" target="_blank">&lt;mj-text&gt;</a> tags, which allow the HTML to be processed correctly.</p>
+</div>
+
+<p>Every inline editor must contain the <code>InlineEditor</code> Razor component in its markup. Encapsulate HTML code that provides your inline editor’s interface between the component’s opening and closing tags. Set the following properties for the <code>InlineEditor</code> component:</p>
+<ul>
+<li>
+<code>PropertyName</code> – the name of the widget property managed by the editor.
+<ul>
+<li>To populate the value, add a property to the inline editor’s Razor component code which accepts the name of the managed widget property, for example <em>PropertyName</em>. This property must be designated as a razor component property via the <code>Parameter</code> attribute and marked as required via <code>EditorRequired</code>.</li>
+</ul>
+</li>
+<li>
+<code>InlineEditorName</code> – a unique identifier of the inline editor. The same identifier must be used when registering the inline editor in its <a href="#javascript-file">JavaScript file</a>.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Inline editor wrapping element</strong></p>
+<p>The inner HTML code of the inline editor is rendered within a wrapping <code>&lt;div&gt;</code> tag. You can add attributes to this wrapping element by setting additional properties for the <code>InlineEditor</code> component. For example, setting a <code>class="text-editor"</code> property ensures that the wrapping <code>&lt;div&gt;</code> contains a matching <code>class</code> attribute.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - Inline editor Razor component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+&lt;InlineEditor PropertyName=@PropertyName InlineEditorName="custom-text-editor" contenteditable="true" data-placeholder-text=@PlaceholderText class="text-editor"&gt;
+    @Text
+&lt;/InlineEditor&gt;
+
+@code {
+    // Stores the name of the Email Builder widget property managed by the inline editor
+    [Parameter, EditorRequired]
+    public string PropertyName { get; set; }
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string PlaceholderText { get; set; }
+}
+</code></pre>
+</div>
+
+<h3 id="javascript-file">JavaScript file</h3>
+<p>In addition to developing a <a href="#razor-component">Razor component</a>, you need to register every inline editor using client-side code. Create a JavaScript file, e.g., in the in your project’s <em>~/wwwroot/EmailBuilder/Admin/InlineEditors/</em> folder, and add a self-invoking function that registers the inline editor by calling <code>window.kentico.emailBuilder.registerInlineEditor</code>.</p>
+<p>Specify the following parameters when calling the <code>registerInlineEditor</code> function:</p>
+<ul>
+<li>The identifier of the inline editor, i.e. the <code>InlineEditorName</code> value set in the <code>InlineEditor</code> component in the Razor component markup.</li>
+<li>An anonymous object with an <code>init</code> property function that is executed whenever the given property editor is loaded. Use this function to run custom JavaScript that modifies the widget’s content or behavior based on the value of the managed property. The function’s <code>options</code> parameter is an object that wraps the following properties:
+<ul>
+<li>
+<code>editor</code> – the DOM element encapsulating the editor</li>
+<li>
+<code>propertyName</code> – the name of the managed widget property</li>
+<li>
+<code>propertyValue</code> – the value of the managed widget property</li>
+</ul>
+</li>
+</ul>
+<p>To notify the widget about changes in the managed property value, dispatch a custom event named <code>updateProperty</code> within the <code>init</code> function. The <code>updateProperty</code> event’s data must contain the <code>detail</code> property, with the following values:</p>
+<ul>
+<li>
+<code>value</code> – the new value of the widget property</li>
+<li>
+<code>name</code>– the name of the widget property</li>
+<li>(Optional) <code>refreshMarkup</code> – bool value that determines whether the event automatically triggers a refresh of the widget’s entire markup from the server. True by default.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - Inline editor JavaScript</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Inline editor script for a basic text input
+(function () {
+    window.kentico.emailBuilder.registerInlineEditor("custom-text-editor", {
+        init: function (options) {
+            var editor = options.editor;
+
+            // Add an 'input' event listener to the editor element
+            editor.addEventListener("input", function () {
+                if (!this.textContent) {
+                    // Clears the element when text content is empty
+                    this.innerHTML = "";
+                }
+
+                // Dispatches a custom event that notifies the widget about changes in the property value
+                var event = new CustomEvent("updateProperty", {
+                    detail: {
+                        name: options.propertyName,
+                        value: this.textContent,
+                        refreshMarkup: false
+                    }
+                });
+                editor.dispatchEvent(event);
+            });
+        },
+    });
+})();
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Execute scripts on inline editor events</strong></p>
+<p>If you need to execute custom scripts on certain events, you can use additional property functions of the anonymous object defined when registering the inline editor.</p>
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Mandatory:
+init: function (options) { ... },
+// Optional:
+destroy: function (options) { ... },   // Executed when a user deletes a widget containing the inline editor
+dragStart: function (options) { ... }, // Executed when a user starts to drag a widget with the inline editor
+drop: function (options) { ... }       // Executed when a user successfully drops a widget with the inline editor
+</code></pre>
+</div>
+</div>
+<p>Only the <code>editor</code> property is available via the <code>options</code> parameter in the destroy, <code>dragStart</code>, and <code>drop</code> property functions.</p>
+</div>
+
+<p>The JavaScript file needs to be <a href="#link-styles-and-scripts-for-inline-editors">linked</a> in all Email Builder <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#templates">templates</a> where you wish to use widgets with the given inline editor.</p>
+<h3 id="link-styles-and-scripts-for-inline-editors">Link styles and scripts for inline editors</h3>
+<p>Because inline editors display interactive elements within the Xperience administration, you may require additional JavaScript or CSS styles outside of the resulting email content. We recommend storing script and style for your inline editors within files in the <strong>~/wwwroot/EmailBuilder/Admin/InlineEditors/</strong> folder (you can add sub-folders for individual inline editors).</p>
+<p>You need to link such files in all Email Builder <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#templates">templates</a> where you wish to use widgets with inline editors:</p>
+<ul>
+<li>CSS files – at the end of your template’s head code.</li>
+<li>JavaScript files – at the end of your template’s body code. This includes the script file containing the <a href="#javascript-file">editor registration code</a>.</li>
+</ul>
+<p>Use <code>EmailContext.BuilderMode</code> conditions to ensure that the file links are only included in the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#email-builder-mode">Email Builder’s editing mode</a>.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>MJML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+@inject IEmailContextAccessor emailContextAccessor
+
+&lt;mj-head&gt;
+    ...
+
+    &lt;EmailBuilderStyles /&gt;
+
+    @if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;mj-raw&gt;
+            &lt;link href="/EmailBuilder/Admin/InlineEditors/custom-text-editor.css" rel="stylesheet" /&gt;
+        &lt;/mj-raw&gt; 
+    }
+&lt;/mj-head&gt;
+&lt;mj-body&gt;
+    ...
+
+    &lt;EmailBuilderScripts /&gt;
+
+    @if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;mj-raw&gt;
+            &lt;script src="/EmailBuilder/Admin/InlineEditors/custom-text-editor.js"&gt;&lt;/script&gt;
+        &lt;/mj-raw&gt;
+    }
+&lt;/mj-body&gt;
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>HTML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+@inject IEmailContextAccessor emailContextAccessor
+
+&lt;head&gt;
+    ...
+
+    &lt;EmailBuilderStyles /&gt;
+
+    @if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;link href="/EmailBuilder/Admin/InlineEditors/custom-text-editor.css" rel="stylesheet" /&gt;
+    }
+&lt;/head&gt;
+&lt;body&gt;
+    ...
+
+    &lt;EmailBuilderScripts /&gt;
+
+    @if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;script src="/EmailBuilder/Admin/InlineEditors/custom-text-editor.js"&gt;&lt;/script&gt;
+    }
+&lt;/body&gt;
+</code></pre>
+</div>
+
+<p>Avoid linking or executing scripts or styles directly within the markup of your inline editor or widget components. This could lead to duplicated scripts on pages containing multiple widgets that use the same editor.</p>
+<h2 id="add-inline-editors-to-widgets">Add inline editors to widgets</h2>
+<p>To manage the properties of <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widgets">Email Builder widgets</a>, inline editors need to be added to the markup of your widget Razor components:</p>
+<ol type="1">
+<li>Prepare an <code>EmailContext.BuilderMode</code> condition that allow you to add the inline editor only when the widget is being displayed in the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#email-builder-mode">Email Builder’s editing mode</a>.</li>
+<li>Add the inline editor <a href="#razor-component">Razor component</a> to the appropriate location in the widget’s markup.
+<ul>
+<li>Use the inline editor component’s properties to pass any required values from the widget, such as the name of the managed widget property and its value.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Widgets with MJML markup</strong></p>
+For widgets with <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#mjml-markup">MJML markup</a>, inline editor components must always be enclosed in <a href="https://documentation.mjml.io/#mj-text" target="_blank">&lt;mj-text&gt;</a> tags, which ensure that the inline editor HTML is processed correctly.
+</div>
+</li>
+<li>Depending on the purpose of the managed widget property, add its value into the widget content or otherwise use it in the widget’s code.
+<ul>
+<li>Always consider the type of content that you are rendering in the widget markup. For example, properties that return raw HTML values must be rendered as a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#raw-html" target="_blank">MarkupString</a>.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - Email Builder widget with an inline editor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+
+@* Renders the inline editor for the widget's 'Text' property in the Email Builder's editing mode *@
+@if (Email.BuilderMode == EmailBuilderMode.Edit)
+{
+    &lt;mj-text&gt;
+        &lt;TextInlineEditor PropertyName=@nameof(Properties.Text) PlaceholderText="Enter your text here." Text="@Properties?.Text" /&gt;
+    &lt;/mj-text&gt;        
+} else
+{
+    @* Displays the edited text value in the email's content (outside of editing mode) *@
+    &lt;mj-text&gt;
+        @Properties?.Text
+    &lt;/mj-text&gt;
+}
+
+@code {
+    private EmailContext _email;
+    
+    protected EmailContext Email =&gt; _email ??= EmailContextAccessor.GetContext();
+
+    [Inject]
+    public IEmailContextAccessor EmailContextAccessor { get; set; }
+
+    [Parameter]
+    public TextEmailWidgetProperties Properties { get; set; }
+}
+</code></pre>
+</div>
+
+<p>The widget now displays your inline editor when working with email content in the Email Builder UI. The content of the widget in the resulting emails is modified according to the property configured through the editor.</p>
+<h2 id="rich-text-inline-editor">Rich text inline editor</h2>
+
+<div>
+
+</div>
+<div>
+<p>This page describes how to work with the rich text editor as an inline editor for <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widget-properties">Email Builder widget properties</a>.</p>
+<p>To learn about other rich text editor scenarios, see:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/rich-text-inline-editors">Rich text inline editors</a> – using the rich text inline editor for Page Builder widget properties.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration">Rich text editor configuration</a> – modifying the editor used by the Xperience administration in general.</li>
+</ul>
+</div>
+
+<p>Xperience provides a <a href="/documentation/business-users/rich-text-editor">rich text</a> inline editor for <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widgets">Email Builder widgets</a> that allows users to input content using conventional word processor features. The editor is based on the <a href="https://froala.com/wysiwyg-editor/" target="_blank">Froala</a> WYSIWYG editor.</p>
+<p></p>
+<h3 id="add-the-rich-text-editor-to-email-builder-widgets">Add the rich text editor to Email Builder widgets</h3>
+<p>You can add the rich text inline editor to any Email Builder widget that has a <code>string</code> <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widget-properties">property</a> for storing the content.</p>
+<ol type="1">
+<li>Edit the Razor component markup of the desired widget.</li>
+<li>Prepare an <code>EmailContext.BuilderMode</code> condition that allows you to add the rich text editor only when the widget is being displayed in the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#email-builder-mode">Email Builder’s editing mode</a>.</li>
+<li>Insert the <code>RichTextInlineEditor</code> component (available in the <code>Kentico.VisualBuilderComponents.Rcl.Components</code> namespace) to a suitable location.
+<ul>
+<li>Set the name of the managed widget property (use the <code>nameof</code> expression) into the component’s <code>PropertyName</code> property.</li>
+</ul>
+</li>
+<li>Render the output of the managed property as a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/#raw-html" target="_blank">MarkupString</a> within the widget content (outside of the Email Builder’s editing mode).</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Basic MJML widget with the Rich text inline editor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+@if (Email.BuilderMode == EmailBuilderMode.Edit)
+{
+    &lt;mj-text&gt;
+        &lt;RichTextInlineEditor PropertyName=@nameof(Properties.Text) /&gt;
+    &lt;/mj-text&gt;
+}
+else
+{
+    &lt;mj-text&gt;
+        @((MarkupString)Properties?.Text)
+    &lt;/mj-text&gt;
+}
+@code {
+    private EmailContext _email;
+    
+    protected EmailContext Email =&gt; _email ??= EmailContextAccessor.GetContext();
+
+    [Inject]
+    public IEmailContextAccessor EmailContextAccessor { get; set; }
+
+    [Parameter]
+    public TextEmailWidgetProperties Properties { get; set; }
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Basic HTML widget with the Rich text inline editor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+&lt;div&gt;
+    @if (Email.BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;p&gt;
+            &lt;RichTextInlineEditor PropertyName=@nameof(Properties.Text) /&gt;
+        &lt;/p&gt;
+    }
+    else {
+        &lt;p&gt;
+            @((MarkupString)Properties?.Text)
+        &lt;/p&gt;
+    }
+&lt;/div&gt;
+
+@code {
+    private EmailContext _email;
+    
+    protected EmailContext Email =&gt; _email ??= EmailContextAccessor.GetContext();
+
+    [Inject]
+    public IEmailContextAccessor EmailContextAccessor { get; set; }
+
+    [Parameter]
+    public TextEmailWidgetProperties Properties { get; set; }
+}
+</code></pre>
+</div>
+
+<p>The inline editor can now be used to edit the selected property of the desired widget.</p>
+<h3 id="customize-the-editor-toolbars">Customize the editor toolbars</h3>
+<p>To provide an improved or modified experience for email content editors, you can customize the toolbar of the rich text editor to display a specific set of buttons and formatting options.</p>
+<p>To customize the editor toolbar, you need to:</p>
+<ul>
+<li><a href="#define-toolbar-configurations">Define toolbar configurations</a></li>
+<li><a href="#assign-configurations-to-inline-editors">Assign configurations to inline editors</a></li>
+</ul>
+<h4 id="define-toolbar-configurations">Define toolbar configurations</h4>
+<p>Create a JavaScript file for storing Email Builder rich text editor toolbar configurations. For example, you can store toolbar configurations in your project’s <em>~/wwwroot/EmailBuilder/Admin/RichTextEditorConfigurations/</em> folder.</p>
+<p>In this file, define and register the <a href="https://froala.com/wysiwyg-editor/docs/options" target="_blank">toolbar options</a> for each configuration as seen in the following code example.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+(function (emailBuilder) {
+    var richTextEditor = emailBuilder.richTextEditor = emailBuilder.richTextEditor || {};
+    var configurations = richTextEditor.configurations = richTextEditor.configurations || {};
+    // Overrides the "default" configuration of the rich text inline editor.
+    // The below configuration adds the h5 and h6 values to the paragraphFormat,
+    // and removes the code value. Also sets the toolbar to be visible without selecting any text.
+    configurations["default"] = {
+        toolbarVisibleWithoutSelection: true,
+        paragraphFormat: {
+            N: "Normal",
+            H1: "Headline 1",
+            H2: "Headline 2",
+            H3: "Headline 3",
+            H4: "Headline 4",
+            H5: "Headline 5",
+            H6: "Headline 6",
+        },
+    };
+
+    // Defines a new configuration for a simple toolbar with only formatting
+    // options and disables the inline design of the toolbar
+    configurations["simple"] = {
+        toolbarButtons: ['paragraphFormat', '|', 'bold', 'italic', 'underline', '|', 'align', 'formatOL', 'formatUL'],
+        paragraphFormatSelection: true,
+        toolbarInline: false
+    };
+})(window.kentico.emailBuilder);
+</code></pre>
+</div>
+
+<h4 id="assign-configurations-to-inline-editors">Assign configurations to inline editors</h4>
+<p>You can use the following approaches to assign toolbar configurations to Email Builder rich text inline editors:</p>
+<ul>
+<li>Modify the <code>default</code> configuration, and link the related JavaScript file to specific Email Builder templates.</li>
+<li>Prepare multiple configurations, link the related JavaScript file in all Email Builder templates, and assign a specific configuration to individual rich text inline editor components.</li>
+</ul>
+<p>Add links to your configuration JavaScript files at the end of the body code in your Email Builder <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#templates">templates</a>. Use <code>EmailContext.BuilderMode</code> conditions to ensure that the file links are only included in the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#email-builder-mode">Email Builder’s editing mode</a>.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>MJML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+@inject IEmailContextAccessor emailContextAccessor
+
+&lt;mj-body&gt;
+    ...
+
+    &lt;EmailBuilderScripts /&gt;
+
+    @if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;mj-raw&gt;
+            &lt;script src="/EmailBuilder/Admin/RichTextEditorConfigurations/EmailBuilderRteConfigurations.js"&gt;&lt;/script&gt;
+        &lt;/mj-raw&gt;
+    }
+&lt;/mj-body&gt;
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>HTML templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+@using Kentico.EmailBuilder.Web.Mvc
+@using Kentico.VisualBuilderComponents.Rcl.Components
+
+@inject IEmailContextAccessor emailContextAccessor
+
+&lt;body&gt;
+    ...
+
+    &lt;EmailBuilderScripts /&gt;
+
+    @if (emailContextAccessor.GetContext().BuilderMode == EmailBuilderMode.Edit)
+    {
+        &lt;script src="/EmailBuilder/Admin/RichTextEditorConfigurations/EmailBuilderRteConfigurations.js"&gt;&lt;/script&gt;
+    }
+&lt;/body&gt;
+</code></pre>
+</div>
+
+<p>To assign a specific configuration for a <code>RichTextInlineEditor</code> instance in the markup of an Email Builder widget, set the component’s <code>ConfigurationName</code> property to the name of the toolbar configuration. If you do not specify a configuration, the <code>default</code> configuration is used.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Assigning a toolbar configuration to a rich text inline editor component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+&lt;RichTextInlineEditor PropertyName=@nameof(Properties.Text) ConfigurationName="simple" /&gt;
+</code></pre>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form components</title>
+</head>
+<body>
+<p>Form components are reusable elements that allow content creators and marketers to compose forms via the <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a>. Each component represents a specific form field, such as a text box for user input, a group of radio buttons, etc. Administration users are free to add, remove, or reorder individual form components and specify their properties via the <a href="/documentation/business-users/digital-marketing/forms">Form Builder interface</a> in the <strong>Forms</strong> application.</p>
+<p>A form is a collection of form component instances, with each instance representing an individual form field.</p>
+<p>In addition to form components included in Form Builder by default, you can implement custom form components suitable for specific use cases and project requirements.</p>
+<p>This page covers how to:</p>
+<ul>
+<li><a href="#develop-form-components">Develop form components</a></li>
+<li><a href="#register-form-components">Register form components</a></li>
+<li><a href="#add-scripts-and-styles-for-form-components">Add scripts and styles for form components</a></li>
+</ul>
+<h2 id="develop-form-components">Develop form components</h2>
+
+<div>
+
+</div>
+<div>
+<p>Unless specified otherwise, all classes and members mentioned in this section are located in the <code>Kentico.Forms.Web.Mvc</code> namespace.</p>
+</div>
+
+<p>All form components need to inherit from the <code>FormComponent&lt;TProperties, TValue&gt;</code> class, where the <code>TProperties</code> generic parameter needs to be a class derived from <code>FormComponentProperties&lt;TValue&gt;</code>, and the <code>TValue</code> type needs to be identical for both classes. Each component also requires a corresponding view template that describes how its input elements are rendered. </p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Areas</strong></p>
+<p>Form components are designed to be used in the global scope and their code files must be placed in the application root of your project (not in an <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Area</a>). Creating components in Areas may lead to unexpected behavior.</p>
+</div>
+
+<p>Follow these steps to create a form component:</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio.</p></li>
+<li>
+<p>Create a form component class that inherits from <code>FormComponent&lt;TProperties, TValue&gt;</code>.</p>
+<ul>
+<li>This class defines properties used for model binding from the component’s input elements.</li>
+<li>The <code>TValue</code> generic determines the data type of the form component’s overall value (e.g., a basic data type such as string, <code>int</code> or <code>bool</code>).</li>
+</ul>
+</li>
+<li>
+<p>Create a form component properties class that inherits from <code>FormComponentProperties&lt;TValue&gt;</code>.</p>
+<ul>
+<li>This class is used to define the properties of the form component (i.e., the component’s underlying database column type, constraints, and other configuration options. See <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components/form-component-properties">Form component properties</a>).</li>
+<li>The <code>TValue</code> generic needs to match the data type of the corresponding form component.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>We recommend storing the classes of form components under a dedicated <em>~/Models/FormComponents/&lt;ComponentName&gt;</em> folder.</p>
+</div>
+</li>
+<li>
+<p>In the model class derived from <code>FormComponent&lt;TProperties, TValue&gt;</code>:</p>
+<ol type="1">
+<li>Substitute the generic <code>TProperties</code> parameter with the type derived from <code>FormComponentProperties&lt;TValue&gt;</code>.</li>
+<li>Components can consist of multiple input elements whose values can be, as part of the component’s code, joined and saved as the resulting value. Define properties used to pass values from the form component’s input elements to Xperience for data binding, and decorate them with the <code>BindableProperty</code> attribute.</li>
+<li>Override the following methods:
+<ul>
+<li>
+<code>GetValue</code> – gets the value of the form field instance passed from a view where the instance is rendered. Can be used to compose multiple bindable properties into a single value.</li>
+<li>
+<code>SetValue</code> – sets the class’s properties based on the value of the underlying form field instance.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom handling of server-side field value evaluation</strong></p>
+<p>By default, Xperience monitors all input elements of form fields that possess dependencies requiring server-side evaluation. Whenever the system detects a change in the value of such inputs, it automatically submits the form to the server for evaluation.</p>
+<p>You may want to prevent the automatic evaluation in form components that construct their resulting value from multiple inputs (via the <code>GetValue</code> method). In such components, it does not usually make sense to evaluate the component’s resulting value until after the values for all of the component’s partial inputs have been provided.</p>
+<p>If you wish to prevent Xperience from monitoring a form component:</p>
+<ol type="1">
+<li>Override the virtual <code>CustomAutopostHandling</code> property, and set it to <code>true</code>. This disables automatic evaluation of the inputs by Xperience.</li>
+<li>Manually submit the form for via <code>window.kentico.updatableFormHelper.updateForm(this.form)</code> within your JavaScript code or within an element’s <a href="https://www.w3schools.com/tags/ref_eventattributes.asp" target="_blank">HTML event attribute</a> (most commonly <code>onchange</code>, or <code>onclick</code>). The form is submitted only when the function is executed, leaving it up to the component’s developer to ensure this happens at an opportune moment. For instance, after all the required values have been provided.</li>
+</ol>
+</div>
+</li>
+<li>(Optional) Override the virtual <code>LabelForPropertyName</code> member to specify which property the <code>for</code> attribute of the field’s <code>&lt;label&gt;</code> element targets. By default, the value of this property is set to the name of the first bindable property found within the form component class.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ public class CustomFormComponent : FormComponent&lt;CustomFormComponentProperties, string&gt;
+ {
+     public const string IDENTIFIER = "CustomFormComponent";
+
+     // Specifies the property is used for data binding by the Form Builder
+     [BindableProperty]
+
+     // Used to store the value of the input field of the component
+     public string Value { get; set; }
+
+     // Gets the value of the form field instance passed from a view where the instance is rendered
+     public override string GetValue()
+     {
+         return Value;
+     }
+
+     // Sets the default value of the form field instance
+     public override void SetValue(string value)
+     {
+         Value = value;
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>In the class derived from <code>FormComponentProperties&lt;TValue&gt;</code>:</p>
+<ul>
+<li>
+<p>Call the constructor of the base class and specify the data type of the underlying database column using the <code>CMS.DataEngine.FieldDataType</code> enumeration. For the list of available data types or to learn how to register custom data types suitable for your component, see <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">Data type management</a>.  </p>
+
+<div>
+
+</div>
+<div>
+<p>The base class constructor also takes the following optional parameters:</p>
+<ul>
+<li><p><code>size</code> – sets the size of the corresponding component’s underlying database column.</p></li>
+<li>
+<p><code>precision</code> – governs the number of digits floating point numbers stored in the database can contain. These parameters configure the underlying database column, and need to be specified when the data type of the form component requires it, for example:</p>
+<ul>
+<li>Specify the <code>size</code> parameter when defining components with the <code>FieldDataType.Text</code> data type – <code>base(FieldDataType.Text, size: 200)</code>
+</li>
+<li>Specify the <code>precision</code> parameter when defining components with the <code>FieldDataType.Decimal</code> data type – <code>base(FieldDataType.Decimal, precision: 10)</code>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Override</em> the <code>DefaultValue</code> property, used to <code>get</code> or <code>set</code> the default value of fields based on the form component.</p>
+<ul>
+<li>Annotate the property with a suitable <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Admin UI form component attribute</a> to specify the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing interface</a> for the default value in the Form Builder properties dialog.</li>
+</ul>
+</li>
+<li>
+<p>(Optional) Declare <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components/form-component-properties">additional properties</a> the form component requires.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  // Sets an editing component for the DefaultValue property
+  [TextAreaComponent(Label = "Default value", Order = EditingComponentOrder.DEFAULT_VALUE)]        
+  public override string DefaultValue
+  {
+      get;
+      set;
+  }
+
+  // Initializes a new instance of the CustomFormComponentProperties class and configures the underlying database field
+  public CustomFormComponentProperties()
+      : base(FieldDataType.Text, size: 200)
+  {
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>Create a new partial view that describes the appearance of the form component and place it in the <em>~/Views/Shared/FormComponents</em> folder. Use a view name that matches the identifier assigned to the form component <a href="#register-form-components">upon its registration</a> and prefix it with the underscore (<em>‘_’</em>) character (to indicate a partial view according to MVC best practices).</p>
+
+<div>
+
+</div>
+<div>
+<p>You can place views into custom locations by specifying an optional parameter during the <a href="#register-form-components">component registration</a>.</p>
+</div>
+
+<p>In the view:</p>
+<ol type="1">
+<li><p>Retrieve the dictionary collection of system HTML attributes by calling the <code>ViewData.Kentico().GetEditorHtmlAttributes</code> extension method (from the <code>Kentico.Forms.Web.Mvc</code> namespace). You can modify the collection to include additional attributes the component requires, such as CSS classes and data attributes. Ensure the collection is included in each input element as certain features may not work otherwise.</p></li>
+<li>
+<p>Specify input elements for the component. If possible, use extension methods provided by the framework’s <code>HtmlHelper</code> class to render individual inputs. The methods by default, provide an easy way to merge additional HTML attributes and ensure the inputs contain fully qualified names, facilitating model binding.</p>
+<p>If you need to create more complex inputs, we recommend writing an extension method that handles the creation of input elements via the <code>TagBuilder</code> class, which simplifies the definition of additional attributes and handles attribute encoding by default. To generate fully qualified names and identifiers for model binding, use the <code>Html.NameFor</code> and <code>Html.IdFor</code> extension methods, respectively.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>_CustomFormComponent.cshtml</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @using Kentico.Forms.Web.Mvc
+ @using Kentico.Web.Mvc
+
+ @* Gets a collection of system HTML attributes necessary for the correct functionality of the form component inputs *@
+ @{
+     IDictionary&lt;string, object&gt; htmlAttributes = ViewData.Kentico().GetEditorHtmlAttributes();
+ }
+
+ @model LearningKit.FormBuilder.FormComponents.CustomFormComponent
+
+ @* Specifies additional HTML attributes of the form component. Checks for the existence of certain attributes in case
+     the returned 'htmlAttributes' collection already contains them (e.g., when the component is rendered within
+     the administration interface, where Xperience provides CSS classes to maintain the admin UI look and feel) *@
+ @{
+     if (htmlAttributes.ContainsKey("class"))
+     {
+         htmlAttributes["class"] += " myclass";
+     }
+     else
+     {
+         htmlAttributes["class"] = "myclass";
+     }
+ }
+
+ @* Renders the input element for the 'Value' property of the form component *@
+ @Html.TextBoxFor(m =&gt; m.Value, htmlAttributes)
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+<li><p>(Optional) Write any required CSS and JavaScript code the component requires for its functionality. Place the script and style files into the <em>~/Content/FormComponents/&lt;FormComponentIdentifier&gt;</em> folder. See <a href="#add-scripts-and-styles-for-form-components">Add scripts and styles for form components</a> for more information and recommended practices.</p></li>
+</ol>
+<h2 id="register-form-components">Register form components</h2>
+<p>To register a form component, annotate the class derived from <code>FormComponent&lt;TProperties, TValue&gt;</code>with the <code>RegisterFormComponent</code> assembly attribute. This attribute ensures the component is recognized by the system and available for <a href="/documentation/business-users/digital-marketing/forms">use in the Form Builder</a>. When registering the component, specify the following parameters:</p>
+<ul>
+<li>
+<p><code>Identifier</code> – a <code>string</code> identifier of the form component. </p>
+
+<div>
+
+</div>
+<div>
+<p>If you are planning to distribute your components, or are using components from third-party sources, consider specifying the identifier in a format that uniquely identifies your form component to avoid potential conflicts with identifier names. For example, use <code>CompanyName.ModuleName.ComponentName</code>.</p>
+</div>
+</li>
+<li><p><code>FormComponentType</code> – the <code>System.Type</code> of the form component class.</p></li>
+<li><p><code>Name</code> – sets the name of the form component. Displayed when <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">adding form fields</a> in the Form Builder.</p></li>
+<li><p>(Optional) <code>Description</code>– sets the description of the form component. Displayed when adding form fields in the Form Builder.</p></li>
+<li><p>(Optional) <code>IsAvailableInFormBuilderEditor</code> – determines if the form component can be added as a form field. <code>True</code> by default. If set to <code>false</code>, the component can only be added as an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a>.</p></li>
+<li><p>(Optional) <code>ViewName</code> – specifies the name of the view used to display the component, for example <em>CustomComponent</em>. If not set, the system searches for a corresponding <code>_&lt;Identifier&gt;.cshtml</code> view in the <em>~/Views/Shared/FormComponents/</em> folder.</p></li>
+<li><p>(Optional) <code>IconClass</code> – the font-icon assigned to the form component. Displayed in the component listing when adding new fields in the Form Builder. For a list of font icons available by default in the system, see the <a href="http://devnet.kentico.com/docs/icon-list/index.html" target="_blank">Icon list</a>.</p></li>
+</ul>
+<p>You can see the registration of a sample form component of the <code>CustomFormComponent</code> type in the code snippet below:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Registers a form component for use in the Form Builder
+[assembly: RegisterFormComponent(CustomFormComponent.IDENTIFIER, typeof(CustomFormComponent), "Custom component", Description = "This is a custom form component.", IconClass = "icon-newspaper")]
+
+</code></pre>
+</div>
+
+<p>The form component is now created and registered in the system. Users can include it when composing forms <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">using the Form Builder interface</a>.</p>
+<h2 id="add-scripts-and-styles-for-form-components">Add scripts and styles for form components</h2>
+<p>To add JavaScript and CSS styles required by your components, we recommend placing script and stylesheet files into sub-folders under:</p>
+<ul>
+<li>
+<strong><em>~/wwwroot/FormBuilder/Public/</em></strong> – scripts intended for both the live site and administration. Styles intended for the live site.</li>
+<li>
+<strong><em>~/wwwroot/FormBuilder/Admin/</em></strong> – scripts and styles intended for the administration interface. Note that the system already attempts to enforce a unified look and feel for components rendered in the Form Builder interface.</li>
+</ul>
+<p>You can use sub-folders that match the identifiers of individual components, or a <em>Shared</em> sub-folder for assets used by multiple components. Note that this recommendation only applies when using the default configuration of the bundling support provided by Xperience and may be different for your project. See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>CSS notes</strong></p>
+<ul>
+<li>Only use the specified directories to add <strong>basic styles</strong> that are required for the widget to render correctly. Any <strong>site-specific styles</strong> that finalize the live site design of the widget should be handled separately within the given site’s main stylesheet.</li>
+<li>To avoid potential conflicts between styles from other third-party components, we recommend adding a unique prefix to your CSS classes and identifiers (e.g., <code>#CompanyName-mid-button</code>), or use similar measures to ensure their uniqueness.</li>
+</ul>
+</div>
+
+<h3 id="initializing-component-scripts">Initializing component scripts</h3>
+<p>In many cases, you will need to initialize your scripts from the views of form components (for example if you need to call a function on page load or register an event listener). For most types of page or element events, you can use <a href="https://www.w3schools.com/tags/ref_eventattributes.asp" target="_blank">HTML Event Attributes</a> of elements in your views.</p>
+<p>For scripts that you want to run on page load, you need to consider the following:</p>
+<ul>
+<li>The bundles containing your main scripts are added at the end of the HTML document’s body tag, so they are not available in the component code during the page load process. A solution is to run the initialization script during the <a href="https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded" target="_blank">DOMContentLoaded</a> event.</li>
+<li>Components may be added dynamically after the page is loaded. In this case, the <em>DOMContentLoaded</em> event has already occurred and will not fire again.</li>
+</ul>
+<p>For example, the following script demonstrates how to reliably call a custom function on page load:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+if (document.readyState === "loading") {
+    // Calls the function during the 'DOMContentLoaded' event, after the HTML document has been completely loaded
+    document.addEventListener("DOMContentLoaded", function () {
+        customFunction();
+    });
+} else { 
+    // Calls the function directly in cases where the component is rendered dynamically after 'DOMContentLoaded' has occurred
+    customFunction();
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: Apart from initialization code, avoid linking or executing scripts directly within form component views – this could lead to duplicated scripts for forms that contain multiple fields based on the same component, or on pages with multiple forms.</p>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Set up local hosting</title>
+</head>
+<body>
+<p>When developing websites, you often need to quickly build and test code changes made to the project. For this reason, it’s useful to have the site hosted locally on your development machine. ASP.NET Core is very flexible in this aspect as it offers multiple hosting options for its supported platforms.</p>
+<p>See the following sections for a breakdown of hosting options available on each platform supported by Xperience:</p>
+<ul>
+<li><a href="#windows-platforms">Windows platforms</a></li>
+<li><a href="#linux-distributions">Linux distributions</a></li>
+</ul>
+<h2 id="windows-platforms">Windows platforms</h2>
+<h3 id="kestrel">Kestrel</h3>
+<p>The <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel" target="_blank">Kestrel</a> web server is the <strong>recommended</strong> hosting option. It is cross-platform, usually offers better performance, and will have the strongest .NET support in the future.</p>
+<p>You can launch all projects locally via the <code>dotnet run</code> command: </p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+cd &lt;project_directory&gt;
+dotnet run
+
+</code></pre>
+</div>
+
+<p>This launches the application on <em>localhost</em> using an empty port randomly assigned during the <a href="/documentation/developers-and-admins/installation">installation process</a>. You can change the assigned defaults via the project’s <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments#development-and-launchsettingsjson" target="_blank">launchSettings.json file</a>.</p>
+<h3 id="iis-express">IIS Express</h3>
+<p><a href="https://docs.microsoft.com/en-us/iis/extensions/introduction-to-iis-express/iis-express-overview" target="_blank">IIS Express</a> is a lightweight, self-contained version of IIS optimized for developers. IIS Express makes it easy to use the most current version of IIS to develop and test websites. It has all the core capabilities of IIS 7 and above as well as additional features designed to ease website development including:</p>
+<ul>
+<li>It doesn’t run as a service or require administrator user rights to perform most tasks.</li>
+<li>IIS Express works well with ASP.NET Core and PHP applications.</li>
+<li>Multiple users of IIS Express can work independently on the same computer.</li>
+</ul>
+<p>To host the installed project using IIS Express:</p>
+<ol type="1">
+<li>Open the installed project in Visual Studio.</li>
+<li>Right-click the project file and select <strong>Properties</strong>.</li>
+<li>Under Debug:
+<ul>
+<li>Set <strong>Launch</strong> to <strong>IIS Express</strong>.<br>
+</li>
+</ul>
+</li>
+<li>Save the changes and run the project using the profile you configured (<strong>IIS Express</strong> in this example).</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Alternatively, you can use the project’s <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments#development-and-launchsettingsjson" target="_blank">launchSettings.json</a> file to configure launch profiles.</p>
+</div>
+
+<p>You can now launch the project using IIS Express.</p>
+<h3 id="iis">IIS</h3>
+<p>ASP.NET Core also supports hosting using <a href="https://www.iis.net/" target="_blank">Internet Information Services</a> (IIS). You can host applications either <em>in-process</em> (through the <strong>wpw3.exe</strong> worker) or <em>out-of-process</em> (using reverse proxy with Kestrel).</p>
+<p>See the official Microsoft documentation <a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/" target="_blank">Host ASP.NET Core on Windows with IIS</a> for the required configuration and set up. Make sure that you have <a href="https://dotnet.microsoft.com/permalink/dotnetcore-current-windows-runtime-bundle-installer" target="_blank">ASP.NET Core 6.0 Runtime - Windows Hosting Bundle</a> installed.</p>
+<h2 id="linux-distributions">Linux distributions</h2>
+<h3 id="kestrel-1">Kestrel</h3>
+<p>The <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel" target="_blank">Kestrel</a> web server is supported by default by all ASP.NET Core web applications.</p>
+<p>You can launch all projects locally via the <code>dotnet run</code> command: </p>
+
+<div>
+<div>
+<div>
+<span>Bash</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+$ cd &lt;project_directory&gt;
+$ dotnet run
+
+</code></pre>
+</div>
+
+<p>Which launches the application on <em>localhost</em> using an empty port randomly assigned during the <a href="/documentation/developers-and-admins/installation">installation process</a>.</p>
+<h3 id="ngnix-and-apache">Ngnix and Apache</h3>
+<p>ASP.NET Core also supports hosting using <a href="https://httpd.apache.org/" target="_blank">Apache</a> and <a href="https://www.nginx.com/" target="_blank">Nginx</a>.</p>
+<p>See the official Microsoft documentation for</p>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-apache" target="_blank">Apache</a></li>
+<li><a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx" target="_blank">Nginx</a></li>
+</ul>
+<p>to learn how to configure hosting using these services.</p>
+<h2 id="hosting-configuration-notes">Hosting configuration notes</h2>
+<h3 id="enable-static-web-assets-in-non-development-local-environments">Enable static web assets in non-Development local environments</h3>
+<p>The Xperience application must have static web assets enabled to correctly load script files and other resources. When running Xperience locally (e.g., using the built-in Visual Studio IIS Express server), static web assets are enabled by default in the <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.environments.development" target="_blank">Development</a> environment. However, if you are using a different environment, e.g., by setting ASPNETCORE_ENVIRONMENT to a different value in the <em>Properties/launchSettings.json</em> file, you need to enable static web assets – call <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.hosting.webhostbuilderextensions.usestaticwebassets" target="_blank">UseStaticWebAssets</a> on <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.webapplicationbuilder" target="_blank">WebApplicationBuilder</a> in <em>Program.cs</em>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Web.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);  
+
+...
+
+builder.Services.AddKentico(features =&gt;
+{
+    ...
+});
+
+...
+
+// Enables static web assets
+builder.WebHost.UseStaticWebAssets();
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

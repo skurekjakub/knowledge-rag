@@ -1,0 +1,484 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Notifications</title>
+</head>
+<body>
+<p>Notifications are emails that provide information to administration users about various events in the system.</p>
+
+<div>
+
+</div>
+<div>
+<p>Notifications are sent to internal <a href="/documentation/developers-and-admins/configuration/users">users</a> of the Xperience administration. To send emails to your application’s public audience, use <a href="/documentation/business-users/digital-marketing/emails">Emails</a>.</p>
+</div>
+
+<h2 id="configure-domains-for-notifications">Configure domains for notifications</h2>
+<h3 id="service-domain">Service domain</h3>
+<p>A service domain is used in the URLs of various links within notification content, such as <a href="/documentation/business-users/content-hub/content-item-assets">asset</a> URLs. The service domain also sets the value of the <code>$$ServiceDomain$$</code> placeholder, which can be placed into the content of the system’s default notifications.</p>
+<p>Default system notifications rely on the service domain being set to the domain where you host the administration interface. Otherwise, <a href="#notification-content-placeholders">user invitation links</a>, or <a href="#form-submission-notifications">links to form details</a>, for example, will not resolve correctly.</p>
+<p>For <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> projects, you can configure the notification service domain using the <code>SystemEmailOptions.ServiceDomain</code> property and <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">.NET configuration providers</a>. For more information about startup options and examples, see <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects#startup-options-in-configuration-files">Startup options in configuration files</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you have an established <a href="/documentation/developers-and-admins/configuration/administration-domain-configuration">administration domain</a>, consider using it as the service domain for notifications as well.</p>
+</div>
+
+<p>For <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS projects</a>, the notification service domain is fixed and in the following format:<br>
+<em>&lt;environment&gt;-&lt;project_name&gt;.xperience-sites.com</em></p>
+<h3 id="sending-domain">Sending domain</h3>
+<p>For <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>, you can configure a global sending domain for notifications. This domain must be used in the sender address of all notifications.</p>
+<p>Use the <code>SystemEmailOptions.SendingDomain</code> property and <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">.NET configuration providers</a>. For more information and examples, see <a href="/documentation/developers-and-admins/configuration/email-configuration#global-sending-domain-for-system-emails">Global sending domain for system emails</a>.</p>
+<p>For <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS projects</a>, which use SendGrid to send emails, the sending domain is fixed and in the following format: <em>&lt;environment&gt;-&lt;project_name&gt;.xperience-sites.com</em></p>
+<h2 id="edit-default-notifications">Edit default notifications</h2>
+<p>The system contains several built-in notifications, which are necessary for the correct functioning of Xperience by Kentico, and cannot be deleted. However, you can edit the subject, content and sender address of the email.</p>
+<ol type="1">
+<li><p>Go to the <strong>Notifications</strong> application in the Xperience administration.</p></li>
+<li><p>Select the notification you wish to edit.</p></li>
+<li>
+<p>On the <strong>Content</strong> tab, you can edit the subject of the email and its content. You need to use the <em>required</em> placeholders listed below the <em>Content</em> field, either in the <em>Content</em> field or one of your <a href="#extend-the-notification-editing-ui">custom added fields</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you have multiple <a href="/documentation/developers-and-admins/configuration/languages">language variants</a> of your content, any images or links to website channel pages added to the notification’s content are displayed in the project’s default language.</p>
+</div>
+</li>
+<li><p><strong>Save</strong> the edited notification. </p></li>
+<li>
+<p>On the <strong>Properties</strong> tab, you can adjust the following:</p>
+<ul>
+<li>
+<strong>Notification template</strong> – allows you to adjust the notification’s overall design and layout by preparing your own <a href="#notification-email-templates">notification email templates</a>.</li>
+<li>
+<strong>Sender email address</strong> – the “From” address that notification recipients see in their inbox. The domain part of all sender addresses must match the application’s <a href="#sending-domain">sending domain</a>.</li>
+</ul>
+</li>
+<li><p><strong>Save</strong> any changes made on the <em>Properties</em> tab.</p></li>
+</ol>
+<p>To view how the generated email will appear to recipients, select the <strong>Preview</strong> tab.</p>
+<h3 id="add-url-placeholders">Add URL placeholders</h3>
+<p>All of the default system notifications require a URL <a href="#notification-content-placeholders">placeholder</a>, which is used to create a link that allows the user to perform a critical action (e.g., finish their registration, reset their password, or unlock their account). To add this placeholder into the notification <strong>Content</strong>, you can choose one of two approaches:</p>
+<ul>
+<li>
+<p>Use the <strong>Insert link &gt; Web URL</strong> option from the toolbar of the <a href="/documentation/business-users/rich-text-editor">rich text editor</a>. Add the placeholder into the <em>URL</em> field and enter the text you wish to display into the <em>Text</em> field.</p>
+<p></p>
+</li>
+<li><p>Switch the <em>Content</em> rich text editor to the <a href="/documentation/business-users/rich-text-editor#format-text">Code View</a>. This approach requires you to add an HTML tag that allows recipients to open a URL. For example, to insert a link with the multi-factor authentication reset URL and the text “Click here”, you would use the following code: <code>&lt;a href="{{MFAUrl}}"&gt;Click here&lt;/a&gt;</code></p></li>
+</ul>
+<h3 id="extend-the-notification-editing-ui">Extend the notification editing UI</h3>
+<p>If the default <strong>Content</strong> field is not sufficient for your notification editing requirements, you can extend the UI with custom fields.</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application.</li>
+<li>Select the <strong>Notifications</strong> module.</li>
+<li>On the <strong>Classes</strong> tab, select the <strong>Notification email</strong> class.</li>
+<li>Add <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">custom fields</a> to the class and its <strong>Content</strong> UI form.</li>
+</ol>
+<p>Such fields allow you to manage notification content in a more structured way.</p>
+<p>You can then insert the fields via <code>{% field %}</code> macros into your <a href="#create-custom-notification-email-templates">notification email templates</a>.</p>
+<h2 id="notification-content-placeholders">Notification content placeholders</h2>
+<p>Placeholders allow you to add variables into notifications. These placeholders are added into the notification’s content, and populated when the notification is actually sent. For example, a placeholder allows you to insert the name of the recipient into the notification content.</p>
+<p>Each notification offers different placeholders given by its type. If a placeholder is marked <strong>required</strong>, it must appear at least once in the notification content or title.</p>
+<p></p>
+<h2 id="notification-email-templates">Notification email templates</h2>
+<p>Notification email templates establish the structure, design and layout of notifications while incorporating static elements like headers or footers. A single template can be reused for multiple notifications. The content within the template is created using HTML code and styled with CSS. The templates also support the use of <a href="#notification-template-macros">macro placeholders</a>.</p>
+<h3 id="create-custom-notification-email-templates">Create custom notification email templates</h3>
+<ol type="1">
+<li>In the <strong>Notifications</strong> applications, go to the <strong>Email templates</strong> tab.</li>
+<li>Select <strong>New notification email template</strong>.</li>
+<li>Fill in the following fields:
+<ul>
+<li>
+<strong>Notification email template name</strong> – the name displayed in the application.</li>
+<li>(Optional) <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</li>
+<li>(Optional) <strong>Description</strong> – allows you to add information and comments about the template. Only displayed to other editors in the Xperience administration.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+<li>On the <strong>Source code</strong> tab, write or copy the HTML and CSS code of your template.</li>
+<li>Insert the <code>{% notificationemailcontent %}</code> macro to position the content of notification emails that use the template.</li>
+<li>
+<strong>Save</strong> again.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>General email template example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;&lt;/head&gt;
+  &lt;body&gt;
+    {% notificationemailcontent %}
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>Before deleting a notification email template, make sure it is not assigned to any notifications. Unused templates can be deleted directly from the <strong>Notifications</strong> application under the <strong>Email templates</strong> tab.</p>
+</div>
+
+<h3 id="notification-template-macros">Notification template macros</h3>
+<p>Notification templates must contain <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">macro expressions</a>, which serve as placeholders for notification email content.</p>
+<p>The following macro types are available for notification emails:</p>
+<ul>
+<li>
+<code>{% notificationemailcontent %}</code> – represents the main content field of notification emails.</li>
+<li>
+<code>{% field %}</code> – represents any <a href="#extend-the-notification-editing-ui">custom fields</a> added to the notification editing UI.</li>
+</ul>
+<h2 id="add-notifications">Add notifications</h2>
+<p>In addition to built-in <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow notifications</a> and default notifications about events related to administration users, the system allows you to add the following types of notifications:</p>
+<ul>
+<li><a href="#form-submission-notifications">Form submission notifications</a></li>
+<li><a href="#create-custom-notifications">Custom event notifications</a></li>
+</ul>
+<h3 id="form-submission-notifications">Form submission notifications</h3>
+<p>Form submission notifications notify users about <a href="/documentation/business-users/digital-marketing/forms">form</a> submissions by live site users. This can be useful for users who are responsible for processing submitted form data.</p>
+<p>To add a form submission notification:</p>
+<ol type="1">
+<li><p>Open the <strong>Notifications</strong> application.</p></li>
+<li><p>Select <strong>New notification</strong>.</p></li>
+<li>
+<p>Fill in the following properties:</p>
+<ul>
+<li>
+<strong>Notification name</strong> – the name of the notification displayed in the administration.</li>
+<li>(Optional) <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</li>
+<li>
+<strong>Event type</strong> – select <em>Form submission</em>.</li>
+<li>
+<strong>Forms</strong> – forms that trigger the notification.</li>
+<li>
+<strong>Recipients</strong> – users that receive the notification.
+
+<div>
+
+</div>
+<div>
+<p><strong>Permission requirements for recipients</strong></p>
+Users can only be selected as form submission notification recipients if they have a role with the <strong>View</strong> <a href="/documentation/developers-and-admins/configuration/users/role-management">permission</a> for the <strong>Forms</strong> application.
+</div>
+</li>
+<li>
+<strong>Notification template</strong> – the <a href="#notification-email-templates">email template</a> used by the notification.</li>
+<li>
+<strong>Sender email address</strong> – the “From” address that notification recipients see in their inbox. The domain part must match the application’s <a href="#sending-domain">sending domain</a>.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+<li>
+<p>In the notification’s <strong>Content</strong> view, fill in the email <strong>Subject</strong> and <strong>Content</strong>. Use the available <a href="#notification-content-placeholders">placeholders</a> as required.</p>
+<ul>
+<li>Note that for the <code>{{FormLink}}</code> placeholder to resolve correctly, the application’s <a href="#service-domain">service domain</a> must be set to the domain where you host the administration interface.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+<p>The form submission notification is now ready. The target recipients will receive notification emails based on the selected template each time one of the selected forms gets submitted.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Form submission notifications queueing</strong></p>
+<p>For performance reasons, form notification emails are placed into an auxiliary in-memory queue before being enqueued and persisted in the <a href="/documentation/business-users/email-queue">email queue</a>. The placement in the auxiliary queue lasts approximately 10 seconds. In case of an application crash or restart, any notifications currently in the auxiliary queue are lost.</p>
+</div>
+
+<p>When a form for which notifications are configured is deleted, the corresponding notification stops sending emails for the deleted form, but remains in the system.</p>
+<h4 id="extracting-notification-data-from-form-fields">Extracting notification data from form fields</h4>
+<p>When editing the content of form submission notifications, you can use the <code>{{FormData}}</code> <a href="#notification-content-placeholders">placeholder</a> to render a preview of the submitted form data directly into the notification.</p>
+<p>The placeholder by default supports form fields with data types that can be reasonably represented as text – <code>int</code>, <code>double</code>, <code>boolean</code>, <code>string</code>. All <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">default Form Builder</a> components with the listed data types are supported.</p>
+<p>If you want the preview to include the contents of fields based on other data types or if you have form components built using <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">custom data types</a>, you need to implement dedicated data type extractors to have the fields appear in the <code>{{FormData}}</code> placeholder preview.</p>
+<p>To help achieve this, the system provides the <code>FormFieldTextValueExtractorBase&lt;TValue&gt;</code> API whose purpose is to transform the field value of type <code>TValue</code> to its preferred text representation. For example, to add support for form components storing GUIDs:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Form field text extractor example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.OnlineForms;
+
+// Implement a class that inherits from 'FormFieldTextValueExtractorBase&lt;TValue&gt;'
+// where 'TValue' is the data type of the value stored by the target form component
+public class GuidExtractor : FormFieldTextValueExtractorBase&lt;Guid&gt;
+{
+    // The 'CanExtract' method determines whether this extractor can be used
+    // for a given form field. The method runs for every field in the form when
+    // {{FormData}} is being resolved.
+    public override Task&lt;bool&gt; CanExtract(FormFieldExtractionContext context)
+    {
+        // Tests if the field data type matches the target data type
+        return Task.FromResult(string.Equals(context.FormFieldInfo.DataType,
+                                             FieldDataType.Guid,
+                                             StringComparison.OrdinalIgnoreCase));
+
+        // 'FormFieldExtractionContext' also provides access to the identifier
+        // of the form component used for the currently processed field via 
+        // 'context.GetFormComponentIdentifier()', which can be used to target
+        // components with specific formatting or text extraction requirements.
+    }
+
+
+    // The 'Extract' method is responsible for converting the underlying
+    // form component value to its preferred text representation,
+    // as rendered inside the notification email when {{FormData}} resolves.
+    public override Task&lt;string&gt; Extract(Guid value, FormFieldExtractionContext context)
+    {
+        return Task.FromResult(value.ToString());
+    }
+}
+</code></pre>
+</div>
+
+<p>Implemented text extractors must be registered in the application’s service container <strong>after</strong> the <code>AddKentico</code> call.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+builder.Services.AddKentico();
+// Adds the implementation to the application's service container
+builder.Services.AddSingleton(typeof(FormFieldTextValueExtractorBase&lt;Guid&gt;),
+                              typeof(GuidExtractor));
+</code></pre>
+</div>
+
+<p>The order in which text extractors are added to the container determines when they are called when resolving the <code>{{FormData}}</code> placeholder. The system uses the <strong>last registered</strong> extractor whose <code>CanExtract</code> method returns <code>true</code> for the given form field.</p>
+<p>This can also be used to override the extractors provided by the system for the <code>int</code>, <code>double</code>, <code>boolean</code>, <code>string</code> data types by registering an alternative extractor (the default extractors are registered as part of <code>AddKentico</code>).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+builder.Services.AddKentico();
+// Overrides the default system extractor for form components of the 'int' data type
+builder.Services.AddSingleton(typeof(FormFieldTextValueExtractorBase&lt;int&gt;),
+                              typeof(MyIntegerExtractor));
+</code></pre>
+</div>
+
+<h2 id="create-custom-notifications">Create custom notifications</h2>
+<p>Developers can create custom notifications to inform administration users about events that are not covered by the default notifications. For example, you can send a notification to users when a specific <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">global system event</a> occurs.</p>
+<ol type="1">
+<li><p>Open the <strong>Notifications</strong> application.</p></li>
+<li><p>Select <strong>New notification</strong>.</p></li>
+<li>
+<p>Fill in the following properties:</p>
+<ul>
+<li>
+<strong>Notification name</strong> – the name of the notification displayed in the administration.</li>
+<li>(Optional) <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.
+<ul>
+<li>The code name is used in code when registering placeholders and sending the notification.</li>
+</ul>
+</li>
+<li>
+<strong>Event type</strong> – select <em>Custom</em>.</li>
+<li>
+<strong>Notification template</strong> – the notification template based on which the email body is created.</li>
+<li>
+<strong>Sender email address</strong> – the “From” address that notification recipients see in their inbox. The domain part of all sender addresses must match the application’s <a href="#sending-domain">sending domain</a>.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+<p>The basic notification object is now ready. Before editors can add the notification content, you need to <a href="#register-placeholders-for-custom-notifications">register placeholders</a>. Then finish the process by adding <a href="#send-custom-notifications">code that sends the notification</a>.</p>
+<h3 id="register-placeholders-for-custom-notifications">Register placeholders for custom notifications</h3>
+<ol type="1">
+<li>
+<p>Create a new class in your Xperience solution.</p>
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for best practices about adding custom code to your project.</li>
+</ul>
+</li>
+<li><p>Make the class implement the <code>INotificationEmailPlaceholdersByCodeName</code> interface.</p></li>
+<li><p>Assign the <strong>Code name</strong> of the related notification into the <code>NotificationEmailName</code> property.</p></li>
+<li><p>List each placeholder as a property in your class.</p></li>
+<li>
+<p><em>(Optional)</em> You can also adjust placeholder behavior by adding the following attributes to the properties:</p>
+<ul>
+<li>
+<code>PlaceholderDescription</code> – text that appears next to the placeholders in the notification editing UI.</li>
+<li>
+<code>PlaceholderRequired</code> – enables validation for the notification, which fails if the placeholder is not used in the <em>Content</em> field.</li>
+<li>
+<code>PlaceholderDisableHtmlEncoding</code> – used to render the placeholder’s value as a raw string. Otherwise the value is HTML encoded by default.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example of notification placeholders</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ // Represents the placeholders for a custom notification email
+ public class CustomNotificationPlaceholders: INotificationEmailPlaceholdersByCodeName
+ {
+     // Use the code name of the custom notification from the 'Notifications' application
+     public string NotificationEmailName =&gt; "CustomNotification";
+
+     [PlaceholderRequired]
+     [PlaceholderDescription("This is a custom placeholder.")]
+     [PlaceholderDisableHtmlEncoding]
+     public string CustomPlaceholder { get; set; } = "Default value";
+
+     public string AnotherCustomPlaceholder { get; set; } = "Another default value";
+ }
+ </code></pre>
+</div>
+</li>
+<li><p>Add a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module with initialization code</a> into the project.</p></li>
+<li>
+<p>In the custom initialization code, register the placeholders to the <code>NotificationEmailPlaceholderConfigurationStore</code> using the store’s <code>TryAdd</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add the placeholders to the store</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS.Notifications;
+
+ // ...
+
+ NotificationEmailPlaceholderConfigurationStore.Instance.TryAdd(new CustomNotificationPlaceholders());
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h3 id="send-custom-notifications">Send custom notifications</h3>
+<p>To send custom notifications:</p>
+<ol type="1">
+<li>Identify the context where you want to send the notification. For example, you can send custom notifications from <a href="/documentation/developers-and-admins/customization/handle-global-events">global event handlers</a>.</li>
+<li>Make sure you have a <a href="#register-placeholders-for-custom-notifications">placeholder class defined</a> for the notification.</li>
+<li>Create an instance of your placeholder class and populate the properties with the placeholder values for the context in which the notification is being sent.</li>
+<li>Create an <code>EmailMessage</code> by calling the <code>CreateEmailMessage</code> method of the <code>INotificationEmailMessageProvider</code> service</li>
+<li>Send the message using <code>IEmailService</code>.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Notification email API</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Services obtained via dependency injection
+private readonly INotificationEmailMessageProvider notificationEmailMessageProvider;
+private readonly IUserInfoProvider userInfoProvider;
+private readonly IEmailService emailService;
+
+// ...
+
+// Gets a user with the user name "UserName" as the notification recipient
+var recipientUser = userInfoProvider.Get("UserName");
+
+// Populates values for the placeholders in the notification
+var placeholders = new CustomNotificationPlaceholders
+{
+    CustomPlaceholder = "Value",
+    AnotherCustomPlaceholder = "Another value"
+};
+
+// Creates an email message based on a notification email
+var emailMessage = await notificationEmailMessageProvider.CreateEmailMessage("CustomNotification", recipientUser.UserID, placeholders);
+
+// Sends the email asynchronously
+await emailService.SendEmail(emailMessage);
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom notification example</strong></p>
+<p>For a full example of custom notification development, see: <a href="/documentation/developers-and-admins/customization/handle-global-events/set-up-custom-workflow-notifications#example">Set up custom workflow notifications</a></p>
+</div>
+
+
+</body>
+</html>

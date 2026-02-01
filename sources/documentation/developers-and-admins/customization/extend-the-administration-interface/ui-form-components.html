@@ -1,0 +1,1414 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI form components</title>
+</head>
+<body>
+<p>Admin UI form components define the editing interface for fields that comprise forms used to edit objects and pages in the Xperience administration.</p>
+<p>Each form field is assigned a single form component. The component then manages the field’s editing interface by providing, for example, a text box, a group of radio buttons, or a drop-down selector.</p>
+<p>Form components are usable with all editing forms based on the Xperience form engine, including the following:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Content type</a> editing forms (<em>Content</em> view mode)</li>
+<li>Editing forms of system objects (classes)</li>
+<li>As <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> within configuration dialogs of <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> components, <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components, and other admin UI components</li>
+</ul>
+<p>Xperience provides a robust set of form components by default. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Reference - Admin UI form components</a>. Additionally, the system allows you to create custom form components for your specific use cases.</p>
+<p>Table of contents:</p>
+<ul>
+<li>
+<a href="#assign-form-components-to-fields">Assign form components to fields</a>
+<ul>
+<li><a href="#editing-components">Editing components</a></li>
+</ul>
+</li>
+<li>
+<a href="#create-custom-form-components">Create custom form components</a>
+<ul>
+<li>
+<a href="#form-component-back-end">Form component back end</a>
+<ul>
+<li><a href="#components-without-configuration-properties">Components without configuration properties</a></li>
+<li><a href="#modify-form-component-value">Modify form component value</a></li>
+<li><a href="#add-validation-rules-and-visibility-conditions">Add validation rules and visibility conditions</a></li>
+</ul>
+</li>
+<li>
+<a href="#form-component-front-end">Form component front end</a>
+<ul>
+<li><a href="#editmode-on-the-front-end">EditMode on the front end</a></li>
+<li><a href="#example---form-component-front-end">Example - Form component front end</a></li>
+<li><a href="#define-an-editing-interface-consisting-of-multiple-input-elements">Define an editing interface consisting of multiple input elements</a></li>
+<li><a href="#add-support-for-form-field-metadata">Add support for form field metadata</a></li>
+</ul>
+</li>
+<li><a href="#register-form-components">Register form components</a></li>
+</ul>
+</li>
+<li>
+<a href="#component-commands">Component commands</a>
+<ul>
+<li><a href="#command-invokers">Command invokers</a></li>
+<li>
+<a href="#command-handlers">Command handlers</a>
+<ul>
+<li><a href="#receive-data-from-client-commands">Receive data from client commands</a></li>
+<li><a href="#formulate-command-response">Formulate command response</a></li>
+<li><a href="#designate-command-handlers">Designate command handlers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#field-data-type-management">Field data type management</a></li>
+</ul>
+<h2 id="assign-form-components-to-fields">Assign form components to fields</h2>
+<p>Form components are assigned to individual fields when creating or editing Xperience objects via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</p>
+<p></p>
+<h3 id="editing-components">Editing components</h3>
+<p>In addition to the field editor, form components are also used programmatically to create editing dialogs for the properties of other objects within the admin UI. The documentation refers to such components as <strong>editing components</strong>.</p>
+<p>Using form components in this fashion allows developers to build configuration interfaces for the properties of:</p>
+<ul>
+<li>components used by <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> (widgets, sections, templates, personalization conditions)</li>
+<li>components used by <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> (form components, sections, validation rules, visibility conditions)</li>
+<li>admin UI form components (other form components, validation rules, visibility conditions, UI pages with forms)</li>
+</ul>
+<p>For more information, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>.</p>
+<h2 id="create-custom-form-components">Create custom form components</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom UI form components with links to content items</strong></p>
+<p>If you create custom form components that allow users to add links to content items and use them as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> in <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widget properties</a> or <a href="/documentation/developers-and-admins/customization/field-editor">content type fields</a>, you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> for these components.</p>
+</div>
+
+<p>In addition to form components <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">provided by the system</a>, you can implement custom form components fulfilling your particular requirements. </p>
+<p>A form component implementation consists of the following parts:</p>
+<ul>
+<li>
+<a href="#form-component-back-end">Back-end definition</a> – the form component base class and corresponding properties classes that store its configuration. Located in the ASP.NET Core project.</li>
+<li>
+<a href="#form-component-front-end">Front-end React component</a> – a React component that renders the editing interface for obtaining input from users. Located in the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">client JS module</a>.</li>
+<li>
+<a href="#register-form-components">Registration attribute</a> – a C# assembly attribute that registers the component to the system and ties the back-end definition to the React component.</li>
+</ul>
+<p>The following diagram provides an overview of form component architecture:</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/example-color-selector-ui-form-component">Example - Color selector UI form component</a> for a simple UI form component implementation.</p>
+</div>
+
+<h3 id="form-component-back-end">Form component back end</h3>
+
+<div>
+
+</div>
+<div>
+<p><strong>Form component namespaces</strong></p>
+<p>Unless specified otherwise, all classes and members mentioned in this section can be found in the following namespaces:</p>
+<ul>
+<li><code>Kentico.Xperience.Admin.Base.Forms</code></li>
+<li><code>Kentico.Xperience.Admin.Base.FormAnnotations</code></li>
+</ul>
+<p>Do <strong>not</strong> use API from the <em>Kentico.Forms.Web.Mvc</em> namespace, which contains some classes with matching names (e.g., <code>FormComponent</code>, <code>RegisterFormComponent</code>).</p>
+</div>
+
+<p>Form component back end is formed around a class that inherits from the <code>FormComponent&lt;TProperties, TClientProperties, TType&gt;</code> base class.</p>
+<p>For the purpose of this section, imagine you are implementing a form component with a single text input field and you want to allow users to configure the field’s <a href="https://www.w3schools.com/tags/att_input_placeholder.asp" target="_blank">placeholder text</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - form component main class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Creates a new form component
+public class InputFormComponent : FormComponent&lt;TProperties, TClientProperties, TType&gt;
+{   
+    // Set to the name of the React component used to render the form component interface
+    // The client application automatically suffixes the component name with 'FormComponent'
+    public override string ClientComponentName =&gt; "@acme/web-admin-custom/Input";
+}
+
+</code></pre>
+</div>
+
+<p>When creating the class, you are forced to implement the <code>ClientComponentName</code> property. This property must be set to the name of the client React component used for the form component’s editing interface. You must provide a full name in the <em>{orgName}/{projectName}/componentName</em> format, as specified when you set up your custom admin JS module.</p>
+<p>The client application automatically suffixes the component name with <em>FormComponent</em>. Make sure the component is exported (visible to other modules). For example:</p>
+<ul>
+<li>
+<em>@acme/web-admin-custom/Input</em> (the client suffixes ‘FormComponent’ automatically and attempts to load the <strong>InputFormComponent</strong> component exported from the <em>@acme/web-admin-custom</em> <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">module</a>)</li>
+</ul>
+<p>This next section describes the generic parameters required by the <code>FormComponent</code> base class.</p>
+<p><code>TType</code> is the C# type (<code>string</code>, <code>int</code>, custom composite types) used by the back end when working with values returned by the component.</p>
+<ol type="1">
+<li>To offer the component in the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, the type must be set to a data type registered in the system via <code>DataTypeManager</code> – see <a href="#field-data-type-management">Field data type management</a> for more information and default field types.</li>
+<li>To use the form component in various configuration dialogs (<a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a>, <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a>, or <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">model-based edit pages</a>, for example), you can use any type suitable for their functionality (no need for additional registration).</li>
+</ol>
+<p><code>TProperties</code> must be a class that inherits from the <code>FormComponentProperties</code> base class. The class holds properties that are used to configure the component:</p>
+<ul>
+<li>when assigned to a field via the field editor (<em>Form component configuration</em> section). For these properties to be visible in the configuration interface, they need to have corresponding <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> assigned.</li>
+<li>when used as an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> for other properties.</li>
+</ul>
+<p>The <code>FormComponentProperties</code> base class contains the following properties:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Label</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Label text rendered above the component’s input interface.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ExplanationText</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Text displayed directly below the field. Used to clarify the expected input.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Tooltip</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>Tooltip which is displayed if a user hovers over the field.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>EditMode</p>
+</td>
+<td colspan="1">
+<p>FormEditMode</p>
+</td>
+<td colspan="1">
+<p>Indicates whether the component can be edited. Use <code>FormEditMode.Default</code> to enable editing, <code>FormEditMode.Disabled</code> to disable the component, and <code>FormEditMode.ReadOnly</code> to disable editing while keeping the contents easy to read.</p>
+<p>Custom UI form components have to implement the ReadOnly and Disabled look on the front end using custom logic by responding to the received <code>FormEditMode</code> value accordingly.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Order</p>
+</td>
+<td colspan="1">
+<p>int</p>
+</td>
+<td colspan="1">
+<p>The order of the component in the form relative to other components. Higher values indicate lower priority - are positioned further down the form.</p>
+</td>
+</tr>
+</table>
+
+<p>Extend this class with properties required for the desired functionality of the form component. For example, in case of the single input component with a text placeholder:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - form component properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class InputComponentProperties : FormComponentProperties
+{
+    // Allows users to configure the placeholder text displayed within the input
+    [TextInputComponent(Label = "Placeholder")]
+    public string PlaceholderText { get; set; }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Form component attributes</strong></p>
+<p>Note that the <code>PlaceholderText</code> property is decorated with the <code>TextInputComponent</code> attribute. This indicates the property got assigned another form component to act as it’s value editor within admin UI dialogs. All editing component attributes are located in the <code>Kentico.Xperience.Admin.Base.FormAnnotations</code> namespace. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a> for more information.</p>
+</div>
+
+<p><code>TClientProperties</code> must be a class that inherits from the <code>FormComponentClientProperties&lt;TType&gt;</code> base class, where <code>TType</code> must match the type specified in the main form component class.</p>
+<p>This class holds properties required by the client React component. Typically, this equals the set of configuration properties from <code>TProperties</code> and any additional data required by the client component to render the editing interface (e.g., contextual information or some external data retrieved by custom logic). The class serves only as a data transfer object and should not contain any additional logic.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - form component client properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class InputComponentClientProperties : FormComponentClientProperties&lt;string&gt;
+{
+    public string PlaceholderText { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>The client properties class needs to be manually populated with data that are to be sent to the client. For this purpose, the main form component class provides the <code>ConfigureClientProperties</code> method. The method is called by the system before component data is sent to the client and when processing <a href="#component-commands">component commands</a>. A component’s current properties configuration can be accessed via the <code>Properties</code> member.</p>
+<p>The method’s single parameter contains the component’s client properties class:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - configuring a form component's client properties</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Creates a new form component
+// Component configuration is provided by the 'InputComponentProperties' class
+// Client properties are provided by the 'InputComponentClientProperties' class
+// The component works with 'string' values
+public class InputFormComponent : FormComponent&lt;InputComponentProperties, InputComponentClientProperties, string&gt;
+{   
+    // Set to the name of the React component used to render the form component interface  
+    public override string ClientComponentName =&gt; "@acme/web-admin-custom/InputFormComponent";
+
+    // Fills the component's properties class with required data
+    protected override Task ConfigureClientProperties(InputComponentClientProperties clientProperties)
+    {
+        // The system maps the properties from the 'FormComponentProperties' class
+        // in the method's base implementation. They don't need to be mapped explicitly.
+
+        // Sends the configured 'PlaceholderText' value to the client 
+        clientProperties.PlaceholderText = Properties.PlaceholderText;
+
+        return base.ConfigureClientProperties(clientProperties);
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Dependency injection support</strong></p>
+<p>Form components support constructor <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> by default. You can use dependency injection to resolve instances of external services on which your component depends.</p>
+</div>
+
+<p>The main form component class together with the properties classes form the back end implementation of form component.</p>
+<p>The following sections cover additional features that can be added depending your requirements. Or you can continue directly to the <a href="#form-component-front-end">front end portion</a> of the implementation:</p>
+<ul>
+<li><a href="#components-without-configuration-properties">Components without configuration properties</a></li>
+<li><a href="#modify-form-component-value">Modify form component value</a></li>
+<li><a href="#add-validation-rules-and-visibility-conditions">Add validation rules and visibility conditions programatically</a></li>
+<li><a href="#component-commands">Define form component commands</a></li>
+</ul>
+<h4 id="components-without-configuration-properties">Components without configuration properties</h4>
+<p>Not all form components may need to expose properties to configure their behavior. For components with fixed behavior that requires no additional configuration, you can inherit from the <code>FormComponent&lt;TClientProperties, TType&gt;</code> base class instead. </p>
+<p>This type of component doesn’t require a dedicated <code>TProperties</code> class. Instead, it uses the <code>FormComponentProperties</code> base class directly. </p>
+<h4 id="modify-form-component-value">Modify form component value</h4>
+<p>The <code>FormComponent&lt;TClientProperties, TType&gt;</code> base class provides methods to modify the form component value as it gets stored to or retrieved from the component.</p>
+<ul>
+<li>
+<code>GetValue</code> – gets the form component value. Called when binding values from the component to system objects (<em>Info</em> objects, pages).  Can be overridden from the form component main class to modify the value before it’s retrieved by the system.</li>
+<li>
+<code>SetValue</code> – sets the value to the form component. Called when binding values from the database and from the client to the component. Can be overridden from the form component main class to modify the value before it’s set to the component.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override void SetValue(string value)
+{
+    // Process the value before setting it to the component
+
+    base.SetValue(value);
+}
+
+public override string GetValue()
+{
+    var value = base.GetValue();
+
+    // Process the value before it gets retrieved by the system
+
+    return value;
+}
+
+</code></pre>
+</div>
+
+<p>The following diagram below illustrates the data flow between the client and the database for form components on <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">edit pages</a>. The back end form component definition is used to evaluate field visibility conditions, perform validation, and define component commands.</p>
+<p></p>
+<h4 id="add-validation-rules-and-visibility-conditions">Add validation rules and visibility conditions</h4>
+<p><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">UI form component validation rules</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility conditions</a> can be added directly to a component via <code>AddValidationRule</code> and <code>AddVisibilityCondition</code>.</p>
+<p>Use this approach if you need certain rules and conditions to always apply, regardless of the specific form field configuration. You can also add validation that you do not wish to offer in the field editor (not registered via the <code>RegisterValidationRule</code> attribute).</p>
+<p>For this purpose, form components provide a <code>ConfigureComponent</code> method, which is called during component instantiation. Within the method, you also have access to the component’s configuration properties (via the <code>Properties</code> member).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Adding validation rules to a component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+private readonly MaxLengthValidationRule validationRule;
+
+// Component configuration method
+protected override void ConfigureComponent() 
+{
+    // Adds a validation on input length to the component. 
+    // This validation is always active for all instances of the component.
+    validationRule = new MaxLengthValidationRule(localizationService);
+    validationRule.Properties.MaxLength = 50;
+    AddValidationRule(validationRule);
+
+    return base.ConfigureComponent();
+}
+
+</code></pre>
+</div>
+
+<h3 id="form-component-front-end">Form component front end</h3>
+<p>In the client-side application, the form component is represented by a conventional React component with properties.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - creating a React component for a form component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React from 'react';
+// Imports the default form component properties class
+import { FormComponentProps } from '@kentico/xperience-admin-base';
+
+// Form component classes must be suffixed with 'FormComponent'
+export const MyFormComponent = (props: FormComponentProps) =&gt; {
+
+    // Describes the editing interface...
+    return 
+        &lt;&gt;&lt;/&gt;;
+};
+
+</code></pre>
+</div>
+
+<p>Form component classes must be suffixed with <em>FormComponent</em>. The client application loads form components based on the name supplied to the <code>ClientComponentName</code> property from the back end and the <em>FormComponent</em> suffix. </p>
+<p>The component’s properties class contains the same set of shared form component properties available on the back end. If the form component requires additional component-specific properties (as specified in the <code>TClientProperties</code> class on the back end), extend the <code>FormComponentProps</code> class and mirror the properties within.</p>
+<p>Continuing with the input component example from the <a href="#form-component-back-end">back end section</a>:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - creating an extended properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React from 'react';
+// Imports the default form component properties class
+import { FormComponentProps } from '@kentico/xperience-admin-base';
+
+// You can extended the default set of properties by extending FormComponentProps.  
+export interface InputFormComponentProps extends FormComponentProps {
+    // This property mirrors the 'PlaceholderText' property from the 'InputClientProperties' class on the back end
+    placeholderText? : string; 
+}
+
+export const InputFormComponent = (props: InputFormComponentProps) =&gt; {
+    // Component-specific properties are accessible via 'props'
+    props.placeholderText...
+
+    // Describes the editing interface...
+    return 
+        &lt;&gt;&lt;/&gt;;
+};
+
+</code></pre>
+</div>
+
+<p>The main purpose of the React component is to provide an editing interface for user input. The form component’s current value is stored in <code>FormComponentProps.value</code>.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - Using an input component to provide an editing interface for user input</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Use components from the Xperience components package to define the form component's 
+// editing interface while maintaining admin UI look and feel.
+import { Input } from '@kentico/xperience-admin-components';
+
+...
+
+return(
+    &lt;Input
+        type="text"
+        label={props.label}
+        name={props.name}
+        // Sets the value of the input
+        value={props.value ?? undefined}
+        placeholder={props.placeholderText}
+    /&gt;
+); 
+
+</code></pre>
+</div>
+
+<p>When defining form component interfaces, use React components from the <code>@kentico/xperience-admin-components</code> package. The components come preconfigured for use in the admin UI and simplify maintaining overall look and feel. For an overview of all input components available in the package, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-react-input-components">Reference - React input components</a>.</p>
+<p>The state of individual inputs contained within the form is managed by a stateful variable in a parent component. To maintain this state with up to date input values, <code>FormComponentProps</code> contains an <code>onChange</code> property with a callback function (provided by a parent component when the form component is loaded by the client application). The function expects the new component value as its argument – <code>onChange(newComponentValue)</code>. The callback function ensures form field state can be uniformly updated across all fields comprising the form – instead of input state being stored by individual input elements, it’s maintained in one place by a stateful variable. In React, this pattern is known as <a href="https://reactjs.org/docs/forms.html#controlled-components" target="_blank">controlled components</a>.</p>
+<p>Form components <strong>must call</strong> the <code>onChange</code> function with an updated value every time their input changes (e.g., by passing the function to an <code>onChange</code> handler of the child component used to obtain user input).</p>
+<ol type="1">
+<li>
+<p>Declare a function with a single parameter of the type expected by the <code>onChange</code> property of the input component.</p>
+<ul>
+<li>
+<em>onChange</em> property types of Xperience input components from the <code>@kentico/xperience-admin-components</code> package are listed under <strong>onChange Type</strong> in <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-react-input-components">Reference - React input components</a>.</li>
+</ul>
+</li>
+<li>
+<p>Within this method, call <code>onChange</code> with the value received from the change event.</p>
+<ul>
+<li>For components with whose editing interface consists of <a href="#define-an-editing-interface-consisting-of-multiple-input-elements">multiple inputs</a>, the <code>onChange</code> callback must be handled for each input separately.</li>
+</ul>
+</li>
+<li>
+<p>Pass the method as a parameter to the input component’s <code>onChange</code> property.</p>
+
+<div>
+
+</div>
+<div>
+<p>For input components that don’t implement <code>onChange</code> events (e.g., custom elements with unconventional ways of obtaining user input), you need to ensure <code>FormComponentProps.onChange</code> is called appropriately after the input component’s state changes (e.g., after a user performs a selection).  </p>
+</div>
+</li>
+</ol>
+<p>Now, when the input component’s change event fires, it also calls <code>FormComponentProps.onChange</code>, which ensures the new value is reflected in the form data sent to the server on submit.</p>
+<p>For example:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - Form component onChange value propagation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Use components from the Xperience components package to define the form component's 
+// editing interface while maintaining admin UI look and feel.
+import { Input } from '@kentico/xperience-admin-components';
+
+export const InputFormComponent = (props: InputFormComponentProps) =&gt; {
+
+    // Used to pass an onChange handler received from the parent to the actual input
+    // The ChangeEvent generic parameter must correspond to the type of the underlying HTMLElement
+    // used to edit the form component value 
+    const handleOnChange = (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+        // If 'onChange' is undefined, do nothing
+        if (props.onChange) {
+            // Passes the new user input to a parent component where all field values are maintained.
+            // e.target.value stores the most up to date input of the component.
+            props.onChange(e.target.value);
+        }
+    };     
+
+    return(
+        &lt;Input
+            type="text"
+            label={props.label}
+            name={props.name}
+            // Sets the initial value of the input (obtained from the server)
+            value={props.value ?? undefined}
+            // Assigns the callback defined above
+            onChange={handleOnChange}
+            // Map other FormComponentProps as required...
+        /&gt;
+    ); 
+};
+
+</code></pre>
+</div>
+
+<h4 id="editmode-on-the-front-end">EditMode on the front end</h4>
+<p>The back-end properties of form components use the <code>EditMode</code> property to set whether the component should be in the editable default state, or should be displayed as read-only or disabled. Custom front end React components should implement the read-only and disabled mode to allow the component to behave accordingly to the selected value.</p>
+<p>The read-only mode is intended for better readability than the disabled mode, while still preventing users from editing the component. It should be used in situations when the component is not expected to be edited by any user. On the other hand, the disabled mode signals that the component could be editable under different circumstances, for example, when the user has sufficient permissions.</p>
+<p>When implementing component support for read-only mode, follow these general guidelines: action buttons should be hidden, and the contents should be easily readable. For example, this can be achieved by returning a different component that satisfies the desired properties when the read-only look should be used, such as an input component returning a text component which displays the current value. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/example-color-selector-ui-form-component">Example - Color selector UI form component</a> for a code sample.</p>
+<p>While the <code>FormComponentProps</code> include the <code>editMode</code> property, the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-react-input-components">React input components</a> from the <code>@kentico/xperience-admin-components</code> package expect the <code>disabled</code> and <code>readOnly</code> property. When implementing a custom UI form component with the provided React input components, the <code>editMode</code> property has to be converted, for example as shown in the example below. However, the <code>FormItemWrapper</code> component, which can be used to wrap the input components, uses the <code>editMode</code> property directly.</p>
+<h4 id="example---form-component-front-end">Example - Form component front end</h4>
+<p>The following code snippet shows a full front end implementation of a simple form component that uses a single text input field to receive user input.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - defining an input interface</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React from 'react';
+
+// Use components from the Xperience components package 
+// to define the form component's editing interface while 
+// maintaining admin UI look and feel.
+import { Input, FormEditMode } from '@kentico/xperience-admin-components';
+
+// Imports the default form component properties class
+import { FormComponentProps } from '@kentico/xperience-admin-base';
+
+// You can extended the default set of properties by extending FormComponentProps  
+export interface InputFormComponentProps extends FormComponentProps {     
+    placeholderText? : string; 
+}
+
+export const InputFormComponent = (props: InputFormComponentProps) =&gt; {
+
+    // Used to pass an onChange handler received from the parent to the actual input
+    const handleOnChange = (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+        // If undefined, do nothing
+        if (props.onChange) {
+            // Passes the new value to a parent component where all field values are maintained
+            props.onChange(e.target.value);
+        }
+    };      
+
+    // Describes the editing interface...
+    return (
+        // Maps form component properties to the Input component
+        &lt;Input
+            type="text"
+            label={props.label}
+            name={props.name}
+            // Sets the value of the input
+            value={props.value ?? undefined}
+            // Propagates an onChange handler that ensures input changes are 
+            onChange={handleOnChange}
+            invalid={props.invalid}
+            validationMessage={props.validationMessage}
+            // Converts editMode to disable and readOnly
+            disabled={props.editMode === FormEditMode.Disabled}
+            readOnly={props.editMode === FormEditMode.ReadOnly}
+            markAsRequired={props.required}
+            labelDisabledTooltip={props.disabledMessage}
+            labelIcon={props.tooltip ? 'xp-i-circle' : undefined}
+            labelIconTooltip={props.tooltip}
+            explanationText={props.explanationText}
+            placeholder={props.placeholderText}
+            dataTestId={props.name}
+        /&gt;
+    );
+};
+
+</code></pre>
+</div>
+
+<h4 id="define-an-editing-interface-consisting-of-multiple-input-elements">Define an editing interface consisting of multiple input elements</h4>
+<p>For form components whose editing interface consists of multiple inputs must propagate input changes via <code>FormComponentProps.onChange</code> every time one of the partial inputs changes (so the form state always contains the most up-to-date value).</p>
+<p>For example, assuming you have the following component consisting of two text inputs with the two values separated by a dot:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Updating state with composite inputs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React from 'react';
+import { Input } from '@kentico/xperience-admin-components';
+
+export const MyFormComponent = (props: FormComponentProps) =&gt; {
+
+    // Splits the current component value into two parts
+    const [firstinput, secondinput] = props.value?.split('.') || ['', ''];
+
+    // Update the first part of the input
+    const onFirstInputChange = (e: ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+        props.onChange?.(`${e.target.value}.${secondinput}`);
+    };
+
+    // Update the second part of the input
+    const onSecondInputChange = (e: ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+        props.onChange(`${firstinput}.${e.target.value}`);
+    }
+
+    return (
+        &lt;Input markAsRequired={props.required}
+            label="First input"
+            value={firstinput}
+            onChange={onFirstInputChange}/&gt;
+        &lt;Input markAsRequired={props.required}
+            label="Second input"
+            value={secondinput}
+            onChange={onSecondInputChange} /&gt;
+    );
+};
+
+</code></pre>
+</div>
+
+<h4 id="add-support-for-form-field-metadata">Add support for form field metadata</h4>
+<p>Form field metadata comprises all the supporting information that can be configured via the field editor, such as:</p>
+<ul>
+<li>Required and Disabled status</li>
+<li>Field label and caption (tooltip text)</li>
+<li>Tooltip icon</li>
+<li>Field explanation text (shown below the input)</li>
+<li>Validation messages from assigned <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validation rules</a>
+</li>
+</ul>
+<p>This data gets passed to the client via the <code>FormComponentProps</code> object. Xperience input components from the <code>@kentico/xperience-admin-components</code> package already contain properties that allow you to map this information by default.</p>
+<p>However, if you are developing an input composed of multiple elements, you might need to reposition how certain information gets displayed (e.g., validation messages). For this purpose, you can use the <code>FormItemWrapper</code> component.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example - FormItemWrapper</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { FormItemWrapper } from '@kentico/xperience-admin-components';
+
+...
+
+return (
+    // Wraps two input elements to better convey information relevant to the component as a whole rather than its individual inputs
+    &lt;FormItemWrapper label={props.label} invalid={props.invalid} validationMessage={props.validationMessage}&gt;
+        &lt;div&gt;
+            &lt;Input markAsRequired={props.required}
+                validationMessage={''}
+                label="Input 1"
+                value={firstinput}
+                onChange={onNamespaceChange} /&gt;
+            &lt;Input markAsRequired={props.required}
+                validationMessage={''}
+                label="Input 2"
+                value={secondinput}
+                onChange={onNameChange} /&gt;
+        &lt;/div&gt;
+    &lt;/FormItemWrapper&gt;
+);
+
+</code></pre>
+</div>
+
+<h3 id="register-form-components">Register form components</h3>
+<p>Form component registration ties the back end definition and the client-side React component together.</p>
+<p>The registration is done via the <code>RegisterFormComponent</code> assembly attribute, which takes:</p>
+<ul>
+<li>
+<strong>Identifier</strong> – a unique <code>string</code> identifier of the form component. Consider specifying the identifier in a format that uniquely identifies your form component to avoid potential conflicts with identifier names. For example, use <em>CompanyName.ModuleName.ComponentName.</em>
+</li>
+<li>
+<strong>ComponentType</strong> – the <em>System.Type</em> of the form component class.</li>
+<li>
+<strong>Name</strong> – the name of the form component when offered in the field editor.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - form component registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+[assembly: RegisterFormComponent("Acme.AdminComponents.MyFormComponent", typeof(MyFormComponent), "My form component")]
+
+</code></pre>
+</div>
+
+<h2 id="component-commands">Component commands</h2>
+<p>Components commands allow UI form components to communicate with the back end after the initial render and before form submission. You can use commands to dynamically fetch data or alter component behavior (e.g., refresh data available for selection), based on user interaction, input, or other contextual events.</p>
+<p>A component command consists of a:</p>
+<ul>
+<li>
+<a href="#command-invokers">Command invoker</a> – function defined in and called by the client React component (e.g., in response to a user action).</li>
+<li>
+<a href="#command-handlers">Command handler</a> – method defined in the form component class on the back end. Contains logic to execute in response to command invocation.</li>
+</ul>
+<h3 id="command-invokers">Command invokers</h3>
+<p>Within client components, invoke component commands via the <code>executeCommand</code> callback method obtained from the <code>useFormComponentCommandProvider()</code> hook.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Invoking commands</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React from 'react';
+// Hook used to obtain an instance of a command executor
+import { useFormComponentCommandProvider } from '@kentico/xperience-admin-base'; 
+
+export const MyComponent = ( props: FormComponentProperties ) =&gt; {
+
+    // Callback method used to invoke commands from the component
+    const { executeCommand } = useFormComponentCommandProvider();
+
+    // Invokes the 'commandName' component command on the back end
+    const result = await executeCommand&lt;TResponseResult, TCommandParameters&gt;
+                            (props, 'commandName', commandHandlerArguments);
+};
+
+</code></pre>
+</div>
+
+<p>The <code>executeCommand</code> callback method takes the following parameters:</p>
+<ul>
+<li>(optional) <strong>TResponseResult</strong> – the type used to store command response received from the server.</li>
+<li>(optional) <strong>TCommandParameters</strong> – the type used to store parameters for the command handler method on the back end. For the system to correctly pass the arguments to the server-side handler, a matching type must be declared on the back end as well.</li>
+<li>
+<strong>props</strong> – the properties of the form component (<code>FormComponentProps</code> or derived type).</li>
+<li>
+<strong>commandName</strong> – the name of the command handler method on back end.</li>
+<li>(optional) <strong>commandHandlerArguments</strong> – parameters that the back end handler gets invoked with, must be of the TCommandParameters type.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import React from 'react';
+// Hook used to obtain an instance of a command executor
+import { useFormComponentCommandProvider } from '@kentico/xperience-admin-base'; 
+
+export const MyComponentCommands = {
+    GetDataForSelector: 'GetDataForSelector',
+};
+
+export interface GetDataForSelectorParameters {
+    stringarg: string;
+    boolarg: boolean;
+}
+
+export interface GetDataForSelectorResponse {
+    stringarg: string;
+    boolarg: boolean;
+}
+
+export const MyComponent = ( props: FormComponentProperties ) =&gt; {
+
+    // Callback method used to invoke commands from the component
+    const {executeCommand} = useFormComponentCommandProvider();
+
+    // Invokes the GetDataForSelector command on the back end
+    const handleEvent = async (stringarg: string, boolarg: boolean) =&gt; {   
+        // The response is of the 'GetDataForSelectorResponse' type
+        const response = await executeCommand&lt;GetDataForSelectorResponse, GetDataForSelectorParameters&gt;
+                            (props, MyComponentCommands.GetDataForSelector, { stringarg, boolarg} );
+        // Process the result
+        doSomething(response);                        
+    }
+
+    return (
+        // Assign handleEvent() where needed 
+    )
+}; 
+
+</code></pre>
+</div>
+
+<p>When a component command is invoked, the admin app sends a request to the back end, which invokes a corresponding handler method <a href="#designate-command-handlers">assigned to the command</a>.</p>
+<h3 id="command-handlers">Command handlers</h3>
+<p>Command handlers are methods defined in the form component main class (derived from <code>FormComponent&lt;TClientProperties, TType&gt;</code>).</p>
+<p>The purpose of handler methods is to respond to component commands on the back end and return a response (with data) back to the component. </p>
+<p>Handler methods need to:</p>
+<ul>
+<li>be <code>public</code> and asynchronous</li>
+<li>return an instance of <code>ICommandResponse&lt;TResult&gt;</code>, where <code>TResult</code> describes the response object sent back to the client component</li>
+<li>be annotated with the <code>FormComponentCommand</code> attribute</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - defining a command handler method</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+...
+
+[FormComponentCommand]
+public async Task&lt;ICommandResponse&lt;TResult&gt;&gt; GetDataForSelector(GetDataForSelectorCommandArguments args)
+{
+    return await assetsCommandManager.GetFolders(args);
+}
+
+</code></pre>
+</div>
+
+<h4 id="receive-data-from-client-commands">Receive data from client commands</h4>
+<p>If you need to send data (command handler arguments) from the client as part of a command, the data needs to have a corresponding strongly-typed object representing them on the back end. This object then must be used as a parameter in the method handling the given page command.</p>
+<p>The system automatically binds the received data to the object, allowing you to access it within the command handler:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Receive data from the client within a page command</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyCommandArguments
+{
+    public int ExtremelyImportantNumber { get; set; }
+
+    public string DistressingMessage { get; set; }
+}
+
+public class MyComponent : FormComponent&lt;MyComponentProperties, string&gt;
+{
+    ...
+
+    [FormComponentCommand]
+    // Binds data received from the client to the MyCommandArguments object
+    public ICommandResponse MyCommand(MyCommandArguments args)
+    {
+        // Use data received from the client
+        args.DistressingMessage...
+        args.ExtremelyImportantNumber...
+
+        // Sends a response back to the client
+        return ResponseFrom(new ResponseData(...)).AddSuccessMessage("Command data received and acted upon.");
+    }    
+}
+
+</code></pre>
+</div>
+
+<h4 id="formulate-command-response">Formulate command response</h4>
+<p>The system provides an API that enables you to compose responses from command handlers.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+[FormComponentCommand]
+public ICommandResponse CommandHandler(ClientArguments args)
+{   
+    // Instantiates a 'CommandResult' object that can be further modified by chaining provided extension methods
+    return ResponseFrom();
+}
+
+</code></pre>
+</div>
+
+<p>A response may contain all of the following:</p>
+<ul>
+<li>status signalling command completion</li>
+<li>information message displayed on the client containing additional information for users</li>
+<li>data returned from the server that can be acted upon by the client</li>
+</ul>
+<p>A command handler returns an instance of <code>ICommandResponse&lt;TResult&gt;</code> created by <code>ResponseFrom&lt;TResult&gt;</code> . <code>TResult</code> carries data from the server. To be acted upon by the component. Substitute the <code>TResult</code> generic with an object representing the command response data on the server. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - send data back to the client</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Data object class representing the command handler response to the client
+public class MyCommandResult
+{
+    public string StringData { get; set; }
+
+    public int IntData { get; set; }
+
+    public MyCommandResult(string stringData, int intData)
+    {
+        StringData = stringData;
+        IntData = intData;
+    }
+}
+
+public class MyComponent : FormComponent&lt;MyComponentProperties, string&gt;
+{ 
+    ... 
+
+    [FormComponentCommand] 
+    public ICommandResponse&lt;MyCommandResult&gt; MyCommand()
+    { 
+        // Obtain the data...
+
+        // Sends a response object with the data back to the client
+        return ResponseFrom(new MyCommandResult(stringData, intData));
+    } 
+}
+
+</code></pre>
+</div>
+
+<p>The method returns an instance of the <code>CommandResult</code> object that can be further modified by the following extensions (<em>Kentico.Xperience.Admin.Base</em> namespace):</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Method</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>AddMessage</code></p>
+</td>
+<td>
+<p>Displays a general message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return ResponseFrom().AddMessage("General message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddSuccessMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays a success message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return ResponseFrom().AddSuccessMessage("Success message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddInfoMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays an info message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return ResponseFrom().AddInfoMessage("Info message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddErrorMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays an error message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return ResponseFrom().AddErrorMessage("Error message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>AddWarningMessage</code></p>
+</td>
+<td colspan="1">
+<p>Displays a warning message on the client after a response has been received.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return ResponseFrom().AddWarningMessage("Warning message.");
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><code>UseCommand</code></p>
+</td>
+<td colspan="1">
+<p>Invokes a command with the provided name from the client template where the component is rendered.  </p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+return ResponseFrom().UseCommand('Componentcommand');
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h4 id="designate-command-handlers">Designate command handlers</h4>
+<p><code>FormComponentCommand</code> constructor takes the name of the command as invoked from the client template. If not specified, defaults to the name of the handling method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Designates the 'GetDataForSelector' method as the handler for the 'GetDataForSelector' command invoked from the client component
+[FormComponentCommand]
+public ICommandResponse GetDataForSelector()
+{
+    // Command logic...
+}
+
+// Designates the 'CommandHandler' method as the handler for the 'GetDataForSelector' command invoked from the client component
+[FormComponentCommand("GetDataForSelector")]
+public ICommandResponse CommandHandler()
+{
+    // Command logic...
+}
+
+</code></pre>
+</div>
+
+<h2 id="field-data-type-management">Field data type management</h2>
+<p>All field data types assignable via the field editor must be explicitly registered. The system uses the metadata provided during registration to:</p>
+<ul>
+<li>generate the database columns storing the values of individual fields,</li>
+<li>configure code generator and field editor behavior,</li>
+<li>perform value conversions (and object mapping for complex types) when fetching data to and from the database.</li>
+</ul>
+<p>When writing form components, this data type corresponds to the <strong>TType</strong> generic (specified in <code>FormComponent</code> and <code>FormComponentProperties</code>) provided when creating form component classes on the back end.</p>
+<p>For information about data types registered in the system by default and the API used to registered custom data types, see <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">Data type management</a>.</p>
+
+</body>
+</html>

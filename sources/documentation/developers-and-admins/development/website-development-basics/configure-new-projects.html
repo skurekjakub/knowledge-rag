@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Configure new projects</title>
+</head>
+<body>
+<p>This page covers the configuration of newly installed Xperience projects. The process can be divided into the following main steps:</p>
+<ol type="1">
+<li>
+<a href="#configure-application-startup">Configure the project’s startup</a>.</li>
+<li>(Optional) <a href="/documentation/developers-and-admins/configuration/email-configuration">Enable email-sending functionality</a>.</li>
+<li>(Optional) <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/enable-application-features">Enable additional Xperience features</a> according to your requirements.</li>
+<li>(Optional) <a href="#application-configuration">Miscellaneous application configuration</a>.</li>
+</ol>
+<h2 id="configure-application-startup">Configure application startup</h2>
+<p>The Xperience ASP.NET Core integration requires specific service and middleware components to function. You need to configure your application’s startup with the following requirements in mind.</p>
+<p>Add the following services to the application’s service collection:</p>
+<ul>
+<li>
+<p>(<em>Optional</em>) Xperience SaaS services – added to the service collection for projects deployed to the Xperience <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS environment</a>.</p>
+<ul>
+<li>
+<code>AddKenticoCloud</code> – configures basic SaaS infrastructure.</li>
+<li>
+<code>AddXperienceCloudApplicationInsights</code> – configures the <a href="/documentation/developers-and-admins/configuration/saas-configuration#microsoft-application-insights-integration">Microsoft Application Insights integration</a>.</li>
+<li>
+<code>AddXperienceCloudSendGrid</code> – configures the <a href="/documentation/developers-and-admins/configuration/email-configuration#managed-sendgrid-integration">managed SendGrid integration</a>.</li>
+<li>
+<code>AddXperienceCloudDataProtection</code> – configures the ASP.NET <a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/introduction?view=aspnetcore-9.0" target="_blank">DataProtection</a> API required for Xperience administration interface authentication.</li>
+<li>
+<code>AddXperienceCloudChannelRequirements</code> – configures channel code name validation to enforce the same character restrictions when creating a new channel (e.g., website, email) in the administration interface as in the <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</li>
+</ul>
+</li>
+<li><p>Xperience services – added via <code>IServiceCollection.AddKentico</code>.</p></li>
+<li>
+<p>Framework support for the MVC architecture – added via <code>IServiceCollection.AddControllersWithViews</code>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Newtonsoft.Json response data formatters not supported</strong></p>
+<a href="https://learn.microsoft.com/aspnet/core/web-api/advanced/formatting" target="_blank">Response data formatters</a> based on <em>Newtonsoft.Json</em> are not globally compatible with Xperience applications. Installing the <a href="https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.NewtonsoftJson/" target="_blank">Microsoft.AspNetCore.Mvc.NewtonsoftJson</a> NuGet package and calling <code>AddNewtonsoftJson</code> in the application’s service configuration may cause issues with certain parts of the system’s functionality.
+</div>
+</li>
+</ul>
+<p>The project’s <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/" target="_blank">middleware pipeline</a> must contain the following middleware <strong>in the listed order</strong> (see the code snippet below):</p>
+<ul>
+<li>System initialization (<code>InitKentico</code>) – bootstraps the Xperience by Kentico integration. Must be called <strong>first</strong> in the middleware pipeline.
+<ul>
+<li>
+<code>InitKentico</code> also adds a logging provider with the <code>XperienceEventLog</code> alias. The logging provider is built using conventional <a href="https://docs.microsoft.com/aspnet/core/fundamentals/logging/" target="_blank">ASP.NET logging API</a> and writes log entries to the <a href="/documentation/developers-and-admins/configuration/event-log">Xperience event log</a>. By default, this provider includes all application warnings and errors, as well as information-level events originating from the Xperience libraries (<code>CMS</code> and <code>Kentico</code> event categories). To learn more, see <a href="/documentation/developers-and-admins/development/logging">Logging</a>.</li>
+</ul>
+</li>
+<li>
+<a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/static-files/" target="_blank">Static files</a> (<code>UseStaticFiles</code>) – used by Xperience to serve files required by the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> features, <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a>, etc.</li>
+<li>Cookie policy (<code>UseCookiePolicy</code>) – required for the system’s <a href="/documentation/developers-and-admins/data-protection/cookies">cookie support</a>.</li>
+<li>Authentication middleware (<code>UseAuthentication</code>) – required by certain features, such as Page Builder (when accessing the live site via the Xperience administration).</li>
+<li>SaaS environment initialization (<code>UseKenticoCloud</code>) – only for projects that will be deployed to the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS environment</a>.</li>
+<li>Xperience middleware (<code>UseKentico</code>) – registers middleware and configuration required by the system. This call also adds the framework’s routing (<a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.userouting" target="_blank">UseRouting</a>) middleware.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The <strong>Boilerplate</strong> <a href="/documentation/developers-and-admins/installation">project template</a> comes with a startup class preconfigured according to the specified requirements.</p>
+<p>The <code>--cloud</code> template also contains additional code required for <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployment to the SaaS environment</a>.</p>
+<p>Kentico strongly recommends creating projects from the provided templates.</p>
+</div>
+
+<p>The following code demonstrates required service registration and recommended middleware order. Ellipsis indicate breaks where other middleware may be added:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - Recommended middleware order</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Web.Mvc;
+using Kentico.Xperience.Cloud;
+
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+// Application service registrations
+var builder = WebApplication.CreateBuilder(args);
+
+// Required for projects that will be deployed to the SaaS environment
+builder.Services.AddXperienceCloudApplicationInsights(builder.Configuration);
+
+// Required for projects that will be deployed to the SaaS environment
+if (builder.Environment.IsQa() ||
+    builder.Environment.IsUat() ||
+    builder.Environment.IsEnvironment(CloudEnvironments.Custom) ||
+    builder.Environment.IsEnvironment(CloudEnvironments.Staging) ||
+    builder.Environment.IsProduction())
+{
+    builder.Services.AddKenticoCloud(builder.Configuration);
+    builder.Services.AddXperienceCloudSendGrid(builder.Configuration);
+    builder.Services.AddXperienceCloudDataProtection(builder.Configuration);
+}
+
+builder.Services.AddKentico();
+builder.Services.AddAuthentication();
+builder.Services.AddControllersWithViews();
+
+// Application middleware pipeline configuration
+var app = builder.Build();
+
+// These middleware components need to be called in this specific order
+app.InitKentico();
+app.UseStaticFiles();
+
+...
+app.UseCookiePolicy();
+...
+
+app.UseAuthentication();
+
+// Required for projects that will be deployed to the SaaS environment
+app.UseKenticoCloud();
+
+app.UseKentico();
+...
+
+// Adds system routes such as HTTP handlers and feature-specific routes
+app.Kentico().MapRoutes();
+
+// Starts the application
+app.Run();
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>IIS application initialization</strong></p>
+<p>When hosting the application on IIS with the <a href="https://learn.microsoft.com/iis/get-started/whats-new-in-iis-8/iis-80-application-initialization" target="_blank">Application initialization</a> feature enabled and configured to send a preload request (often enabled by default, for example on <a href="https://azure.microsoft.com/" target="_blank">Microsoft Azure</a>), you may encounter preload errors in your <a href="/documentation/developers-and-admins/configuration/event-log">event log</a>. To prevent these issues from occurring, configure <code>IISApplicationInitializationOptions</code> for your application and enable the <code>UseDefaultSystemResponseForPreload</code> property in the <strong>Program.cs</strong> file.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Web.Mvc;
+...
+
+builder.Services.Configure&lt;IISApplicationInitializationOptions&gt;(options =&gt;
+{
+    options.UseDefaultSystemResponseForPreload = true;
+});
+
+</code></pre>
+</div>
+</div>
+</div>
+
+<h3 id="middleware-required-by-xperience">Middleware required by Xperience</h3>
+<p>The Xperience integration configures its required middleware components using options classes stored in the application’s service container (following the <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options pattern</a>).</p>
+<p>When adding custom configuration for middleware <a href="#configure-application-startup">used by the Xperience integration</a>, <strong>do not</strong> configure the middleware components directly within the corresponding <em>Use&lt;Middleware&gt;</em> methods (by directly passing their options objects). If a configuration object is passed directly to middleware registration, the framework disregards all configuration stored in the service container. As Xperience relies on certain configuration options stored within the service container, overriding middleware configuration in this fashion may break Xperience functionality dependent on the corresponding middleware.</p>
+<p>Instead, add custom middleware configuration into the application’s service container using <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.optionsservicecollectionextensions.configure" target="_blank">IServiceCollection.Configure</a> or <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.optionsservicecollectionextensions.configureoptions" target="_blank">IServiceCollection.ConfigureOptions</a> methods. This way configuration set by the Xperience integration does not get overridden.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Configures options for the Static files middleware
+builder.Services.Configure&lt;StaticFileOptions&gt;(o =&gt;
+{
+    //...
+});
+
+...
+
+app.UseStaticFiles();
+</code></pre>
+</div>
+
+<h2 id="application-configuration">Application configuration</h2>
+<p>This section covers miscellaneous configuration options you may wish to implement for your application.</p>
+<h3 id="application-setting-keys">Application setting keys</h3>
+<p>Xperience applications support the ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration" target="_blank">configuration provider</a> approach for <a href="/documentation/developers-and-admins/configuration/reference-configuration-keys">application settings (configuration keys)</a>. The system looks for application settings in the sources specified by the application’s <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration#default-configuration" target="_blank">IConfigurationBuilder</a>.</p>
+<p>Similar to any other .NET application, you can use the <code>Microsoft.Extensions.Configuration.IConfiguration</code> service to retrieve the values of individual keys. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Microsoft.Extensions.Configuration;
+
+// Service instance provided by dependency injection
+private readonly IConfiguration configuration;
+
+// Retrieves the value of the 'CMSCIRepositoryPath' key
+var path = configuration["CMSCIRepositoryPath"];
+
+// Retrieves the value of the 'CMSConnectionString' key nested within the ConnectionStrings object
+var connectionString = configuration["ConnectionStrings:CMSConnectionString"];
+
+</code></pre>
+</div>
+
+<p>Additionally, Xperience provides various settings that allow users in the administration to enable and configure individual features. Such settings store their values in the database. To learn how to work with Xperience settings, see <a href="/documentation/developers-and-admins/configuration/settings">Settings</a>.</p>
+<h3 id="application-settings-for-different-saas-deployment-environments">Application settings for different SaaS deployment environments</h3>
+<p>You can use dedicated <em>appsettings.{Environment}.json</em> files to configure different application configuration values for each environment. Apart from default <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-9.0" target="_blank">ASP.NET Core</a> environments, QA, UAT and STG environments are available for <a href="/documentation/developers-and-admins/saas">SaaS</a> deployments according to your <a href="/documentation/developers-and-admins/saas/saas-service-plans">service plan</a>. Corresponding names for application settings files are <em>appsettings.Qa.json</em>, <em>appsettings.Uat.json</em>, <em>appsettings.Stg.json</em>.</p>
+<p>Once you create these files locally, they are included in the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#create-a-deployment-package">deployment package</a> when it’s generated and later uploaded to the <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</p>
+<h3 id="startup-options-in-configuration-files">Startup options in configuration files</h3>
+<p>You can use ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a> to separate the options from the application’s startup code to a configuration source, such as the default <em>appsettings.json</em> file. This allows you to make runtime changes to options, without needing to adjust the startup code or restart the application (depending on the specifics of your selected configuration source).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Separates the SmtpOptions to a configuration file section
+builder.Services.AddXperienceSmtp();
+builder.Services.Configure&lt;SmtpOptions&gt;(builder.Configuration.GetSection("SmtpOptions"));
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Example - appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "SmtpOptions": {
+    "Server" : {
+      "Host":"smtp.server.com",
+      "Port": 587
+    }
+  }
+  ...
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

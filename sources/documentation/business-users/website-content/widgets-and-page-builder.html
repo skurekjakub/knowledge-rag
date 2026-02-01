@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Widgets and Page Builder</title>
+</head>
+<body>
+<p><strong>Page Builder</strong> is a user-friendly UI feature that allows users to build pages using configurable widgets prepared by developers. Page Builder lets you easily display various types of content using widgets directly from within the Xperience administration.</p>
+<p></p>
+<p><strong>Page Builder</strong> is available in website channel applications in the page menu of pages that have the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder enabled</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>A developer needs to set up the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder feature</a> and <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">prepare pages with editable areas</a>, before you can create and manage content using this approach.</p>
+</div>
+
+<h2 id="page-builder-workflow">Page Builder workflow</h2>
+<p>When working with Page Builder, you’ll often use the following workflow:</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>In the content tree, select the page that you want to edit.</li>
+<li>Select <strong>Page Builder</strong> in the page menu on the right side of the interface.<br>
+</li>
+<li>Make sure the page is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.
+<ul>
+<li>If a page is already <em>Published</em> select <strong>Edit page</strong>. This transitions the page to the <em>Draft</em> step and enables editing and re-publishing.<br>
+</li>
+<li>When a page is <em>Unpublished</em>, you first need to select <strong>Create new version</strong>. This transitions the page to the <em>Draft</em> step and enables editing and publishing.</li>
+</ul>
+</li>
+<li>
+<a href="#adjust-sections">Adjust sections</a> to achieve your desired visual layout of the page.</li>
+<li>
+<a href="#edit-widgets">Add widgets</a> to the page to define the content.</li>
+</ol>
+<h2 id="adjust-sections">Adjust sections</h2>
+<p>On a page where Page Builder is set up, you can do the following actions with sections. You can watch a video or read about the actions below.</p>
+
+<p>UI elements that allow you to modify sections are gray:</p>
+<ul>
+<li>
+<strong>Add sections</strong> – Click a gray <em>plus</em> button located on the left side of an editable area to insert a new section. The list of available sections depends on the implementation of your website.</li>
+<li>
+<strong>Move sections</strong> – Hover over a section and drag it by the drag handle.</li>
+<li>
+<strong>Change section type</strong> – You can change the type of a section to adjust the arrangement of a page. To do so, hover over the section you want to modify, click the section type button, and select the section type you want to use.</li>
+<li>
+<strong>Configure sections</strong> (only displayed for configurable sections) – Click the configure button, edit the section properties in the configuration dialog, and click <em>Apply</em>. Check with your site’s administrators or developers for more information about the section types on your website and their properties.</li>
+<li>
+<strong>Copy sections</strong> – Select a section you want to copy and click the copy button in the upper right corner of the section to copy a section with all widgets in the section.
+<ul>
+<li>You can paste the copied sections onto any page that uses the Page Builder using the <em>Add section</em> button.</li>
+<li>A section can only be pasted into an editable area if all widgets in the copied section and the section itself are allowed in the area.</li>
+<li>The copy feature allows you to store up to 10 sections for 12 hours.</li>
+</ul>
+</li>
+<li>
+<strong>Delete sections</strong> – Hover over the section you want to remove and click the delete button in the upper right corner of the section.</li>
+</ul>
+<p></p>
+<p>Each section defines one or more zones, where you can add widgets.</p>
+<p>After making any changes on the page, do not forget to click the <strong>Save</strong> button. Changes made to the sections can be previewed in the <strong>Preview</strong> mode.</p>
+<h2 id="edit-widgets">Edit widgets</h2>
+<p>On a page where Page Builder is set up, you can do the following actions with widgets. UI elements that allow you to modify widgets are purple:</p>
+<ul>
+<li>
+<strong>Add widgets</strong> – Click a purple <em>plus</em> button to insert a widget to the desired location. The list of available widgets depends on the implementation of your website.</li>
+<li>
+<strong>Move widgets</strong> – Click on a widget and drag it by its handle or full header to a different position.</li>
+<li>
+<strong>Personalize widgets</strong> – See <a href="/documentation/business-users/digital-marketing/widget-personalization">Personalize Page Builder widgets</a>.</li>
+<li>
+<strong>Configure widgets</strong> (only displayed for configurable widgets) – Click the configure button, edit the widget properties in the configuration dialog, and click <em>Apply</em>.
+<ul>
+<li>
+<strong>Note</strong>: Widget configuration options and property editors are implemented individually with each widget. For more information, visit your project’s documentation or contact your developer.</li>
+</ul>
+</li>
+<li>
+<strong>Copy widgets</strong> – Click on a widget you want to copy and click the copy button in the upper right corner of the widget. You can then paste copied widgets on pages built using Page Builder via the <em>Add widget</em> functionality. This feature allows you to store up to 10 widgets for 12 hours.</li>
+<li>
+<strong>Delete widgets</strong> – Click on a widget you want to remove and click the delete button in the upper right corner of the widget.</li>
+</ul>
+<p></p>
+<p>Watch a short video about how you can work with Page Builder widgets.</p>
+
+
+</body>
+</html>

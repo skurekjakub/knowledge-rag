@@ -1,0 +1,1610 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Global system events</title>
+</head>
+<body>
+<p>Each section below represents an event category (class) that serves as an entry point for accessing that specific group of events.</p>
+<h2 id="objectevents">ObjectEvents</h2>
+<p><strong>Namespace</strong>: CMS.DataEngine</p>
+<p>Contains events that occur for all types of objects in the system. See also: <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-object-events">Handle object events</a></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Important</strong></p>
+<p>Use the following classes to access the object events in the API:</p>
+<ul>
+<li>
+<strong>ObjectEvents</strong> – events triggered for all object types</li>
+<li>
+<strong>&lt;name&gt;Info.TYPEINFO.Events</strong> – events triggered only for a specific object type, for example: <code>UserInfo.TYPEINFO.Events</code>
+</li>
+</ul>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Insert</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>ObjectEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Object (BaseInfo)</li>
+</ul>
+</td>
+<td>
+<p><strong>Note</strong>: We recommend using the newer <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-object-events">event handlers with async support</a> for <em>Insert</em> object events.</p>
+<p>Occurs when a new object is created.</p>
+<p>To reliably handle all possible object creation events, you may also need to assign a matching handler to the <strong>BulkInsert</strong> event. The system triggers the <em>BulkInsert</em> event instead of <em>Insert</em> in certain cases, particularly for operations that can affect multiple objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Update</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>ObjectEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Object (BaseInfo)</li>
+</ul>
+</td>
+<td>
+<p><strong>Note</strong>: We recommend using the newer <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-object-events">event handlers with async support</a> for <em>Update</em> object events.</p>
+<p>Occurs when the data of an existing object is updated.</p>
+<p>To reliably handle all possible object update events, you may also need to assign a matching handler to the <strong>BulkUpdate</strong> event. The system triggers the <em>BulkUpdate</em> event instead of <em>Update</em> in certain cases, particularly for operations that can affect multiple objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>ObjectEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Object (BaseInfo)</li>
+</ul>
+</td>
+<td>
+<p><strong>Note</strong>: We recommend using the newer <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-object-events">event handlers with async support</a> for <em>Delete</em> object events.</p>
+<p>Occurs when an object is deleted.</p>
+<p>To reliably handle all possible object deletion events, you may also need to assign a matching handler to the <strong>BulkDelete</strong> event. The system triggers the <em>BulkDelete</em> event instead of <em>Delete</em> in certain cases, particularly for operations that can affect multiple objects.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>BulkInsert</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BulkInsertEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>InsertedObjects (IEnumerable&lt;IInfo&gt;)</li>
+<li>TypeInfo (ObjectTypeInfo)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system performs object creation operations that can affect multiple objects. To reliably handle all possible object creation events, assign matching handlers to both the <strong>BulkInsert</strong> and <strong>Insert</strong> events.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>BulkUpdate</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BulkUpdateEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>ChangedColumns (IEnumerable&lt;string&gt;)</li>
+<li>TypeInfo (ObjectTypeInfo)</li>
+<li>WhereCondition (IWhereCondition)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system performs object update operations that can affect multiple objects. To reliably handle all possible object update events, assign matching handlers to both the <strong>BulkUpdate</strong> and <strong>Update</strong> events.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>BulkDelete</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BulkDeleteEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>TypeInfo (ObjectTypeInfo)</li>
+<li>WhereCondition (IWhereCondition)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system performs object deletion operations that can affect multiple objects. To reliably handle all possible object deletion events, assign matching handlers to both the <strong>BulkDelete</strong> and <strong>Delete</strong> events.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Sort</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ObjectSortEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Object (BaseInfo)</li>
+<li>Ascending (bool)</li>
+<li>OrderColumn (string)</li>
+<li>NameColumn (string)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when sorting of objects is requested.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ChangeOrder</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ObjectChangeOrderEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Object (BaseInfo)</li>
+<li>NewOrder (int)</li>
+<li>RelativeOrder (int)</li>
+<li>OrderColumn (string)</li>
+</ul>
+</td>
+<td colspan="1">
+<p> Occurs when a change in the order of objects is requested.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>GetData</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ObjectDataEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Data (DataSet)</li>
+<li>Query (IObjectQuery)</li>
+<li>TotalRecords (int)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system retrieves object data using the ObjectQuery API.</p>
+<p>The <strong>Before</strong> event type is suitable, for example, when you want to retrieve data from an external source. Assign the external data into the <strong>Data</strong> property of the handler’s <em>ObjectDataEventArgs</em> parameter, which is empty by default in the Before event.</p>
+<p>Use the <strong>After</strong> event type if you need to edit the data retrieved from Xperience in the <strong>Data</strong> property.</p>
+<p>The <strong>Total</strong> <strong>Records</strong> property provides a number of total records in case paging is used. Use <em>-1</em> to use the rows count of the <strong>Data</strong> property.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="contentitemevents">ContentItemEvents</h2>
+<p><strong>Namespace</strong>: CMS.ContentEngine</p>
+<p>Contains events that occur when changes are made to <a href="/documentation/business-users/content-hub/content-items">content items</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Create</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateContentItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new content item (not a language variant) is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CreateLanguageVariant</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateContentItemLanguageVariantEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new language variant of an existing content item is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateDraft</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateContentItemDraftEventArgs</p>
+</td>
+<td>
+<p>Occurs when a draft is updated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Publish</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>PublishContentItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when an item is published.</p>
+<p>Also triggers when the system publishes an item that was <a href="/documentation/business-users/content-hub/content-items#scheduled-publishing">scheduled to be published</a>. The scheduling action itself triggers the <code>UpdateLanguageMetadata</code> event for the item.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Unpublish</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>UnpublishContentItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when an item is unpublished.</p>
+<p>Also triggers when the system unpublishes an item that was scheduled to be unpublished. The scheduling action itself triggers the <code>UpdateLanguageMetadata</code> event for the item.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>DeleteContentItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when an item is deleted.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateMetadata</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateContentItemMetadataEventArgs</p>
+</td>
+<td>
+<p>Occurs when an item’s metadata is updated (e.g., security settings). </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateLanguageMetadata</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateContentItemLanguageMetadataEventArgs</p>
+</td>
+<td>
+<p>Occurs when an item’s <a href="/documentation/developers-and-admins/configuration/languages">language</a> variant-specific metadata is updated (e.g., administration display name).</p>
+<p>This metadata includes the time when an item is <a href="/documentation/business-users/content-hub/content-items#scheduled-publishing">scheduled to be published</a> or unpublished. As a result, scheduling an item to be published or unpublished (or canceling a scheduled publish action) triggers the <code>UpdateLanguageMetadata</code> event, not <code>Publish</code> or <code>Unpublish</code>. These events are triggered when the system actually publishes or unpublishes the item.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>General information</strong></p>
+<p>Events are not cancelable. If you try to cancel an event, an exception is thrown instead. You can also throw exceptions to stop the corresponding operation. For example, an exception thrown from an event while creating an object will roll back the transaction.</p>
+<p><strong>Event handlers</strong></p>
+<p><strong>Advanced handler</strong></p>
+<p>Events handled by advanced handlers expose property setters in their event args that can be used to further modify the item before it is stored in the database. Content type-specific data can be updated via the <code>ContentItemData</code> property, if present.</p>
+<p><strong>Basic handler</strong></p>
+<p>Events handled by basic handlers are only used for notification.</p>
+</div>
+
+<h2 id="webpageevents">WebPageEvents</h2>
+<p><strong>Namespace</strong>: CMS.Websites</p>
+<p>Contains events that occur when changes are made to <a href="/documentation/business-users/website-content">pages</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Create</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateWebPageLanguageVariantEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new page is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CreateFolder</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateFolderLanguageVariantEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new folder is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CreateLanguageVariant</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateWebPageLanguageVariantEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new page language variant is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CreateFolderLanguageVariant</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateFolderLanguageVariantEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new folder language variant is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateDraft</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateWebPageDraftEventArgs</p>
+</td>
+<td>
+<p>Occurs when a page draft is updated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Publish</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>PublishWebPageEventArgs</p>
+</td>
+<td>
+<p>Occurs when a page is published.</p>
+<p>Also triggers when the system publishes a page that was <a href="/documentation/business-users/website-content/edit-and-publish-pages#scheduled-publishing">scheduled to be published</a>. The scheduling action itself triggers the <code>UpdateLanguageMetadata</code> event for the page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Unpublish</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>UnpublishWebPageEventArgs</p>
+<p>Also triggers when the system unpublishes a page that was scheduled to be unpublished. The scheduling action itself triggers the <code>UpdateLanguageMetadata</code> event for the page.</p>
+</td>
+<td>
+<p>Occurs when a page is unpublished.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Move</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>MoveWebPageEventArgs</p>
+</td>
+<td>
+<p>Occurs when a page is moved.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateMetadata</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateWebPageMetadataEventArgs</p>
+</td>
+<td>
+<p>Occurs when page properties are updated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateTreePathSlug</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateWebPageTreePathSlugEventArgs</p>
+</td>
+<td>
+<p>Occurs when the page URL slug is changed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateSecuritySettings</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateWebPageSecuritySettingsEventsArgs</p>
+</td>
+<td>
+<p>Occurs when page security settings are updated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>DeleteWebPageEventArgs</p>
+</td>
+<td>
+<p>Occurs when a page is deleted.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateLanguageMetadata</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateWebPageLanguageMetadataEventArgs</p>
+</td>
+<td>
+<p>Occurs when a page’s <a href="/documentation/developers-and-admins/configuration/languages">language</a> variant-specific metadata is updated (e.g., administration display name).</p>
+<p>This metadata includes the time when a page is <a href="/documentation/business-users/website-content/edit-and-publish-pages#scheduled-publishing">scheduled to be published</a> pr unpublished. As a result, scheduling a page to be published or unpublished (or canceling the scheduled publish action) triggers the <code>UpdateLanguageMetadata</code> event, not <code>Publish</code> or <code>Unpublish</code>. These events are triggered when the system actually publishes or unpublishes the page.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>General information</strong></p>
+<p>Events are not cancelable. If you try to cancel an event, an exception is thrown instead. You can also throw exceptions to stop the corresponding operation. For example, an exception thrown from an event while creating an object will roll back the transaction.</p>
+<p><strong>Event handlers</strong></p>
+<p><strong>Advanced handler</strong></p>
+<p>Events handled by advanced handlers expose property setters in their event args that can be used to further modify the item before it is stored in the database. Content type-specific data can be updated via the <code>ContentItemData</code> property, if present.</p>
+<p><strong>Basic handler</strong></p>
+<p>Events handled by basic handlers are only used for notification.</p>
+</div>
+
+<h2 id="headlessitemevents">HeadlessItemEvents</h2>
+<p><strong>Namespace</strong>: CMS.ContentEngine</p>
+<p>Contains events that occur when changes are made to <a href="/documentation/business-users/headless-content">headless items</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Create</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateHeadlessItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new headless item (not a language variant) is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CreateLanguageVariant</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>CreateHeadlessItemLanguageVariantEventArgs</p>
+</td>
+<td>
+<p>Occurs when a new language variant of an existing headless item is created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateDraft</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateHeadlessItemDraftEventArgs</p>
+</td>
+<td>
+<p>Occurs when a headless item draft is updated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Publish</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>PublishHeadlessItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when a headless item is published.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Unpublish</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>UnpublishHeadlessItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when a headless item is unpublished.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Delete</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>Basic handler</p>
+</td>
+<td>
+<p>DeleteHeadlessItemEventArgs</p>
+</td>
+<td>
+<p>Occurs when a headless item is deleted.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateMetadata</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateHeadlessItemMetadataEventArgs</p>
+</td>
+<td>
+<p>Occurs when a headless item’s metadata is updated (e.g., security settings). </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UpdateLanguageMetadata</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>Advanced handler</p>
+</td>
+<td>
+<p>UpdateHeadlessItemLanguageMetadataEventArgs</p>
+</td>
+<td>
+<p>Occurs when a headless item’s language metadata is updated (e.g., admin UI display name).</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>General information</strong></p>
+<p>Events are not cancelable. If you try to cancel an event, an exception is thrown instead. You can also throw exceptions to stop the corresponding operation. For example, an exception thrown from an event while creating an object will roll back the transaction.</p>
+<p><strong>Event handlers</strong></p>
+<p><strong>Advanced handler</strong></p>
+<p>Events handled by advanced handlers expose property setters in their event args that can be used to further modify the item before it is stored in the database. Content type-specific data can be updated via the <code>ContentItemData</code> property, if present.</p>
+<p><strong>Basic handler</strong></p>
+<p>Events handled by basic handlers are only used for notification.</p>
+</div>
+
+<h2 id="workflow-events">Workflow events</h2>
+<p><strong>Namespace</strong>: CMS.ContentWorkflowEngine</p>
+<p>The following classes contain events related to items under <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a>:</p>
+<ul>
+<li>
+<code>WebPageWorkflowEvents</code> – for <a href="/documentation/business-users/website-content">pages</a> in website channels.</li>
+<li>
+<code>ContentItemWorkflowEvents</code> – for reusable content items in the <a href="/documentation/business-users/content-hub">Content hub</a>.</li>
+<li>
+<code>HeadlessItemWorkflowEvents</code> – for <a href="/documentation/business-users/headless-content">headless items</a> in headless channels.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>MoveToStep</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p>WebPageWorkflowMoveToStepArguments ContentItemWorkflowMoveToStepArguments HeadlessItemWorkflowMoveToStepArguments</p>
+</td>
+<td colspan="1">
+<p>Occurs when a page/content item/headless item is moved from one workflow step to another.</p>
+<p>The event arguments allow you to access the name of the current and original workflow step, the <a href="/documentation/developers-and-admins/configuration/users">user</a> who changed the step, and also properties of the given page, content item or headless item (ID, name, content type, language, etc.).</p>
+<p>If built-in <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow notifications</a> are enabled for the step the item is moved to, you can also access the comment entered by the user who moved the item.</p>
+<p>The event is <strong>not</strong> triggered when an item is published or scheduled to be published. For publish transitions, you need to handle the <code>Publish</code> or <code>UpdateLanguageMetadata</code> event of <code>WebPageEvents</code>, <code>ContentItemEvents</code> or <code>HeadlessItemEvents</code>.</p>
+<p><strong>Example</strong>: <a href="/documentation/developers-and-admins/customization/handle-global-events/set-up-custom-workflow-notifications">Set up custom workflow notifications</a></p>
+</td>
+</tr>
+</table>
+
+<h2 id="dataprotectionevents">DataProtectionEvents</h2>
+<p><strong>Namespace</strong>: CMS.DataProtection</p>
+<p>Contains events related to protection of personal data in the system.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>RevokeConsentAgreement</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p>RevokeConsentAgreementEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>ConsentAgreement (ConsentAgreementInfo)</li>
+<li>Consent (ConsentInfo)</li>
+<li>Contact (ContactInfo)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when a consent agreement is revoked. When a contact’s consent agreement is revoked, this event can be used to perform custom actions, such as terminating tracking of the contact or deleting <a href="/documentation/developers-and-admins/data-protection">personal data</a> related to the contact.</p>
+<p><strong>See also</strong>: <a href="/documentation/developers-and-admins/data-protection/consent-management">Consent management</a>, <a href="/documentation/developers-and-admins/data-protection/consent-development">Consent development</a></p>
+</td>
+</tr>
+</table>
+
+<h2 id="eventlogevents">EventLogEvents</h2>
+<p><strong>Namespace</strong>: CMS.EventLog</p>
+<p>Contains events that occur when writing <a href="/documentation/developers-and-admins/development/logging">logged events</a> into the system’s <a href="/documentation/developers-and-admins/configuration/event-log">event log</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>LogEvent</p>
+</td>
+<td>
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td>
+<p>LogEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Event (EventLogInfo)</li>
+</ul>
+</td>
+<td>
+<p>Occurs when the system writes a record into the event log. Only affects events in the built-in Xperience event log, not log entries created via <code>ILogger</code> in general.</p>
+<p>You can use the <em>Before</em> event to customize the data logged for events or cancel logging for certain types of events. The <em>After</em> event allows you to perform custom actions after events are successfully logged.</p>
+<p><strong>See also</strong>: <a href="/documentation/developers-and-admins/development/logging#customize-event-logging">Customize event logging</a></p>
+</td>
+</tr>
+</table>
+
+<h2 id="bizformitemevents">BizFormItemEvents</h2>
+<p><strong>Namespace</strong>: CMS.OnlineForms</p>
+<p>Contains events related to <a href="/documentation/business-users/digital-marketing/forms">form</a> actions. See <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-form-events">Handle form events</a> for an example.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Insert</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BizFormItemEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Item (BizFormItem)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when inserting new form items (data records of forms).</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Update</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BizFormItemEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Item (BizFormItem)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when updating form data records.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Delete</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BizFormItemEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Item (BizFormItem)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when deleting data records from forms.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="contactmanagementevents">ContactManagementEvents</h2>
+<p><strong>Namespace</strong>: CMS.ContactManagement</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>ContactInfosDeleted </p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p>ContactInfosDeletedHandlerEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>DeletedContactsIds (IEnumerable&lt;int&gt;)</li>
+<li>DeletedContactsGUIDs (IEnumberable&lt;Guid&gt;)</li>
+</ul>
+</td>
+<td>
+<p>Occurs when multiple contacts are deleted in a batch. This event is triggered when calling <code>IContactsBulkDeletionService.BulkDelete</code>, for example when <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/delete-inactive-contacts">deleting inactive contacts</a>.</p>
+<p>When a single contact is deleted, the <em>TypeInfoEvents.Delete</em> event can be used on <em>ContactInfo.TYPEINFO</em>.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="activityevents">ActivityEvents</h2>
+<p><strong>Namespace</strong>: CMS.Activities</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>ActivityBulkInsertPerformed</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>CMSEventArgs&lt;IList&lt;IActivityInfo&gt;&gt;</p>
+</td>
+<td colspan="1">
+<p>Occurs when the system processes <a href="/documentation/business-users/digital-marketing/contact-activities">digital marketing activities</a> that are logged in memory and inserts them into the database.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ActivityProcessedInLogService</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p>CMSEventArgs&lt;IActivityInfo&gt;</p>
+</td>
+<td colspan="1">
+<p>Occurs when a <a href="/documentation/business-users/digital-marketing/contact-activities">digital marketing activity</a> is logged and processed. At this point, the activity is only stored in the application memory (activities are regularly processed and saved in bulk to the database – see the <em>ActivityBulkInsertPerformed</em> event).</p>
+</td>
+</tr>
+</table>
+
+<h2 id="systemevents">SystemEvents</h2>
+<p><strong>Namespace</strong>: CMS.Base</p>
+<p>Contains general system events.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Exception</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p>SystemEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Exception (Exception)</li>
+<li>LogException (bool)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Fires when an unhandled exception occurs in the system.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="sqlevents">SqlEvents</h2>
+<p><strong>Namespace</strong>: CMS.DataEngine</p>
+<p>Contains events related to the execution of queries and other database operations.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>BulkInsert</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>BulkInsertDataEventArgs</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Connection (IDataConnection)</li>
+<li>InsertSettings (BulkInsertSettings)</li>
+<li>SourceData (DataTable)</li>
+<li>TargetTable (string)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system creates objects by directly inserting data into a database table.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ExecuteQuery</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ExecuteQueryEventArgs&lt;DataSet&gt;</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Connection (IDataConnection)</li>
+<li>Query (QueryParameters)</li>
+<li>Result (DataSet)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system executes a <a href="https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/populating-a-dataset-from-a-dataadapter" target="_blank">DataSet</a> database query.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ExecuteNonQuery</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ExecuteQueryEventArgs&lt;int&gt;</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Connection (IDataConnection)</li>
+<li>Result (DataSet)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system executes a non-query database operation.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ExecuteScalar</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ExecuteQueryEventArgs&lt;object&gt;</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Connection (IDataConnection)</li>
+<li>Query (QueryParameters)</li>
+<li>Result (DataSet)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system executes a scalar query.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>ExecuteReader</p>
+</td>
+<td colspan="1">
+<p>Before<br>
+After<br>
+Failure</p>
+</td>
+<td colspan="1">
+<p>ExecuteQueryEventArgs&lt;<a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.common.dbdatareader" target="_blank">DbDataReader</a>&gt;</p>
+<p><strong>Properties</strong></p>
+<ul>
+<li>Connection (IDataConnection)</li>
+<li>Result (DataSet)</li>
+</ul>
+</td>
+<td colspan="1">
+<p>Occurs when the system runs a database <a href="https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/dataadapters-and-datareaders" target="_blank">DataReader</a>, e.g., when the system (or custom code) materializes an <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery</a> or <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">content item query</a> call, typically by enumerating the results.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="application-events">Application events</h2>
+<p>Xperience provides a set of events that you can use to customize the global behavior of the application.</p>
+<h3 id="applicationevents">ApplicationEvents</h3>
+<p><strong>Namespace</strong>: CMS.Base</p>
+<p>Contains events related to the application lifecycle.</p>
+<p>The following table lists the events that <strong>occur once in the application’s lifecycle, in order of execution</strong>:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>PreInitialized</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td colspan="1">
+<p>Occurs when the application finishes pre-initialization (preparation of things unrelated to the database).</p>
+<p>Handlers need to be assigned in the <strong>PreInit</strong> method of <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom modules</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Initialized</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td colspan="1">
+<p>Occurs when the application finishes initialization and starts (including all modules and the database connection). Handle this event to perform standard application start events.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>End</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td colspan="1">
+<p>Occurs when the application ends.</p>
+</td>
+</tr>
+</table>
+
+<p>The following events occur as needed during the application lifecycle:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event types</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Error</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td colspan="1">
+<p>Fires when an error occurs in the application.</p>
+</td>
+</tr>
+</table>
+
+<h3 id="requestevents">RequestEvents</h3>
+<p><strong>Namespace</strong>: CMS.Base</p>
+<p>Contains events related to the handling of requests.</p>
+<p>The following table lists available events <strong>in the order they are invoked by the application</strong>:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Event</p>
+</td>
+<td>
+<p>Event type</p>
+</td>
+<td>
+<p>Handler parameters</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Prepare</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td>
+<p>Occurs before request processing begins.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Begin</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td>
+<p>Occurs when request processing starts.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>PreSendRequestHeaders</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td>
+<p>Occurs just before ASP.NET sends HTTP headers to the client.</p>
+<p><strong>Note</strong>: Added delegates are invoked during <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.httpresponse.onstarting" target="_blank">HttpResponse.OnStarting</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>End</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td colspan="1">
+<p>Occurs at the end of request processing.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>RunEndRequestTasks</p>
+</td>
+<td colspan="1">
+<p>Execute</p>
+</td>
+<td colspan="1">
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td colspan="1">
+<p>Allows you to execute background tasks at the end of request processing. Running long tasks in this event’s handlers can negatively affect the response time of requests.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Finalize</p>
+</td>
+<td>
+<p>Execute</p>
+</td>
+<td>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.eventargs" target="_blank">EventArgs</a></p>
+</td>
+<td>
+<p>Occurs when the request is finalized. Use to clean up and release any resources used by the request. Running long tasks in this event’s handlers can negatively affect the response time of requests.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

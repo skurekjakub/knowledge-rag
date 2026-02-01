@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Translate pages</title>
+</head>
+<body>
+<p>Before you can translate individual pages in your project into other languages, you need to set those up in the <strong>Languages</strong> application. For detailed info on how to configure multiple languages in Xperience, see <a href="/documentation/developers-and-admins/configuration/languages">Languages</a>.</p>
+<p>Afterwards, you can start to translate and create language variants of your pages: </p>
+<ol type="1">
+<li><p>Open the website channel where you want to translate pages.</p></li>
+<li>
+<p>In the header bar, open the language switcher.<br>
+</p>
+
+<div>
+
+</div>
+<div>
+<p>The language switcher is available only if two or more languages are set up.</p>
+</div>
+</li>
+<li><p>Select the language to translate pages into.</p></li>
+<li>
+<p>Select the page to translate.</p>
+
+<div>
+
+</div>
+<div>
+<p>Untranslated pages are visually marked by the <em>Not translated</em> (<span></span>) workflow status.</p>
+</div>
+</li>
+<li>
+<p>Enter the translated page name. You can now choose one of the following options:</p>
+<ul>
+<li>
+<strong>Copy content from another language</strong> is the preselected option. By default, the closest language in the <a href="/documentation/developers-and-admins/configuration/languages">fallback chain</a> is preselected. You can choose a different language from the drop-down list. This option lets you prefill the content fields with the content available in the chosen language. If a linked item does not have a translated or published version, a warning will be displayed, and a fallback language variant of the item will be used.</li>
+<li>
+<strong>Create empty page</strong> allows you to create an empty page with blank fields. Linked items need to be re-linked into the new language variant of the translated page.</li>
+<li>
+<strong>Translate using AIRA</strong> see <a href="#translate-using-aira">Translate using AIRA</a> for more information.<br>
+</li>
+</ul>
+</li>
+<li><p>Select <strong>Continue</strong>.</p></li>
+<li><p>Enter the translated values of the page’s fields.</p></li>
+<li><p><strong>Save</strong> the translated page.</p></li>
+</ol>
+<p>You have now successfully translated the page. Note that the particular language variant is now only a <em>Draft</em> and won’t be accessible on the live site until you <a href="/documentation/business-users/website-content/edit-and-publish-pages">publish</a> it. Until you do so, the language variant in the fallback language will be displayed.</p>
+
+<div>
+
+</div>
+<div>
+<p>Translated content items on untranslated pages are loaded in the fallback language. However, there is an exception in case the content items are injected into the page via code. In that case, content items are loaded in the language variant according to the requested language. For more information on language fallbacks, see <a href="/documentation/developers-and-admins/configuration/languages">Languages</a>.</p>
+</div>
+
+<h3 id="translate-using-aira">Translate using AIRA</h3>
+<p>When you choose <strong>Translate using AIRA</strong> and start the translation process, the name and content of your page, including <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> content, will be translated using <a href="/documentation/business-users/aira">AIRA</a>.</p>
+<p>The translation workflow changes depending on the number of items submitted for translation. For a single item, AIRA creates a new language variant of the content in the <em>Draft</em> state and immediately takes you to it.</p>
+<p>However, when translating multiple pages at once (for example, when translating pages along with their linked content), your content is sent to a <em>Translation queue</em>. This allows the translation to be processed in the background, freeing you up to continue your work. You can check on its progress in the <em>Translation queue</em> application. Once the translation of your content finishes, the related items are removed from the <em>Translation queue</em> application.</p>
+<p>The behavior of the translation can be <a href="/documentation/developers-and-admins/configuration/aira-configuration#configure-aira-translations">configured</a>, allowing you to specify, for example, formatting rules or brand terminology.</p>
+
+<div>
+
+</div>
+<div>
+<p>Existing text links to the translated content are not redirected to the new variant or translated automatically and need to be manually reviewed to ensure they lead to the correct content.</p>
+</div>
+
+
+</body>
+</html>

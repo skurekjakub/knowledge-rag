@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Workflows</title>
+</head>
+<body>
+<p>Workflow defines the lifecycle of content, including <a href="/documentation/business-users/website-content">pages</a>, <a href="/documentation/business-users/content-hub">reusable content items</a>, <a href="/documentation/business-users/headless-content">headless items</a> and <a href="/documentation/business-users/digital-marketing/emails">emails</a>. Each workflow has one or more custom steps between the default <strong>Draft</strong> and <strong>Published</strong> steps. This allows you to ensure the quality of content by setting up a reviewing and approval process tailored specifically for your organization. The system provides <a href="#workflow-notifications">workflow notifications</a> to facilitate smooth movement of items through the workflow.</p>
+<p>An example of a simple workflow process is a website that publishes scientific articles. An author writes an article and sends it for approval to an editor who makes corrections and submits the article to the head of the respective department. The head then publishes the page, making it publicly accessible on the website.</p>
+<h2 id="create-a-workflow">Create a workflow</h2>
+<ol type="1">
+<li>Open the <strong>Workflows</strong> application.</li>
+<li>Select the <strong>New workflow</strong> button.</li>
+<li>Fill in the <strong>Workflow name</strong> and optionally a code name in the <strong>Identifiers</strong> section.</li>
+<li>Select <strong>Roles with full control</strong> – users with these <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a> are permitted to edit items in all <a href="#configure-the-workflow-steps">steps</a> within the workflow, move items to the next or previous step, and also <strong>directly publish</strong> items or send/schedule regular emails from any step.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Workflow roles and other permissions</strong></p>
+<p>In addition to the role settings for workflows, the system also checks other relevant permissions (<a href="/documentation/developers-and-admins/configuration/users/role-management">application-level</a> and <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a>) when deciding if a user is allowed to edit an item under workflow.</p>
+</div>
+
+<ol start="5" type="1">
+<li>
+<strong>Save</strong> the new workflow.</li>
+</ol>
+<p>The workflow is now created and ready to be configured.</p>
+<h3 id="configure-the-workflow-scope">Configure the workflow scope</h3>
+<p>Once a workflow is created, you can define its scope. Each content type can be assigned a single workflow. If a content type is already associated with a workflow, it will be excluded from the available scope options.</p>
+<ol type="1">
+<li>Select the workflow you want to configure.</li>
+<li>Switch to the <strong>Scope</strong> tab.</li>
+<li>
+<strong>Select content types</strong> and choose the types to which you want to apply the workflow. You can pick multiple content types. Types for pages, emails, reusable content and headless items are all supported.</li>
+<li>
+<strong>Save</strong> the selected content types.</li>
+</ol>
+<p>Upon assigning a workflow to a content type, individual content items do not initiate the workflow automatically. The workflow applies only when an item starts a new editing cycle, which includes new items or new versions of existing published items.</p>
+<p>The editing cycle ends when an item reaches the <strong>Published</strong> step. Existing items in the <strong>Draft</strong> step do not automatically use the workflow with custom steps until they are published and a new editing cycle starts. There is currently no alternative way to start the newly applied workflow with custom steps.</p>
+<h3 id="configure-the-workflow-steps">Configure the workflow steps</h3>
+<ol type="1">
+<li><p>Select the workflow you want to configure.</p></li>
+<li><p>On the <strong>Steps</strong> tab, select <strong>New step</strong>. </p></li>
+<li>
+<p>Specify the following values:</p>
+<ul>
+<li><strong>Step name</strong></li>
+<li>
+<em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.
+<ul>
+<li>
+<strong>Note</strong>: The code names of workflow steps must be unique across all steps in any workflow.</li>
+</ul>
+</li>
+<li><strong>Icon</strong></li>
+<li>
+<strong>Roles that can work with this step</strong> – designates <a href="/documentation/developers-and-admins/configuration/users/role-management">roles</a> that are permitted to edit items in this step and move to the next or previous step. For the final custom step in the workflow, the roles gain the ability to publish items or send/schedule regular emails.
+<ul>
+<li><p>When <a href="#workflow-notifications">workflow notifications</a> are enabled for this step, users with roles selected in this field will receive notifications for items they have the <em>Update</em> permission for.</p></li>
+<li>
+<p>Additionally, roles assigned in the <em>Roles with full control</em> field on the workflow’s <em>General</em> tab can work with items in any step.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Workflow roles and other permissions</strong></p>
+In addition to the role settings for workflow steps, the system also checks other relevant permissions (<a href="/documentation/developers-and-admins/configuration/users/role-management">application-level</a> and <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a>) when deciding if a user is allowed to edit an item under workflow.
+</div>
+</li>
+</ul>
+</li>
+<li>
+<strong>Send email notifications</strong> – clear the checkbox to disable <a href="#workflow-notifications">notifications</a>. When enabled, notifications are sent when an item reaches this step.
+<ul>
+<li>The checkbox for the first workflow step also determines whether a notification is sent when an item moves from this step back to the <em>Draft step</em>.</li>
+<li>If you want to enable notifications and your project is deployed in <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a>, make sure that the <a href="/documentation/developers-and-admins/configuration/notifications#configure-domains-for-notifications">service domain for notifications</a> is set up for your project. Workflow notifications cannot be sent unless the domain is set up.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Save</strong> the step.</p></li>
+</ol>
+<p>Repeat the process for all steps required for your workflow. You can drag steps in the list to change their order.</p>
+<h2 id="workflow-notifications">Workflow notifications</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Make sure that the <a href="/documentation/developers-and-admins/configuration/notifications#configure-domains-for-notifications">service domain for notifications</a> is set up in your project. For projects deployed in the Xperience by Kentico <a href="/documentation/developers-and-admins/saas">SaaS environment</a>, the service domain is <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">configured</a> automatically.</p>
+</div>
+
+<p>When using workflows in your content editing process, users in various roles need to work with items at different stages of the content lifecycle. Workflow <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> can help users keep track of the work that requires their input. For example, users may wish to be notified when an item transitions to a step that needs their approval or review.</p>
+<p>Notifications are available for custom workflow steps and for the <em>Draft</em> step:</p>
+<ul>
+<li>
+<strong>Custom steps</strong>: When notifications are <a href="#enable-workflow-notifications">enabled</a> for a custom step, a notification email is sent automatically when an item is moved to this step.</li>
+<li>
+<strong>Draft step</strong>: Notifications for the <em>Draft</em> step are configured by enabling notifications for the first custom step, and they cannot be set up independently. <em>Draft</em> step notifications are sent when an item is moved back to the <em>Draft</em> step from the first custom step with notifications enabled.</li>
+</ul>
+<p>By default, notifications are enabled when adding a new custom step. You can <a href="#see-all-custom-workflow-steps-with-notifications-enabled">see the list of custom steps configured to send notifications</a> in the <em>Notifications</em> application. Workflow notifications do not cover the <em>Published</em> step. If you need notifications for this step, you can <a href="/documentation/developers-and-admins/customization/handle-global-events/set-up-custom-workflow-notifications">set up custom workflow notifications</a>.</p>
+<h3 id="notification-recipients">Notification recipients</h3>
+<p>When an item is moved to a custom step with notifications enabled, a notification email is automatically sent to all users who have the <em>Update</em> <a href="/documentation/developers-and-admins/configuration/users/role-management">permission</a> for the affected item and are also assigned to roles that can work with this step (determined by the <em>Roles that can work with this step</em> field in <a href="#configure-the-workflow-steps">workflow step configuration</a>). Users with full control do not get automatically notified.</p>
+<p>Notifications about the movement of the item back to the <em>Draft</em> step are always sent only to the user who created the item and the user who last modified the item.</p>
+<h3 id="notification-comment">Notification comment</h3>
+<p>Users can add a comment when moving an item to a step with notifications enabled. The comment is included in the <a href="#edit-the-content-of-the-workflow-notification">email notification</a>.</p>
+<p></p>
+<h3 id="enable-workflow-notifications">Enable workflow notifications</h3>
+<p>By default, workflow notifications are enabled when creating new custom workflow steps.</p>
+<p>To enable notifications for an existing custom workflow step:</p>
+<ol type="1">
+<li>Open the <strong>Workflows</strong> application.</li>
+<li>Select the workflow that includes the custom step for which you want to enable notifications.</li>
+<li>On the <strong>Steps</strong> tab, select the step you are interested in.</li>
+<li>Select the <strong>Send email notifications</strong> checkbox.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<h3 id="edit-the-content-of-the-workflow-notification">Edit the content of the workflow notification</h3>
+<p>You can customize the default content of the email notifications:</p>
+<ol type="1">
+<li><p>Open the <strong>Notifications</strong> application.</p></li>
+<li>
+<p>Select the <strong>Workflow step change</strong> notification and <a href="/documentation/developers-and-admins/configuration/notifications#edit-default-notifications">edit the email content</a>.</p>
+<ul>
+<li>You can use the provided <a href="/documentation/developers-and-admins/configuration/notifications#notification-content-placeholders">content placeholders</a> to add dynamic parts of the content.</li>
+<li>
+<code>{{InternalPreviewURL}}</code> can be utilized to add a <a href="/documentation/developers-and-admins/configuration/notifications#add-url-placeholders">link</a> to the item that is moved. The placeholder is optional for workflow notifications.</li>
+<li>We do not recommend removing the <code>{{Comment}}</code> content placeholder, as it inserts the comment added by users when moving an item.</li>
+</ul>
+<p></p>
+</li>
+<li><p><strong>Save</strong> the changes.</p></li>
+</ol>
+<h3 id="see-all-custom-workflow-steps-with-notifications-enabled">See all custom workflow steps with notifications enabled</h3>
+<p>To see all custom workflow steps configured to send a notification when reached:</p>
+<ol type="1">
+<li>Open the <strong>Notifications</strong> application.</li>
+<li>Select the <strong>Workflow step change</strong> notification.</li>
+<li>Go to the <strong>Properties</strong> tab and see <strong>Affected workflow steps</strong>.</li>
+</ol>
+<h2 id="share-a-page-with-external-reviewers">Share a page with external reviewers</h2>
+<p>When editors want to share a page with reviewers who don’t have access to the administration, they can create a <a href="/documentation/business-users/website-content#shareable-preview-urls">shareable preview URL</a> for this purpose. See <a href="/documentation/developers-and-admins/configuration/shareable-preview-urls">Shareable preview URLs</a> for more information.</p>
+<h2 id="delete-a-workflow-and-workflow-steps">Delete a workflow and workflow steps</h2>
+<p>Workflows and steps cannot be deleted when there are existing items in the workflow steps, including the <strong>Draft</strong> status. Only items that have the workflow applied are considered, excluding items that were in the <strong>Draft</strong> step when the workflow was assigned to their content type.</p>
+<p>If a workflow is removed from the content type (scope), items in the workflow editing cycle keep their current workflow with custom steps until they reach the <strong>Published</strong> step. If a new editing cycle starts (new item or new version of a published item), the default workflow with only <strong>Draft/Published/Unpublished</strong> statuses is used.</p>
+
+</body>
+</html>

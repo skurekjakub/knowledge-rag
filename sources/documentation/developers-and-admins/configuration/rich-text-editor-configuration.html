@@ -1,0 +1,611 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Rich text editor configuration</title>
+</head>
+<body>
+<p>The <a href="/documentation/business-users/rich-text-editor">rich text editor</a> available in the admin UI allows users to input content using conventional word processor features. The editor is based on the <a href="https://froala.com/wysiwyg-editor/" target="_blank">Froala</a> WYSIWYG editor.</p>
+<p>The editor provides various customization options:</p>
+<ul>
+<li>
+<a href="#customize-the-editor">Prepare editor configurations</a>, for example to adjust the set of available formatting options</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">Add custom plugins</a> that extend the editor’s available feature set</li>
+<li><a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-customization">Customize how the system loads editor configurations</a></li>
+</ul>
+<h2 id="use-the-rich-text-editor">Use the rich text editor</h2>
+<p>The editor can be assigned to:</p>
+<ul>
+<li><a href="#field-editor">fields via the field editor</a></li>
+<li><a href="#editing-component">component properties as an editing component</a></li>
+</ul>
+<h3 id="field-editor">Field editor</h3>
+<p>You can assign the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">rich text editor form component</a> to <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> of the <strong>Rich text (HTML)</strong> type. To use <a href="#customize-the-editor">editors with custom configurations</a>, select the configuration in the component’s <strong>Configuration name</strong> property.</p>
+<h3 id="editing-component">Editing component</h3>
+<p>The rich text <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a> allows users to input rich text content in:</p>
+<ul>
+<li>the configuration dialogs or panels of <a href="/documentation/developers-and-admins/development/builders/page-builder">page builder</a> components (for example widgets)</li>
+<li>the configuration dialogs of <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components (<a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form components</a> or <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">sections with properties</a>)</li>
+<li>configuration dialogs of other admin UI components (<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form components</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validation</a> rules)</li>
+<li>custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">admin UI pages</a>
+</li>
+</ul>
+<p>To use the editor as an editing component, annotate required properties with the <code>RichTextEditorComponent</code> attribute. Assign <a href="#customize-the-editor">custom configurations</a> via the attribute’s  <code>ConfigurationName</code> property.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - assign the rich text editor to a widget property</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class CustomWidgetProperties : IWidgetProperties
+{
+    // Assigns the 'RichTextComponent' as the editing component of the 'RichText' property
+    [RichTextEditorComponent]
+    public string RichText { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>When rendering the output of the rich text editor property for the live site, use the <code>Html.Kentico().ResolveUrls</code> extension method to correctly resolve links within the rich text content.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example - resolve rich text content in views</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Web.Mvc
+
+// A view model with the rich text content
+@model CustomWidgetViewModel
+
+...
+
+// Displays the HTML content
+&lt;div class="fr-view"&gt;
+    @Html.Kentico().ResolveUrls(Model.RichTextContent)
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h2 id="html-allowed-in-the-editor">HTML allowed in the editor</h2>
+<p>To improve security of the system, the editor sanitizes all user input and discards any HTML tags, attributes and URI values that are not allowed. By default, only the following items are allowed:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Default allowed HTML attributes</strong></p>
+<p>“accept”, “accept-charset”, “accesskey”, “action”, “align”, “allowfullscreen”,  “allowtransparency”, “alt”, “aria-.”, “async”, “autocomplete”, “autofocus”, “autoplay”, “autosave”, “background”, “bgcolor”, “border”, “charset”, “cellpadding”, “cellspacing”, “checked”, “cite”, “class”, “color”, “cols”, “colspan”, “content”, “contenteditable”, “contextmenu”, “controls”, “coords”, “data”, “data-.”, “datetime”, “default”, “defer”, “dir”, “dirname”, “disabled”, “download”, “draggable”, “dropzone”, “enctype”, “for”, “form”, “formaction”, “frameborder”, “headers”, “height”, “hidden”, “high”, “href”, “hreflang”, “http-equiv”, “icon”, “id”, “ismap”, “itemprop”, “keytype”, “kind”, “label”, “lang”, “language”, “list”, “loop”, “low”, “max”, “maxlength”, “media”, “method”, “min”, “mozallowfullscreen”, “multiple”,  “muted”, “name”, “novalidate”, “open”, “optimum”, “pattern”, “ping”, “placeholder”, “playsinline”, “poster”, “preload”, “pubdate”, “radiogroup”, “readonly”, “rel”, “required”, “reversed”, “rows”, “rowspan”, “sandbox”, “scope”, “scoped”, “scrolling”, “seamless”, “selected”, “shape”, “size”, “sizes”, “span”, “src”, “srcdoc”, “srclang”, “srcset”, “start”, “step”, “summary”, “spellcheck”, “style”, “tabindex”, “target”, “title”, “type”,  “translate”, “usemap”, “value”, “valign”, “webkitallowfullscreen”, “width”, “wrap”</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Default allowed HTML tags</strong></p>
+<p>“a”, “abbr”, “address”, “area”, “article”, “aside”, “audio”, “b”, “base”, “bdi”, “bdo”, “blockquote”, “br”, “button”, “canvas”, “caption”, “cite”, “code”, “col”, “colgroup”, “datalist”, “dd”, “del”, “details”, “dfn”, “dialog”, “div”, “dl”, “dt”, “em”, “embed”, “fieldset”, “figcaption”, “figure”, “footer”, “form”,  “h1”, “h2”, “h3”, “h4”, “h5”, “h6”, “header”, “hgroup”, “hr”, “i”, “iframe”, “img”, “input”, “ins”, “kbd”, “keygen”, “label”, “legend”, “li”, “link”, “main”, “map”, “mark”, “menu”, “menuitem”, “meter”, “nav”, “noscript”, “object”, “ol”, “optgroup”, “option”, “output”, “p”, “param”, “picture”, “pre”, “progress”, “queue”, “rp”, “rt”, “ruby”, “s”, “samp”, “section”, “select”, “small”, “source”, “span”, “strike”, “strong”, “sub”, “summary”, “sup”, “table”, “tbody”, “td”, “textarea”, “tfoot”, “th”, “thead”, “time”, “title”, “tr”, “track”, “u”, “ul”, “var”, “video”, “wbr”</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Allowed URIs</strong></p>
+<p>URI values are only allowed if they start with the following schemes:</p>
+<p>“http”, “https”, “mailto”, “tel”, “data”</p>
+<p>Only the following MIME types are allowed for URIs with the <em>data</em> scheme:</p>
+<p>“image/avif”, “image/bmp”, “image/gif”, “image/jpeg”, “image/png”, “image/webp”</p>
+</div>
+
+<p>The default set of allowed HTML attributes and tags can be manually <a href="#allow-custom-attributes-and-tags">extended</a> if required.</p>
+<h3 id="allow-custom-attributes-and-tags">Allow custom attributes and tags</h3>
+<p>If you wish to use tags and attributes other than the <a href="#html-allowed-in-the-editor">default allowed HTML</a> in the rich text editor, you need to manually allow them as exceptions in the administration:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Under <strong>Content</strong> navigate to <strong>Rich Text Editor → Custom HTML attributes and tags</strong>.</li>
+<li>Enter the desired tags/attributes into the respective fields.
+<ul>
+<li>Enter the tags/attributes without double quotes and separate them by commas.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>The specified attributes and tags are now allowed in the rich text editor on top of the default set.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Notes</strong>:</p>
+<ul>
+<li>When adding tags that require attributes, you need to add said tag and all of the required attributes. E.g., if you want to use <code>&lt;a href=""&gt;&lt;/a&gt;</code> you need to add the “<em>a</em>” tag as well as the “<em>href</em>” attribute.</li>
+<li>When adding tags that can be empty (e.g., <code>&lt;hr /&gt;</code>), you need to also add the tag in the <a href="https://froala.com/wysiwyg-editor/docs/options/#htmlAllowedEmptyTags" target="_blank">htmlAllowedEmptyTagsoption</a> of the editor <a href="#define-editor-configurations">configuration</a>.</li>
+</ul>
+</div>
+
+<h2 id="customize-the-editor">Customize the editor</h2>
+<p>For better user experience or to suit specific scenarios, you can customize the set of features offered by individual instances of the editor.</p>
+<p>For example, you can limit the set of buttons and offered formatting options, or change the editor’s behavior. For the full list of available configuration options, see <a href="https://froala.com/wysiwyg-editor/docs/options/" target="_blank">Options</a> in the official Froala documentation. You can also use the <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">Default Xperience plugins</a> in your configurations.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you configure custom handlers for the rich text editor <a href="https://froala.com/wysiwyg-editor/docs/events/#drop-dropevent" target="_blank">drop event</a> or disable the upload functionality using Froala options (e.g., <a href="https://froala.com/wysiwyg-editor/docs/options/#imageupload" target="_blank">imageUpload</a>), <a href="/documentation/business-users/content-hub/content-item-assets#mass-asset-upload">mass asset upload</a> may not work correctly.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Default editor configuration</strong></p>
+<p>When added in its default state to custom fields or properties, the editor uses the following configuration:</p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+    attribution: false,
+    listAdvancedTypes: false,
+    linkEditButtons: ['linkOpen', 'linkEdit', 'linkRemove'],
+    linkInsertButtons: ['linkBack'],
+    linkConvertEmailAddress: false,
+    quickInsertEnabled: false,
+    pasteDeniedAttrs: ['id', 'style'],
+    toolbarButtons: [
+        'bold',
+        'italic',
+        'underline',
+        'paragraphFormat',
+        'formatOL',
+        'formatUL',
+        'outdent',
+        'indent',
+        'alignLeft',
+        'alignCenter',
+        'alignRight',
+        'html',
+        'undo',
+        'redo'
+    ],
+    paragraphFormat: {
+        N: 'Paragraph',
+        H1: 'Heading 1',
+        H2: 'Heading 2',
+        H3: 'Heading 3',
+        H4: 'Heading 4',
+        H5: 'Heading 5',
+        H6: 'Heading 6',
+    },
+    customPlugins: []
+}
+
+</code></pre>
+</div>
+</div>
+<p>The rich text editors in Xperience extend or override the default options with additional configuration tailored to different contexts. See <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-customization#replace-the-default-editor-configuration">Rich text editor customization</a> for a list of available configurations.</p>
+<p>For example, the following configuration is applied when editing structured content of pages on the <em>Content</em> view under a website channel.</p>
+<p><strong>Configuration example for a page with structured content</strong></p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "imageDefaultWidth": 0,
+  "imageResize": true,
+  "imageUpload": false,
+  "imagePaste": false,
+  "imageDefaultMargin": null,
+  "imageMove": true,
+  "imageAddNewLine": false,
+  "toolbarButtons": [
+    "bold",
+    "italic",
+    "underline",
+    "paragraphFormat",
+    "formatOL",
+    "formatUL",
+    "outdent",
+    "indent",
+    "alignLeft",
+    "alignCenter",
+    "alignRight",
+    "html",
+    "insertLinkDropDown",
+    "undo",
+    "redo"
+  ],
+  "imageEditButtons": [ "imageReplace", "imageAlt", "imageAlign", "imageDisplay", "imageSize", "imageRemove" ],
+  "customPlugins": [
+    {
+      "pluginName": "@kentico/xperience-admin-base/Link",
+      "pluginOptions": {
+        "dropdownOptions": [
+          {
+            "linkOption": "asset",
+            "componentName": "@kentico/xperience-admin-base/AssetPanel"
+          },
+          {
+            "linkOption": "external"
+          },
+          {
+            "linkOption": "webpage",
+            "componentName": "@kentico/xperience-admin-websites/PageLink"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+</code></pre>
+</div>
+</div>
+</div>
+
+<p>Use the following process to customize the editor:</p>
+<ol type="1">
+<li><a href="#define-editor-configurations">Define editor configurations</a></li>
+<li><a href="#register-editor-configurations">Register the configurations in the system</a></li>
+<li>Assign the configurations to:
+<ol type="1">
+<li><a href="#assign-editor-configurations-to-rich-text-editing-components">rich text editing components</a></li>
+<li><a href="#assign-editor-configurations-to-rich-text-fields">fields that use the rich text form component</a></li>
+</ol>
+</li>
+</ol>
+<h3 id="define-editor-configurations">Define editor configurations</h3>
+
+<div>
+
+</div>
+<div>
+<p>Some configurations may need additional custom CSS to work correctly. For more information on how to add custom styles to the rich text editor, see <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-customization#add-custom-css-to-the-rich-text-editor">Rich text editor customization</a>.</p>
+</div>
+
+<p>Editor configurations are defined using <a href="https://froala.com/wysiwyg-editor/docs/options" target="_blank">JSON options objects</a> that the system uses when instantiating a rich text editor.</p>
+<ol type="1">
+<li>
+<p>Prepare a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom assembly</a> (<em>Class Library</em> project) in your Xperience solution.</p>
+<ul>
+<li>We recommend placing code and resources used only by the Xperience administration in <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">dedicated assemblies</a>.</li>
+</ul>
+</li>
+<li><p>Create a new JSON file in the assembly (place the file into a suitable directory for storing editor configurations).</p></li>
+<li>
+<p>In this file, define an editor configuration using the available configuration options.</p>
+
+<div>
+
+</div>
+<div>
+<p>The following example includes only basic text formatting options in the editor toolbar, along with the default Xperience plugins for adding media files and links.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>CustomEditorConfiguration.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ {
+   "imageDefaultWidth": 0,
+   "imageResize": true,
+   "imageUpload": false,
+   "imagePaste": false,
+   "imageDefaultMargin": null,
+   "imageMove": true,
+   "imageAddNewLine": false,
+   "toolbarButtons": [
+     "paragraphFormat",
+     "|",
+     "bold",
+     "italic",
+     "underline",
+     "|",
+     "align",
+     "formatOL",
+     "formatUL",
+     "|",
+     "insertAsset",
+     "insertLinkDropDown"
+   ],
+   "imageEditButtons": [ "imageReplace", "imageAlt", "imageAlign", "imageDisplay", "imageSize", "imageRemove" ],
+   "customPlugins": [
+     {
+       "pluginName": "@kentico/xperience-admin-base/Asset"
+     },
+     {
+       "pluginName": "@kentico/xperience-admin-base/Link",
+       "pluginOptions": {
+         "dropdownOptions": [
+           {
+             "linkOption": "asset",
+             "componentName": "@kentico/xperience-admin-base/AssetPanel"
+           },
+           {
+             "linkOption": "external"
+           }
+         ]
+       }
+     }
+   ]
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Froala plugins</strong></p>
+<p>The Froala editor uses a modular architecture that in its default configuration contains only essential features. You can <a href="/documentation/developers-and-admins/configuration/rich-text-editor-configuration/rich-text-editor-plugins">add existing community plugins or implement custom plugins</a> to expand the available feature set.</p>
+</div>
+
+<h3 id="register-editor-configurations">Register editor configurations</h3>
+<p>Editor configurations must fulfill both of the following:</p>
+<ul>
+<li>Must be stored as <strong>embedded resources</strong> within application assemblies.</li>
+<li>Must be registered in the system under a unique identifier (the registration code must be placed in a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom assembly</a> with class discovery enabled).</li>
+</ul>
+<p>Use the following process to register a configuration:</p>
+<ol type="1">
+<li>
+<p>Embed the configuration JSON in an assembly via the <code>EmbeddedResource</code> element.</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Embedding the configuration via an assembly .csproj file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ &lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+
+ ...
+
+     &lt;ItemGroup&gt;
+         &lt;EmbeddedResource Include="path\to\custom\configuration.json" /&gt;
+     &lt;/ItemGroup&gt;
+
+ &lt;/Project&gt;
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Create a new class that inherits from <code>RichTextEditorConfiguration</code>. Within the class:</p>
+<ol type="1">
+<li>
+<p>Assign a unique string identifier to the configuration.</p>
+<ul>
+<li>Use a constant named <code>IDENTIFIER</code>. This allows you to easily reference the configuration in your code.</li>
+<li>We recommend using a unique prefix in your identifiers to prevent conflicts when deploying components to other projects. For example, use prefixes matching your company name.</li>
+</ul>
+</li>
+<li>
+<p>Call the base class constructor with the following parameters:</p>
+<ul>
+<li>
+<code>relativePath</code> – the relative path to the configuration file within the assembly.</li>
+<li>(Optional) <code>baseNamespace</code> – allows you to provide a different assembly name in case the configuration file is stored in a different assembly. If set, the system searches the specified assembly (using the given <code>relativePath</code>) instead.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - registering a configuration to the system</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base.Forms;
+
+ public class CustomRichTextEditorConfiguration : RichTextEditorConfiguration
+ {
+     // Relative path to the configuration file within the specified assembly
+     // This example configuration is located under: &lt;AssemblyName&gt;\Misc\RichTextEditorConfiguration\
+     private const string CONFIGURATION_PATH = "Misc\\RichTextEditorConfiguration\\RichTextEditorConfiguration.json";
+
+     // String identifier assigned to the configuration
+     public const string IDENTIFIER = "Acme.Web.EditorConfiguration";
+
+     // User-friendly name of the configuration
+     public const string DISPLAY_NAME = "Custom ACME editor configuration";
+
+     public CustomRichTextEditorConfiguration()
+         : base(CONFIGURATION_PATH)
+     {
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<ul>
+<li>
+<p>Register the class using the <code>RegisterRichTextEditorConfiguration</code> assembly attribute. Provide the following arguments for the registration attribute:</p>
+<ul>
+<li><p>the configuration’s identifier</p></li>
+<li><p>the type of the class derived from <code>RichTextEditorConfiguration</code> (using the <code>typeof</code> operator)</p></li>
+<li>
+<p>a user-friendly display name, which appears when selecting the configuration for the <em>Rich text editor</em> form component in the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - registering a plugin to the system</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  using Kentico.Xperience.Admin.Base.Forms;
+
+  [assembly: RegisterRichTextEditorConfiguration(CustomRichTextEditorConfiguration.IDENTIFIER, typeof(CustomRichTextEditorConfiguration), CustomRichTextEditorConfiguration.DISPLAY_NAME)]
+  public class CustomRichTextEditorConfiguration : RichTextEditorConfiguration
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<p>The configuration is now registered in the system and can be assigned to:</p>
+<ul>
+<li><a href="#assign-editor-configurations-to-rich-text-editing-components">rich text editing components</a></li>
+<li><a href="#assign-editor-configurations-to-rich-text-fields">fields that use the rich text form component</a></li>
+</ul>
+<h3 id="assign-editor-configurations-to-rich-text-editing-components">Assign editor configurations to rich text editing components</h3>
+<p>To assign custom configurations to rich text editors within component configuration dialogs:</p>
+<ol type="1">
+<li>
+<a href="#register-editor-configurations">Register the configuration</a>.</li>
+<li>Decorate the component property intended to store the rich text content with the <code>RichTextEditorComponent</code> attribute. The attribute assigns the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Rich text editor form component</a> as the property’s <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing component</a>.</li>
+<li>Provide the configuration to use via the attribute’s <code>ConfigurationName</code> property. You can use the declared <code>IDENTIFIER</code> constant to reference the desired configuration.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - assigning a custom toolbar to a configuration property</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class TitledSectionProperties : IFormSectionProperties
+{
+    // Uses the 'RichTextComponent' as the editing component of the 'SectionText' property
+    // and assigns a custom configuration for the Froala editor
+    [RichTextEditorComponent(ConfigurationName = CustomRichTextEditorConfiguration.IDENTIFIER)]
+    public string SectionText { get; set; }
+}
+
+</code></pre>
+</div>
+
+<h3 id="assign-editor-configurations-to-rich-text-fields">Assign editor configurations to rich text fields</h3>
+<p>For <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> that use the <strong>Rich text editor</strong> form component, you can set custom configurations via the <strong>Configuration name</strong> property.</p>
+<ol type="1">
+<li>
+<a href="#register-editor-configurations">Register the configuration</a> in the system.</li>
+<li>Open the object you wish to modify in the field editor.</li>
+<li>Select a field using the <em>Rich text editor</em> form component (available for fields of the <strong>Rich text (HTML)</strong> <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a>).</li>
+<li>Select the configuration via the <strong>Configuration name</strong> property.</li>
+<li>Save your changes.</li>
+</ol>
+<p>The modified field now uses the specified configuration.</p>
+
+</body>
+</html>

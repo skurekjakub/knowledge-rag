@@ -1,0 +1,782 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Consent development</title>
+</head>
+<body>
+<p>In Xperience, consents are records used to inform visitors about the means of collecting and manipulating their personal data by the system, administrators, marketers and anyone else who has access to said data, including third parties to whom this data is forwarded.</p>
+<p>You can use consents to comply with the requirements of the <a href="/documentation/developers-and-admins/data-protection/gdpr-compliance">GDPR</a> and other personal data regulations.</p>
+<p>Whenever any personal data of a visitor is obtained, it is necessary to have a consent agreement from the visitor to legally process this data. This includes <a href="/documentation/business-users/digital-marketing/contact-management">tracking of contacts</a> and their <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a>. Every consent agreement of a visitor is directly connected to a corresponding contact. Deleting contacts from the system therefore also causes deletion of the contact’s consent agreements.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Since consent agreements are directly connected to contacts, you need to enable <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">contact tracking</a> in your Xperience application.</p>
+</div>
+
+<p>This page describes how to set up consent functionality on Xperience websites. To learn how to create consents in the Xperience administration, see <a href="/documentation/developers-and-admins/data-protection/consent-management">Consent management</a>.</p>
+<h2 id="set-up-tracking-consent">Set up tracking consent</h2>
+<p>When creating a consent for the <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">tracking of contacts</a> and <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities">activities</a>, you need to provide a way for visitors to adjust their allowed <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a>. The system only performs the tracking for visitors whose cookie level is <em>Visitor</em>or higher.</p>
+<p>To ensure that visitors are not tracked until they give the tracking consent, set the <strong>default cookie level</strong> in the Xperience administration:</p>
+<ol type="1">
+<li>Open <strong>Channel management</strong> application.</li>
+<li>Select your website channel.</li>
+<li>Open the <strong>Channel settings</strong> tab.</li>
+<li>In the <strong>Cookies</strong> section, choose a <strong>Default cookie level</strong>.
+<ul>
+<li>For an overview of individual cookie levels, see <a href="/documentation/developers-and-admins/data-protection/cookies#cookie-levels">Cookie levels</a>.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>To allow visitors to give agreements with the tracking consent on your site, you need to develop corresponding components. For example, you can implement tracking consent functionality as a <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component</a>.</p>
+<h3 id="create-the-consent">Create the consent</h3>
+<p>Start by <a href="/documentation/developers-and-admins/data-protection/consent-management">defining the tracking consent</a> in the Xperience administration interface (in the <strong>Data protection</strong> application on the <strong>Consents</strong> tab).</p>
+<h3 id="create-the-model">Create the model</h3>
+<p>We recommend creating a view model class in your project to represent data related to the tracking consent. Include the following properties:</p>
+<ul>
+<li>A <code>string</code> property for storing the consent’s short text</li>
+<li>A <code>bool</code> property to indicate whether an agreement with the consent was given</li>
+<li>A <code>string</code> property for passing the current page URL as the return URL</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>View model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class TrackingConsentViewModel
+{
+    public string ShortText { get; set; }
+
+    public bool IsAgreed { get; set; }
+
+    public string ReturnUrl { get; set; }
+}
+
+</code></pre>
+</div>
+
+<h3 id="create-the-view-component">Create the view component</h3>
+<p>Create a new <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">view component</a> class in your project:</p>
+<ul>
+<li>
+<p>Initialize instances of services, which are necessary to manage the tracking consent:</p>
+<ul>
+<li>
+<code>IInfoProvider&lt;ConsentInfo&gt;</code> – to load consent data.</li>
+<li>
+<code>IConsentAgreementService</code>– to manage consent agreements.</li>
+<li>
+<code>ICurrentCookieLevelProvider</code>– to manage the current visitor’s cookie level.</li>
+<li>
+<code>IWebPageDataContextRetriever</code> and <code>IWebPageUrlRetriever</code> – to obtain the URL of the current page.</li>
+<li>
+<code>IPreferredLanguageRetriever</code> – to get the currently selected content language.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>We recommend using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> to initialize service instances.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Services</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public class TrackingConsentViewComponent : ViewComponent
+  {
+
+      private readonly IConsentAgreementService consentAgreementService;
+      private readonly ICurrentCookieLevelProvider currentCookieLevelProvider;
+      private readonly IInfoProvider&lt;ConsentInfo&gt; consentInfoProvider;
+      private readonly IWebPageDataContextRetriever webPageDataContextRetriever;
+      private readonly IWebPageUrlRetriever urlRetriever;
+      private readonly IPreferredLanguageRetriever preferredLanguageRetriever;
+
+    public TrackingConsentViewComponent(IConsentAgreementService consentAgreementService,
+                                      ICurrentCookieLevelProvider currentCookieLevelProvider,
+                                      IInfoProvider&lt;ConsentInfo&gt; consentInfoProvider,
+                                      IWebPageDataContextRetriever webPageDataContextRetriever,
+                                      IWebPageUrlRetriever urlRetriever,
+                                      IPreferredLanguageRetriever preferredLanguageRetriever)
+      {
+          this.consentAgreementService = consentAgreementService;
+          this.currentCookieLevelProvider = currentCookieLevelProvider;
+          this.consentInfoProvider = consentInfoProvider;
+          this.webPageDataContextRetriever = webPageDataContextRetriever;
+          this.urlRetriever = urlRetriever;
+          this.preferredLanguageRetriever = preferredLanguageRetriever;
+      }
+  }
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Implement the component’s <code>InvokeAsync</code> method to display information about the tracking consent:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Invoke the component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public async Task&lt;IViewComponentResult&gt; InvokeAsync()
+  {
+      // Gets the related tracking consent
+      // Fill in the code name of the appropriate consent object in Xperience
+      ConsentInfo consent = consentInfoProvider.Get("SampleTrackingConsent");
+
+      if (consent != null)
+      {
+          // Gets the current contact
+          ContactInfo currentContact = ContactManagementContext.GetCurrentContact();
+
+          // Gets the code name of the currently selected language
+          var preferredLanguage = preferredLanguageRetriever.Get();
+
+          // Sets the default cookie level for contacts who have revoked the tracking consent
+          // Required for scenarios where one contact uses multiple browsers
+          if ((currentContact != null) &amp;&amp; !consentAgreementService.IsAgreed(currentContact, consent))
+          {
+              // Gets the default cookie level for the current channel and sets it for the contact
+              var defaultCookieLevel = currentCookieLevelProvider.GetDefaultCookieLevel();
+              currentCookieLevelProvider.SetCurrentCookieLevel(defaultCookieLevel);
+          }
+
+          var consentModel = new TrackingConsentViewModel
+          {
+              // Adds the consent's short text to the model
+              ShortText = (await consent.GetConsentTextAsync(preferredLanguage)).ShortText,
+
+              // Checks whether the current contact has given an agreement for the tracking consent
+              IsAgreed = (currentContact != null) &amp;&amp; consentAgreementService.IsAgreed(currentContact, consent),
+
+              // Adds the current page URL to the model
+              ReturnUrl = webPageDataContextRetriever.TryRetrieve(out var currentWebPageContext)
+                  ? (await urlRetriever.Retrieve(currentWebPageContext.WebPage.WebPageItemID, preferredLanguage)).RelativePath
+                  // Gets the URL from the request context for pages using custom routing
+                  : (HttpContext.Request.PathBase + HttpContext.Request.Path).Value
+
+          };
+
+          // Displays a view with tracking consent information and actions
+          return View("~/Components/ViewComponents/TrackingConsent/_TrackingConsent.cshtml", consentModel);
+      }
+
+      return Content(string.Empty);
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="create-the-view">Create the view</h3>
+<p>Add the view referenced in your view component’s invoke method. Display the text of the tracking consent and inputs for giving or revoking agreements. Depending on your preferences and legal requirements, you can hide the view’s output for visitors who have given the tracking consent or display alternative content (for example the option to <a href="#revoke-consents">revoke the consent</a>).</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Tracking consent view</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Content.Web.Mvc;
+
+@model TrackingConsentViewModel
+
+@* Displays content only if the current contact has not yet given a tracking consent agreement *@
+@if (!Model.IsAgreed)
+{
+    var routeData = new Dictionary&lt;string, string&gt; { { "returnUrl", Model.ReturnUrl } };
+
+    &lt;div&gt;
+        @* Displays the consent text*@
+        @Html.Raw(@Model.ShortText)
+    &lt;/div&gt;
+    @* Displays an input for giving a consent agreement *@
+    @* Replace "TrackingConsent" with the name of your controller that handles consent agreement requests *@
+    &lt;form asp-action="Agree"
+          asp-controller="TrackingConsent" 
+          asp-antiforgery="true"
+          asp-all-route-data="routeData"
+          method="post"&gt;
+        &lt;input type="submit" value="I agree"&gt;
+    &lt;/form&gt;
+}
+
+</code></pre>
+</div>
+
+<h3 id="create-the-controller">Create the controller</h3>
+<p>Add a controller that handles requests for adding consent agreements:</p>
+<ul>
+<li><p>Initialize instances of services required to manage the tracking consent (some of the same services described for the <a href="#create-the-view-component">View component code</a>).</p></li>
+<li><p>Define a POST action for creating consent agreements.</p></li>
+<li><p>Retrieve the visitor’s contact using the <code>ContactManagementContext</code> API (see <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">Contact configuration</a>).</p></li>
+<li>
+<p>Modify the visitor’s cookie level according to the performed action – call the <code>SetCurrentCookieLevel</code> method of the <code>ICurrentCookieLevelProvider</code> service.</p>
+<ul>
+<li>Set the <em>All</em> cookie level when creating tracking consent agreements.</li>
+</ul>
+</li>
+<li>
+<p>Create consent agreements using the <code>Agree</code> method of the <code>IConsentAgreementService</code> instance.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Agree POST action</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public ActionResult Agree(string returnUrl)
+  {
+      // Gets the related tracking consent
+      ConsentInfo consent = consentInfoProvider.Get("SampleTrackingConsent");
+
+      if (consent != null)
+      {
+          // Sets the visitor's cookie level to 'All' (enables contact tracking)
+          currentCookieLevelProvider.SetCurrentCookieLevel(Kentico.Web.Mvc.CookieLevel.All.Level);
+
+          // Gets the current contact and creates a consent agreement
+          ContactInfo currentContact = ContactManagementContext.GetCurrentContact();
+
+          if (currentContact != null)
+          {
+              consentAgreementService.Agree(currentContact, consent);
+          }
+
+          return Redirect(returnUrl);
+      }
+
+      return new StatusCodeResult(StatusCodes.Status400BadRequest);
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="invoke-the-component">Invoke the component</h3>
+<p>Invoke the view component from a suitable location in your website’s content. For example, use the main layout to ensure that the input to give the tracking consent is displayed on all pages.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>_Layout example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+&lt;html&gt;
+&lt;head &gt;
+    ...
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div&gt;
+        @* Invokes 'TrackingConsentViewComponent' *@ 
+        &lt;vc:tracking-consent /&gt;
+
+        ...
+
+</code></pre>
+</div>
+
+<p>Visitors on your website now have an option to give agreements with your tracking consent. New visitors are not tracked as contacts until they positively confirm that they agree with the tracking.</p>
+<h2 id="create-conditions-based-on-consents">Create conditions based on consents</h2>
+<p>If you have any functionality that stores or processes personal data, you can create conditions to ensure that it only runs for contacts who have given consent.</p>
+<ol type="1">
+<li>Initialize an instance of the <code>IConsentAgreementService</code> interface and make it available in your code.</li>
+<li>Obtain the related contact and consent objects.</li>
+<li>Evaluate whether the contact has given an agreement with the given consent by calling the <code>IsAgreed</code> method of the <code>IConsentAgreementService</code> instance.</li>
+</ol>
+<h2 id="revoke-consents">Revoke consents</h2>
+<p>To ensure compliance of your website with the GDPR or other data protection regulations, you need to give visitors the option to view and revoke their previously given consent agreements. We recommend creating a privacy page, where visitors can view the consents for which they have given agreements and potentially revoke them.</p>
+
+<div>
+
+</div>
+<div>
+<p>“It shall be as easy to withdraw as to give consent.”</p>
+<p>(Source: <a href="http://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679#d1e2001-1-1" target="_blank">GDPR Article 7</a>, Paragraph 3)</p>
+</div>
+
+<p>The following sections describe how to create a privacy page using MVC architecture. The privacy page lists accepted consents for visitors, and allows them to view the full consent details or revoke their agreements.</p>
+<ul>
+<li>Create a model representing the list of consents for which visitors have given agreements.</li>
+<li>Create a model representing consent details.</li>
+<li>Create a controller that provides actions for displaying and revoking consents.</li>
+<li>Implement a handler for the <code>DataProtectionEvents.RevokeConsentAgreement</code><a href="/documentation/developers-and-admins/customization/handle-global-events">global event</a> to clear related cookies and personal data.</li>
+<li>Create views for the consent list and details pages.</li>
+</ul>
+<h3 id="create-the-models">Create the models</h3>
+<ul>
+<li>
+<p>Add a model class that represents the list of consents for which visitors have given agreements.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>List of consents</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  using System.Collections.Generic;
+  using System.Linq;
+
+  using CMS.DataProtection;
+
+  public class ConsentListingModel
+  {
+      public IEnumerable&lt;Consent&gt; Consents { get; set; } = Enumerable.Empty&lt;Consent&gt;();
+  }
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong><code>Consent</code> and <code>ConsentInfo</code> objects</strong></p>
+<p>The Xperience API uses <code>ConsentInfo</code> objects to work with consents in general. However, when you load consents for which a contact has given an agreement, the <code>ConsentAgreementService.GetAgreedConsents</code> method returns a collection of <code>Consent</code> objects. Instances of the <code>Consent</code> class provide the <code>GetConsentText</code> method, which automatically retrieves either the current texts of the given consent or the texts of the archived consent version for which the agreement was given.</p>
+<p>When displaying accepted consents to visitors, always work with <code>Consent</code> objects to ensure that the correct consent text version is used (for scenarios where the consent text was changed after agreements had been given).</p>
+<p>For more information, see the <em>View archived consents</em> section of the <a href="/documentation/developers-and-admins/data-protection/consent-management">Consent management</a> page.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: You can directly use an <code>IEnumerable&lt;Consent&gt;</code> collection as a model if you do not need to work with any other data in your controller or views. However, having a dedicated model class allows you to extend the model based on future requirements.</p>
+</div>
+</li>
+<li>
+<p>Add a model class that represents the full details of a consent, including properties for the short text, full text, and any other information about the consent you may need. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Consent properties model</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public class ConsentDetailsModel
+  {
+      public string ConsentShortText { get; set; }
+
+      public string ConsentFullText { get; set; }
+
+      public string ConsentDisplayName { get; set; }
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="create-the-controller-1">Create the controller</h3>
+<p>Create a new controller class or edit an existing one:</p>
+<ul>
+<li>
+<p>Initialize instances of the <code>IConsentAgreementService</code> and <code>IInfoProvider&lt;ConsentInfo&gt;</code> services (and any other required services), and make them available in the controller’s code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Services</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  private readonly IConsentAgreementService consentAgreementService;
+  private readonly IInfoProvider&lt;ConsentInfo&gt; consentInfoProvider;
+  private readonly IPreferredLanguageRetriever preferredLanguageRetriever;
+
+  public PrivacyPageController(IConsentAgreementService consentAgreementService,
+                               IInfoProvider&lt;ConsentInfo&gt; consentInfoProvider,
+                               IPreferredLanguageRetriever preferredLanguageRetriever)
+  {
+      this.consentAgreementService = consentAgreementService;
+      this.consentInfoProvider = consentInfoProvider;
+      this.preferredLanguageRetriever = preferredLanguageRetriever;
+  }
+
+  </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>We recommend using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> to initialize service instances.</p>
+</div>
+</li>
+<li>
+<p>Implement a GET action which retrieves a list of all consents accepted by the visitor:</p>
+<ol type="1">
+<li>Retrieve the current contact using the <code>ContactManagementContext</code> API (see <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">Contact configuration</a>).</li>
+<li>Get the consents for which the contact has given an agreement by calling the <code>GetAgreedConsents</code> method of the <code>IConsentAgreementService</code> instance.</li>
+<li>Create an instance of the consent list model class and pass it to the view.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>GET list of consents</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  /// &lt;summary&gt;
+  /// Loads and displays consents for which visitors have given agreements.
+  //  / &lt;/summary&gt;
+  public ActionResult Index()
+  {
+      // Gets the current visitor's contact
+      ContactInfo currentContact = ContactManagementContext.GetCurrentContact();
+
+      var consentListingModel = new ConsentListingModel();
+
+      // Does not attempt to load consent data if the current contact is not available
+      // This occurs if contact tracking is disabled, or for visitors who have not given an agreement with the tracking consent
+      if (currentContact != null)
+      {
+          // Gets all consents for which the current contact has given an agreement
+          consentListingModel.Consents = consentAgreementService.GetAgreedConsents(currentContact);
+      }
+
+      return View(consentListingModel);
+  }
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Implement a GET action which retrieves the full details of a specified consent:</p>
+<ol type="1">
+<li>Retrieve the current contact.</li>
+<li>Get the consents for which the contact has given an agreement using the consent agreement service, and select the required consent based on the action’s parameter. This approach ensures that the correct consent text version is used in cases where the text was changed after the agreement had been given.</li>
+<li>Create an instance of the consent details model class, set its properties, and pass it to the view.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>GET consent details</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  /// &lt;summary&gt;
+  /// Display details of the specified consent.
+  /// &lt;/summary&gt;
+  public ActionResult ConsentDetails(int consentId)
+  {
+      // Gets a list of consents for which the current contact has given an agreement
+      ContactInfo currentContact = ContactManagementContext.GetCurrentContact();
+      IEnumerable&lt;Consent&gt; consents = consentAgreementService.GetAgreedConsents(currentContact);
+
+      // Gets the consent matching the identifier for which the details were requested
+      // Using this approach to get objects of the 'Consent' class is necessary to ensure that the correct consent text
+      // is displayed, either from the current consent text or the archived consent version for which the agreement was given
+      Consent consent = consents.FirstOrDefault(c =&gt; c.Id == consentId);
+
+      // Displays the privacy page (consent list) if the specified consent identifier is not valid
+      if (consent == null)
+      {
+          return View("Index");
+      }
+
+     // Gets the consent text in the currently selected language
+      ConsentText consentText = consent.GetConsentText(preferredLanguageRetriever.Get());
+
+      // Sets the consent's details into the view model
+      var model = new ConsentDetailsModel
+      {
+          ConsentDisplayName = consent.DisplayName,
+          ConsentShortText = consentText.ShortText,
+          ConsentFullText = consentText.FullText
+      };
+
+      return View(model);
+  }
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Implement a POST action that revokes agreements for a specified consent:</p>
+<ol type="1">
+<li>Retrieve the current contact.</li>
+<li>Retrieve the required consent (by calling the <code>IInfoProvider&lt;ConsentInfo&gt;().Get</code> method).</li>
+<li>Create a revocation for the consent agreement using the <code>Revoke</code> method of the <code>IConsentAgreementService</code> instance.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>POST action</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  /// &lt;summary&gt;
+  /// Revokes the current contact's agreement with the specified consent.
+  /// &lt;/summary&gt;
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public ActionResult Revoke(int consentId)
+  {
+      // Gets the related consent object
+      ConsentInfo consent = consentInfoProvider.Get(consentId);
+
+      // Gets the current visitor's contact
+      ContactInfo currentContact = ContactManagementContext.GetCurrentContact();  
+
+      if (consent != null &amp;&amp; currentContact != null)
+      {   
+          // Revokes the consent agreement
+          consentAgreementService.Revoke(currentContact, consent);
+      }
+
+      return RedirectToAction("Index");
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h3 id="add-a-revokeconsentagreement-handler">Add a RevokeConsentAgreement handler</h3>
+<p>Websites and their related functionality often contain multiple locations where visitors can revoke consents. To ensure that revocations are handled correctly in all cases, we recommend assigning a custom handler to the system’s <code>DataProtectionEvents.RevokeConsentAgreement</code> <a href="/documentation/developers-and-admins/customization/handle-global-events">global event</a>. The handler provides a central place where you can perform additional actions whenever a consent agreement is revoked.</p>
+<p>The following are typical scenarios to handle in the <code>RevokeConsentAgreement</code>event:</p>
+<ul>
+<li>
+<strong>Setting the cookie level</strong> – when revoking the <a href="#set-up-tracking-consent">tracking consent</a>, you also need to lower the visitor’s <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> to ensure that contact tracking is disabled. Call the <code>SetCurrentCookieLevel</code> method of the <code>ICurrentCookieLevelProvider</code> service and set the default cookie level from the website channel’s settings.</li>
+<li>
+<strong>Clearing personal data</strong> – when a visitor revokes a consent agreement, you may also need to delete or anonymize certain types of personal data stored by the system. See also: <a href="/documentation/developers-and-admins/data-protection/personal-data-erasure">Personal data erasure</a>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+
+using CMS;
+using CMS.Core;
+using CMS.DataEngine;
+using CMS.DataProtection;
+using CMS.Helpers;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(CustomDataProtectionModule))]
+
+internal class CustomDataProtectionModule : Module
+{
+    private ICurrentCookieLevelProvider currentCookieLevelProvider;
+
+    // Module class constructor, the system registers the module under the name "CustomDataProtection"
+    public CustomDataProtectionModule()
+        : base("CustomDataProtection")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit(ModuleInitParameters parameters)
+    {
+        // Resolves service dependencies from the IoC container
+        currentCookieLevelProvider = parameters.Services.GetRequiredService&lt;ICurrentCookieLevelProvider&gt;();
+
+        // Assigns a handler to the RevokeConsentAgreement event
+        DataProtectionEvents.RevokeConsentAgreement.Execute += RevokeConsentHandler;
+    }
+
+    private void RevokeConsentHandler(object? sender, RevokeConsentAgreementEventArgs e)
+    {
+        // For the tracking consent, lowers the cookie level to the website channel's default in order to disable tracking  
+        if (e.Consent.ConsentName.Equals("SampleTrackingConsent", StringComparison.OrdinalIgnoreCase))
+        {
+            currentCookieLevelProvider.SetCurrentCookieLevel(currentCookieLevelProvider.GetDefaultCookieLevel());
+        } 
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="create-the-views">Create the views</h3>
+<p>Add appropriate views to your project to display the consent list (privacy page), the consent details and revocation actions.</p>
+
+<div>
+
+</div>
+<div>
+<p>Consent text values may contain HTML tags added via the editor in the Xperience administration (e.g., for formatting). To ensure that the text is displayed correctly, disable the HTML encoding for the values using the <code>Html.Raw</code> method.</p>
+<div>
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;h3&gt;Short text&lt;/h3&gt;
+&lt;p&gt;@Html.Raw(Model.ConsentShortText)&lt;/p&gt;
+&lt;h3&gt;Full text&lt;/h3&gt;
+&lt;p&gt;@Html.Raw(Model.ConsentFullText)&lt;/p&gt;
+
+</code></pre>
+</div>
+</div>
+</div>
+
+<p>Visitors on your site are now able to view a list of all consents for which they have given an agreement. They can also access the full details of the given consents and revoke their agreements if required.</p>
+
+</body>
+</html>

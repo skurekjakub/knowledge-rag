@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Secure custom endpoints</title>
+</head>
+<body>
+<p>Your custom code may include endpoints to handle various logic (e.g., image uploads). For example, custom endpoints can be used in the implementations of <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> components.</p>
+<p>The framework treats these endpoints as any other API – they are, by default, publicly accessible under the handler URL. If your custom endpoints process any potentially confidential data, you may want to consider implementing protection against unauthorized access.</p>
+<p>The <code>Authorize</code> attribute in .NET specifies that only authorized users can access a particular controller or action method. You can use the attribute with specific authentication schemes by specifying the scheme name as a parameter.</p>
+<p>Generally, you would want to use the <code>Authorize</code> attribute when:</p>
+<ol type="1">
+<li>Sensitive data is being accessed or modified – If your endpoint is dealing with sensitive data, such as personal information or confidential documents.</li>
+<li>Privileged actions are being performed – If your endpoint is performing privileged actions, such as creating or modifying records in the database.</li>
+<li>You need to track user activity – If you need to keep track of which users are accessing certain parts of your application, you can use the attribute to enforce authentication and log user activity.</li>
+</ol>
+<p>To allow requests only from users signed in to the Xperience admin UI (a sufficient constraint to identify non-malicious actors), specify a scheme from <code>AdminIdentityConstants</code>.</p>
+<ul>
+<li>
+<code>APPLICATION_SCHEME</code> – for users authenticated using <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-forms-authentication">forms authentication</a>.</li>
+<li>
+<code>EXTERNAL_SCHEME</code> – for users authenticated using <a href="/documentation/developers-and-admins/configuration/users/administration-registration-and-authentication/administration-external-authentication">external providers</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Restrict endpoints to administration users</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Membership;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+[Authorize(AuthenticationSchemes = $"{AdminIdentityConstants.APPLICATION_SCHEME}, {AdminIdentityConstants.EXTERNAL_SCHEME}")]
+public class WidgetPostController : Controller
+{
+    // Returns 403 for requests without the '.AspNetCore.Xperience.Application' or '.AspNetCore.Xperience.External' cookies
+    public ActionResult HandlePost()
+    {
+        ...
+
+        return Ok();
+    }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

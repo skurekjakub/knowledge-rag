@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Set up email tracking</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>To get the most out of your <a href="/documentation/business-users/digital-marketing/emails">email communication</a>, it is important to determine the effectiveness of individual emails and optimize them according to the results. You can achieve this by tracking sent emails, and monitoring the reactions of recipients. The system collects data by processing hidden image requests and link redirects, and by tracking email bounces.</p>
+<p>The following analytics are available for emails:</p>
+<ul>
+<li>
+<strong>Sent emails</strong> – logged when an email successfully leaves the Xperience platform, e.g., to an SMTP server or SendGrid for further mailing. This statistic does not always guarantee that the email was delivered to the recipient.</li>
+<li>
+<strong>Email opens</strong> – logged when a recipient opens an email (in a client that allows loading of images).</li>
+<li>
+<strong>Clicked links</strong> – logged when recipients click links within the content of an email.</li>
+<li>
+<strong>Link click activities</strong> – link clicks in emails can also be logged as <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a>, which provide information about individual recipients and links. To ensure compliance with data protection regulations, email activities are not logged by default. Developers need to <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking/log-email-activities">implement logic</a> that decides when it is possible to track email activities for specific contacts, for example based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>.</li>
+</ul>
+<p>Additional statistics are provided for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a> sent to subscribed recipients:</p>
+<ul>
+<li>
+<strong>Delivered emails</strong> – calculated by tracking <a href="https://en.wikipedia.org/wiki/Bounce_message" target="_blank">email bounces</a> (undelivered emails) and subtracting the bounce count from the total number of sent emails. Bounced email tracking requires <a href="#configure-bounced-email-tracking">additional configuration</a>.</li>
+<li>
+<strong>Unsubscriptions</strong> – logged when a recipient uses the email’s unsubscribe link to stop receiving emails for the given recipient list.</li>
+<li>
+<strong>Spam reports</strong> – only available when using <a href="/documentation/developers-and-admins/configuration/email-configuration">SendGrid</a> to send emails. Logged when a recipient marks the message as spam in their email client (see <a href="https://docs.sendgrid.com/glossary/spam-reports" target="_blank">Spam Reports</a>).</li>
+</ul>
+<p>The statistics and activities can be viewed for emails in email channel applications. For more information, see <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">Track email statistics</a>.</p>
+<h2 id="limitations">Limitations</h2>
+<p>Keep the following limitations in mind when starting with email tracking:</p>
+<ul>
+<li>Tracking is only available for <a href="/documentation/business-users/digital-marketing/emails">emails</a> created using an email channel application in Xperience. For example, you cannot track custom emails created or sent using the API.</li>
+<li>Statistics are not tracked for draft emails.</li>
+<li>You cannot retroactively track emails that have already been sent before <a href="#enable-the-email-tracking-feature">enabling the tracking feature</a>.</li>
+<li>Logged statistics are not displayed immediately in the administration interface for emails. The system calculates logged email statistics periodically every 30 minutes, or users can trigger the recalculation manually in email channel applications. This delay does not apply to <em>email activities</em>, which are displayed almost immediately when they occur.</li>
+</ul>
+<h2 id="set-the-service-domain-for-your-email-channels">Set the service domain for your email channels</h2>
+<p>To use email tracking, your <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> must have a correctly set <strong>Email service domain</strong>. The service domain name is used as the base URL of tracking endpoints within email content (used within the URLs of click tracking links and the email open tracking pixel image).</p>
+<p>The service domain needs to host an Xperience by Kentico application, connected to the database where your email channels are configured.</p>
+<ul>
+<li>The email service domain must <strong>exactly</strong> match the target application’s URL, including the port number and application path. Misconfiguration may break links in email content and prevent tracking from working, particularly in development or testing environments.</li>
+<li>The target application must support the URL scheme (protocol) specified by the application’s <code>UrlResolveOptions.UseSSL</code> <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls#url-formatting-and-behavior">option</a> and the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-8.0" target="_blank">.NET options pattern</a> – <strong>https</strong> by default.</li>
+</ul>
+<p>The most common setup is to use the domain of a related <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> as the service domain of your email channels. If you do not wish to associate URLs in your email content with a specific website, you can use the domain hosting the Xperience application where you manage your emails (if the application is publicly accessible).</p>
+<h2 id="enable-the-email-tracking-feature">Enable the email tracking feature</h2>
+<p>To track statistics and activities for emails, the corresponding feature must be enabled for your Xperience application:</p>
+<ol type="1">
+<li><p>Open your Xperience solution in Visual Studio.</p></li>
+<li><p>Edit the <strong>Program.cs</strong> file.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/enable-application-features">Enable</a> the email tracking feature by calling the <code>UseEmailStatisticsLogging</code> method of the <code>IFeaturesBuilder</code> delegate. Pass the delegate as an argument to <code>AddKentico</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.Web.Mvc;
+ using Kentico.OnlineMarketing.Web.Mvc;
+
+ var builder = WebApplication.CreateBuilder(args);  
+
+ ...
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     ...
+
+     // Enables the email tracking feature for statistics and activities, registers the following endpoints:
+     // "/Kentico.Emails/OpenEmail.gif" for opened email tracking
+     // "/Kentico.Emails/EmailClickedLink" for clicked link tracking
+     features.UseEmailStatisticsLogging();
+ });
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>When a recipient opens an email or clicks a link in its content, a request is sent to the Xperience application. The endpoints registered by the <code>UseEmailStatisticsLogging</code> feature process the tracking requests and log the appropriate email statistics and activities. The feature enables tracking for all <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>.</p>
+<h2 id="implement-email-activity-logging">Implement email activity logging</h2>
+<p>Unlike the overall email statistics, email activities are not anonymous, and provide information about the actions of individual email recipients. To ensure compliance with data protection regulations, email activities are <strong>not logged by default</strong>.</p>
+<p>Developers need to <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking/log-email-activities">implement logic</a> that decides when it is possible to track email activities for specific contacts, for example based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>.</p>
+<h2 id="configure-bounced-email-tracking">Configure bounced email tracking</h2>
+<p>When an email cannot be delivered successfully, an automatic reply informing about the problem is returned (<a href="https://en.wikipedia.org/wiki/Bounce_message" target="_blank">bounced</a>) back to the sender or another designated address. You can configure the system to match bounces with emails sent from Xperience and track delivery statistics. Bounced email tracking also allows the system to identify addresses that do not correctly receive emails, which helps keep recipient lists healthy and protects your sender reputation.</p>
+<p>To set up bounced email tracking, start by <a href="#enable-the-email-tracking-feature">enabling the email tracking feature</a>. Additional steps depend on the <a href="/documentation/developers-and-admins/configuration/email-configuration">email clients</a> configured for your application or specific email channels – <a href="#sendgrid">SendGrid integration</a> or an <a href="#smtp-server">SMTP server</a>.</p>
+<h3 id="sendgrid">SendGrid</h3>
+<p>When <a href="/documentation/developers-and-admins/configuration/email-configuration">sending email via SendGrid</a> (either managed or self-managed SendGrid integration), bounced email tracking <strong>works automatically by default</strong>. You only need to enable the SendGrid integration for your application or specific email channels by calling the appropriate <em>Add*SendGrid</em> extension methods when building your application.</p>
+<p>Evaluation and tracking of bounces is done on the side of SendGrid. If an email cannot be delivered and is identified as bounced, the information is retrieved by Xperience and logged as a bounce in the given email’s statistics. The <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> associated with the bounced address switches to the <strong>Hard bounce</strong> status and is excluded when sending further emails. If necessary, marketers can <strong>Reset bounces</strong> for individual contacts from the <strong>Email marketing</strong> section of the contact’s profile in the <strong>Contact management</strong> application.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>SendGrid email categories</strong></p>
+<p>The system tracks bounce statistics for emails using <a href="https://docs.sendgrid.com/for-developers/sending-email/categories" target="_blank">Categories</a> in SendGrid. Every email created in an Xperienceemail channel application is represented by a separate SendGrid category. The category names are in format: <em>Xperience-&lt;email GUID identifier&gt;</em></p>
+<p>To preserve your email statistics, make sure these categories <strong>are not deleted</strong> from your SendGrid account.</p>
+<p>The maximum number of categories is <a href="https://docs.sendgrid.com/for-developers/sending-email/categories" target="_blank">limited</a> (1000 for paid SendGrid plans, 100 for free plans). If the limit is reached, previously logged bounced email statistics may be lost when the system synchronizes with SendGrid.</p>
+</div>
+
+<h3 id="smtp-server">SMTP server</h3>
+<p>When <a href="/documentation/developers-and-admins/configuration/email-configuration">sending email using an SMTP server</a>, you need to set up a mailbox that will receive bounced emails. To ensure that bounced emails are returned to this mailbox, you can either:</p>
+<ul>
+<li>Configure your SMTP server to set the address into the <code>Return-Path</code> header for outgoing emails. This approach is strongly recommended if possible, because it allows marketers to freely set the sender address for your emails.<br>
+– OR –</li>
+<li>Force the address as the sender for your emails. See <code>ForcedEmailSenderAddress</code> in the configuration options described below.</li>
+</ul>
+<p><strong>Email sending and bounce tracking with Return-Path header support</strong></p>
+<p></p>
+<p><strong>Email sending and bounce tracking with a forced sender address</strong></p>
+<p><strong></strong></p>
+<p>Continue by configuring the Xperience application to connect to your bounce mailbox using <a href="https://en.wikipedia.org/wiki/Post_Office_Protocol" target="_blank">POP3</a>:</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio and edit the <strong>Program.cs</strong> file.</p></li>
+<li>
+<p>Call the one or more of the following methods for <code>IServiceCollection</code> when building the web application:</p>
+<ul>
+<li>
+<code>AddXperienceChannelSmtpBouncedEmails</code> – POP3 connection to a bounce mailbox for a specific <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>. Specify the <strong>code name</strong> of the email channel as the method’s parameter.</li>
+<li>
+<code>AddXperienceSmtpBouncedEmails</code> – POP3 connection to a bounce mailbox as a fallback for all email channels without their own dedicated configuration. This method is primarily intended for backward compatibility, and we recommend using channel-specific configuration.</li>
+</ul>
+</li>
+<li>
+<p>Use ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a> (such as the default <em>appSettings.json</em> file or <a href="https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration" target="_blank">Azure Key Vault</a>) to load configuration options for the following types:</p>
+<ul>
+<li>
+<p><code>BouncedEmailsOptions</code> – configure separately for every email channel. The <strong>name</strong> of the options instance must match the code name of the email channel. See the code example below.</p>
+<ul>
+<li>
+<p><code>Server</code> – configures the POP3 connection to your bounce mailbox. Set the properties of the underlying <code>Pop3Server</code> type:</p>
+<ul>
+<li>
+<code>Host</code> – the hostname of the mail server (domain name or IP address).</li>
+<li>
+<code>Port</code> – the port number used for the connection (typically 110 for non-encrypted connections or 995 for secured connections).</li>
+<li>
+<code>UserName</code> – the user name for the connection to the mail server (typically, the user name will match the email address of the bounce mailbox).</li>
+<li>
+<code>Password</code> – the password for the user name.</li>
+</ul>
+</li>
+<li>
+<p><code>ForcedEmailSenderAddress</code> – overrides the sender address for all emails. Set the value to the email address of your bounce mailbox.</p>
+
+<div>
+
+</div>
+<div>
+<p>Only use the <code>ForcedEmailSenderAddress</code> property if you cannot configure your SMTP server to set the <code>Return-Path</code> header for outgoing emails.</p>
+<p>Setting <code>ForcedEmailSenderAddress</code> prevents overrides the email channel’s sending domain and prevents configuration sender addresses in the administration interface.</p>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p><code>BouncedEmailsGlobalOptions</code></p>
+<ul>
+<li>
+<code>SoftBounceLimit</code> – the number of soft bounces allowed before an email address is excluded when sending emails to any recipient list. Set to 5 by default.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Web.Mvc;
+using CMS.EmailEngine;
+using CMS.EmailMarketing;
+
+var builder = WebApplication.CreateBuilder(args);  
+
+...  
+
+// Configures email sending using an SMTP server for 'EmailChannel1' and 'EmailChannel2'
+builder.Services.AddXperienceChannelSmtp("EmailChannel1", ...);
+builder.Services.AddXperienceChannelSmtp("EmailChannel2", ...);
+
+// Enables bounce tracking for emails sent via an SMTP server for 'EmailChannel1' and 'EmailChannel2'
+builder.Services.AddXperienceChannelSmtpBouncedEmails("EmailChannel1");
+builder.Services.AddXperienceChannelSmtpBouncedEmails("EmailChannel2");
+
+// Loads the bounced email configuration from configuration file sections
+builder.Services.Configure&lt;BouncedEmailsOptions&gt;("EmailChannel1", builder.Configuration.GetSection("Channel1BounceOptions"));
+builder.Services.Configure&lt;BouncedEmailsOptions&gt;("EmailChannel2", builder.Configuration.GetSection("Channel2BounceOptions"));
+builder.Services.Configure&lt;BouncedEmailsGlobalOptions&gt;(builder.Configuration.GetSection("BouncedEmailsGlobalOptions"));
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Example - appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "Channel1BounceOptions": {
+    "Server" : {
+      "Host" : "server1.com",
+      "Port" : 995,
+      "UserName" : "bounces@localhost.test",
+      "Password" : "password"
+    }
+  },
+  "Channel2BounceOptions": {
+    "Server" : {
+      "Host" : "server2.com",
+      "Port" : 995,
+      "UserName" : "bounces@localhost.test",
+      "Password" : "password"
+    }
+  }, 
+  "BouncedEmailsGlobalOptions": {
+    "SoftBounceLimit" : 7
+  }
+  ...
+}
+
+</code></pre>
+</div>
+
+<p>The system now regularly checks for bounced emails.</p>
+<p>When a bounce is detected, it is logged in the given email’s statistics. Additionally, the bounce is added for the <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> associated with the given address. Two types of bounces are possible:</p>
+<ul>
+<li>
+<strong>Soft bounce</strong> – emails that could not be delivered due to a temporary problem, for example, if the mailbox was full, the email message was too large, or the email was blocked due to a spam filter. The system allows soft bounces until the count reaches the number set by the <code>SoftBounceLimit</code> configuration option. If the limit is reach, the contact is excluded when sending further emails.</li>
+<li>
+<strong>Hard bounce</strong> – emails that could not be delivered due to a permanent problem, for example, if the email address doesn’t exist, or the target email server has completely blocked delivery. If a hard bounce is encountered, the contact switches to the <em>Hard bounce</em> status, and is excluded when sending further emails.</li>
+</ul>
+<p>If necessary, marketers can <strong>Reset bounces</strong> for individual contacts from the <strong>Email marketing</strong> section of the contact’s profile in the <strong>Contact management</strong> application.</p>
+<p></p>
+
+</body>
+</html>

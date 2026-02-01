@@ -1,0 +1,592 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Manage SaaS deployments</title>
+</head>
+<body>
+<p>Use Xperience Portal (available at <a href="https://xperience-portal.com" target="_blank">https://xperience-portal.com</a>) to manage your Xperience by Kentico applications <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed in the SaaS environment</a>.</p>
+<h2 id="overview">Overview</h2>
+<p>You need to <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#upload-a-deployment-package-to-your-xperience-portal-project">upload a deployment package</a> to your Xperience Portal project to trigger an initial deployment to the QA environment. After a successful deployment, you can <a href="#access-deployed-applications">access the deployed application</a> and manage the SaaS deployments within <strong>Xperience Portal</strong>, which enables you to:</p>
+<ul>
+<li>
+<a href="#channel-management">Add and configure your content channels</a>.</li>
+<li>Debug the deployments by examining the deployment <strong>Logs</strong> in the <strong>Deployments</strong> application.</li>
+<li>
+<a href="#restore-points-and-exports">Manage restore points and exports of your deployed application</a>.</li>
+<li>
+<a href="#uptime-monitoring">Monitor the uptime of application deployments and the Xperience Portal project</a>.</li>
+<li>
+<a href="#event-log-and-exceptions">Monitor the event log and exceptions of application deployments</a>.</li>
+<li><a href="#performance-metrics">Evaluate the performance metrics of your applications.</a></li>
+<li><a href="#security-events">View security events and threats detected by Cloudflare CDN.</a></li>
+</ul>
+<p></p>
+<h2 id="access-deployed-applications">Access deployed applications</h2>
+<p>After successfully <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#upload-a-deployment-package-to-your-xperience-portal-project">uploading the deployment package</a> to the QA environment or <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deploying the package to another deployment environment</a>, use the application URL displayed in the <strong>Deployments</strong> application under <strong>Latest deployments</strong> to access the deployed application.</p>
+<p>Each project has a default system domain in format: <em><strong>&lt;environment&gt;-</strong>&lt;project_code_name&gt;.<strong>xperience-sites.com</strong></em></p>
+<p>The default domain can be used to access the project’s administration UI by appending the <em>/admin</em> path to the URL. You can view your project’s default system domains or <a href="/documentation/developers-and-admins/configuration/email-configuration#custom-system-email-domains-in-the-saas-environment">customize</a> your system Email sending and Email service domain in the <strong>Channels and Domains → System domains</strong> application in Xperience Portal.</p>
+<p>Additionally, projects also have domains for individual website and email channels. You can set up custom domains for website and email channels in the PROD or STG environment. To learn more, see <a href="/documentation/developers-and-admins/configuration/website-channel-management#manage-channel-domains-in-xperience-portal">Website channels in the SaaS environment</a> and <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#manage-email-channel-domains-in-xperience-portal">Email channels in the SaaS environment</a>.</p>
+<h2 id="restart-deployed-applications">Restart deployed applications</h2>
+<p>If you encounter any issue that requires you to restart the Xperience by Kentico application, you can <a href="/documentation/developers-and-admins/configuration/system-overview#restart-the-application">restart the application</a> in the administration interface. However, when you cannot access the administration interface, you can restart the application from Xperience Portal.</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/saas/xperience-portal#XperiencePortal-AccessPortal">Access your Xperience Portal project</a>.</li>
+<li>Navigate to the <strong>Deployments</strong> application.</li>
+<li>
+<strong>Restart</strong> the desired environment.
+<ul>
+<li>For non-production environments (<strong>QA</strong>, <strong>UAT</strong>), the <em>Restart</em> button is available to all portal users. However, only users in <strong>Tenant Administrator</strong> or <strong>DevOps Engineer</strong> <a href="/documentation/developers-and-admins/saas/xperience-portal/reference-xperience-portal-user-roles">roles</a> can restart production environments (<strong>PROD</strong>, <strong>STG</strong>).</li>
+</ul>
+</li>
+<li>Wait until the restart is finished.</li>
+</ol>
+<p></p>
+<h2 id="channel-management">Channel management</h2>
+<p>Content in Xperience by Kentico is encapsulated within channels, which are bound to specific domains. To allow the content to be presented by deployments in the SaaS environment, you need to add and configure all website and email channels within Xperience Portal in the <strong>Channels and Domains</strong> application.</p>
+<p>For detailed information, see:</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/configuration/website-channel-management#website-channels-in-the-saas-environment">Website channels in the SaaS environment</a></li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#email-channels-in-the-saas-environment">Email channels in the SaaS environment</a></li>
+<li><a href="/documentation/developers-and-admins/configuration/headless-channel-management#graphql-api-endpoints">GraphQL API endpoints</a></li>
+</ul>
+<h2 id="restore-points-and-exports">Restore points and exports</h2>
+<p>The SaaS environment uses a two-tier system consisting of <strong>restore points</strong> and <strong>exports</strong> to ensure data protection and disaster recovery. This system allows you to restore previous versions of your project for a particular environment.</p>
+<p>Xperience Portal creates <a href="#automatic-restore-points-and-exports">automatic restore points and exports</a>, and you can also create <a href="#create-a-manual-restore-point">manual restore points</a> and <a href="#create-a-manual-export">manual exports</a> for production and non-production environments. Restore points and exports are managed in separate applications:</p>
+<ul>
+<li>
+<strong>Restore points</strong> can be viewed, managed and <a href="#restore-from-a-restore-point">restored</a> under <strong>Data Management</strong> → <strong>Restore points</strong>
+</li>
+<li>
+<strong>Exports</strong> can be created and downloaded under <strong>Data Management</strong> → <strong>Exports</strong>
+</li>
+</ul>
+<p>The separate Restore points and Exports applications are available for projects with version <strong>30.1.0 or higher</strong> deployed across all environments. Projects with earlier versions continue to use the combined <strong>Backups</strong> application.</p>
+
+<div>
+
+</div>
+<div>
+<p>Applications deployed in the SaaS environment consist of the following services:</p>
+<ul>
+<li>
+<strong>Application service</strong> – application binaries and runtime files</li>
+<li>
+<strong>Database</strong> – reflects the current state of the environment’s database</li>
+<li>
+<strong>Storage</strong> – reflects the current state of files in the environment’s Azure Blob storage</li>
+</ul>
+</div>
+
+<h3 id="restore-points-vs.-exports">Restore points vs. exports</h3>
+<p>Understanding the difference between restore points and exports is crucial for effective data management:</p>
+<p><strong>Restore points:</strong></p>
+<ul>
+<li>A timestamp referencing the application state at a given time, allowing you to restore the application to that previous state</li>
+<li>Fast to create as no physical data copying occurs</li>
+<li>Always include restore points for all three services (application, database, and storage)
+<ul>
+<li>An Application service restore point is a snapshot of the deployment package. If nothing has been deployed yet, you can download the intial Application service files</li>
+</ul>
+</li>
+<li>Created automatically before deployments, manually on demand, or on a regular schedule</li>
+<li>Cannot be used to download data (with the exception of <em>Weekly restore points</em>). To download data, you must create an export.</li>
+</ul>
+<p><strong>Exports:</strong></p>
+<ul>
+<li>Physical copies of data that can be downloaded for inspection, debugging, or long-term storage</li>
+<li>Slower to create (depends on the amount of data) as files are physically copied</li>
+<li>Can be full (all components) or partial (selected components only)</li>
+<li>Cannot be used to restore the application</li>
+<li>Service components included in exports:
+<ul>
+<li>
+<strong>Application service</strong> – copy of all files from the application service file system</li>
+<li>
+<strong>Database</strong> – exported as a <code>bacpac</code> file</li>
+<li>
+<strong>Storage</strong> – copy of files from Azure Blob storage</li>
+</ul>
+</li>
+<li>Limited to <strong>30 exports per component</strong> per environment per month (may be adjusted with custom plans)</li>
+<li>Exported files are retained for <strong>60 hours</strong> after creation and must be downloaded before automatic removal</li>
+</ul>
+<h3 id="automatic-restore-points-and-exports">Automatic restore points and exports</h3>
+<p>Kentico automatically creates the following <strong>restore points and exports</strong>:</p>
+<ul>
+<li>For all environments:
+<ul>
+<li>
+<em>Pre-deployment restore points</em> which expire in 30 days. The system creates a restore point for each service to make deployments faster:
+<ul>
+<li>
+<strong>Application service</strong> – if nothing has been deployed yet, an export of the current application service file system is created instead</li>
+<li>
+<strong>Storage</strong> – restore points are always created</li>
+<li>
+<strong>Database</strong> – restore points are created only when all project environments have Xperience by Kentico version 30.1.0 or higher deployed and all existing backups are from 30.1.0 or higher</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>For the <em>Staging</em> or <em>Production</em> environment:
+<ul>
+<li>
+<em>Daily restore points</em> with a retention policy based on your service plan:
+<ul>
+<li>
+<em>Level 1</em> – 3 days</li>
+<li>
+<em>Level 2</em> – 3 days</li>
+<li>
+<em>Custom</em> – 7 days or more</li>
+<li>Daily backups always use restore points only</li>
+<li>Application service restore points are snapshots of the deployment package. If no deployment package has been deployed yet, the daily backup may contain a downloadable application service <a href="#restore-points-vs.-exports">export</a> instead.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>QA environment daily backups</strong></p>
+<p>All standard service plans (<em>Level 1</em>, <em>Level 2</em>) have QA daily backup retention set to 0 days, so the QA environment does not have any daily backups. Only <em>Custom</em> service plans can configure QA daily backup retention.</p>
+</div>
+</li>
+<li>
+<em>Weekly restore points</em> (created on Sundays) with a retention policy of 30 days
+<ul>
+<li>Weekly restore points also include downloadable export data for all components</li>
+<li>This allows you to download the data for long-term storage purposes while also providing fast restore point functionality</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>See <a href="/documentation/developers-and-admins/saas/saas-service-plans">SaaS service plans</a> for information about service plans and <a href="/documentation/developers-and-admins/installation/licenses#licensing-xperience-by-kentico">Licensing Xperience by Kentico</a> for information how to change to a different service plan.</p>
+</div>
+
+<h3 id="create-a-manual-restore-point">Create a manual restore point</h3>
+<p>You can create manual restore points for both production and non-production environments.</p>
+<p>The retention policy for manual restore points is:</p>
+<ul>
+<li>
+<em>Restore points</em>:
+<ul>
+<li>
+<em>Level 1</em> service plan – 3 days</li>
+<li>
+<em>Level 2</em> service plan – 3 days</li>
+<li>
+<em>Custom</em> service plan – 7 days or more</li>
+</ul>
+</li>
+</ul>
+<p>To create a manual restore point:</p>
+<ol type="1">
+<li><p>Navigate to <strong>Data Management</strong> → <strong>Restore points</strong>.</p></li>
+<li><p>Select <strong>Create restore point</strong> in the upper-right corner.</p></li>
+<li>
+<p>Select the environment for which you want to create a restore point.</p>
+
+<div>
+
+</div>
+<div>
+<p>Only <strong>Tenant administrator</strong> and <strong>DevOps</strong> roles can access and create restore points for <strong>Production</strong> or <strong>Staging</strong> environments. See <a href="/documentation/developers-and-admins/saas/xperience-portal/reference-xperience-portal-user-roles">Reference - Xperience Portal user roles</a>.</p>
+</div>
+</li>
+<li>
+<p>Select <strong>Create</strong> and wait for the restore point to be created.</p>
+
+<div>
+
+</div>
+<div>
+<p>SaaS processes (e.g., restore points, <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deployments</a>) are queued, and you can have only one process running at a time.</p>
+</div>
+</li>
+</ol>
+<p>Your restore point is now available in the <strong>Restore points</strong> application under <strong>Data Management</strong>.</p>
+<h3 id="create-a-manual-export">Create a manual export</h3>
+<p>The export process creates physical copies of the data, which can then be downloaded. Exports are limited to 30 exports per component per environment per month (may be adjusted with custom plans).</p>
+<p>To create a manual export:</p>
+<ol type="1">
+<li><p>Navigate to <strong>Data Management</strong> → <strong>Exports</strong>.</p></li>
+<li><p>Select <strong>Create export</strong> in the upper-right corner.</p></li>
+<li>
+<p>Select the environment for which you want to create an export.</p>
+
+<div>
+
+</div>
+<div>
+<p>Only <strong>Tenant administrator</strong> and <strong>DevOps</strong> roles can access and create exports for <strong>Production</strong> or <strong>Staging</strong> environments. See <a href="/documentation/developers-and-admins/saas/xperience-portal/reference-xperience-portal-user-roles">Reference - Xperience Portal user roles</a>.</p>
+</div>
+</li>
+<li><p>Select what components should be included in the export.</p></li>
+<li>
+<p>Select <strong>Create</strong> and wait for the export to be created.</p>
+
+<div>
+
+</div>
+<div>
+<p>SaaS processes (e.g., restore points, <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deployments</a>) are queued, and you can have only one process running at a time.</p>
+</div>
+</li>
+</ol>
+<p>Downloading exports allows you to inspect the state of the application, debug the database or check the integrity, versions, and number of files in the deployment environment.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contained users authentication</strong></p>
+<p>Enable <a href="https://learn.microsoft.com/en-us/sql/relational-databases/security/contained-database-users-making-your-database-portable?view=sql-server-ver17" target="_blank">contained users authentication</a> on your local SQL Server to be able to use the exported database backups.</p>
+</div>
+
+<h3 id="restore-from-a-restore-point">Restore from a restore point</h3>
+<p>You can restore your application to a previous state using restore points. This is useful if you need to revert changes or recover from an issue.</p>
+<ol type="1">
+<li>Navigate to <strong>Data Management</strong> → <strong>Restore points</strong>.</li>
+<li>Select an environment and select <strong>Apply</strong>. A list of restore points for the environment is displayed.</li>
+<li>Restore from a restore point by selecting <strong>Restore</strong> (<i></i>) next to a restore point.</li>
+<li>On the <strong>Restore a restore point</strong> page:
+<ul>
+<li>Select the exact restore point you wish to restore from.</li>
+<li>Select whether to restore immediately or schedule the restore for a later date.</li>
+</ul>
+</li>
+<li>Select <strong>Restore</strong> and wait for the restore process to complete.</li>
+</ol>
+<h2 id="application-monitoring">Application monitoring</h2>
+<p>The <strong>Monitoring</strong> set of applications in the Xperience Portal are designed to keep your application running smoothly and provide full visibility into your application’s performance, enabling you to quickly detect and resolve issues, optimize performance, and ensure the best possible user experience.</p>
+<ul>
+<li><a href="#uptime-monitoring">Uptime monitoring</a></li>
+<li><a href="#event-log-and-exceptions">Event log and exceptions</a></li>
+<li><a href="#performance-metrics">Performance metrics</a></li>
+<li><a href="#security-events">Security events</a></li>
+<li><a href="#alerts">Alerts and email notifications</a></li>
+</ul>
+<h3 id="uptime-monitoring">Uptime monitoring</h3>
+<p>Use the <strong>Outages</strong> application under <strong>Monitoring</strong> in Xperience Portal to see a list of outages for your Xperience Portal project and deployed applications. Records include the time when the outage occurred and the cause of the outage. You can filter the outages by the month when they occurred.</p>
+<p>Go to <a href="https://status.xperience-portal.com/" target="_blank">status.xperience-portal.com</a> to see the uptime statistics for Xperience Portal. See <a href="#xperience-portal-uptime-statistics">Xperience Portal uptime statistics</a>.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>Your Xperience Portal project occasionally undergoes <a href="/documentation/developers-and-admins/saas/xperience-portal#schedule-maintenance-of-xperience-portal-projects">scheduled maintenance</a>, during which certain Xperience Portal features may become unavailable.</p>
+</div>
+
+<h4 id="xperience-portal-uptime-statistics">Xperience Portal uptime statistics</h4>
+<p>Go to <a href="https://status.xperience-portal.com/" target="_blank">status.xperience-portal.com</a> to see the statistics about the availability of:</p>
+<ul>
+<li>Xperience Portal</li>
+<li>Deployment API</li>
+<li>Production sites by region</li>
+</ul>
+<p>You can also see the list of <strong>Past incidents</strong> below the statistics.</p>
+
+<div>
+
+</div>
+<div>
+<p>You can subscribe to the incident reporting to receive a message whenever Kentico creates, updates, or resolves an incident. Select <strong>Subscribe to</strong> <strong>updates</strong> at the top of the Xperience by Kentico status page.</p>
+</div>
+
+<h3 id="event-log-and-exceptions">Event log and exceptions</h3>
+<p>Xperience by Kentico integrates <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core" target="_blank">Application Insights for ASP.NET Core applications</a> to enable monitoring and aggregation of metrics for your website. For detailed information about enabling the Application Insights integration for your projects, see <a href="/documentation/developers-and-admins/configuration/saas-configuration#microsoft-application-insights-integration">Microsoft Application Insights integration</a>.</p>
+<p>To view the Application Insights logs for your deployments, use the following applications under <strong>Monitoring</strong> in Xperience Portal:</p>
+<ul>
+<li>
+<strong>Event log</strong> – displays entries from the <a href="/documentation/developers-and-admins/configuration/event-log">Xperience event log</a> and any custom messages sent via the Application Insights SDK.</li>
+<li>
+<strong>Exceptions</strong> – displays all .NET exceptions (errors) from Application Insights. Includes exceptions that can occur before the Xperience application is fully running, in addition to errors in the Xperience event log.</li>
+</ul>
+<p>You can filter the logs for individual deployment environments, and based on the time when the event occurred.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Log size limits</strong></p>
+<p>There is a <strong>daily limit</strong> on the size of the Application Insights logs. After the daily limit is reached, further logs are discarded.</p>
+<p>The following table lists the daily limits for all deployment environment types and service plans.</p>
+<div>
+<table>
+<tr>
+<td colspan="1">
+<p><strong>Environment</strong></p>
+</td>
+<td colspan="1">
+<p><strong>Service plan</strong></p>
+</td>
+<td colspan="1">
+<p><strong>GB/Day</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>QA</p>
+</td>
+<td colspan="1">
+<p>All</p>
+</td>
+<td colspan="1">
+<p>1</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>UAT</p>
+</td>
+<td colspan="1">
+<p>Custom</p>
+</td>
+<td colspan="1">
+<p>2</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>PROD and STG</p>
+</td>
+<td colspan="1">
+<p>Level 1 &amp; Level 2</p>
+</td>
+<td colspan="1">
+<p>3</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>PROD and STG</p>
+</td>
+<td colspan="1">
+<p>Custom</p>
+</td>
+<td colspan="1">
+<p>6</p>
+</td>
+</tr>
+</table>
+</div>
+<p>1 GB can store approximately 125 000 average-sized exceptions or event log records.</p>
+</div>
+
+<h3 id="performance-metrics">Performance metrics</h3>
+<p>Use the <strong>Project metrics</strong> application under <strong>Monitoring</strong> to see various performance metrics related to applications deployed to the SaaS environment. The available metrics include server errors, response time, CPU usage and memory usage. By tracking these metrics, potential issues can be detected and addressed before they impact users, bottlenecks and areas for optimization can be identified, resource utilization can be better understood, and insights can be gained to make data-driven decisions to improve and optimize the application.</p>
+<p>To view performance metrics for various SaaS environments:</p>
+<ol type="1">
+<li>In <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a>, navigate to <strong>Monitoring → Project metrics</strong>.</li>
+<li>Select an <strong>Environment</strong> and a <strong>Time period</strong>, for which you want to display metrics.</li>
+<li>
+<strong>Apply</strong> the changes.</li>
+</ol>
+<p></p>
+<h3 id="email-metrics">Email metrics</h3>
+<p>Use the <strong>Email metrics</strong> application under <strong>Monitoring</strong> to see email sending statistics from the <a href="/documentation/developers-and-admins/configuration/email-configuration#sendgrid-integration">SendGrid platform</a>. The available statistics include total numbers of delivered, bounced, and deferred emails. You can also track the number of <a href="https://www.twilio.com/docs/sendgrid/glossary/clicks" target="_blank">unique clicks</a> in emails. These metrics help identify deliverability issues, optimize campaigns, and improve user engagement to drive better marketing performance.</p>
+<p>To view email metrics for various email channels and <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deployment environment</a>:</p>
+<ol type="1">
+<li>In <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a>, navigate to <strong>Monitoring → Email metrics</strong>.</li>
+<li>Select a <strong>Channel</strong>, <strong>Environment</strong> and a <strong>Time period</strong>, for which you want to display metrics.</li>
+<li>
+<strong>Apply</strong> the changes.</li>
+</ol>
+<p></p>
+<h3 id="security-events">Security events</h3>
+<p>Use the <strong>Security events</strong> application under <strong>Monitoring</strong> to view security events detected and handled by <a href="/documentation/developers-and-admins/configuration/saas-configuration#cloudflare-cdn">Cloudflare CDN</a>. The application provides an overview of security threats, including <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DDoS attacks</a>, malicious requests, and other suspicious activities that Cloudflare automatically detects and mitigates.</p>
+
+<div>
+
+</div>
+<div>
+<p>Security event data is available for the <strong>last 28 days</strong> only. Events older than 28 days are automatically removed and cannot be retrieved.</p>
+</div>
+
+<p>Security events are categorized into the following action types:</p>
+<ul>
+<li>
+<strong>Block</strong> – Requests blocked by Cloudflare’s security rules</li>
+<li>
+<strong>Skip</strong> – Requests that bypassed certain security checks</li>
+<li>
+<strong>Log</strong> – Security events that were logged for monitoring purposes</li>
+<li>
+<strong>Managed challenge</strong> – Requests that received an automated challenge to verify legitimacy</li>
+</ul>
+<p>To view security events for your project:</p>
+<ol type="1">
+<li>In <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a>, navigate to <strong>Monitoring → Security events</strong>.</li>
+<li>Use the available filters to narrow down the security events:
+<ul>
+<li>
+<strong>Channel</strong> – Filter by website channel</li>
+<li>
+<strong>Environment</strong> – Select a <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deployment environment</a> (QA, UAT, PROD, STG)</li>
+<li>
+<strong>Actions</strong> – Filter by action type (Block, Skip, Log, Managed challenge)</li>
+<li>
+<strong>From (UTC)</strong> and <strong>To (UTC)</strong> – Specify the time range for events</li>
+<li>
+<strong>Limit</strong> – Set the number of most recent events to retrieve from Cloudflare</li>
+</ul>
+</li>
+<li>
+<strong>Apply filters</strong> to view the filtered results.</li>
+</ol>
+<p>The <strong>Security events overview</strong> section displays the total count of security events in the selected time period, a breakdown by action type with color-coded indicators showing the number of events for each category, and a timeline chart visualizing security event trends over time, helping you identify patterns and potential attack periods.</p>
+<p>The <strong>Security events</strong> table displays filtered events based on your selected parameters. To view detailed information about a specific event, including Cloudflare’s <a href="https://developers.cloudflare.com/fundamentals/reference/cloudflare-ray-id/" target="_blank">Ray ID</a>, description, HTTP request details, and response information, select the Information (<i></i>) icon in the <strong>Details</strong> column.</p>
+<p></p>
+<h3 id="alerts">Alerts</h3>
+<p>Alerts notify about potential problems with applications deployed to the SaaS environment. Most of the available alerts are based on <a href="#performance-metrics">performance metrics,</a> such as application responses, server errors or CPU/memory/DTU utilization.</p>
+<p>The system currently provides the following types of alerts:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Alert type</p>
+</td>
+<td>
+<p>Severity</p>
+</td>
+<td>
+<p>Alert conditions</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Application response</p>
+</td>
+<td>
+<p>Critical</p>
+</td>
+<td>
+<p>The application was not responding to web requests for over <strong>15 minutes</strong>.</p>
+<p>“Not responding” means that the value of the <em>Application response</em> <a href="#performance-metrics">metric</a> is 0%.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CPU utilization greater than 80%</p>
+</td>
+<td>
+<p>Error</p>
+</td>
+<td>
+<p>The application’s average CPU utilization over the past <strong>30 minutes</strong> was above 80%.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Memory utilization greater than 90%</p>
+</td>
+<td>
+<p>Error </p>
+</td>
+<td>
+<p>The application’s average memory utilization over the past <strong>30 minutes</strong> was above 90%.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>DTU utilization greater than 90%</p>
+</td>
+<td>
+<p>Error</p>
+</td>
+<td>
+<p>The application’s average Database Transaction Unit (DTU) utilization over the past <strong>30 minutes</strong> was above 90%.</p>
+<p>The DTU utilization metric is calculated as the ratio of used DTUs to the total DTUs available for your project’s plan.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>DTU utilization greater than 70%</p>
+</td>
+<td>
+<p>Warning</p>
+</td>
+<td>
+<p>The application’s average memory utilization over the past <strong>30 minutes</strong> was above 70%.</p>
+<p>The DTU utilization metric is calculated as the ratio of used DTUs to the total DTUs available for your project’s plan.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Failed requests (Server errors)</p>
+</td>
+<td>
+<p>Error</p>
+</td>
+<td>
+<p>More than 5% of web requests sent to the application over a <strong>30 minute</strong> interval resulted in a failed status, i.e. returned a 5xx <a href="https://en.wikipedia.org/wiki/List_of_HTTP_status_codes" target="_blank">HTTP status code</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Failed deployment</p>
+</td>
+<td>
+<p>Error</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-with-a-deployment-package">Deployment</a> of a package failed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Service scaling</p>
+</td>
+<td>
+<p>Warning</p>
+</td>
+<td>
+<p>A production environment was scaled out to the maximum number of allowed instances over the past <strong>360 minutes</strong>. Typically occurs due to auto-scaling under heavy load.</p>
+<p>Only applies to projects with a custom service plan, which can allow scaling to 3 or more service instances.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Cloudflare DDoS attack</p>
+</td>
+<td>
+<p>Warning</p>
+</td>
+<td>
+<p>An HTTP <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DDoS</a> attack has been detected on one of your domains. These attacks are automatically detected and mitigated by the <a href="/documentation/developers-and-admins/configuration/saas-configuration#cloudflare-cdn">Cloudflare CDN</a>. View detailed security event data in the <a href="#security-events">Security events</a> application.</p>
+</td>
+</tr>
+</table>
+
+<p>To view alerts for your project’s deployments, navigate to <strong>Monitoring → Alerts</strong> in <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a>. You can filter the alerts for individual deployment environments, based on the time when the alert was fired, and the alert severity.</p>
+<p>Alerts are displayed with the <strong>Resolved</strong>  flag if the conditions that caused the alert to fire no longer apply. For example, a <em>CPU utilization</em> alert will be resolved after the average utilization drops under the 80% threshold over 30 minutes. Select <strong>Show active alerts only</strong> in the filter if you wish to see only unresolved alerts.</p>
+<p></p>
+<h4 id="alert-email-notifications">Alert email notifications</h4>
+<p>Whenever an <a href="#alerts">alert</a> is fired, the system sends a notification email to all Xperience Portal users assigned to the related project.</p>
+<p>Individual users can adjust their preferences for receiving alert email notifications:</p>
+<ol type="1">
+<li>In <a href="https://xperience-portal.com" target="_blank">Xperience Portal</a>, expand the top-right user menu.</li>
+<li>Select <strong>Notifications</strong>.</li>
+<li>Customize for which alert types and severities you want to receive email notifications from each <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">deployment environment</a>.
+<ul>
+<li>
+<strong>Note</strong>: The selected alert severity and alert type conditions are combined using an <em>AND</em> statement. If you select <em>Critical</em> alert severity and <em>CPU</em> alert type, you will not receive any alerts of alert types other than <em>CPU</em>. For <strong>Production</strong> and <strong>Staging</strong> environments, it is recommended to enable all alert types and at least <em>Critical</em> and <em>Error</em> alert severity.</li>
+</ul>
+</li>
+<li>Select <strong>Save changes</strong>.</li>
+</ol>
+<p></p>
+
+</body>
+</html>

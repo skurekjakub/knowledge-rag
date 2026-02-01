@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Enable email subscriptions</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>To allow your marketing team to send <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails to subscribers</a>, you need to configure your application to correctly handle subscription and unsubscription links:</p>
+<ol type="1">
+<li><a href="#enable-the-email-marketing-feature">Enable the email marketing feature</a></li>
+<li><a href="#set-the-service-domain-for-your-email-channels">Set an appropriate service domain for your email channels</a></li>
+</ol>
+<h2 id="enable-the-email-marketing-feature">Enable the email marketing feature</h2>
+<p>To allow the system to handle subscription confirmations and unsubscriptions for email recipient lists, the email marketing feature must be enabled for your Xperience application:</p>
+<ol type="1">
+<li><p>Open your Xperience solution in Visual Studio.</p></li>
+<li><p>Edit the <strong>Program.cs</strong> file.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/enable-application-features">Enable</a> the email marketing feature by calling the <code>UseEmailMarketing</code> method of the <code>IFeaturesBuilder</code> delegate. Pass the delegate as an argument to <code>AddKentico</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.Web.Mvc;
+ using Kentico.OnlineMarketing.Web.Mvc;
+
+ var builder = WebApplication.CreateBuilder(args);  
+
+ ...
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     ...
+
+     // Enables the email marketing feature, registers the following endpoints:
+     // "/Kentico.Emails/SubscriptionConfirmation"
+     // "/Kentico.Emails/Unsubscribe"
+     features.UseEmailMarketing();
+ });
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The subscription confirmation and unsubscription endpoints are now available for all <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a>.</p>
+<h2 id="set-the-service-domain-for-your-email-channels">Set the service domain for your email channels</h2>
+<p>To correctly resolve subscription confirmation and unsubscription links in emails, your <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> must have a correctly set <strong>Email service domain</strong>. The service domain name is used as the base URL for these links.</p>
+<p>The service domain needs to host an Xperience by Kentico application, connected to the database where your email channels are configured.</p>
+<ul>
+<li>The email service domain must <strong>exactly</strong> match the target application’s URL, including the port number and application path. Misconfiguration may cause broken links in email content, particularly in development or testing environments.</li>
+<li>The target application must support the URL scheme (protocol) specified by the application’s <code>UrlResolveOptions.UseSSL</code> <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls#url-formatting-and-behavior">option</a> and the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-8.0" target="_blank">.NET options pattern</a> – <strong>https</strong> by default.</li>
+</ul>
+<p>The most common setup is to use the domain of a related <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> as the service domain of your email channels. If you do not wish to associate URLs in your email content with a specific website, you can use the domain hosting the Xperience application where you manage your emails (if the application is publicly accessible).</p>
+
+</body>
+</html>

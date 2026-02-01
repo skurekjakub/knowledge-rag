@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Render widgets in code</title>
+</head>
+<body>
+<p>Developers can display <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Page Builder widgets</a> manually, without the need to set up <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable regions</a> and insert widgets in the Page Builder interface. The API allows widgets to be rendered directly in the code of views. These can be views that define the output of standard pages and layouts, or even other Page Builder components, such as <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a>.</p>
+<p>For example, this rendering approach can be used to include a widget into a site’s main layout (the website header or footer). The widget appears as a fixed part of the website, and cannot be removed or adjusted by content editors.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Page Builder must be enabled for your project, as described in <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> (even though the widgets are rendered without the Page Builder interface).</li>
+<li>To allow direct rendering, widgets must be registered using the <code>RegisterWidget</code> assembly attribute (as described in <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a>).</li>
+<li>The page where the widget is rendered must include links to <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas#load-page-builder-scripts-and-styles">Page Builder scripts and styles</a>, if these are required by the given widget. The <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">system’s default widgets</a> require the Page Builder scripts and styles.</li>
+</ul>
+<h2 id="render-widgets">Render widgets</h2>
+<p>Edit the code of the view where you want to display the widget and call the <code>Html.Kentico().RenderStandaloneWidgetAsync</code> extension method (or its <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper</a> equivalent).</p>
+<p>Specify the following parameters for the method:</p>
+<ul>
+<li>
+<code>identifier</code> – the <code>string</code> identifier under which the widget was registered. For identifiers of the default system widgets, check <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">the system widget reference</a>.</li>
+<li>
+<code>properties</code> – <code>IWidgetProperties</code> object representing the widget’s <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties</a>. Create an instance of the appropriate property model class and set any required values. Currently, the properties parameter is required and you cannot render widgets without properties. As a workaround, you can create and register an empty property model for the widget.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using System.Collections.Generic
+
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Content.Web.Mvc
+@using Kentico.Web.Mvc
+@using Kentico.Forms.Web.Mvc.Widgets
+@using Kentico.Xperience.Admin.Base.Forms
+
+...
+
+@{
+    // Prepares properties for the Form widget
+    var widgetProperties = new FormWidgetProperties()
+    {
+        SelectedForm = new List&lt;ObjectRelatedItem&gt;() { new ObjectRelatedItem { ObjectCodeName = "FormCodeName" } },
+        AfterSubmitMode = FormAfterSubmitModeConstants.DISPLAY_MESSAGE,
+        AfterSubmitDisplayText = "Thank you for your input!" 
+    };    
+}
+
+@* Renders the Form widget *@
+@await Html.Kentico().RenderStandaloneWidgetAsync(SystemComponentIdentifiers.FORM_WIDGET_IDENTIFIER, widgetProperties); 
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: Do not use the <code>RenderStandaloneWidgetAsync</code> method in the views of other widgets. If you are developing a widget that extends the HTML output or functionality of an existing widget, call the <code>RenderNestedWidgetAsync</code> extension method instead. For more information, see <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/extend-widgets">Extend widgets</a>.</p>
+</div>
+
+
+</body>
+</html>

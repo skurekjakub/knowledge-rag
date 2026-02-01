@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Languages</title>
+</head>
+<body>
+<p>Xperience by Kentico provides support for setting up multiple languages in your projects. Having localized content will not only provide a better user experience to your content consumers but also enable you to reach a broader audience. After you set up new languages in the <strong>Languages</strong> application, you will be able to create language variants of your content from within the <strong>Content hub</strong> and <strong>Channels</strong> applications, as well as <a href="/documentation/developers-and-admins/data-protection/consent-management">consent texts</a> in the <strong>Data protection</strong> application.</p>
+<p>This page provides only a basic overview of the multilingual setup. To learn more about the technical side of multilingual implementation, refer to the following resources:</p>
+<ul>
+<li>For the implementation of multilingual data retrieval see <a href="/documentation/developers-and-admins/development/content-retrieval">Content retrieval</a>.</li>
+<li>For multilingual setup of URLs and routing see <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">Content tree-based routing</a>.</li>
+</ul>
+<h2 id="set-up-a-new-language">Set up a new language</h2>
+<ol type="1">
+<li>Open the <strong>Languages</strong> application.</li>
+<li>Select the <strong>New language</strong> button.<br>
+</li>
+<li>Enter information about the language:
+<ul>
+<li><p><strong>Language name</strong> – name of the language that is displayed across the system.</p></li>
+<li>
+<p><strong>Code name</strong> – language prefix used in the URLs.</p>
+
+<div>
+
+</div>
+<div>
+<p>Changing the <strong>Code name</strong> of an existing language has serious impact on page URLs. The language prefix in live URLs is changed for the corresponding language variants of pages.</p>
+<p><a href="/documentation/business-users/website-content/manage-page-urls">Former URLs</a> are not created for pages. Any existing former URLs are broken.</p>
+</div>
+</li>
+<li><p><strong>Formatting culture</strong> – culture that defines the format of calendar date, time, decimals and other culture-related conventions. It needs to adhere to the <a href="https://www.venea.net/web/culture_code" target="_blank">IETF or one of the ISO-639 standards</a>.</p></li>
+<li><p><strong>Flag</strong> - the flag icon that visually represents the language. If a flag is not set for a language, the first two letters of the language’s name are used as its flag icon.</p></li>
+<li>
+<p><strong>Default language</strong> – the language selected when a user opens the Content hub and channel applications for the first time. After that, the system remembers the last used language and opens the applications in it.</p>
+
+<div>
+
+</div>
+<div>
+<p>The default language is not the one in which the live website appears by default. That is determined by the primary language set for each website channel. For more info on the primary language see <a href="/documentation/developers-and-admins/configuration/website-channel-management">Website channel management</a>.</p>
+</div>
+</li>
+<li><p><strong>Fallback language</strong> – existing language the new language will fallback into. More on fallbacks in <a href="#language-fallbacks">Language fallbacks</a>. You can set it up now or later.</p></li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the new language.</li>
+</ol>
+<p>The new language is now saved in the system. Next you can start translating your content or fine tune the language settings for specific channels from within the <strong>Channel management</strong> application. For quick references see the related pages.</p>
+<h2 id="language-fallbacks">Language fallbacks</h2>
+<p>When working with multilingual content, it is expected that not all content will be localized. However, this should not hinder you from creating multilingual pages and other more complicated content. Moreover, you may even want to keep some content untranslated in specific scenarios. To support these cases Xperience provides the functionality of language fallbacks. </p>
+<p>For example, let’s assume you use two languages for your project: you started up with English in which you already have all your content items and pages ready and now you added Spanish to reach a broader audience. When adding the language, you also set English as the fallback language for Spanish. Now you want to create a new page in Spanish and use a content item you haven’t translated yet from English on the page. This is where language fallbacks come into play. Since you previously set English as the fallback language for Spanish, you can easily link the untranslated content item as you usually would and its English variant will be used for the meantime. Once you translate the particular item to Spanish, the localized variant will replace the English one.</p>
+
+<table>
+<tr>
+<td>
+<p><strong>Untranslated reference</strong></p>
+<p></p>
+<p></p>
+</td>
+<td>
+<p><strong>Translated reference</strong></p>
+<p></p>
+<p></p>
+</td>
+</tr>
+</table>
+
+<h3 id="fallback-chaining">Fallback chaining</h3>
+<p>In case specific content isn’t available in the current language and neither in its fallback, the system provides the content in the language according to the fallback chain.</p>
+<p>For a clearer picture of how fallback chaining works check out the following diagram:</p>
+<p></p>
+<h2 id="remove-a-language">Remove a language</h2>
+<p>To delete a language from the system, you need to first delete all content in the language and all system objects that use the language. It is not recommended to delete languages in the production environment.</p>
+<p>When a language is deleted, any content in that language stored in the recycle bin is <a href="/documentation/business-users/recycle_bin">permanently deleted</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>When deleting multilingual content, make sure to switch to the language you want to remove so you don’t accidentally delete content in another language.</p>
+</div>
+
+<ol type="1">
+<li>
+<p>Delete all content items in the specific language.</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Delete every translated content item in any workflow state.</li>
+</ol>
+</li>
+<li>
+<p>Delete all pages in the specific language for all Website channels.</p>
+<ol type="1">
+<li>Open a specific website channel.</li>
+<li>Delete every translated page in any workflow state.</li>
+</ol>
+</li>
+<li>
+<p>Delete all email channels using the specific language.</p>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application.</li>
+<li>Delete every email channel using the specific language.</li>
+</ol>
+</li>
+<li>
+<p>Remove the language from defaults.</p>
+<ol type="1">
+<li>If the language to delete is marked as the default language in the language settings, make another language default.</li>
+<li>If the language to delete is used as the primary language for a channel, choose a different language as the primary one.</li>
+</ol>
+</li>
+<li>
+<p>Delete the language.</p>
+<ol type="1">
+<li>Open the <strong>Languages</strong> application.</li>
+<li>Delete the language.</li>
+</ol>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Other translated objects</strong></p>
+<p>Deleting a language automatically removes all translated variants of <a href="/documentation/developers-and-admins/data-protection/consent-management">consent texts</a>, <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomy names</a>, and taxonomy tag titles in the given language.</p>
+<p>For consents with existing agreements, the consent text variant in the deleted language is automatically archived, but can no longer be edited.</p>
+</div>
+
+
+</body>
+</html>

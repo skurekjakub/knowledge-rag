@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content hub folders</title>
+</head>
+<body>
+<p>Content hub allows you to create folders that help organize and efficiently navigate through <a href="/documentation/business-users/content-hub/content-items">content items</a>. The following types of folders are available:</p>
+<ul>
+<li><a href="#smart-folders">Smart folders</a></li>
+<li><a href="#content-folders">Content folders</a></li>
+</ul>
+<h2 id="smart-folders">Smart folders</h2>
+<p>Smart folders provide a dynamic way to organize and filter <a href="/documentation/business-users/content-hub/content-items">content items</a>. Each smart folder is based on a filtering condition, such as “items modified in the last 7 days”, “items with the <em>Draft</em> status”, “items with the <em>Acme</em> tag”, etc. The condition is evaluated dynamically, so items move in and out of smart folders as their fields and metadata change. A single content item can belong into any number of smart folders.</p>
+<p>Smart folders can be used to organize content items in the administration interface, and also to dynamically control <a href="#enable-content-delivery-for-smart-folders">content delivery</a> and filter content. Out-of-the-box, Xperience allows dynamic content delivery via smart folders for website channels (headless and email channels are currently not supported).</p>
+<h3 id="create-smart-folders">Create smart folders</h3>
+<p>To create a smart folder:</p>
+<ol type="1">
+<li><p>Select the <strong>Create new smart folder</strong> () button in the top-right corner of the <em>Smart folders</em> section in the left-side panel.<br>
+</p></li>
+<li>
+<p>Choose whether to <strong>Enable dynamic content delivery</strong> for the smart folder.</p>
+<ul>
+<li>See <a href="#enable-content-delivery-for-smart-folders">Enable content delivery for smart folders</a> for detailed information.</li>
+<li>If you’re not sure, you can enable content delivery at any point after you create the folder.</li>
+</ul>
+</li>
+<li><p>Set up the folder’s filter conditions.</p></li>
+<li><p>Select <strong>Continue</strong>.</p></li>
+<li><p>Enter a <strong>Smart folder name</strong>.</p></li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Alternatively, you can <strong>Save</strong> any <a href="/documentation/business-users/content-hub/content-items#find-content-items">filter</a> applied to the content hub listing as a new smart folder.</p>
+<p></p>
+<p>Note that the smart folder only saves the <strong>Filter</strong> conditions. Search inputs are not reflected by the new smart folder.</p>
+</div>
+
+<p>When you select a smart folder in the left-side panel, the listing displays all content items that currently match the folder’s filter conditions. In addition to the Content hub application, smart folders are also available in all content item selectors throughout the system.</p>
+<h3 id="clone-smart-folders">Clone smart folders</h3>
+<p>When creating new smart folders, you can save time by reusing the filter conditions of an existing folder.</p>
+<ol type="1">
+<li>Expand the <strong>Menu actions</strong> () next to the original folder.</li>
+<li>Select  <strong>Clone</strong>.</li>
+<li>Choose whether to <a href="#enable-content-delivery-for-smart-folders">Enable dynamic content delivery</a> for the new folder.</li>
+<li>Select <strong>Clone</strong> in the confirmation dialog.</li>
+</ol>
+<p>You can then adjust the new folder’s condition as required.</p>
+<h3 id="edit-smart-folders">Edit smart folders</h3>
+<p>You can adjust a smart folder’s filter conditions at any time:</p>
+<ol type="1">
+<li>Select the smart folder in the left-side panel.</li>
+<li>Select the <strong>Filter</strong> button or any filter summary item displayed in the <strong>Applied filters</strong> section above the listing.</li>
+<li>Change the filter conditions as required.</li>
+<li>Select <strong>Apply</strong>.</li>
+<li>Check the results in the listing and select <strong>Save changes</strong>.</li>
+</ol>
+<p></p>
+<p>To change a folder’s name, expand the <strong>Menu actions</strong> () next to the folder and select  <strong>Rename</strong>.</p>
+<h3 id="enable-content-delivery-for-smart-folders">Enable content delivery for smart folders</h3>
+<p>Dynamic content delivery allows developers to retrieve content items matching a smart folder’s filter criteria. This gives you the power to control which items are delivered by editing the filter conditions of smart folders directly in the <em>Content hub</em> UI, without needing to adjust code. Out-of-the-box, Xperience allows smart folder content delivery for website channels (headless and email channels are currently not supported).</p>
+<p>Note that smart folders with dynamic content delivery have the following limitations on their filter conditions:</p>
+<ul>
+<li>
+<strong>Content type</strong> – most content delivery scenarios will be limited to a specific content type or content types that share a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a>. This means that the final content delivered through the smart folder may not include items from all selected content types. Consult your project’s developers if you are not sure.</li>
+<li>
+<strong>Status</strong>, <strong>Requires authentication</strong>, <strong>Last modified</strong> – these filter options are not supported for smart folders with dynamic content delivery. Retrieval of content based on published status or authentication requirements is controlled by developers, and the <em>Last modified</em> value is not intended for public use outside of the administration interface.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The <strong>order</strong> and <strong>maximum number</strong> of retrieved items is controlled by developers, and you cannot configure these parameters through a smart folder’s filter conditions or other settings.</p>
+</div>
+
+<p>To enable dynamic content delivery for a smart folder:</p>
+<ul>
+<li>When <a href="#create-smart-folders">creating new smart folders</a>, select the <strong>Enable dynamic content delivery</strong> option at the top of the filter conditions.</li>
+<li>For existing folders, expand the <strong>Menu actions</strong> () next to the folder and select  <strong>Enable dynamic content delivery</strong>.</li>
+</ul>
+<p>Be careful when <a href="/documentation/business-users/content-hub/content-items#edit-content-items">editing</a> or <a href="/documentation/business-users/content-hub/content-items#delete-content-items">deleting</a> items that are included in a smart folder with dynamic content delivery. Changes may affect how the content is displayed in your website channels.</p>
+<p>You cannot disable content delivery for a smart folder after you choose to enable it. If necessary, you can clone the folder to create a new copy without dynamic content delivery – expand the <strong>Menu actions</strong> () next to the folder and select  <strong>Clone</strong>.</p>
+<h3 id="select-smart-folders-in-content">Select smart folders in content</h3>
+<p>When <a href="/documentation/business-users/content-hub/content-items">editing</a> content, you may encounter fields that allow you to select a smart folder (depending on your project’s content model). For example, you could find smart folder selectors among the fields of content items and <a href="/documentation/business-users/website-content">pages</a>, or in the Page Builder when configuring the properties of a <a href="/documentation/business-users/website-content/widgets-and-page-builder">widget</a>.</p>
+<p></p>
+<p>After you select a folder, developers can then use the field to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-content-items-from-smart-folders">retrieve content items from the selected smart folder</a> and display or otherwise use them in the related channel.</p>
+<h2 id="content-folders">Content folders</h2>
+
+<div>
+
+</div>
+<div>
+<p>Content folders may be disabled or enabled for your project. If the folders are not available and you wish to use them, contact your administrators or see the <a href="/documentation/developers-and-admins/configuration/content-hub-configuration#enable-content-hub-folders">Content hub configuration</a> documentation.</p>
+</div>
+
+<p>You can use a hierarchy of content folders to catalog <a href="/documentation/business-users/content-hub/content-items">content items</a>. Folders can greatly help you organize and efficiently navigate through content items in the administration interface, particularly when your project contains a large number of items.</p>
+<p>Unlike with <a href="#smart-folders">smart folders</a>, content items are placed into content folders manually, and each item can only be located in one content folder.</p>
+<p>The purpose of content folders is only to help organize content items in the administration, and they <strong>cannot be used to control content delivery</strong>.</p>
+<p></p>
+<ul>
+<li>To add a content folder, use the <strong>Create new folder</strong> () button in the top-right corner of the folder tree.
+<ul>
+<li>The system supports up to 20 levels of subfolders.</li>
+</ul>
+</li>
+<li>Expand the <strong>Menu actions</strong> () next to folders if you wish to:
+<ul>
+<li> Rename a folder</li>
+<li> Add a new subfolder</li>
+<li> Delete a folder</li>
+<li> Move a folder under a different folder or <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a> (together with all subfolders and contained items)</li>
+<li> View a folder’s <em>Properties</em> (identifiers, created and last modified timestamps, other metadata)</li>
+</ul>
+</li>
+<li>If you select a folder in the tree, the listing on the right only displays items located directly in the given folder. You can use the search function to <a href="/documentation/business-users/content-hub/content-items#find-content-items">find</a> items, including subfolders.</li>
+<li>To access the full list of all content items in the current workspace (from all folders), select <strong>All content items</strong> above the folder tree.</li>
+<li>When <a href="/documentation/business-users/content-hub/content-items#create-content-items">creating content items</a>, you can choose the folder <strong>Location</strong> for each new item.</li>
+<li>You can <a href="/documentation/business-users/content-hub/content-items#move-content-items">move items</a> between content folders or workspaces at any time using the <strong>Move</strong> () action.</li>
+</ul>
+
+</body>
+</html>

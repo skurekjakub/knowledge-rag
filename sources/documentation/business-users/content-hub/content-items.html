@@ -1,0 +1,502 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content items</title>
+</head>
+<body>
+<p>Content items provide a universal and reusable way of working with content in the <a href="/documentation/business-users/content-hub">Content hub</a> application and can be reused across channels (website, email, headless). Each item belongs to a single <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a> and represents a piece of structured content defined by a <a href="/documentation/developers-and-admins/development/content-types">content type</a>.</p>
+<p>Examples of content items include testimonials, author details, and FAQ sections. See <a href="/guides/architecture/content-modeling/content-modeling-guide">Content modeling</a> for more information about the recommended information architecture of projects.</p>
+<p>Content items are useful for numerous scenarios:</p>
+<ul>
+<li>Content reusability</li>
+<li>Separation of structured content from the presentation layer</li>
+<li>Multichannel content distribution</li>
+<li>Headless scenarios</li>
+</ul>
+<h2 id="find-content-items">Find content items</h2>
+<p>The Content hub will often contain a large number of items. The search bar allows you to find items with a name or content type matching the entered text in the current <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a>.</p>
+<p>The listing displays only items in the current workspace. If you have access to multiple workspaces, you can switch between them using the workspace switcher located at the top left of the Content hub interface.</p>
+<p>If you select a <a href="/documentation/business-users/content-hub/content-hub-folders">folder</a> in the tree, the listing only displays items located directly in the given folder. You can use the search function to find items, including subfolders.</p>
+<p>You can also <strong>Filter</strong> the list of content items to display only selected content types, items with specific statuses, items containing specific tags, or items with authentication requirements.</p>
+<p></p>
+<h2 id="create-content-items">Create content items</h2>
+<ol type="1">
+<li>Select <strong>New content item</strong>.<br>
+
+<ol type="1">
+<li>Enter a <strong>Content item name</strong> which identifies the content item in the admin UI.</li>
+<li>If <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folders</a> are enabled, select the <strong>Location</strong> for the new content item.</li>
+<li>Choose the <strong>Content type</strong> of the new content item.<br>
+</li>
+</ol>
+</li>
+<li>Select <strong>Continue</strong>.</li>
+<li>Enter the values required by the selected content type.</li>
+<li>
+<strong>Save</strong> the new content item, which creates a draft version of the item in the current <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a>.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Directly publish items</strong></p>
+<p>You can directly <strong>Publish</strong> new items to make them available for your audience (either immediately or at a scheduled time). See <a href="#publish-content-items">Publish content items</a> to learn more.</p>
+<p>If the item has fields <a href="#link-content-items">linking</a> to other reusable content items, the cascade publishing dialog opens when publishing. You can view all linked content items you have access to, that are currently not published, and select them for publishing together with the main item.</p>
+</div>
+
+<p>The content item is now created.</p>
+<h2 id="clone-content-items">Clone content items</h2>
+<p>Cloning a content item allows you to create a new item with the same data. If the item has an <a href="/documentation/business-users/content-hub/content-item-assets">asset</a> (i.e., a file that is uploaded to the item), a new independent copy of the asset is created for the cloned item. <a href="/documentation/business-users/content-hub/content-items#secure-content-items">Security settings</a> of the item are not copied.</p>
+<p>You can clone all <a href="#translate-content-items">language variants</a> of an item or just a selected language variant.</p>
+<p>To clone a content item:</p>
+<ol type="1">
+<li><p>Open the <strong>Content hub</strong> application.</p></li>
+<li>
+<p>Locate the content item you want to clone.</p>
+<ul>
+<li>Use the search bar, filter or <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li><p>Select the <strong>Clone</strong> () action. </p></li>
+<li><p>Enter the content item name. The default name is <em>(Clone) {original name}</em>.</p></li>
+<li><p>If you want to clone only the current language variant of the item, clear the <strong>Clone all language variants</strong> checkbox. Otherwise, all language variants are cloned by default.</p></li>
+<li><p>Select <strong>Clone</strong>.</p></li>
+</ol>
+<p>You can <a href="#find-content-items">find</a> the new item under the name you selected. Language variants other than the one selected during the cloning are automatically named using the pattern <em>(Clone) {original name}</em>. If you cloned an item located inside a <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folder</a>, you can find it under <strong>All content items</strong>.</p>
+<p>The new item is created in the <em>Draft</em> step, where you can <a href="#edit-content-items">edit</a> it. The item needs to be <a href="#publish-content-items">published</a> before it can be delivered to your audience.</p>
+<h2 id="edit-content-items">Edit content items</h2>
+<ol type="1">
+<li>Select the content item you want to edit.
+<ul>
+<li>Use the search bar, filter or <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> to <a href="#find-content-items">find content items</a>.</li>
+<li>If you have multiple languages set up, select the language in which you want to edit the content item from the language switcher.</li>
+</ul>
+</li>
+<li>Make sure the content item is in the <em>Draft</em> status or another <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a>.
+<ul>
+<li>When a content item is <em>Published</em> or <em>Scheduled</em>, select <strong>Edit content item</strong> to transition it to the <em>Draft</em> step and enable editing and publishing of the item.<br>
+</li>
+<li>When a content item is <em>Unpublished</em>, select <strong>Create new version</strong> to move the item to the <em>Draft</em> step.<br>
+</li>
+</ul>
+</li>
+<li>Edit the fields of the content item.</li>
+<li>
+<strong>Save</strong> the updated content.</li>
+</ol>
+<h2 id="move-content-items">Move content items</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Possible side effects of moving content items</strong></p>
+<p>Moving content items may affect what you and other editors are <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">allowed to do with them</a>.</p>
+<p>Consult with your administrator if you are unsure about how moving content items may affect other editors. Moving items to a workspace with different permissions could result in other editors losing access to or being unable to work with the moved items.</p>
+</div>
+
+<p>You can move content items into a <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folder</a> or a different <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a>. The action is available both for individual items in the list, and as a mass action after selecting multiple items.</p>
+<p>To move content items:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select the content items you want to move.
+<ul>
+<li>Use the search bar, filter or <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>Select the <strong>Move</strong> () action.<br>
+</li>
+<li>Select the workspace or content folder where you want to move the items.</li>
+<li>
+<strong>Move</strong> the content items.</li>
+</ol>
+<p>The content items are now moved to the new location.</p>
+<h2 id="link-content-items">Link content items</h2>
+<p>Content items may support linking other items to create nested hierarchies. For example, a content item representing a medical practitioners office can link to other content items representing employed doctors, patient testimonials, and so on. These relationships are determined by the content model used by your project.</p>
+<ol type="1">
+<li>
+<a href="#edit-content-items">Edit</a> a content item that supports referencing other content items.</li>
+<li>You can choose existing content items to link via <strong>Select existing</strong> in any workspace you have access to, or create a completely new content item using <strong>Create new</strong>.<br>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The content items are now linked to the edited item. Each linked item also respects its status – it may not be immediately active upon being linked. Linked items can be published together with the main item using <a href="#cascade-publishing">Cascade publishing</a>. To learn how the lifecycle influences linked items, see <a href="#content-items-lifecycle">Content items lifecycle</a>.</p>
+<h2 id="add-tags-to-content-items">Add tags to content items</h2>
+<p>Depending on the configuration of your project, content items may support <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomies</a> and tags.</p>
+<ol type="1">
+<li>
+<a href="#edit-content-items">Edit</a> a content item that has a field with the tag selector.</li>
+<li>
+<strong>Select tags</strong> that describe the content item.<br>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The selected tags are now stored with the content item. Developers can use the information to <a href="/documentation/developers-and-admins/configuration/taxonomies#retrieve-content-items-with-specified-tags">display content based on tags</a>.</p>
+<h2 id="view-content-item-details">View content item details</h2>
+<p>Switch to the <strong>Properties</strong> tab on the left to display various information about the selected content item, such as its name, content type, and culture.</p>
+<p></p>
+<h2 id="track-usage-of-content-items">Track usage of content items</h2>
+<p>Even with thousands of content items in your project, the Content reuse locator feature helps you monitor where each item is <a href="#link-content-items">linked</a> and which channels display it. Understanding a content item’s usage is valuable when assessing the potential impact of edits or deletions. For instance, you can verify whether a content item you plan to delete appears in published content and whether removing it might disrupt that content.</p>
+<p>The chain of usage starts with items that directly reference your content item. These items, in turn, may be used in other items (found under <em>Related items</em>), and this pattern continues. Unfolding these chains of usage creates a tree-like structure, illustrating how your content item is referenced across different levels.</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select the content item you want to track.
+<ul>
+<li>Use the search bar, filter or <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>Navigate to the <strong>Used in</strong> tab to view where the selected content item is used.
+<ul>
+<li>The tab displays usages in content items and also in website channel pages.</li>
+</ul>
+</li>
+</ol>
+<p></p>
+
+<div>
+<p><strong>Tracking limitations</strong></p>
+<p>The system does not track or display usage of content items through <a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">smart folders</a>. If you use smart folders to dynamically link content items or deliver content to channels, we recommend manually checking the content of such folders before you delete or significantly edit content items that could be related.</p>
+<p>The usage of content items in <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> is also not tracked by the system. You should manually check whether a content item is used in notification emails before making any significant edits or deletions.</p>
+<p>Similarly, usage is not tracked for already sent emails, as changes to content items cannot affect emails that have already been delivered.</p>
+<p>The system also does not track usage in custom fields added to <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">extendable system object types</a> or in custom classes. If you’re managing content linked this way, it’s important to manually confirm where it’s used before performing changes.</p>
+</div>
+
+<h2 id="publish-content-items">Publish content items</h2>
+<p>Content items must be published before they can be delivered to your audience through various types of channels. For example, a website channel’s pages only display published content on the live site.</p>
+<p>You can publish items under the following conditions:</p>
+<ul>
+<li>If the item’s content type is under <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a>, the item must be in the last step of the workflow, or you need to belong to a role with full control for the given workflow (this allows you to publish items from any step).</li>
+<li>For items that are not under workflow, the item must be in the <em>Draft</em> step.</li>
+</ul>
+<p>To publish a content item:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select a content item that has recently been edited and is in the <em>Draft</em> status, or a <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a> from which you are allowed to publish the item.
+<ul>
+<li>Use the search bar, filter or folders to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Publish</strong> the content item. For items under workflow, select <strong>Change workflow step</strong> and choose the <strong>Schedule / Publish</strong> step.</li>
+<li>Choose when you want to publish the item:
+<ul>
+<li><strong>Publish now</strong></li>
+<li>
+<strong>Schedule publish</strong> – select a date and time in the future. The system will automatically publish the item at the given time (see <a href="#scheduled-publishing">Scheduled publishing</a>).</li>
+</ul>
+</li>
+<li>Select <strong>Confirm</strong>.
+<ul>
+<li>If the item has fields <a href="#link-content-items">linking</a> to other reusable content items or pages, the <a href="#cascade-publishing">cascade publishing</a> dialog opens.</li>
+</ul>
+</li>
+</ol>
+<p>Once published, the item is available for use within individual channels. When you edit a published content item, a new draft version is created. The item’s last <em>Published</em> version remains public.</p>
+<h3 id="scheduled-publishing">Scheduled publishing</h3>
+<p>When publishing content items, you can choose to postpone the publish action to a later time. Select the <strong>Schedule publish</strong> option while publishing, and then pick a date and time when you want the system to automatically publish the item.</p>
+<p></p>
+<p>Once an item is <em>Scheduled</em>, it can no longer be edited (like a <em>Published</em> item). However, the item is not available for your audience until it actually becomes published.</p>
+<p>If you need to edit a scheduled item, you have the following options:</p>
+<ul>
+<li>Select the <strong>Edit content item</strong> action – cancels the scheduled publish and moves the item to the first step in the item’s workflow cycle (<em>Draft</em>).</li>
+<li>Expand the <strong>Edit content item</strong> menu and select <strong>Cancel scheduled publish</strong> – cancels the scheduled publish and moves the item to the final step in the item’s workflow cycle (<em>Draft</em> for items without workflow).</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Scheduled publish timing</strong></p>
+<p>We cannot guarantee that items will be published exactly at the scheduled time. The system checks if there are items scheduled to be published once per minute. If there’s a significant volume of content scheduled to be published at the same time, there may be a delay before all items are published (up to several minutes when publishing many thousands of items).</p>
+<p>During the publishing process, reusable content items are always published <strong>before</strong> <a href="/documentation/business-users/website-content">pages</a> to ensure that content is displayed consistently.</p>
+</div>
+
+<h3 id="mass-publishing">Mass publishing</h3>
+<p>To publish multiple content items at once:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select the content items you want to publish using the checkboxes on the left side of the list.</li>
+<li>Select <strong>Publish</strong> under the search bar.</li>
+</ol>
+<p>The <strong>Publish selected content items?</strong> confirmation dialog opens. Items can only be published if they fulfill the following requirements:</p>
+<ul>
+<li>Items under <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a> must be in the last step of the workflow, or you need to belong to a role with full control for the given workflow (this allows you to publish items from any step). Items without workflow must be in the <em>Draft</em> step.</li>
+<li>You must be allowed to publish the item under the item’s workflow restrictions for roles.</li>
+<li>The item must be translated in the currently selected <a href="/documentation/developers-and-admins/configuration/languages">language</a>.</li>
+</ul>
+<p>If any of the selected items do <strong>not</strong> fulfill the requirements for publishing, they are listed in the dialog. You can directly open () each item in the list in a new tab to make adjustments and move it to a publishable state.</p>
+<p></p>
+<p>To confirm the mass publish, select <strong>Publish</strong> or <strong>Continue</strong> (appears if <a href="#cascade-publishing">cascade publishing</a> of linked items is possible for any of the published items).</p>
+<h3 id="cascade-publishing">Cascade publishing</h3>
+<p>When publishing (or scheduling the publish for) content items with fields <a href="#link-content-items">linking</a> to other reusable content items or pages, the cascade publishing dialog opens. Here you can view all items that are associated with the item you’re about to publish, but are currently not published. If you are publishing multiple items using <a href="#mass-publishing">mass publishing</a>, the dialog displays linked items for all published items (in this case, the main published items are not listed).</p>
+<p>You can select <a href="#link-content-items">linked items</a> to be published together with the main items. Linked items that currently do not fulfill the requirements for publishing are displayed, but cannot be selected. Leaving linked items unpublished may lead to missing data or other issues in the content of the published items.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Cascade scheduled publishing</strong></p>
+<p>If you are <a href="#scheduled-publishing">scheduling</a> an item to be published, any linked items that you select in the cascade publishing dialog are scheduled to be published at the same time as the main item. This overwrites the publish time for any linked items that are already scheduled to be published.</p>
+<p>Linked items that are scheduled to be <a href="#unpublish-content-items">unpublished</a> at a time before the new scheduled publish date <strong>cannot be selected</strong> in the cascade publishing dialog.</p>
+</div>
+
+<p>Cascade publishing is available when publishing all types of content, including: reusable content items in <em>Content hub</em>, <a href="/documentation/business-users/website-content">pages</a>, <a href="/documentation/business-users/digital-marketing/emails">emails</a>, and <a href="/documentation/business-users/headless-content">headless items</a>.</p>
+<p>Together with the main items, cascade publishing allows you to publish reusable content items and <a href="/documentation/business-users/website-content">pages</a> linked in the following ways:</p>
+<ul>
+<li>through the fields of an item, page or email in the <strong>Content</strong> view of the respective application</li>
+<li>recursively through the fields of another linked item</li>
+<li>linked on pages through <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder widget</a> properties using the <em>Combined content selector</em> form component</li>
+</ul>
+<p>Cascade publishing does <strong>not</strong> support publishing of:</p>
+<ul>
+<li>related pages linked through fields with the <em>Pages</em> data type</li>
+<li>headless items linked through fields with the <em>Headless items</em> data type</li>
+<li>pages linked through Page Builder widget properties using the <em>Page selector</em> form component</li>
+<li>pages or content item assets inserted or linked in rich text editor fields</li>
+</ul>
+<h2 id="revert-content-items-to-published-status">Revert content items to published status</h2>
+<p>After creating a new version of a content item, the item goes through a new editing cycle with the <em>Draft</em> step and optionally other <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow steps</a>.</p>
+<p>At any time before the new version is published, you can revert the item back to the last <em>Published</em> status. All changes made in any workflow step will be lost.</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select a content item that has been edited.
+<ul>
+<li>Use the search bar, filter or folders to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>Expand the <strong>Publish</strong> or <strong>Change workflow step</strong> menu.</li>
+<li>Select <strong>Revert to published</strong> to revert the changes. </li>
+</ol>
+<p>The item is now reverted to its <em>Published</em> status.</p>
+<h2 id="translate-content-items">Translate content items</h2>
+<p>Before you can translate individual content items in your project into other languages, you need to set those up in the <strong>Languages</strong> application. For detailed info on how to configure multiple languages in Xperience see <a href="/documentation/developers-and-admins/configuration/languages">Languages</a>.</p>
+<p>Afterwards you can start to translate and create language variants of your items:</p>
+<ol type="1">
+<li><p>Open the <strong>Content hub</strong> application.</p></li>
+<li>
+<p>In the header bar, open the language switcher.<br>
+</p>
+
+<div>
+
+</div>
+<div>
+<p>The language switcher is available only if two or more languages are set up.</p>
+</div>
+</li>
+<li>
+<p>Select the language to translate content into.</p>
+<ul>
+<li>
+<strong>Tip</strong>: You can see what languages a content item is translated into in the <em>Languages</em> column.</li>
+</ul>
+</li>
+<li>
+<p>Select the content item to translate.</p>
+
+<div>
+
+</div>
+<div>
+<p>Untranslated content items are visually marked by the <em>Not translated</em> (<span></span>) status.</p>
+</div>
+</li>
+<li>
+<p>Enter the translated name of the content item. You can now choose one of the following options:</p>
+<ul>
+<li>
+<strong>Copy content from another language</strong> is the preselected option. By default, the closest language in the <a href="/documentation/developers-and-admins/configuration/languages">fallback chain</a> is preselected. You can choose a different language from the drop-down list. This option lets you prefill the content item fields with the content available in the chosen language. If a linked item does not have a translated or published version, a warning will be displayed, and a fallback language variant of the item will be used.</li>
+<li>
+<strong>Create empty content item</strong> allows you to create an empty content item with blank fields. Linked items need to be re-linked, and files need to be re-uploaded into the new language variant of the translated content item.</li>
+<li>
+<strong>Translate using AIRA</strong> see <a href="#translate-using-aira">Translate using AIRA</a> for more information.<br>
+</li>
+</ul>
+</li>
+<li><p>Select <strong>Continue</strong>.</p></li>
+<li><p>Enter the translated values of the content item’s fields.</p></li>
+<li><p><strong>Save</strong> the translated content item.</p></li>
+</ol>
+<p>You have now successfully translated the content item. Note that the particular language variant is now only a <em>Draft</em> and so won’t be accessible on the live site until you <a href="#publish-content-items">publish</a> it. Until you do so, the language variant in the fallback language will be displayed.</p>
+<h3 id="translate-using-aira">Translate using AIRA</h3>
+<p>When you choose <strong>Translate using AIRA</strong> and start the translation process, the name and content of your content item will be translated using <a href="/documentation/business-users/aira">AIRA</a>.</p>
+<p>The translation workflow changes depending on the number of items submitted for translation. For a single item, AIRA creates a new language variant of the content in the <em>Draft</em> state and immediately takes you to it.</p>
+<p>However, when translating multiple content items at once (for example, when translating content items along with their linked content), your content is sent to a <em>Translation queue</em>. This allows the translation to be processed in the background, freeing you up to continue your work. You can check on its progress in the <em>Translation queue</em> application. Once the translation of your content finishes, the related items are removed from the <em>Translation queue</em> application.</p>
+<p>The behavior of the translation can be <a href="/documentation/developers-and-admins/configuration/aira-configuration#configure-aira-translations">configured</a>, allowing you to specify, for example, formatting rules or brand terminology.</p>
+
+<div>
+
+</div>
+<div>
+<p>Existing text links to the translated content are not redirected to the new variant or translated automatically and need to be manually reviewed to ensure they lead to the correct content.</p>
+</div>
+
+<h4 id="mass-translating">Mass translating</h4>
+<p>To translate multiple content items at once using <a href="/documentation/business-users/aira">AIRA</a>:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select the content items you want to translate using the checkboxes on the left side of the list.</li>
+<li>Select <strong>Translate using AIRA</strong> under the search bar.</li>
+<li>Select which of the linked items you want to include in the translation.</li>
+<li>
+<strong>Translate item with selected items</strong>.</li>
+</ol>
+<p>You have successfully sent your items to be translated. The items will be placed in the “Translation queue” to be processed asynchronously. You can continue with your work or check the progress of the translation in the <em>Translation queue</em> application.</p>
+<h2 id="secure-content-items">Secure content items</h2>
+<p>Secured content items require that the consumer (e.g., a site visitor) is <a href="/documentation/business-users/members">signed in</a> before the content item is displayed.</p>
+<p>To secure content items:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select the content item you want to secure.
+<ul>
+<li>Use the search bar, filter or folders to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>Switch to the <strong>Properties</strong> tab.</li>
+<li>Set the content item’s security configuration.
+<ul>
+<li>
+<strong>Requires authentication</strong> – only visitors signed in to the website can access the item.<br>
+</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>Secured content items show a lock icon when listed in various places in the Xperience admin UI.</p>
+<p>Note that secured content items are only available for <a href="/documentation/business-users/website-content">website channel pages</a>, where the system can identify which users are authenticated. Secured items are <strong>not included</strong> in the content of <a href="/documentation/business-users/digital-marketing/emails">emails</a> or <a href="/documentation/business-users/headless-content">headless items</a> (even if selected in the fields of such items).</p>
+
+<div>
+
+</div>
+<div>
+<p>See <a href="/documentation/business-users/website-content/secure-pages">Secure pages</a> to learn how to secure individual pages or entire sections of website channels.</p>
+</div>
+
+<h2 id="unpublish-content-items">Unpublish content items</h2>
+<p>An unpublished content item is not available for use by any channels, but you can still access it from the administration.</p>
+<p>To unpublish a content item:</p>
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Select a content item you want to unpublish.
+<ul>
+<li>You can only unpublish content items that are already <a href="#publish-content-items">published</a> or <a href="#scheduled-publishing">scheduled to be published</a> in the future.</li>
+<li>Use the search bar, filter or <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>Expand the <strong>Edit content item</strong> menu and select <strong>Unpublish options</strong>.<br>
+</li>
+<li>Choose when you want to unpublish the item:
+<ul>
+<li><strong>Unpublish now</strong></li>
+<li>
+<strong>Schedule unpublish</strong> – select a date and time in the future. If the item is scheduled to be published, the unpublish time must always be set <em>after the publish time</em>. The system will automatically unpublish the item at the given time.</li>
+</ul>
+</li>
+<li>Select <strong>Confirm</strong>.</li>
+</ol>
+<p>Once an item is <em>Unpublished</em>, it is no longer available.</p>
+<p>To <a href="#edit-content-items">edit</a> or re-publish an unpublished content item, select <strong>Create new version</strong> for the content item. This creates a new version of the item in the <em>Draft</em> step.</p>
+<h3 id="change-scheduled-unpublish-options">Change scheduled unpublish options</h3>
+<p>If you wish to cancel scheduled unpublishing for an item, expand the item’s <strong>Edit content item</strong> menu and select <strong>Cancel scheduled unpublish</strong>. To change the unpublish date and time, use the same approach to cancel the scheduled unpublish and then schedule it again.</p>
+
+<div>
+
+</div>
+<div>
+<p>For items that have a scheduled unpublish time while they are still <a href="#scheduled-publishing">scheduled for publishing</a>, canceling the scheduled publish (or editing the item) also <strong>automatically cancels the scheduled unpublish</strong>.</p>
+</div>
+
+<h2 id="restore-previous-versions-of-content-items">Restore previous versions of content items</h2>
+<p>See <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">Content versioning</a> for more information. You can restore previously published versions of content items only when versioning is <a href="/documentation/developers-and-admins/configuration/content-versioning-configuration">configured</a>.</p>
+<h2 id="delete-content-items">Delete content items</h2>
+
+<div>
+
+</div>
+<div>
+<p>In the current version of Xperience by Kentico, deleted items can be <a href="/documentation/business-users/recycle_bin">restored</a>. If you’re using a version older than 30.12.0, deleting a content item is non-reversible and the item cannot be restored.</p>
+</div>
+
+<ol type="1">
+<li>Open the <strong>Content hub</strong> application.</li>
+<li>Locate the content item you want to delete.
+<ul>
+<li>Use the search bar, filter or <a href="/documentation/business-users/content-hub/content-hub-folders">folders</a> to <a href="#find-content-items">find content items</a>.</li>
+</ul>
+</li>
+<li>Select <strong>Move to recycle bin</strong> ().
+<ul>
+<li>If the deleted content item is used in other content, you may want to <a href="#track-usage-of-content-items">check the usage</a> of the item and edit all content where it is used.</li>
+<li>
+<strong>Tip</strong>: You can quickly see whether a content item is used by checking the <strong>In use</strong> column of the content item listing.</li>
+</ul>
+</li>
+</ol>
+<p></p>
+<p>The content item is now deleted. You can find it in the recycle bin and <a href="/documentation/business-users/recycle_bin#restore-deleted-items">restore</a> it later.</p>
+<p>To delete multiple items at once, select the items in the list and use the <strong>Delete</strong> button under the search bar.</p>
+<h2 id="restore-deleted-content-items">Restore deleted content items</h2>
+<p>The current version of Xperience allows you to restore deleted content items from the recycle bin. See <a href="/documentation/business-users/recycle_bin#restore-deleted-items">Restore deleted items</a> for more information. If you’re using a version older than 30.12.0, recovering deleted content is not possible.</p>
+<h2 id="synchronize-content-items">Synchronize content items</h2>
+<p>Xperience allows you to easily transfer new and updated content items from one instance of Xperience by Kentico to another. For detailed information and instructions, see <a href="/documentation/business-users/content-sync">Content sync</a>.</p>
+<h2 id="content-items-lifecycle">Content items lifecycle</h2>
+<p>Content items can transition through the following statuses:</p>
+<ul>
+<li> <strong>Draft (Initial)</strong> /  <strong>Draft (New version)</strong>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/workflows">Custom workflow step</a> (the item is being edited, “between” the <em>Draft</em> and <em>Published</em> status)</li>
+<li> <strong>Scheduled</strong> (will be automatically published at a selected date and time in the future)</li>
+<li> <strong>Published</strong>
+</li>
+<li> <strong>Unpublished</strong>
+</li>
+<li> <strong>Not translated</strong>
+</li>
+</ul>
+<p>Each status changes the behavior of the item in the system.</p>
+<p>Generally, items in the <strong>Draft (Initial)</strong> status are only shown in content previews, e.g., in page previews of website channels or email previews. In live content, only <strong>Published</strong> content items are shown. When you edit a <em>Published</em> item and move it to <strong>Draft (New version)</strong>, the published content remains the active (main) version shown live until replaced by the new draft. <strong>Unpublished</strong> items can only be found in the Content hub application. Finally, <strong>Not translated</strong> items do not exist in the currently selected language. See the following diagram:</p>
+<p></p>
+<p>The same general behavior also applies to <a href="#link-content-items">linked content items</a>. A content item in the <strong>Draft</strong> status linked to a content item in the <strong>Published</strong> status will only show up in content previews (not in live content) until it transitions to <strong>Published</strong>.</p>
+<p>The following flowchart demonstrates available status transitions:</p>
+<p></p>
+<h3 id="advanced-scenarios">Advanced scenarios</h3>
+<p>This section looks at a couple of example scenarios and explains how they can be influenced by statuses.</p>
+<ul>
+<li><a href="#mass-translating">Mass translating</a></li>
+<li><a href="#content-item-with-linked-items">Content item with linked items</a></li>
+<li><a href="#creating-new-drafts-of-published-linked-content-items">Creating new drafts of published (linked) content items</a></li>
+<li><a href="#content-item-assets">Content item assets</a></li>
+<li><a href="#publishing-a-content-item-containing-non-published-content-items">Publishing a content item containing non-published content items</a></li>
+<li><a href="#publishing-a-content-item-containing-items-with-a-new-draft-version">Publishing a content item containing items with a new draft version</a></li>
+</ul>
+<h4 id="content-item-with-linked-items">Content item with linked items</h4>
+<p><strong>Scenario:</strong> I have a content item with multiple <a href="#link-content-items">linked content items</a>. How does the status of the linked items impact my main item?</p>
+<p>The status is evaluated independently for each content item. Linked content items that are in the <strong>Draft (Initial)</strong> status will not be shown as part of the main content item. For example, an FAQ section will be missing all linked “FAQ” content items that are in the <em>Draft (Initial)</em> status.</p>
+<p>See the following diagram for an illustration:</p>
+<p></p>
+<p>Linked item 2 (Draft new version) contains a published version that the system uses instead. However, <em>Linked item 3</em> has never been published before and therefore has no version that the system can use for live content.</p>
+<hr>
+<h4 id="creating-new-drafts-of-published-linked-content-items">Creating new drafts of published (linked) content items</h4>
+<p><strong>Scenario:</strong> I have a published content item (that may or may not be linked by other items) and create a new draft version of it. How does this affect the published data?  </p>
+<p>Creating new drafts of published items doesn’t interfere with existing public items at all. The draft version is stored in the background and when eventually promoted, silently replaces the current published version.</p>
+<hr>
+<h4 id="content-item-assets">Content item assets</h4>
+<p><strong>Scenario:</strong> I have <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a> linked from a content item. How does the status of the asset affect the integrity of the main content item?</p>
+<p>Same as with regular content items, the status of content item assets is evaluated independently. <strong>Initial draft versions</strong> (i.e., newly created, never before published) will not be shown in live content until <strong>Published</strong>. <strong>Draft</strong> versions of published assets only replace the current public version when the entire item transitions to <strong>Published</strong>. <strong>Unpublished</strong> assets are not shown in the content of other content items.</p>
+<hr>
+<h4 id="publishing-a-content-item-containing-non-published-content-items">Publishing a content item containing non-published content items</h4>
+<p><strong>Scenario:</strong> I have a draft content item A which includes another draft content item B. How does the draft status of the included content item B affect the publishing of content item A?</p>
+<p>When publishing a content item which links to content items that are not published, all of the content items can be published at once using <a href="#cascade-publishing">cascade publishing</a>.</p>
+<hr>
+<h4 id="publishing-a-content-item-containing-items-with-a-new-draft-version">Publishing a content item containing items with a new draft version</h4>
+<p><strong>Scenario:</strong> I have a draft of an item that includes another <a href="#link-content-items">linked item</a>. Even though there’s a new version of the linked item, I want to publish the first item with the older (currently published) version of the linked item. How does the draft status of the linked item affect publishing of the first item?</p>
+<p>When trying to publish a content item which includes content items with a new draft version, you can select which content items to publish along with it. You can choose not to publish the linked item, which means the currently published version of the item will be used, until the new version is published.</p>
+
+</body>
+</html>

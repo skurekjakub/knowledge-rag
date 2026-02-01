@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Secure pages</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p>This page describes how to restrict access to pages on the live site. For restricting access to pages in the Xperience administration, see <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">Page permission management</a>.</p>
+</div>
+
+<p>Pages in the content tree can have their access privileges modified via the <strong>Security</strong> tab.</p>
+<ol type="1">
+<li>Open a website channel application.</li>
+<li>Select a page in the content tree.</li>
+<li>Switch to the <strong>Properties</strong> → <strong>Security</strong> tab.<br>
+</li>
+<li>Configure the page’s security settings.
+<ul>
+<li>
+<p><strong>Requires authentication</strong> – only visitors signed in to the website can view the corresponding page.</p>
+
+<div>
+
+</div>
+<div>
+<p>This setting requires <a href="/documentation/developers-and-admins/development/registration-and-authentication">Registration and authentication</a> to be implemented on your site. Developers must also <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content#retrieve-page-data">reflect the setting</a> when designing the site’s front end. For example, by displaying a lock icon next to links that lead to such pages and ensuring unauthenticated visitors are redirected appropriately. </p>
+</div>
+</li>
+</ul>
+</li>
+<li>Select <strong>Publish change</strong>.
+<ul>
+<li>If securing a page with subpages, you’ll be asked to decide whether the changed settings should apply to all subpages as well.<br>
+</li>
+</ul>
+</li>
+</ol>
+<p>You have successfully changed the page’s security configuration. To confirm this you can see a lock icon () by the secured page in the content tree.</p>
+
+<div>
+
+</div>
+<div>
+<p>Newly created pages inherit access privileges from their parent page.</p>
+</div>
+
+<h3 id="move-pages-with-access-privileges-mismatch">Move pages with access privileges mismatch</h3>
+<p>When moving a page in the content tree, a mismatch between the access privileges of the moved page and its new parent page may occur if one is secured and the other is not. To resolve this mismatch, you can set the moved page to:</p>
+<ul>
+<li>Inherit access privileges from the new parent.</li>
+<li>Maintain the current privileges.</li>
+<li>Cancel the operation.</li>
+</ul>
+<p></p>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Form component filtering</title>
+</head>
+<body>
+<p>Form component filtering allows you to hide <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">form components</a> from the Form Builder’s <a href="/documentation/business-users/digital-marketing/forms">user interface</a>. For example, if you develop a custom version of one of the system’s <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">default components</a>, you can help users choose the correct one by hiding the original.</p>
+<h2 id="creating-filters">Creating filters</h2>
+<p>Form component filters are classes that implement the <code>IFormComponentFilter</code> interface and its <code>Filter</code> method. The method’s parameters give you access to the following objects:</p>
+<ul>
+<li>
+<code>IEnumerable&lt;FormComponentDefinition&gt;</code> – a collection of definitions representing the available form components. Each contains metadata under which the form component was <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">registered into the system</a>, such as the <em>identifier</em>, <em>name</em>, or <em>description.</em>
+</li>
+<li>
+<code>FormComponentFilterContext</code> – contains contextual information about the form being edited via the Form Builder interface, such as the form code name. You can use the information to provide a different set of components for specific forms.</li>
+</ul>
+<p>The <code>Filter</code> method needs to return the collection of the filtered form component definitions.</p>
+<p>The following example filters all default Xperience form components from the Form Builder user interface. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Linq;
+using System.Collections.Generic;
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Forms.Web.Mvc.FormComponents;
+
+namespace LearningKit.FormBuilder
+{
+    public class FormComponentsFilter : IFormComponentFilter
+    {
+        public IEnumerable&lt;FormComponentDefinition&gt; Filter(IEnumerable&lt;FormComponentDefinition&gt; formComponents, FormComponentFilterContext context)
+        {
+            // Filters out all Xperience form components from the Form Builder UI
+            return formComponents.Where(component =&gt; !component.Identifier.StartsWith("Kentico"));
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<p>You can also filter out individual Xperience form components by matching their identifiers with the <code>IDENTIFIER</code> constant exposed by each form component class. See <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">Reference - Form Builder components</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Linq;
+using System.Collections.Generic;
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.Forms.Web.Mvc.FormComponents;
+
+namespace LearningKit.FormBuilder
+{
+    public class IndividualFormComponentsFilter : IFormComponentFilter
+    {
+        public IEnumerable&lt;FormComponentDefinition&gt; Filter(IEnumerable&lt;FormComponentDefinition&gt; formComponents, FormComponentFilterContext context)
+        {
+            // Filters specified form components
+            return formComponents.Where(component =&gt; !GetComponentsToFilter().Contains(component.Identifier));
+        }
+
+        // A collection of form component identifiers to filter
+        private IEnumerable&lt;string&gt; GetComponentsToFilter()
+        {
+            return new string[] { TextInputComponent.IDENTIFIER, TextAreaComponent.IDENTIFIER, USPhoneComponent.IDENTIFIER };
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="register-filters">Register filters</h2>
+<p>Register filters by adding them to the <code>FormBuilderFilters.FormComponentFilters</code> collection on <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">application start</a>.</p>
+<p>Note that the filtering is cumulative. The process starts with the collection of all form components registered in the system. Each subsequently applied filter then works with the collection of form components returned by the previous filter:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Register form component filters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.DataEngine;
+
+using Kentico.Forms.Web.Mvc;
+
+[assembly: RegisterModule(typeof(FormComponentFilters))]
+
+public class FormComponentFilters : Module
+{
+    // Module class constructor, inherits from the base constructor with the code name of the module as the parameter
+    public FormComponentFilters() : base("FormComponentFilters")
+    {
+    }
+
+    // Initializes the module. Called when the application starts.
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        RegisterFormComponentFilters();
+    }
+
+    private void RegisterFormComponentFilters()
+    {
+        // Selectively hides default system form components 
+        FormBuilderFilters.FormComponents.Add(new IndividualFormComponentsFilter());
+        // Hides all default system form components 
+        FormBuilderFilters.FormComponents.Add(new FormComponentsFilter());
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="register-filters-that-use-dependency-injection">Register filters that use dependency injection</h3>
+<p>Form component filter classes support <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> and their constructor can have parameters (e.g., instances of services registered in the project’s DI container).</p>
+<p>Such filters must be registered into the <code>FormBuilderFilters.FormComponentFilters</code> collection using the <code>Add&lt;FilterClassType&gt;</code> method:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Register form component filters</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+
+...   
+
+protected override void OnInit()
+{
+   base.OnInit();
+   RegisterFormComponentFilters();
+}
+
+private void RegisterFormComponentFilters() 
+{ 
+    // Selectively hides default system form components 
+    FormBuilderFilters.FormComponents.Add&lt;IndividualFormComponentsFilter&gt;(); 
+    // Hides all default system form components 
+    FormBuilderFilters.FormComponents.Add&lt;FormComponentsFilter&gt;(); 
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

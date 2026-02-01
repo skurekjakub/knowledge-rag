@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Coupon codes</title>
+</head>
+<body>
+<p>Coupon codes (also called discount codes or promo codes) allow you to require customers to enter a specific code to receive a promotion discount. This gives marketers control over when and how discounts are applied, enabling targeted campaigns and limited-time offers.</p>
+<p>Coupon codes are not a separate type of discount. They are an <strong>additional redemption requirement</strong> that can be configured for any <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">catalog discount</a> or <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/order-discounts">order discount</a>. When a promotion requires a coupon code, it is only applied if the customer provides the matching code during checkout. To learn how to create promotions, see <a href="/documentation/business-users/manage-commerce-stores#add-a-coupon-code-to-a-promotion">Add a coupon code to a promotion</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Discount codes are <strong>case-insensitive</strong>. Customers can enter <em>winter20</em>, <em>WINTER20</em>, or <em>Winter20</em> and all will match a promotion configured with the code <em>WINTER20</em>.</p>
+</div>
+
+<h2 id="pass-coupon-codes-to-price-calculation">Pass coupon codes to price calculation</h2>
+<p>For coupon-based promotions to work, you must pass the customer’s entered coupon codes to <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation">price calculation</a>. This is done through the <code>CouponCodes</code> property on the price calculation request.</p>
+<p>If you do not set the <code>CouponCodes</code> property on your <code>PriceCalculationRequest</code>, promotions that require coupon codes are <strong>never evaluated</strong> and will not apply to the cart, even if the customer has entered valid codes. Storing coupon codes in your cart data model is not sufficient on its own.</p>
+<h3 id="add-coupon-codes-to-the-calculation-request">Add coupon codes to the calculation request</h3>
+<p>When calling the price calculation service, include any coupon codes the customer has entered:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Pass coupon codes to price calculation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="20-21"><code>    /// &lt;summary&gt;
+    /// Calculates prices for a shopping cart with coupon codes applied.
+    /// &lt;/summary&gt;
+    public async Task&lt;PriceCalculationResult&gt; CalculateWithCoupons(
+        ShoppingCartDataModel cart,
+        int customerId,
+        CancellationToken cancellationToken)
+    {
+        // Build the price calculation request
+        PriceCalculationRequest calculationRequest = new PriceCalculationRequest
+        {
+            Items = cart.Items.Select(item =&gt; new PriceCalculationRequestItem
+            {
+                ProductIdentifier = item.ProductIdentifier,
+                Quantity = item.Quantity
+            }).ToList(),
+            CustomerId = customerId,
+            LanguageName = "en",
+            Mode = PriceCalculationMode.ShoppingCart,
+            // Pass any coupon codes entered by the customer
+            CouponCodes = cart.CouponCodes
+        };
+
+        // Calculate prices - promotions requiring matching coupon codes are applied
+        PriceCalculationResult result =
+            await priceCalculationService.Calculate(calculationRequest, cancellationToken);
+
+        return result;
+    }</code></pre>
+</div>
+
+<p>The price calculation pipeline automatically checks each promotion’s coupon requirements. Promotions requiring a coupon code are only evaluated if a matching code is present in the <code>CouponCodes</code> collection.</p>
+<h3 id="access-applied-coupon-codes-from-calculation-results">Access applied coupon codes from calculation results</h3>
+<p>You can access the actually applied coupon codes from the price calculation result through the <code>PromotionData</code> property:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Access coupon codes from calculation result</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="17,29"><code>    /// &lt;summary&gt;
+    /// Demonstrates how to access applied coupon codes from the price calculation result.
+    /// Coupon codes are available in the PromotionData of the calculation result.
+    /// &lt;/summary&gt;
+    public void AccessAppliedCouponCodes(PriceCalculationResult calculationResult)
+    {
+        // Access coupon codes from catalog promotions (per-item discounts)
+        foreach (var item in calculationResult.Items)
+        {
+            var appliedCatalogPromotion = item.PromotionData.CatalogPromotionCandidates
+                .FirstOrDefault(candidate =&gt; candidate.Applied);
+
+            if (appliedCatalogPromotion != null)
+            {
+                // CouponCode property contains the code that triggered the promotion,
+                // or null if the promotion was applied automatically
+                string? couponCode = appliedCatalogPromotion.CouponCode;
+            }
+        }
+
+        // Access coupon codes from order promotions
+        var appliedOrderPromotion = calculationResult.PromotionData.OrderPromotionCandidates
+            .FirstOrDefault(candidate =&gt; candidate.Applied);
+
+        if (appliedOrderPromotion != null)
+        {
+            // CouponCode property contains the code that triggered the promotion,
+            // or null if the promotion was applied automatically
+            string? couponCode = appliedOrderPromotion.CouponCode;
+        }
+    }</code></pre>
+</div>
+
+<p>The <code>CouponCode</code> property on applied promotion candidates contains the coupon code that triggered the promotion, or <code>null</code> if the promotion was applied automatically.</p>
+<h3 id="pass-coupon-codes-to-order-creation">Pass coupon codes to order creation</h3>
+<p>When creating an order, include the coupon codes so they are passed to price calculation during order creation:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Pass coupon codes to order creation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="20-22"><code>    /// &lt;summary&gt;
+    /// Creates order data with coupon codes for order creation.
+    /// &lt;/summary&gt;
+    public OrderData CreateOrderDataWithCoupons(
+        ShoppingCartDataModel cart,
+        int memberId,
+        string orderNumber,
+        AddressDto billingAddress,
+        int paymentMethodId,
+        int shippingMethodId)
+    {
+        OrderData orderData = new OrderData
+        {
+            MemberId = memberId,
+            OrderNumber = orderNumber,
+            LanguageName = "en",
+            BillingAddress = billingAddress,
+            PaymentMethodId = paymentMethodId,
+            ShippingMethodId = shippingMethodId,
+            // Include the coupon codes so they are passed to price calculation
+            // during order creation and persisted with the order
+            CouponCodes = cart.CouponCodes,
+            OrderItems = cart.Items.Select(item =&gt; new OrderItem
+            {
+                ProductIdentifier = item.ProductIdentifier,
+                Quantity = item.Quantity
+            }).ToList()
+        };
+
+        return orderData;
+    }</code></pre>
+</div>
+
+<h2 id="implement-coupon-code-entry-in-the-shopping-cart">Implement coupon code entry in the shopping cart</h2>
+<p>To allow customers to enter coupon codes on your live site, you need to:</p>
+<ol type="1">
+<li>Store entered coupon codes in your shopping cart data model.</li>
+<li>Provide a live site UI for entering and removing codes in your store.</li>
+<li>Pass the codes to price calculation.</li>
+</ol>
+<h3 id="store-coupon-codes-in-the-cart">Store coupon codes in the cart</h3>
+<p>Add a collection to store coupon codes in your <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process#manage-the-current-shopping-cart">shopping cart</a> data model:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Shopping cart data model with coupon codes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="4"><code>    /// &lt;summary&gt;
+    /// Coupon codes entered by the customer.
+    /// &lt;/summary&gt;
+    public ICollection&lt;string&gt; CouponCodes { get; set; } = new List&lt;string&gt;();</code></pre>
+</div>
+
+<h3 id="handle-coupon-code-actions">Handle coupon code actions</h3>
+<p>Create controller actions to add coupon codes:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Controller actions for coupon codes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="15"><code>    /// &lt;summary&gt;
+    /// Adds a coupon code to the shopping cart.
+    /// &lt;/summary&gt;
+    [HttpPost]
+    public async Task&lt;IActionResult&gt; AddCoupon(string couponCode, CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine($"Applying {couponCode}");
+
+        if (string.IsNullOrWhiteSpace(couponCode))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Calls a helper service to handle coupon operations
+        await _shoppingCartService.AddCouponCode(couponCode.Trim(), cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ShoppingCartService.AddCouponCode</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="27-32"><code>    private readonly ICurrentShoppingCartRetriever _shoppingCartRetriever;
+    private readonly ICurrentShoppingCartCreator _shoppingCartCreator;
+    private readonly ICurrentShoppingCartDiscardHandler _shoppingCartDiscardHandler;
+    private readonly ICurrentShoppingCartMemberSignInHandler _shoppingCartMemberSignInHandler;
+
+    public ShoppingCartService(
+        ICurrentShoppingCartRetriever shoppingCartRetriever,
+        ICurrentShoppingCartCreator shoppingCartCreator,
+        ICurrentShoppingCartDiscardHandler shoppingCartDiscardHandler,
+        ICurrentShoppingCartMemberSignInHandler shoppingCartMemberSignInHandler)
+    {
+        _shoppingCartRetriever = shoppingCartRetriever;
+        _shoppingCartCreator = shoppingCartCreator;
+        _shoppingCartDiscardHandler = shoppingCartDiscardHandler;
+        _shoppingCartMemberSignInHandler = shoppingCartMemberSignInHandler;
+    }
+
+    /// &lt;summary&gt;
+    /// Adds a coupon code to the shopping cart.
+    /// &lt;/summary&gt;
+    public async Task AddCouponCode(string couponCode, CancellationToken cancellationToken = default)
+    {
+        var cart = await GetOrCreateCart(cancellationToken);
+        var cartData = cart.GetShoppingCartDataModel();
+
+        // Check if the code is already applied (case-insensitive)
+        if (!cartData.CouponCodes.Contains(couponCode, StringComparer.OrdinalIgnoreCase))
+        {
+            cartData.CouponCodes.Add(couponCode);
+            cart.StoreShoppingCartDataModel(cartData);
+            cart.Update();
+        }
+    }
+
+    /// &lt;summary&gt;
+    /// Gets the current shopping cart or creates a new one if it doesn't exist
+    /// using &lt;see cref="ICurrentShoppingCartRetriever"/&gt; and &lt;see cref="ICurrentShoppingCartCreator"/&gt;.
+    /// &lt;/summary&gt;
+    public async Task&lt;ShoppingCartInfo&gt; GetOrCreateCart(CancellationToken cancellationToken = default)
+    {
+        var cart = await _shoppingCartRetriever.Get(cancellationToken);
+        cart ??= await _shoppingCartCreator.Create(cancellationToken);
+        return cart;
+    }</code></pre>
+</div>
+
+<p>And to remove coupon codes:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Controller actions for coupon codes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="13"><code>    /// &lt;summary&gt;
+    /// Removes a coupon code from the shopping cart.
+    /// &lt;/summary&gt;
+    [HttpPost]
+    public async Task&lt;IActionResult&gt; RemoveCoupon(string couponCode, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(couponCode))
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Calls a helper service to handle coupon operations
+        await _shoppingCartService.RemoveCouponCode(couponCode.Trim(), cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ShoppingCartService.RemoveCouponCode</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="33-24,37-42"><code>    private readonly ICurrentShoppingCartRetriever _shoppingCartRetriever;
+    private readonly ICurrentShoppingCartCreator _shoppingCartCreator;
+    private readonly ICurrentShoppingCartDiscardHandler _shoppingCartDiscardHandler;
+    private readonly ICurrentShoppingCartMemberSignInHandler _shoppingCartMemberSignInHandler;
+
+    public ShoppingCartService(
+        ICurrentShoppingCartRetriever shoppingCartRetriever,
+        ICurrentShoppingCartCreator shoppingCartCreator,
+        ICurrentShoppingCartDiscardHandler shoppingCartDiscardHandler,
+        ICurrentShoppingCartMemberSignInHandler shoppingCartMemberSignInHandler)
+    {
+        _shoppingCartRetriever = shoppingCartRetriever;
+        _shoppingCartCreator = shoppingCartCreator;
+        _shoppingCartDiscardHandler = shoppingCartDiscardHandler;
+        _shoppingCartMemberSignInHandler = shoppingCartMemberSignInHandler;
+    }
+
+    /// &lt;summary&gt;
+    /// Removes a coupon code from the shopping cart.
+    /// Implementation-dependent based on the site's shopping cart model.
+    /// &lt;/summary&gt;
+    public async Task RemoveCouponCode(string couponCode, CancellationToken cancellationToken = default)
+    {
+        var cart = await _shoppingCartRetriever.Get(cancellationToken);
+        if (cart == null)
+        {
+            return;
+        }
+
+        var cartData = cart.GetShoppingCartDataModel();
+
+        // Find and remove the coupon code
+        var codeToRemove = cartData.CouponCodes
+            .FirstOrDefault(c =&gt; string.Equals(c, couponCode, StringComparison.OrdinalIgnoreCase));
+
+        // Updates the cart in the database
+        if (codeToRemove != null)
+        {
+            cartData.CouponCodes.Remove(codeToRemove);
+            cart.StoreShoppingCartDataModel(cartData);
+            cart.Update();
+        }
+    }</code></pre>
+</div>
+
+<h3 id="display-coupon-code-ui">Display coupon code UI</h3>
+<p>Add a form for entering coupon codes and display applied codes. A basic interface handling coupon actions should include:</p>
+<ul>
+<li>A form with a text input field and a submit button where customers can enter a discount code.</li>
+<li>A list displaying all currently applied coupon codes from the shopping cart.</li>
+<li>An option to remove applied coupons.</li>
+</ul>
+
+</body>
+</html>

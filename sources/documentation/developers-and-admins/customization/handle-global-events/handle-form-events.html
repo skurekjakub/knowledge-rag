@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Handle form events</title>
+</head>
+<body>
+<p>You can run custom actions directly when form actions occur by <a href="/documentation/developers-and-admins/customization/handle-global-events">implementing handlers</a> for events of the <code>BizFormItemEvents</code> type. The system invokes the following events in response to form actions:</p>
+<ul>
+<li>
+<code>Update</code> – invoked when a form record is updated.</li>
+<li>
+<code>Insert</code> – invoked on each form submission.</li>
+<li>
+<code>Delete</code> – invoked when a form record is deleted.</li>
+</ul>
+<p>Use the appropriate event type to perform your custom actions or data modifications <code>Before</code> or <code>After</code> the given form event.</p>
+<p>To access the data of the active form in the event handler, use the <code>Item</code> property <em>(</em><code>BizFormItem</code> type) of the <code>BizFormItemEventArgs</code> parameter. The parameter is available for all form item event handlers.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+
+using CMS;
+using CMS.DataEngine;
+using CMS.OnlineForms;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(FormHandlerModule))]
+
+public class FormHandlerModule : Module
+{
+    // Module class constructor, the system registers the module under the name "CustomFormHandlers"
+    public FormHandlerModule()
+        : base("CustomFormHandlers")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Assigns a handler to the BizFormItemEvents.Insert.After event
+        // This event occurs after the creation of every new form record
+        BizFormItemEvents.Insert.After += FormItem_InsertAfterHandler;
+    }
+
+    // Handles the form data when users create new records for the 'ContactUs' form
+    private void FormItem_InsertAfterHandler(object sender, BizFormItemEventArgs e)
+    {
+        // Gets the form data object from the event handler parameter
+        BizFormItem formDataItem = e.Item;
+
+        // Checks that the form record was successfully created
+        // Ensures that the custom actions only occur for records of the 'ContactUs' form
+        // The values of form class names must be in lower case
+        if (formDataItem != null &amp;&amp; formDataItem.BizFormClassName.Equals("bizform.contactus", StringComparison.OrdinalIgnoreCase))
+        {
+            string firstNameFieldValue = formDataItem.GetStringValue("FirstName", "");
+            string lastNameFieldValue = formDataItem.GetStringValue("LastName", "");
+
+            // Perform any required logic with the form field values
+
+            // Variable representing a custom value that you want to save into the form data
+            object customFieldValue = "customValue";
+
+            // Sets and saves a value for the form record's 'CustomField' field
+            formDataItem.SetValue("CustomField", customFieldValue);
+            formDataItem.SubmitChanges(false);
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

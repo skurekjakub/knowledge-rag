@@ -1,0 +1,422 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Headless channel management</title>
+</head>
+<body>
+<p>Headless channels encapsulate content that is intended to be served using HTTP requests and <a href="https://graphql.org/" target="_blank">GraphQL</a>. Such headless content can be displayed or otherwise consumed by various types of applications, services or websites (e.g., mobile apps, external websites, single-page applications running within Xperience, etc.).</p>
+<p>Every headless channel has its own <a href="https://graphql.org/learn/serving-over-http/" target="_blank">GraphQL API endpoint</a>, which is secured by one or more <a href="#manage-api-keys">API keys</a>. Each channel also has <strong>its own application</strong> in the Xperience administration, where editors can <a href="/documentation/business-users/headless-content">manage content</a> intended for headless distribution. The content is stored in items based on headless <a href="/documentation/developers-and-admins/development/content-types">content types</a>. These headless items can also reuse content from <a href="/documentation/business-users/content-hub">Content hub</a> that is shared between all types of channels.</p>
+<p>To start using the headless API:</p>
+<ol type="1">
+<li>
+<a href="#create-headless-channels">Create</a> one or more headless channels.</li>
+<li>Define <a href="/documentation/developers-and-admins/development/content-types">content types</a> for headless content.</li>
+<li>
+<a href="/documentation/business-users/headless-content">Create</a> headless items.</li>
+<li>
+<a href="#configure-the-headless-api">Configure</a> the headless API.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">Consume</a> the content.</li>
+</ol>
+<h2 id="create-headless-channels">Create headless channels</h2>
+<p>To create a new headless channel:</p>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application in the Xperience administration.</li>
+<li>Select <strong>New channel</strong>.</li>
+<li>Fill in:
+<ul>
+<li><p><strong>Channel name</strong> – the name of the channel displayed in the administration. Also sets the name of the channel application where users manage the website’s headless items and edit content.</p></li>
+<li>
+<p><em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</p>
+<ul>
+<li>
+<strong>Note</strong>: Channel code names must be unique across all channels (of any type).</li>
+</ul>
+</li>
+<li><p><strong>Channel type</strong> – select <em>Headless</em> as the channel type.</p></li>
+<li><p><strong>Channel size</strong> – channels are available in two sizes: <em>Standard</em> and <em>Micro</em>. <strong>Standard</strong> channels may contain an unlimited number of content items. <strong>Microchannels</strong> are limited to 20 items, each of which can link an unlimited number of <a href="/documentation/business-users/content-hub">reusable content items</a>.</p></li>
+<li><p><strong>Primary language</strong> – a <a href="/documentation/developers-and-admins/configuration/languages">language</a> configured in the <strong>Languages</strong> application that specifies which language version of headless items is retrieved if no language is specified in the query.</p></li>
+<li>
+<p><strong>Preview URL</strong> – URL of the environment in which you want to preview the headless content, shared for all headless items in the channel. The URL is accessible via the <a href="/documentation/business-users/headless-content">Preview button</a> in the headless channel application.</p>
+
+<div>
+
+</div>
+<div>
+<p>As the <strong>Preview URL</strong> is common for the whole channel (it is currently not possible to assign a specific URL for each headless item separately), we recommend that developers design the target environment of the Preview URL as a link tree for easier navigation to individual headless items.</p>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>After you create a headless channel, a GraphQL API endpoint is created. However, the endpoint is inactive until you create at least one <a href="/documentation/developers-and-admins/development/content-types">content type</a> for headless items and assign it to the channel on the <strong>Allowed content types</strong> tab.</p>
+<h3 id="assign-content-types-to-headless-channels">Assign content types to headless channels</h3>
+<p>Every headless item uses a specific <a href="/documentation/developers-and-admins/development/content-types">content type</a>. The content type defines the fields that users can edit when creating headless items.</p>
+<p>To create headless items under a channel, you need to prepare suitable content types and allow them for the channel:</p>
+<ol type="1">
+<li>Open <strong>Channel management</strong> application.</li>
+<li>Select a headless channel.</li>
+<li>On the <strong>Allowed content types</strong> tab, <strong>Select content types</strong>.</li>
+<li>Select or clear the checkboxes to choose which content types you want to make available in the channel.</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>Headless items of the selected content types can now be <a href="/documentation/business-users/headless-content">created</a> in the headless channel application.</p>
+<h3 id="change-channel-size-of-existing-channels">Change channel size of existing channels</h3>
+<p>You can freely change between the <em>microchannel</em> and <em>standard</em> channel size of existing channels via the <strong>General</strong> tab. Additionally, changing <em>standard</em> channels to <em>microchannels</em> does not cause any data loss in case the converted channel exceeds microchannel limits. However, you will receive a license violation warning if the resulting channel or item count oversteps the limits of your license for that particular channel type.</p>
+<h2 id="graphql-api-endpoints">GraphQL API endpoints</h2>
+<p>The API endpoints of headless channels are available on all domains where the Xperience project is running. This includes:</p>
+<ul>
+<li><p><a href="/documentation/developers-and-admins/configuration/website-channel-management">Website channel domains</a></p></li>
+<li>
+<p>Administration interface domain (including the <em>System</em> domains of <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments">SaaS environment deployments</a>)</p>
+
+<div>
+
+</div>
+<div>
+<p>The GraphQL API endpoint is available on the system and default channel domains of any SaaS deployment that is publicly available. Keep this in mind when designing your project’s security.</p>
+</div>
+</li>
+<li><p>Service domains of <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a></p></li>
+</ul>
+<p>To find the URL on which a headless channel’s endpoint is available, follow these steps:</p>
+<ol type="1">
+<li><p>Select one of the domains on which the endpoint is available.</p></li>
+<li><p>Navigate to the <strong>Channel management</strong> application → select a headless channel → <strong>General</strong> tab and copy the endpoint URL path in the <strong>GraphQL API endpoint</strong> field.<br>
+</p></li>
+<li>
+<p>The GraphQL API endpoint URL is in format <strong>&lt;domain&gt;/&lt;GraphQL API endpoint path&gt;</strong>, e.g.:<br>
+<em>https://example.com/graphql/09114e33-7578-4152-af81-62677bcca740</em></p>
+
+<div>
+
+</div>
+<div>
+<p>The endpoint slug (‘<em>/graphql</em>’ by default) can be <a href="#configure-the-headless-api">configured</a>.</p>
+</div>
+</li>
+</ol>
+<h2 id="configure-the-headless-api">Configure the headless API</h2>
+<p>The headless API can be configured (for all headless channels) by setting the following keys in the application’s configuration file (<em>appsettings.json</em> by default):</p>
+<ul>
+<li>
+<p><code>CMSHeadless</code></p>
+<ul>
+<li><p><code>Enable</code> – a boolean value that specifies whether headless channel endpoints are enabled (both <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">GraphQL API</a> and <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">Tracking API</a> endpoints). The default value is <em>true</em>.</p></li>
+<li><p><code>EnableTracking</code> – a boolean value that specifies whether <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">Tracking API</a> endpoints are enabled. Allows you to disable the tracking API while keeping the GraphQL API enabled. The default value is <em>true</em>.</p></li>
+<li><p><code>EnableComplexity</code> – a boolean value that specifies whether <a href="https://typegraphql.com/docs/complexity.html" target="_blank">complexity analysis</a> is enabled.</p></li>
+<li><p><code>EnableUnionQueryOptimization</code> – a boolean value that specifies whether performance optimizations are enabled for GraphQL queries that retrieve data with fields linking to a large number of possible content types (e.g. fields with the <em>Pages and reusable content data</em> type). This prevents timeout errors for queries that load data with a very large number of linked content types. The default value is <em>true</em>.</p></li>
+<li><p><code>MaxFieldCycleDepth</code> – specifies the maximum allowed depth of field cycles in a GraphQL query. The default value is 5.</p></li>
+<li><p><code>AllowIntrospection</code> – a boolean value that specifies whether <a href="https://graphql.org/learn/introspection/" target="_blank">GraphQL introspection</a> is enabled (<code>__schema</code> queries and GUI tools for exploring the schema). <em>False</em> by default.</p></li>
+<li><p><code>GraphQlEndpointPath</code> – specifies the slug used in headless channel GraphQL endpoint URLs. You need to include the leading slash (‘<em>/</em>’). The default value is <em>/graphql</em>.</p></li>
+<li>
+<p><code>CorsAllowedOrigins</code> – specifies domains that are allowed origins for <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank">CORS</a> (Cross-Origin Resource Sharing). See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content#cross-origin-resource-sharing">Retrieve headless content</a> to learn more.</p>
+
+<div>
+
+</div>
+<div>
+<p>We recommend configuring allowed origins for CORS in the <strong>Settings</strong> application within the Xperience administration, via the <strong>Content → Headless → Allowed origins</strong> setting. The setting overrides any values set in your application’s configuration file or startup options.</p>
+</div>
+</li>
+<li><p><code>CorsAllowedHeaders</code> – indicates which HTTP headers are allowed for content retrieval requests. If not set, all headers are allowed by default. See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content#cross-origin-resource-sharing">Retrieve headless content</a> to learn more.</p></li>
+<li>
+<p><code>Caching</code> – an object that contains options which allow you to customize caching behavior for headless content. The default values provide optimal caching performance for most projects.</p>
+<ul>
+<li>
+<code>Enable</code> – a boolean value that specifies whether caching is enabled. The default value is <em>true</em>.</li>
+<li>
+<code>UseRequestCacheControlHeaders</code> – a boolean property that specifies whether caching respects the <em>Cache-Control</em> header of individual requests. The default value is <em>true</em>.</li>
+<li>
+<code>AddResponseCacheControlHeaders</code> – a boolean property that specifies whether caching sets the <em>Cache-Control</em> response header. The default value is <em>true</em>.</li>
+<li>
+<code>UseCacheDependencies</code> – a boolean property that specifies whether caching uses cache dependencies to flush the cache when data in a cached response changes. The default value is <em>true</em>.</li>
+<li>
+<code>AbsoluteExpiration</code> – specifies the maximum expiration time for a cache entry in minutes. The default value is 12 hours.</li>
+<li>
+<code>SlidingExpiration</code> – specifies a sliding expiration date for cache entries in minutes. Cannot exceed the value of <code>AbsoluteExpiration</code>. The default value is 1 hour.</li>
+<li>
+<code>SizeLimit</code> – maximum size for in-memory cache in bytes. The default value is 100 megabytes.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample project configuration file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  ...
+
+  "CMSHeadless": {
+    "AllowIntrospection": true,
+    "GraphQlEndpointPath": "/api",
+    "Caching": {
+      "AbsoluteExpiration": "360"
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<p>If you wish to use a different <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration" target="_blank">provider</a> for your project configuration (e.g., <a href="https://azure.microsoft.com/en-us/products/key-vault" target="_blank">Azure Key Vault</a>), you can map the configuration in your project’s startup file (<em>Program.cs</em>) using the <code>HeadlessOptions</code> class, with properties matching the configuration keys described above:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Sample project startup file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Headless;
+
+builder.Services.AddKentico(...);
+
+builder.Services.Configure&lt;HeadlessOptions&gt;(options =&gt;
+{
+    // Enables introspection in the Development environment
+    options.AllowIntrospection = builder.Environment.IsDevelopment();
+    // Changes the endpoint slug to 'api'
+    options.GraphQlEndpointPath = "/api";
+    // Changes the maximum expiration of a cache entry to 6 hours
+    options.Caching.AbsoluteExpiration = TimeSpan.FromHours(6);
+});
+
+</code></pre>
+</div>
+
+<h3 id="configure-preview-url-overrides">Configure Preview URL overrides</h3>
+<p>Preview URL overrides enable you to better separate the Preview URL between different environments. The overrides can be configured programmatically using the <code>HeadlessChannelUrlOptions</code> class and ASP.NET Core <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a>.</p>
+<p>For example, when configured via <em>appsettings.json</em>:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Sample project configuration file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  ...    
+
+  "HeadlessChannelUrls": {
+    "UrlOverrides": {
+      "DancingGoatHeadless": {
+        "PreviewUrl": "https://preview.domain.com",
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Sample project startup file</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Headless;
+
+builder.Services.AddKentico(...);  
+
+// Apply the Preview URL overrides configuration from appsettings.json
+builder.Services.Configure&lt;HeadlessChannelUrlOptions&gt;(builder.Configuration.GetSection("HeadlessChannelUrls"));
+
+</code></pre>
+</div>
+
+<p>Where <code>DancingGoatHeadless</code> is the code name of the headless channel to configure. This configuration <strong>takes priority</strong> over the channel options set via the <strong>General</strong> tab in the Xperience user interface.</p>
+<p>You can also make use of the <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options pattern</a> to set different overrides per <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments" target="_blank">environment</a> by introducing corresponding <strong>appsettings.environment.json</strong> files. The following example sets the override to <em>localhost</em> when the project is run under the <em>Development</em> environment.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.Development.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "HeadlessChannelUrls": {
+    "UrlOverrides": {
+      "DancingGoatHeadless": {
+        "PreviewUrl": "localhost",
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h2 id="manage-api-keys">Manage API keys</h2>
+<p>Headless channel GraphQL API endpoints are secured. All requests to an endpoint need to have an <em>Authorization</em> header storing a valid and enabled API key. The API keys are managed in Xperience for each headless channel.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Permission requirements</strong></p>
+<p>To manage API keys on the <strong>API keys</strong> tab, users need to have a <a href="/documentation/developers-and-admins/configuration/users/role-management">role</a> with the <strong>Manage headless channel API keys</strong> permission for the <strong>Channel management</strong> application. Contact your project’s administrator if you cannot access the application.</p>
+</div>
+
+<h3 id="create-api-keys">Create API keys</h3>
+<p>To create a new API key:</p>
+<ol type="1">
+<li><p>Open the <strong>Channel management</strong> application in the Xperience administration.</p></li>
+<li><p>Select a headless channel.</p></li>
+<li><p>Switch to the <strong>API keys</strong> tab.</p></li>
+<li><p>Select <strong>New key</strong>.</p></li>
+<li>
+<p>Enter the <strong>API key name</strong>.</p>
+<ul>
+<li>The API key name should describe the purpose and usage scope of the API key, e.g.: <em>Production</em>, <em>Testing</em>, <em>Development</em>, <em>ExternalCompany</em>
+</li>
+</ul>
+</li>
+<li>
+<p>Select the <strong><a href="#access-types-of-api-keys">Access type</a></strong> of the key.</p>
+<ul>
+<li>The Access type cannot be edited once the API key is created. If you need an API key with a different Access type, create a new key instead.</li>
+</ul>
+</li>
+<li><p>(Optional) If you want to create the key as disabled (e.g., when you only want to prepare the key now but enable it later), clear the <strong>Enabled</strong> checkbox.</p></li>
+<li><p><strong>Generate</strong> the key.<br>
+</p></li>
+<li>
+<p>Copy the API key and store it in a safe location.</p>
+<ul>
+<li>The system does not store API keys and you cannot view them again. If you lose an API key, you need to create a new one.</li>
+</ul>
+<p></p>
+</li>
+<li><p>Select <strong>Continue</strong> after you have copied the key and stored it in a safe location.</p></li>
+</ol>
+<p>You need to authenticate every request that retrieves headless content by adding the following HTTP header:</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong>HTTP Authorization header</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+Authorization: Bearer &lt;ApiKey&gt;
+
+</code></pre>
+</div>
+
+<h3 id="access-types-of-api-keys">Access types of API keys</h3>
+<p>The headless API provides different API keys for various types of scenarios. </p>
+<p>For content retrieval requests against the channel’s GraphQL API endpoint you can use the following Access types:</p>
+<ul>
+<li><p><strong>Headless content - Draft</strong> – Grants access to the latest available version of headless items, i.e., items in the <em>Draft</em> step or a <a href="/documentation/developers-and-admins/configuration/workflows">custom workflow step</a> (if available), or the <em>Published</em> status.</p></li>
+<li>
+<p><strong>Headless content - Published</strong> – Grants access only to <em>Published</em> headless items. When <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">retrieving headless content</a> using a key with this <em>Access type</em>, items without a published version will not be included in the retrieved data at all.</p>
+
+<div>
+
+</div>
+<div>
+<p>The type of granted access applies transitively to all linked items of accessed headless content. That is, when using a <strong>Headless content - Draft</strong> key, the linked items will also be accessed in their latest available version. Alternatively, when using a <strong>Headless content - Published</strong> key, only published linked items will be accessed.</p>
+</div>
+</li>
+</ul>
+<p>For tracking API requests you can use the following Access type:</p>
+<ul>
+<li>
+<strong>Tracking API</strong> – Authorizes requests against the application’s tracking API endpoints. Allows contact creation, activity logging, consent operations, etc. For more information, see <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">Headless tracking</a>.</li>
+</ul>
+<h3 id="disable-api-keys">Disable API keys</h3>
+<p>To disable an API key:</p>
+<ol type="1">
+<li>Open the <strong>Channel management</strong> application in the Xperience administration.</li>
+<li>Select a headless channel.</li>
+<li>Switch to the <strong>API keys</strong> tab.</li>
+<li>There are multiple ways to disable an API key:
+<ul>
+<li>Select the key you want to disable and clear the <strong>Enabled</strong> check box.<br>
+</li>
+<li>
+<strong>Disable</strong> () the API key to temporarily disable the API key. You can later <strong>Enable</strong> () the API key.</li>
+<li>
+<strong>Delete</strong> () the API key to permanently remove the API key.<br>
+</li>
+</ul>
+</li>
+</ol>
+<p>After you disable an API key, any services or applications using this key have their access immediately revoked and any further requests using this API key will result in an authorization error.</p>
+<h3 id="securely-use-api-keys">Securely use API keys</h3>
+<p>The API key needs to be sent in the HTTP header of all GraphQL requests. If sent from a client API on a public web page, it can be seen by anyone. It is recommended to not add the API key to request headers directly in the client API, but to instead use a backend proxy server to add the <em>Authorization</em> request header and forward the requests to the GraphQL API endpoint.</p>
+<h2 id="retrieve-headless-content">Retrieve headless content</h2>
+<p>For more information, see <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-headless-content">Retrieve headless content</a>.</p>
+
+</body>
+</html>

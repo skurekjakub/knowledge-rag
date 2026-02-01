@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Settings</title>
+</head>
+<body>
+<p>The system provides various settings that allow users in the administration to enable and configure system features.</p>
+<p>You can access the settings in the <strong>Settings</strong> application.</p>
+<p></p>
+<p>Always select <strong>Save</strong> to confirm any changes that you make in the settings.</p>
+<h2 id="search-for-settings">Search for settings</h2>
+<p>There is a large number of settings in Xperience. To find a particular setting among all the categories:</p>
+<ol type="1">
+<li>Access the <strong>Settings</strong> application.</li>
+<li>Enter related keywords into the search bar at the top of the page.</li>
+<li>Press Enter.</li>
+</ol>
+<p>The page displays all settings that contain the search text in their name or description text (tooltip). You can edit the values of the settings directly in the search results.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Application settings</strong></p>
+<p>In addition to the settings available in the Xperience administration, the system’s functionality can be adjusted via low-level application configuration keys. These keys are managed using ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/" target="_blank">configuration providers</a>. By default, Xperience projects contain an <strong>appsettings.json</strong> file for this purpose.</p>
+<p>For more information, see <a href="/documentation/developers-and-admins/configuration/reference-configuration-keys">Reference - Configuration keys</a>.</p>
+</div>
+
+<h2 id="load-the-values-of-settings-using-the-api">Load the values of settings using the API</h2>
+<p>If you wish to adjust custom functionality based on specific Xperience settings, you need to retrieve and reflect their values in your custom code.</p>
+<p>To load the values of settings, use <code>ISettingsService</code> (we recommend using <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> to instantiate system service classes). The service exposes an indexer that you can use to access the values of individual settings. Setting keys are identified by their code names.</p>
+<p>The service always returns <code>string</code> values. If you need to cast the setting value to a different type, use <code>IConversionService</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Core;
+
+...
+
+// Contains an instance of the settings service (e.g., obtained using dependency injection)
+private readonly ISettingsService settingsService;
+
+// Contains an instance of the conversion service (e.g., obtained using dependency injection)
+private readonly IConversionService conversionService;
+
+// Checks if Continuous Integration is enabled
+bool continuousIntegrationEnabled = conversionService.GetBoolean(settingsService["CMSEnableCI"], false);
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

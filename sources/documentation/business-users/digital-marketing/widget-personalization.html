@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Personalize Page Builder widgets</title>
+</head>
+<body>
+<p>Personalization is a digital marketing technique that allows you to display different content on pages based on the situation in which they are viewed. This can help you provide more accurately targeted information to visitors and increase the effectiveness of your websites. For example, you can show modified text or additional offers to visitors who belong to a specific <a href="/documentation/business-users/digital-marketing/contact-groups">contact group</a>.</p>
+<p>You can personalize content that is displayed through <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder widgets</a>. Individual widgets allow you to create multiple variants, which are then displayed to a different audience based on predefined conditions.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>Content personalization of widgets needs to be configured by your developers. For more information, see:</p>
+<ul>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization">Content personalization</a></li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/develop-personalization-condition-types">Develop personalization condition types</a></li>
+</ul>
+</div>
+
+<h2 id="personalize-widgets">Personalize widgets</h2>
+<p>To personalize widget content, you need to create one or more personalization variants and set up a condition. The condition decides whether the page displays the original widget or a personalized variant.</p>
+<ol type="1">
+<li>In a website channel application, select a page that contains <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder widgets</a>.</li>
+<li>Select <strong>Page Builder</strong> in the page menu on the right side of the interface.</li>
+<li>Select the widget you want to personalize.</li>
+<li>Select the <strong>Personalize</strong> (<i></i>) icon in the widget header.</li>
+<li>Choose the condition type that you wish to use to personalize the widget.<br>
+</li>
+<li>Fill in the configuration dialog and enter a name for the new variant.<br>
+</li>
+<li>Select <strong>Apply</strong> within the dialog.</li>
+<li>Modify the properties or content of the new widget variant. Consider the target audience of the variant’s condition when preparing the modified content.</li>
+<li>
+<strong>Save</strong> the page to confirm the personalization.</li>
+</ol>
+<p>The new personalization variant of your widget is now created. In the Page Builder edit mode, you can switch between personalization variants of a widget by selecting the <strong>Personalize</strong> (<i></i>) icon and choosing the desired variant.</p>
+<p>When a visitor views the page on the live site, the system evaluates the condition and displays the appropriate variant.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Configure widget personalization variants</strong></p>
+<p>The available personalization condition types, their properties in the configuration dialog, and the properties of widgets all depend on the implementation of your website. For more information, visit your project’s documentation or contact your developer.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Search engine web crawlers</strong></p>
+<p>Widget personalization in Xperience does not offer any special handling of search engine web crawlers. Crawlers are treated as regular anonymous visitors. To avoid <a href="https://developers.google.com/search/docs/advanced/guidelines/cloaking" target="_blank">cloaking</a> (presenting content to crawlers which is different than content seen by regular users), we recommend using personalization conditions based on <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> attributes. Such conditions are not fulfilled by crawlers, so they always receive and process the original widget variant.</p>
+<p>However, certain conditions (e.g., time-based conditions depending on the day of the week) can be satisfied by crawlers and result in non-original variants being presented.</p>
+</div>
+
+<h2 id="create-additional-variants">Create additional variants</h2>
+<p>You can add variants to a personalized widget. All variants of a single widget use the <strong>same type of personalization condition</strong>, but you can configure different properties for the condition of each variant. For example, if a condition type requires visitors to belong to specific contact groups, you select different groups for each personalization variant.</p>
+<ol type="1">
+<li>Select <strong>Personalize</strong> (<i></i>) in the widget header to open the variant list.</li>
+<li>Select <strong>Add variant</strong> under the list.<br>
+</li>
+<li>Fill in the configuration dialog and enter a name for the new variant.</li>
+<li>Select <strong>Apply</strong> within the dialog.</li>
+<li>Modify the properties or content of the new widget variant.</li>
+<li>
+<strong>Save</strong> the page to confirm the creation of the variant.</li>
+</ol>
+<p>The new variant is created as a copy of the previously selected variant. The new variant is placed on top of the variant list while the original variant stays at the bottom.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Priority of variants</strong></p>
+<p>The variants are evaluated from top to bottom according to their position in the variant list. The first variant for which the conditions are satisfied is displayed.</p>
+<p><strong>Recommended number of variants</strong></p>
+<p>You can create an unlimited number of variants for a single widget. However, for optimal displaying of the variant list, we do not recommend creating more than <strong>10 variants</strong> for each widget.</p>
+</div>
+
+<h2 id="edit-variants">Edit variants</h2>
+<p>You can edit the properties of your widget variants even after they are created. To edit a variant:</p>
+<ol type="1">
+<li>Select <strong>Personalize</strong> (<i></i>) in the widget header to open the variant list.</li>
+<li>Hover over the variant you want to edit.</li>
+<li>Select <strong>Edit variant</strong> (<i></i>). The pre-filled configuration dialog with the current variant’s properties is displayed.</li>
+<li>Edit the desired properties and select <strong>Apply</strong> within the dialog.</li>
+<li>
+<strong>Save</strong> the page to confirm the changes.</li>
+</ol>
+<h2 id="change-the-priority-of-variants">Change the priority of variants</h2>
+<p>You can reorder personalization variants in order to change their priority of evaluation. Variants are evaluated from top to bottom, i.e. the first variant in the list for which the conditions are satisfied is displayed. To reorder variants:</p>
+<ol type="1">
+<li>Select <strong>Personalize</strong> (<i></i>) in the widget header to open the variant list.</li>
+<li>Drag and drop the variants using the <strong>Change priority</strong> handle on the left of the list.</li>
+<li>
+<strong>Save</strong> the page to confirm the changes.</li>
+</ol>
+<h2 id="delete-variants">Delete variants</h2>
+<p>To delete a personalization variant for a widget:</p>
+<ol type="1">
+<li>Select <strong>Personalize</strong> (<i></i>) in the widget header to open the variant list.</li>
+<li>Hover over the variant you want to delete.</li>
+<li>Select <strong>Delete variant</strong> (<i></i>).</li>
+<li>
+<strong>Save</strong> the page to confirm the change.</li>
+</ol>
+
+</body>
+</html>

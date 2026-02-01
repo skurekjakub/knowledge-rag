@@ -1,0 +1,960 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Glossary</title>
+</head>
+<body>
+<p>This glossary provides an overview of Xperience by Kentico terminology you may encounter when using the product or reading the documentation. The intended audience is all roles interacting with the system, from technical (developers, administrators) to business users (content editors, marketers).</p>
+<p>You don’t need to learn all these terms by heart, but you can use the tables below as a reference if you encounter a new phrase while working with the system. If you think an important term is missing from this reference, leave us feedback via the <em>Send us feedback</em> button at the bottom of the page.</p>
+<h3 id="categories">Categories</h3>
+<ul>
+<li><a href="#general">General</a></li>
+<li><a href="#saas">SaaS</a></li>
+<li><a href="#content-management">Content management</a></li>
+<li><a href="#page-builder">Page Builder</a></li>
+<li><a href="#email-builder">Email Builder</a></li>
+<li><a href="#form-builder">Form Builder</a></li>
+<li><a href="#digital-marketing">Digital marketing</a></li>
+<li><a href="#digital-commerce">Digital commerce</a></li>
+<li><a href="#system-customization-and-api">System customization and API</a></li>
+</ul>
+<h2 id="general">General</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Administration</p>
+</td>
+<td>
+<p>The Xperience administration interface is a graphical interface for Xperience functionality that allows you to set up and configure websites and manage their content. Users manage websites via <em>applications</em> within the interface. In the background, the administration application accesses and modifies the database shared with the live site application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>AIRA</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/aira">AIRA</a> is an AI-powered agent integrated into Xperience by Kentico. It helps users automate and streamline marketing and content management tasks through AI-driven features, provides <a href="/documentation/business-users/aira#aira-in-product-guidance">in-product guidance</a> on best practices and <a href="/documentation/business-users/aira#customer-journey-insights">customer journey insights</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Application</p>
+</td>
+<td>
+<p>Applications group together features and related functionality. They display information related to the encapsulated functionality and enable related tasks and configuration. For example, the <em>Languages</em> application allows you to manage and configure languages for the content of your project’s channels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Application dashboard</p>
+</td>
+<td>
+<p>The application dashboard is the first page you see when signing in to the Xperience administration. The dashboard provides quick access to applications. Applications and objects on the dashboard have the form of tiles. You can return to the dashboard from any part of the system by clicking the Home icon in the administration header.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ASP.NET Core</p>
+</td>
+<td>
+<p>ASP.NET Core is an open-source framework for building web applications. ASP.NET Core framework supports the MVC architecture and other modern approaches.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name</p>
+</td>
+<td>
+<p>A code name refers to text that serves as a unique identifier of an object in Xperience. Most objects also have a Display name – human-readable text displayed in the administration. Code names for certain objects can be pre-filled by a value generated from the Display name or, alternatively, can be set manually.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Continuous Integration</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> allows users (usually developers) to serialize data from the database into XML files on the file system. These files can then be added to a source control system and used to synchronize database data between different Xperience instances.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Cookie level</p>
+</td>
+<td>
+<p>The <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> is a scale used to implement cookie policy in Xperience. The cookie level set for each visitor controls which cookies get stored in their browser, as different cookies used by the Xperience system require different cookie levels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Dancing Goat</p>
+</td>
+<td>
+<p>Dancing Goat is a sample website project that showcases the features of the Xperience platform. Suitable for evaluating or demonstrating the capabilities of the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Display name</p>
+</td>
+<td>
+<p>A display name refers to the text displayed in the administration interface to identify an object or interface element. Most objects also have a Code name – a unique identifier for the object in the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Event log</p>
+</td>
+<td>
+<p>The <a href="/documentation/developers-and-admins/configuration/event-log">event log</a> is a monitoring and troubleshooting tool that can be accessed directly within the Xperience administration. It allows administrators to view important system events and errors, enabling quick identification and resolution of application issues.</p>
+<p>The event log captures and displays data provided by general logging functionality, which is based on <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging" target="_blank">.NET logging</a>. Developers can adjust the verbosity of the logged information, perform logging in custom code, and integrate third-party logging or telemetry tools. See <a href="/documentation/developers-and-admins/development/logging">Logging</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>KentiCopilot</p>
+</td>
+<td>
+<p><a href="/guides/development/kenticopilot">KentiCopilot</a> is an initiative to help developers effectively and responsibly adopt AI in developing Xperience by Kentico projects. It provides tools, features, and educational materials to accelerate development workflows. This includes <a href="https://github.com/Kentico/xperience-by-kentico-kenticopilot" target="_blank">pre-configured prompts</a> for AI coding assistants, best practices for AI-assisted development, and resources for tasks such as widget implementation, content migration, and content modeling.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Live site application</p>
+</td>
+<td>
+<p>An application that provides a presentation layer for the content managed by Xperience.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Notification</p>
+</td>
+<td>
+<p>Messages that provide information to administration users about various events in the system. In the current version of Xperience by Kentico, <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> are system emails providing information about user management events, such as <a href="/documentation/developers-and-admins/configuration/users/user-management#reset-password">password reset emails</a> or <a href="/documentation/developers-and-admins/configuration/users/user-management#multi-factor-authentication">multi-factor authentication</a>, and about <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow step changes</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Notification email template</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/notifications#notification-email-templates">Notification email templates</a> define the overall layout of notifications and add fixed content, such as a header or footer. You can reuse a single template for any number of notifications. They contain <a href="/documentation/developers-and-admins/configuration/notifications#notification-template-macros">macros</a> that serve as placeholders for certain elements, such as basic data types. Notification email templates serve a distinct purpose from <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">email templates</a> related to <a href="/documentation/business-users/digital-marketing/emails">email channels</a>, focusing specifically on structuring and styling notification emails.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Private cloud</p>
+</td>
+<td>
+<p>A term that encapsulates all forms of hosting other than Kentico’s <a href="#saas">SaaS</a> offering, for example:</p>
+<ul>
+<li>Managed or unmanaged cloud hosting providers like Microsoft Azure, Amazon AWS, GCP, and DigitalOcean (on Windows or Linux).</li>
+<li>Hybrid cloud combining public cloud and private hosting.</li>
+<li>Fully private data center hosting on traditional VMs.</li>
+</ul>
+<p>Used primarily in <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">hosting and deployment</a>-related materials.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="saas">SaaS</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><span id="GlossarySaaS"></span> SaaS</p>
+</td>
+<td>
+<p>Though <em>SaaS</em> commonly stands for <em>Software-as-a-Service</em>, in the documentation, the term is generally used for Kentico’s <a href="/documentation/developers-and-admins/saas">Xperience by Kentico as SaaS</a> offering and the underlying cloud services that support the SaaS environment and deployed projects. The term is also used when discussing related topics such as:</p>
+<ul>
+<li>Kentico-managed deployment environment for Xperience applications – SaaS environment</li>
+<li>Xperience projects that are deployed to the SaaS environment – SaaS projects</li>
+<li>Deployment of an Xperience project to a specific SaaS environment – SaaS deployment</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Deployment environment</p>
+</td>
+<td>
+<p>You can deploy your SaaS projects to various <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">SaaS environments</a>. The available options include production (<strong>STG</strong>, <strong>PROD</strong>) and non-production (<strong>QA</strong>, <strong>UAT</strong>, custom) environments.</p>
+<p>Each deployment environment holds a single isolated instance of your Xperience application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Xperience Portal</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>, available at <a href="https://xperience-portal.com" target="_blank">xperience-portal.com</a>, is a Kentico-managed application that enables you to access and manage your Xperience Portal projects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Xperience Portal project</p>
+</td>
+<td>
+<p>An Xperience Portal project enables you to access and manage Xperience applications deployed in the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">SaaS environment</a>.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="content-management">Content management</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Website channel</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/website-channel-management">Website channels</a> encapsulate websites managed by Xperience. Each channel is an <a href="/documentation/developers-and-admins/configuration/website-channel-management/manage-multiple-websites">independent entity</a> with its own domain name configuration and content management. Channels store content in pages and linked content items.</p>
+<p>Every website channel has its own application in the Xperience administration, where content editors <a href="/documentation/business-users/website-content">create and edit pages</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content model</p>
+</td>
+<td>
+<p>A <a href="https://alistapart.com/article/content-modelling-a-master-skill/" target="_blank">content model</a> documents all the content that an organization produces. It should cover every piece of content used for your online presence: content used on your website, applications, different marketing channels, etc.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content folder</p>
+</td>
+<td>
+<p>A hierarchy of <a href="/documentation/business-users/content-hub/content-hub-folders#content-folders">content folders</a> can be used to organize and efficiently navigate through content items in the <em>Content hub</em> application. Content items are placed into content folders manually, and each item can only be located in one content folder.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content type</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/development/content-types">Content types</a> define a blueprint for any piece of content that editors produce. Each content type defines a specific structure and fields for inputting and storing data. </p>
+<p>Typical content type examples are articles, news, or product pages. Website structure can also contain content types that represent much smaller pieces of information, such as videos, addresses of offices, or user testimonials. These content types are often repeated in different places or contexts across the website, thus making the content reusable.</p>
+<p>In Xperience, content types also enable page features of content items, such as content tree-based routing or Page Builder.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content item</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/content-hub">Content items</a> are a universal and reusable way of working with content managed in the <em>Content hub</em> application. Content items are pieces of structured content (text, images, other linked content items, etc.). Each content item is based on a content type, which specifies the fields and features of the content item.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content item asset</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/content-hub/content-item-assets">Content item assets</a> are content items of certain content types that allow content editors to upload and store various types of files, for example, photos, pictures, sound files, videos, package files, presentations, or documents. You can reuse assets stored in the <em>Content hub</em> throughout the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content reuse locator</p>
+</td>
+<td>
+<p>Content reuse locator refers to a collection of features that help users track where <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">content items</a>, <a href="/documentation/business-users/website-content/track-page-usages">pages</a> and <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#track-usage-of-forms">forms</a> are displayed or otherwise used across your channels.</p>
+<p>In the administration interface, the feature is available under the <em>Used in</em> tab when viewing specific items.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Headless channel</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channels</a> encapsulate content that is intended to be served using HTTP requests and <a href="https://graphql.org/" target="_blank">GraphQL</a>. Such headless content can be displayed or otherwise consumed by various types of applications, services or websites (e.g., mobile apps, external websites, single-page applications running within Xperience, etc.).</p>
+<p>Every headless channel has its own <a href="https://graphql.org/learn/serving-over-http/" target="_blank">GraphQL API endpoint</a>, which is secured by one or more API keys. Each channel also has its own application in the Xperience administration, where editors can <a href="/documentation/business-users/headless-content">manage content</a> intended for headless distribution. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Headless content item</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/headless-content">Headless items</a> store content that is intended for distribution through a headless API (<a href="https://graphql.org/" target="_blank">GraphQL</a>). The items may also reuse content from <a href="/documentation/business-users/content-hub">Content hub</a> that is shared between all types of channels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Item status</p>
+</td>
+<td>
+<p>Each page, content item, headless item and email has a status that describes its current position within the content lifecycle. This can be a specific workflow step, another status such as <strong>Untranslated</strong> or <strong>Unpublished</strong>, or a sending status for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Language</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/languages">Languages</a> are system objects that enable content editors to create multilingual content. Once languages are configured in the <em>Languages</em> application, content can be translated in the <em>Content hub</em> or in channel applications.</p>
+<p>Instances of content items (pages, emails, reusable content) translated into various languages are referred to as language variants of said content item.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Media library</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/media-libraries">Media libraries</a> allow you to store various types of files, for example, photos, pictures, sound files, videos, package files, presentations, or documents. You can reuse files stored in media libraries throughout the system.</p>
+<p><strong>Note:</strong> Media libraries have been sunset, and their related API members are marked as obsolete and will be removed in the future. It is strongly recommended to transition to using <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a> for managing files within the system. See <a href="/guides/architecture/media-libraries-migration-guidance">Media library migration</a> for instructions on how to migrate your media library files to <a href="/documentation/business-users/content-hub">Content hub</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Microchannel</p>
+</td>
+<td>
+<p>Microchannels represent channels which can only contain a limited number of content items of the specific channel type:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/configuration/website-channel-management">Website channels</a> – at most <strong>20</strong> items within the channel’s page tree, including both standard pages with URLs and other items like folders or navigation menu structure.</li>
+<li>
+<a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channels</a> – at most <strong>20</strong> headless items.</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Email channels</a> – at most <strong>5</strong> emails. The limit restricts the maximum number of email content items allowed in the microchannel, but not how many times these emails can be sent to recipients. Email microchannels are available in all license tiers (standard size email channels require the <em>Advanced</em> license tier).</li>
+</ul>
+<p>Individual microchannel items of any type can link an unlimited number of <a href="/documentation/business-users/content-hub">reusable content items</a>.</p>
+<p>You can freely change between the <em>microchannel</em> and <em>standard</em> channel size of existing channels via the <strong>General</strong> tab. Additionally, changing <em>standard</em> channels to <em>microchannels</em> does not cause any data loss in case the converted channel exceeds microchannel limits. However, you will receive a license violation warning if the resulting channel or item count oversteps the limits of your license for that particular channel type.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/website-content">Pages</a> are a special type of content item created in a website channel. A page in the system usually corresponds to a page on your website. Pages can contain Page Builder content or structured content within their fields and can be accessed via a URL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Smart folder</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">Smart folders</a> provide a way for users to dynamically organize and filter content items in the <em>Content hub</em> application. Developers can also <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-content-items-from-smart-folders">retrieve content from smart folders</a>, which allows editors to control delivery of content that is displayed or otherwise used in channels (e.g., on the live website).</p>
+<p>Each smart folder is based on a filtering condition, such as “items modified in the last 7 days”, “items with the <em>Acme</em> tag”, etc. The condition is evaluated dynamically, so items move in and out of smart folders as their fields and metadata change. A single content item can belong into any number of smart folders.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>System URL</p>
+</td>
+<td>
+<p>System URLs are default URLs <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">generated from the page’s position in the content tree</a> using the page’s URL slug and URL slugs of the page’s ancestors.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Rich text widget</p>
+</td>
+<td>
+<p>The <a href="/documentation/business-users/rich-text-editor">Rich text widget</a> allows editors to add styled content to Page Builder pages.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Tag</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/taxonomies">Tags</a> are keywords assigned to individual pieces of data. Tags can be assigned to individual pieces of content for multiple purposes including but not limited to modeling relationships, categorization, and organization and classification of data. Tags are defined in a hierarchical structure in a taxonomy.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Taxonomy</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/taxonomies">Taxonomies</a> are structured collections of tags that organize and categorize data into hierarchical relationships. Each taxonomy contains a hierarchical structure of related tags. Examples of taxonomies are clothing colors (white, black, blue…), car fuel types (petrol, diesel, hybrid…), and PC features (external GPU, disc drive, tower size…).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Translation queue</p>
+</td>
+<td>
+<p><em>Translation queue</em> is a queue of items to be <a href="/documentation/business-users/aira#aira-translations">translated using aira</a>. The queue only contains items which were sent for translation in bulk, for example using <a href="/documentation/business-users/content-hub/content-items#mass-translating">mass translation</a>. Items which are being currently translated and items waiting in the queue can be viewed in the Translation queue application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Vanity URL</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/website-content/manage-page-urls#edit-vanity-urls-of-pages">Vanity URLs</a> are alternative URLs that can be configured and customized by marketers. Vanity URLs allow marketers to specify short and recognizable URLs for marketing, sharing, and branding purposes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workflow</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/workflows">Worklows</a> allow you to customize the lifecycle of content types by adding custom workflow steps between the default <strong>Draft</strong> and <strong>Published</strong> steps. You can use workflows to set up content approval processes tailored specifically to your editing flow.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workflow step</p>
+</td>
+<td>
+<p>A step represents a specific phase within a workflow, which can include both custom steps and predefined steps such as <strong>Draft</strong> and <strong>Published</strong>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Workspace</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">Workspaces</a> allow you to create a designated environment within the system where workspace-scoped applications are grouped together.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="page-builder">Page Builder</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Component</p>
+</td>
+<td colspan="1">
+<p>Page Builder components are the building blocks of the Page Builder interface. They include <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">page templates</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a>, and <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/develop-personalization-condition-types">personalization condition types</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Component configuration properties</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">Component properties</a> are variables that allow content editors to customize a component’s behavior or modify its content directly in the Page Builder interface. Developers define these properties when developing individual Page Builder components.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Editable area</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Editable areas</a> are the top-level layout elements that limit where the Page Builder interface is available. Developers define editable areas in the code of page or template views.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Editing component</p>
+</td>
+<td colspan="1">
+<p>The documentation uses the term <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> when referring to UI form components used as editors for the values of other component properties. For example, a text input form component becomes an editing component when used to edit a widget property via the widget’s configuration dialog.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Inline editor</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">Inline editors</a> are interactive Page Builder elements that allow content editors to enter or select the values of widget properties within the output of the related widget. They can be used as an alternative to or in combination with the property configuration dialog. For example, inline editors can range from simple value inputs to more advanced options, such as file uploaders or text areas with rich formatting options.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Landing page</p>
+</td>
+<td colspan="1">
+<p>Landing pages are one of the primary use cases for Page Builder. Landing pages are created specifically for marketing purposes. They are places where potential customers get redirected after clicking a link in an email or on a social network.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page Builder</p>
+</td>
+<td>
+<p>Page Builder is a graphical interface for designing and editing pages in Xperience. It uses widgets, modular components <a href="/documentation/developers-and-admins/development/builders/page-builder">prepared by the developers</a>, and other features to set the page layout and content.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Page template</p>
+</td>
+<td colspan="1">
+<p>Page templates allow content editors to choose from predefined layouts for new pages.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Personalization condition</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/business-users/digital-marketing/widget-personalization">Personalization conditions</a> are a digital marketing feature supported by Page Builder widgets. The conditions allow editors to display different content per visitor. For example, you can show modified text or additional offers to visitors from a specific contact group.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Section</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Sections</a> are reusable Page Builder components that determine where widget zones can be placed. Sections are fully customizable, and developers control each section’s layout. In the Page Builder interface, content editors can choose which sections to add to a page and adjust the structure that way. A section may contain multiple widget zones.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Widget</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets</a> are reusable Page Builder components that content editors and other non-technical users can easily manipulate. Widgets give non-technical users more flexibility when creating pages or adjusting existing content.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Widget zone</p>
+</td>
+<td colspan="1">
+<p>Widget zones are individual areas within a Page Builder section where content editors can place widgets.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="email-builder">Email Builder</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Component</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a> are the building blocks used to create emails in the Email Builder interface.</p>
+<p>Email Builder components are implemented using <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/" target="_blank">ASP.NET Blazor</a> as <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/" target="_blank">Razor components</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Editable area</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#editable-areas">Editable areas</a> are parts of email templates that can be edited using the Email Builder visual interface. Developers define editable areas in the markup of templates.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Editing component</p>
+</td>
+<td colspan="1">
+<p>The documentation uses the term <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> when referring to UI form components used as editors for the values of other component properties. For example, a text input form component becomes an editing component when used to edit a widget property via the widget’s configuration dialog.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email Builder</p>
+</td>
+<td>
+<p>Email Builder is a graphical interface for designing and editing <a href="/documentation/business-users/digital-marketing/emails">emails</a> in Xperience. It uses modular components prepared by developers to set the email layout and content.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Inline editor</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder/inline-editors-email-builder-widgets">Inline editors</a> are interactive Email Builder elements that allow content editors to enter or select the values of widget properties within the output of the related widget. They can be used as an alternative to or in combination with the property configuration dialog. For example, inline editors can range from simple value inputs to more advanced options, such as a rich text editor.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MJML</p>
+</td>
+<td>
+<p>MJML (Mailjet Markup Language) is a framework for easily creating responsive emails. Every Xperience project can be configured to use either standard HTML or MJML markup for Email Builder components. You <strong>cannot combine both markup types</strong> for different components within a single project.</p>
+<p>To learn more about the MJML markup language, see <a href="https://documentation.mjml.io/#mjml-guides" target="_blank">MJML Guides</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Section</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#sections">Sections</a> are reusable Email Builder components that specify a layout for email content, typically containing one or more columns. Sections contain one or more widget zones where editors can add widgets in the Email Builder visual interface.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Template</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#templates">Templates</a> are the top-level Email Builder component that sets the email’s overall design, as well as any fixed content, such as a header and footer. Templates contain editable areas that can be edited in the Email Builder visual interface.</p>
+<p>The system uses two types of email templates – the Email Builder templates described above, and <a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">email templates</a> that are created in the administration UI using HTML markup and macros.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Widget</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#widgets">Widgets</a> are reusable components that represent individual pieces of email content, such as text, images, CTA links, etc. Content editors and other non-technical users can easily work with widgets in the Email Builder visual interface. Widgets are placed into widget zones.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Widget zone</p>
+</td>
+<td colspan="1">
+<p>Widget zones are placed within <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#sections">Email Builder sections</a>, and allow content editors to insert widgets. Each zone can contain any number of widgets (depending on the design limitations of the parent template and section).</p>
+</td>
+</tr>
+</table>
+
+<h2 id="form-builder">Form Builder</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Form Builder</p>
+</td>
+<td>
+<p>The Xperience <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> offers an intuitive graphical editor that allows content creators and marketers to compose online forms. It is available on the <em>Form Builder</em> tab of the <em>Forms</em> application when <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">editing a form</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><span id="Glossary-FBFC"></span> Form component</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">Form components</a> are reusable elements used to create and edit forms in Form Builder. Each component represents a form input type, such as a text box or a group of radio buttons. Users can add, remove, or reorder individual form components and specify their properties via the form builder interface in the <em>Forms</em> application.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Form section</p>
+</td>
+<td colspan="1">
+<p><a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">Form sections</a> define the layout of forms. They represent reusable pieces of markup that can store any number of form zones – areas where content editors can place form fields.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Form widget</p>
+</td>
+<td colspan="1">
+<p>The <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">form widget</a> is provided in Kentico Xperience by default. It allows editors to place forms into the content of pages that use Page Builder. The <em>Form</em> widget can be found only when editing pages in the <em>Page Builder</em> within a website channel application.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Validation rule</p>
+</td>
+<td colspan="1">
+<p>Validation rules restrict which values can be submitted into form fields. For example, validation rules can limit the maximum number of characters or the maximum numerical value a user can enter into a field. Editors can <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#field-validation">add validation rules</a> when configuring individual fields in the Form Builder UI.</p>
+<p>Developers can implement custom validation rules as described in <a href="/documentation/developers-and-admins/development/builders/form-builder/form-builder-validation-rules">Form Builder validation rules</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Visibility condition</p>
+</td>
+<td colspan="1">
+<p>Visibility conditions control when and how form fields are displayed to users. The conditions are always based on the value of another field in the form. For example, a “Company name” field can be configured to only appear when users select “Business” in a preceding “Account type” field, keeping the form clean and relevant for individual users.</p>
+<p>Editors can <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#field-visibility">add a visibility condition</a> when configuring individual fields in the Form Builder UI. The system provides a set of visibility conditions for common scenarios. Development of custom conditions is currently not supported.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="digital-marketing">Digital marketing</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Activity</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/contact-activities">Activities</a> represent actions that website visitors perform on the live site. For example, the system logs activities when visitors view pages or submit forms.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Contact</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/contact-management">Contacts</a> represent individual visitors who view your websites. Contacts include anonymous visitors and users who provide personal information by registering, filling in a form, subscribing, etc. The system automatically gathers data about contacts based on the actions and input of the associated visitors.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Contact group</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/contact-groups">Contact groups</a> are segmentation units that enable you to sort contacts. The system populates groups automatically based on dynamically evaluated conditions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Customer journey</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/digital-marketing/customer-journeys">Customer journeys</a> map out how contacts interact with your content. You can define key stages in a journey, representing the sequence of steps a contact must complete to achieve a successful conversion and set conditions for their progression through the stages.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email channel</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Email channels</a> are a dedicated medium of communication between you and your audience. Each project may contain multiple email channels, focusing on different content strategies, languages and audience engagement techniques.</p>
+<p>Every email channel has its own application in the Xperience administration, where marketers create and send emails.</p>
+<p>Channels allow for clean separation of your organization’s emails. The defining property of every email channel is a <em>sending domain</em>, which represents your company or brand, and is used in all <em>sender addresses</em> for the channel’s emails.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email</p>
+</td>
+<td>
+<p>The system allows marketers to create and send <a href="/documentation/business-users/digital-marketing/emails">emails</a> with various different purposes, such as form autoresponders or regular emails sent to subscribed recipients.</p>
+<p>Every email belongs under an email channel, and is based on an email content type and email template.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email template</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Templates</a> define the overall layout of emails and add fixed content, such as a header or footer. You can reuse a single template for any number of emails.</p>
+<p>Templates contain macros that serve as placeholders for the fields of email content types, as well as system elements, such as a regular email’s unsubscribe link URL.</p>
+<p>The system uses two types of email templates – the macro-based email templates described above, and <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#templates">Email Builder templates</a> which are prepared by developers in the project’s code as Razor components.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Recipient list</p>
+</td>
+<td>
+<p>A mailing list containing contacts who <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">opt in to receive regular emails</a>. Marketers select a recipient list when sending out emails.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="digital-commerce">Digital commerce</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Customer</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/manage-commerce-stores">Customers</a> represent individuals or entities that engage with your business, typically by purchasing products or services. The system tracks customer information, including shipping addresses and order history. Customers are managed in the <em>Customers</em> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Order</p>
+</td>
+<td>
+<p><a href="/documentation/business-users/manage-commerce-stores">Orders</a> represent requests made by customers to purchase products or services. The system tracks order information, including product details, quantities, and customer data. Orders are managed in the <em>Orders</em> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Product catalog</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">Product catalog</a> is a structured collection of products available for sale in your online store. The implementation of the product catalog depends on the implementation of your commerce solution, but products are usually stored either as pages in the content tree or as content items in the <em>Content hub</em> application.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="system-customization-and-api">System customization and API</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Term</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Configuration dialog</p>
+</td>
+<td>
+<p>The configuration dialog is a modal dialog that allows content editors to configure components. Developers define what input elements (editing components) are used to edit individual properties. Content editors manage these properties (e.g., widget properties) in the element’s configuration dialog.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content item query</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">Content item query</a> is an API that enables developers to retrieve page and content item data from the database using fluent syntax.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Editing component</p>
+</td>
+<td>
+<p>A specific use case for <a href="#Glossary-UIFC">UI form components</a>. The term applies to UI form components assigned to provide the editing interface for a property used to configure another administration element. For example, a date-time input form component can be set to edit a widget property in the Page Builder configuration dialog.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>InfoProvider</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/api/database-table-api">InfoProviders</a> enable CRUD operations over objects managed by the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ObjectQuery</p>
+</td>
+<td>
+<p>The <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery API</a> provides an abstraction layer over the project’s database. It enables developers to manipulate <a href="/documentation/developers-and-admins/customization/object-types">object types</a> using a fluent API similar to LINQ. The API is directly used by InfoProvider classes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object type</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/customization/object-types">Object types</a> store metadata and configuration related to the system’s database entities, such as users, contacts, and roles.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Object type data class</p>
+</td>
+<td>
+<p>The <a href="/documentation/developers-and-admins/api/database-table-api">object-relational mapping (ORM) framework</a> uses data classes to map database entities to objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Provider</p>
+</td>
+<td>
+<p>Provider classes expose various management APIs usable when customizing the system. You can find different types of providers, such as info, email, or file system providers.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><span id="Glossary-UIFC"></span> UI form components</p>
+</td>
+<td>
+<p>All form elements in the Xperience administration are composed using UI form components. Each component provides an input interface for one field in the form. UI form components are built using a different underlying technology than <a href="#Glossary-FBFC">Form Builder form components</a> and are not interchangeable.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UI page</p>
+</td>
+<td>
+<p>UI page refers to an individual page in the <a href="/documentation/administration-interface-basics">administration interface</a>. Each page is accessible under a specific URL a provides discrete functionality (object listings, editing interfaces, settings, system information and statistics, etc.). UI pages derive their layout from templates in the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">client application</a> and their functionality from classes that represent them on the back end. To learn more about UI pages and their structure, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UI page command</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">UI page commands</a> enable the execution of arbitrary code on the server back end from within UI pages rendered by the client-side application. For example, page commands are used to handle interactive elements (buttons) or navigation. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>UI page extender</p>
+</td>
+<td>
+<p><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extenders</a> allow you to modify the back-end definition of existing UI pages without directly editing their source code. You can use them to add new UI page commands, or change the initial configuration of the page’s client properties.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

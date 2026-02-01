@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Multi-instance support</title>
+</head>
+<body>
+<p>Xperience projects can distribute computing among multiple application instances. This enables deployment to environments that utilize <strong>load balancing</strong> or <strong>auto-scaling</strong>. Each application increases the number of requests the project can handle, allowing you to scale performance as necessary. You can also use multiple instances to provide server <strong>failover</strong> and improve availability – if one of the servers hosting the project stops working, the other servers ensure the project continues running.</p>
+<p>Multi-instance support in Xperience ensures that <a href="/documentation/developers-and-admins/development/caching">cached</a> content and object data is automatically synchronized between all application instances. As a result, changes made on one instance are immediately reflected on the other instances.</p>
+<p>The following image illustrates the structure of a multi-instance environment:</p>
+<p></p>
+<p>For example, if a page update occurs on one server (e.g., <code>192.168.1.2</code>), other servers typically remain unaware. Multi-instance support resolves this by notifying all servers of the change, ensuring they take appropriate action, such as clearing their cache. This synchronization works because all instances are <a href="#scale-xperience-applications">connected to the same project database</a>. Xperience uses this central database to store and retrieve the necessary synchronization metadata.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Testing multiple instances in local environments</strong></p>
+<p>Multi-instance support is designed for deployed environments and relies on internal mechanisms specific to that context. <strong>It is currently not supported for local development or testing, even if multiple instances are set up locally.</strong> You can only reliably test multi-instance functionality in a deployed environment.</p>
+</div>
+
+<h2 id="handling-physical-files-in-multi-instance-environments">Handling physical files in multi-instance environments</h2>
+<p>When a file is <a href="/documentation/business-users/content-hub/content-item-assets">uploaded</a> on one instance in a multi-instance environment, other instances are notified about the change (e.g., to clear cache). To ensure these files are consistently accessible across all instances, you <strong>must</strong> configure shared storage.</p>
+<ul>
+<li>
+<strong>Configure Shared Storage</strong>: Set up a shared storage location accessible by all instances, such as <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob Storage</a>, <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>, or a <a href="/documentation/developers-and-admins/api/files-api-and-cms-io">shared network drive</a>. When using shared storage, files uploaded via any instance are placed directly into this central location. The system then informs other instances about new or updated files, ensuring data consistency. This configuration is <strong>required</strong> for managing files reliably in multi-instance environments.</li>
+</ul>
+<h2 id="scheduled-tasks-in-multi-instance-environments">Scheduled tasks in multi-instance environments</h2>
+<p>Execution of <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled tasks</a> only occurs once, regardless of the number of application instances.</p>
+<p>Tasks that are ready to run are assigned to one of the active instances (in a nondeterministic way). Tasks launched manually via the <em>Scheduled tasks</em> application run on the specific instance that handled the given request.</p>
+<h2 id="scale-xperience-applications">Scale Xperience applications</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Important:</strong> Xperience by Kentico does not support multiple instances in the web garden configuration.</p>
+</div>
+
+<h3 id="saas-environment">SaaS environment</h3>
+<p>For projects <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deployed to the SaaS environment</a>, no configuration is necessary. The number of available instances depends on your <a href="/documentation/developers-and-admins/saas/saas-service-plans">SaaS service plan</a>. When the load increases to peak levels in the production environment, an additional instance is temporarily added to ensure load balancing. One extra auto-scaling instance is available across all <a href="/documentation/developers-and-admins/saas/saas-service-plans">plans</a>. If more instances are required, they can be purchased through a custom service plan.</p>
+<h3 id="private-cloud-hosting">Private cloud hosting</h3>
+<p>Xperience multi-instance support is also compatible with other third-party cloud hosting providers, such as Microsoft Azure, that provide their own auto-scaling solutions. Deploy the project to <a href="https://azure.microsoft.com/en-us/services/app-service/web/" target="_blank">Azure Web Apps</a> or <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/" target="_blank">Azure Virtual Machines</a> as you would any other application and use the <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-overview" target="_blank">scaling functionality</a> inside <a href="https://portal.azure.com" target="_blank">Azure Portal</a>.</p>
+<p><strong>Important:</strong> Regardless of the cloud provider’s scaling mechanism, you must configure shared storage for all web app instances. This is required to reliably handle <a href="#handling-physical-files-in-multi-instance-environments">physical files</a> managed by the system across the scaled environment.</p>
+<h3 id="private-on-premise-hosting">Private on-premise hosting</h3>
+<p>For projects hosted on-premise, multi-instance support is automatically enabled by connecting all running applications to the same database.</p>
+<ol type="1">
+<li>Create copies of your Xperience application.</li>
+<li>Open an application’s configuration file (<em>appsettings.json</em> by default).</li>
+<li>Check that <code>CMSConnectionString</code> points to the same database for all applications.</li>
+<li>Configure <a href="#handling-physical-files-in-multi-instance-environments">shared storage</a> for all application instances.</li>
+<li>Deploy and run all applications.</li>
+</ol>
+<p>Xperience automatically recognizes all running applications connected to the project’s database and synchronizes the necessary information between them.</p>
+
+</body>
+</html>

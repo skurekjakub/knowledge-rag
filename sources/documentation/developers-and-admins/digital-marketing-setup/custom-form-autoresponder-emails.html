@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Custom form autoresponder emails</title>
+</head>
+<body>
+<p><a href="/documentation/business-users/digital-marketing/forms">Forms</a> provide the option to automatically send an email message to every user who submits the form.</p>
+<p>For most scenarios, we recommend that you prepare the autoresponder email content directly in the Xperience administration using an email channel application (see <a href="/documentation/business-users/digital-marketing/emails">Emails</a>), and then select an appropriate email for each form.</p>
+<p>However, you may need to implement custom emails if you require advanced or dynamic autoresponder content. For example, you can develop a promotional code generator, and then prepare custom form autoresponder emails containing the value generated for every recipient.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>To allow the system to send out emails, you first need to set up and configure an email client (for example an SMTP server or SendGrid integration). For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a>.</p>
+<p><strong>Email statistic tracking not available</strong></p>
+<p>The system does not <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">track statistics</a> for custom form autoresponder emails. Tracking functionality is only available for emails created using an email channel application in Xperience.</p>
+</div>
+
+<h2 id="custom-form-autoresponder-emails">Custom form autoresponder emails</h2>
+<p>To enable custom form autoresponder emails for a form:</p>
+<ol type="1">
+<li>Open the <strong>Forms</strong> application in Xperience.</li>
+<li>Select the form in the list.</li>
+<li>Select <strong>Autoresponder</strong> in the options panel on the right.</li>
+<li>Choose the <strong>Custom</strong> option.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>Until developers prepare and register customized emails, the <strong>Custom</strong> autoresponder sends a basic thank you email with the following parameters:</p>
+
+<table>
+<tr>
+<td>
+<p><strong>From</strong></p>
+</td>
+<td>
+<p>no-reply@localhost.local</p>
+<p>The sending domain in the default From address reflects the <a href="/documentation/developers-and-admins/configuration/email-configuration">global sending domain for system emails</a>, for example: <em>no-reply@company.com</em></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>To</strong></p>
+</td>
+<td>
+<p>&lt;email address of the <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> who submitted the form&gt;</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Subject</strong></p>
+</td>
+<td>
+<p>Thank you for filling out the form</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Body</strong></p>
+</td>
+<td>
+<p>We appreciate the information you provided us in the submitted form. Thank you and have a nice day.</p>
+</td>
+</tr>
+</table>
+
+<p>This thank you message will not be suitable for most forms on real-world websites. Developers need to override the custom autoresponder emails with appropriate content based on the website’s branding and the context of each specific form. The emails can also include values that the user entered into the form.</p>
+<ol type="1">
+<li>Open your project’s solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) to your solution or re-use an existing one.</li>
+<li>Create a new class that implements the <code>IFormSubmitAutomationEmailProvider</code> interface.</li>
+<li>Define the <code>GetEmail</code> method:
+<ul>
+<li>The method provides the following parameters:
+<ul>
+<li>
+<code>BizFormInfo</code> – the form that was submitted. For example, you can evaluate the form’s <code>FormName</code> property to branch your code and create different autoresponder emails for specific forms.</li>
+<li>
+<code>BizFormItem</code> – the data that the user submitted into the form. Use the <code>GetValue(&lt;FieldName&gt;)</code> method to access the values of form fields (or the alternative <em>Get&lt;type&gt;Value</em> methods).</li>
+<li>
+<code>ContactInfo</code> – the <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> who submitted the form.</li>
+</ul>
+</li>
+<li>Return an <code>AutomationEmail</code> object with the content and other parameters of the form autoresponder email. The object exposes standard email properties: <code>Subject</code>, <code>Body</code>, <code>Sender</code>, <code>Recipients</code>.</li>
+<li>Return <code>null</code> in cases where you cannot or do not wish to send an autoresponder email.</li>
+</ul>
+</li>
+<li>Register your custom implementation by adding the <code>RegisterImplementation</code> assembly attribute.</li>
+</ol>
+<p>The system now sends emails according to your custom implementation whenever a user submits a form with the <strong>Custom</strong> autoresponder.</p>
+
+<div>
+
+</div>
+<div>
+<p>You can reuse or fall back to the default <code>IFormSubmitAutomationEmailProvider</code> implementation. See <a href="/documentation/developers-and-admins/customization/decorate-system-services">Decorate system services</a> for more information.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using CMS;
+using CMS.ContactManagement;
+using CMS.OnlineForms;
+
+using CMS.Automation;
+
+// Registers the custom IFormSubmitAutomationEmailProvider implementation
+[assembly: RegisterImplementation(typeof(IFormSubmitAutomationEmailProvider), typeof(Custom.CustomFormSubmitAutomationEmailProvider))]
+
+namespace Custom
+{
+    public class CustomFormSubmitAutomationEmailProvider : IFormSubmitAutomationEmailProvider
+    {
+        // Stores an instance of the default IFormSubmitAutomationEmailProvider implementation
+        private readonly IFormSubmitAutomationEmailProvider defaultAutomationEmailProvider;
+
+        public CustomFormSubmitAutomationEmailProvider(IFormSubmitAutomationEmailProvider defaultAutomationEmailProvider)
+        {
+            this.defaultAutomationEmailProvider = defaultAutomationEmailProvider;
+        }
+
+        // Creates an autoresponder email based on the submitted form
+        public Task&lt;AutomationEmail&gt; GetEmail(BizFormInfo form, BizFormItem formData, ContactInfo contact)
+        {
+            // Gets the email address from the contact's Email attribute
+            string recipient = contact.ContactEmail;
+
+            if (string.IsNullOrEmpty(recipient))
+            {
+                // The user hasn't provided an email address, so no autoresponder email is sent
+                return null;
+            }
+
+            // Prepares a custom autoresponder email for a form with the 'ContactUs' code name
+            if (form.FormName.Equals("ContactUs", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Task.FromResult(new AutomationEmail
+                {
+                    Subject = "Thanks for contacting us",
+                    // Builds the email body, including the name of the contact who submitted the form,
+                    // and the value of the 'UserMessage' form field
+                    Body = $"Hello {contact.ContactFirstName}, &lt;br /&gt;" +
+                           "thank you for contacting us. You sent us the following message:&lt;br /&gt;" +
+                           formData.GetStringValue("UserMessage", ""),
+                    Sender = "no-reply@company.com",
+                    Recipients = new List&lt;string&gt; { recipient }
+                });
+            }
+
+            // Returns the default form autoresponder email as a fallback
+            return defaultAutomationEmailProvider.GetEmail(form, formData, contact);
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Context data not available</strong></p>
+<p>Autoresponder emails are not sent within the context of a web request, and are internally processed using an automation process. As a result, your <code>IFormSubmitAutomationEmailProvider</code> code cannot access context data, such as the current request, website channel or page.</p>
+<p>You can get certain context-related data from the <code>BizFormInfo</code> and <code>ContactInfo</code> parameters of the <code>GetEmail</code> method.</p>
+</div>
+
+
+</body>
+</html>

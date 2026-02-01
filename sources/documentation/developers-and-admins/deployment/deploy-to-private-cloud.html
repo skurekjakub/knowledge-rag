@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Deploy to private cloud</title>
+</head>
+<body>
+<p>Xperience supports a wide variety of private cloud hosting options. You can deploy and manage Xperience projects using</p>
+<ul>
+<li>Managed or unmanaged cloud hosting providers like Microsoft Azure, Amazon AWS, GCP, Digital Ocean (on Windows or Linux)</li>
+<li>Hybrid cloud combining public cloud and private hosting</li>
+<li>Fully private data center hosting on traditional VMs</li>
+</ul>
+<p>and similar hosting solutions.</p>
+<h2 id="deploy-the-project">Deploy the project</h2>
+<p>Xperience is a conventional .NET project, so its code and other files support any compatible deployment process or pipeline. For general information, see the <a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/" target="_blank">Host and deploy</a> chapter of the .NET documentation.</p>
+<h3 id="map-parts-of-the-file-system-to-a-shared-storage">Map parts of the file system to a shared storage</h3>
+<p>Some deployment environments, like <a href="#microsoft-azure-deployment">Microsoft Azure</a> for example, don’t provide a persistent file system. This can potentially lead to a loss of certain binary files when running new deployments, swapping slots, switching servers, etc. To prevent the possible loss, we recommend mapping the <strong>~/assets/</strong> folders from your project’s file system to a shared storage. The folder contains content item assets, media libraries and files uploaded through forms using the <em>Upload file</em> <a href="/documentation/developers-and-admins/development/builders/form-builder/reference-form-builder-components">form component</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Xperience already provides built-in support for mapping of this folder to <a href="https://azure.microsoft.com/en-us/services/storage/blobs/" target="_blank">Azure Blob</a> or <a href="https://aws.amazon.com/s3/" target="_blank">Amazon S3</a> cloud-based storage.</p>
+<p>For more information, see <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage#azure-blob-storage-for-private-cloud-deployments">Azure Blob storage</a> and <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>.</p>
+</div>
+
+<h3 id="iis-application-initialization">IIS application initialization</h3>
+<p>When hosting the application on IIS with the <a href="https://learn.microsoft.com/iis/get-started/whats-new-in-iis-8/iis-80-application-initialization" target="_blank">Application initialization</a> feature enabled and configured to send a preload request (often enabled by default, for example on <a href="https://azure.microsoft.com/" target="_blank">Microsoft Azure</a>), you may encounter preload errors in your <a href="/documentation/developers-and-admins/configuration/event-log">event log</a>. To prevent these issues from occurring, configure <code>IISApplicationInitializationOptions</code> for your application and enable the <code>UseDefaultSystemResponseForPreload</code> property in the <strong>Program.cs</strong> file.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Web.Mvc;
+...
+
+builder.Services.Configure&lt;IISApplicationInitializationOptions&gt;(options =&gt;
+{
+    options.UseDefaultSystemResponseForPreload = true;
+});
+
+</code></pre>
+</div>
+
+<h2 id="deploy-the-database">Deploy the database</h2>
+<p>Prepare the Xperience database within your development environment, and then use a standard backup&amp;restore process to move the database to the target environment.</p>
+<p>If you wish to deploy an empty database with default data necessary to run Xperience by Kentico, create a project using the <code>kentico-xperience-mvc</code> boilerplate template and run the <code>kentico-xperience-dbmanager</code> CLI utility. See <a href="/documentation/developers-and-admins/installation">Installation</a>.</p>
+<p>To update database content as part of later deployments, we recommend using the Xperience <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> feature. Note that CD data does not include the <a href="/documentation/developers-and-admins/installation/licenses#license-keys">license key</a>, which needs to be added manually after the deployment.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Database server time zones</strong></p>
+<p>To ensure consistent handling of time values, the server running your Xperience by Kentico application must be configured to use the same time zone as the database server.</p>
+<p>If possible, use the same time zone for both your local environment and the production server hosting your database. Otherwise you may encounter time shift problems with the deployed data.</p>
+</div>
+
+<h2 id="update-the-xperience-version-of-deployments">Update the Xperience version of deployments</h2>
+<p>To learn how to update a deployment to a newer version of Xperience by Kentico, see <a href="/documentation/developers-and-admins/installation/update-xperience-by-kentico-projects">Update Xperience by Kentico projects</a>.</p>
+<h2 id="update-content-with-content-sync">Update content with content sync</h2>
+<p>To use <a href="/documentation/business-users/content-sync">content sync</a> for transferring supported content between environments, see <a href="/documentation/developers-and-admins/configuration/content-sync-configuration">Content sync configuration</a>.</p>
+<h2 id="microsoft-azure-deployment">Microsoft Azure deployment</h2>
+<p>For most Microsoft Azure deployments, we recommend <a href="https://azure.microsoft.com/en-us/services/app-service/web/" target="_blank">Azure Web Apps</a>. Azure Web Apps are quick to create and easy to set up and manage.</p>
+<p>Xperience applications that require heavy customization may benefit from <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/" target="_blank">Azure Virtual Machine</a> deployments, where developers have the ability to control every aspect of the environment.</p>
+<h3 id="azure-sql-database-tier-recommendations">Azure SQL Database tier recommendations</h3>
+<p>Microsoft Azure provides the following <a href="https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers" target="_blank">purchasing models</a> for Azure SQL databases:</p>
+<ul>
+<li>
+<a href="https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-vcore" target="_blank">vCore-based purchasing model</a> that enables you to choose the exact amount of storage capacity and compute as necessary.</li>
+<li>
+<a href="https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-dtu" target="_blank">DTU-based purchasing model</a> where you can choose bundled compute&amp;storage packages balanced for common workloads.</li>
+</ul>
+<p>Each model is further divided into tiers and performance levels. See the corresponding Microsoft documentation for details.</p>
+<p>Recommendations for running Xperience databases in Azure SQL:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Project demands</p>
+</td>
+<td>
+<p>DTU-based tier</p>
+</td>
+<td colspan="1">
+<p>vCore-based tier</p>
+</td>
+<td>
+<p>Notes</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Projects in development</p>
+</td>
+<td>
+<p>Standard</p>
+</td>
+<td colspan="1">
+<p>General purpose</p>
+</td>
+<td>
+<p>The lowest Standard level is suitable only for projects that are not in production and have only small performance demands.</p>
+<p>Even though Xperience runs in the DTU-based <em>Basic</em> tier, we do not recommend using this tier as it severely restricts database performance.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Read-only projects</p>
+</td>
+<td>
+<p>Standard</p>
+</td>
+<td colspan="1">
+<p>General purpose</p>
+</td>
+<td>
+<p>For small Xperience projects only.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Larger read/write intensive projects</p>
+</td>
+<td>
+<p>Premium</p>
+</td>
+<td colspan="1">
+<p>Business critical</p>
+</td>
+<td>
+<p>Websites expecting a large amount of visitors and database requests.</p>
+</td>
+</tr>
+</table>
+
+<p>We also recommend that you perform a load test when switching to a new Azure SQL tier to make sure the database provides satisfactory performance. Choosing performance levels that do not cover your project demands can cause slow database response times and generally low performance.</p>
+<p>You can switch between deployment models and adjust their configuration on the <a href="https://portal.azure.com/" target="_blank">Azure Management Portal</a> → Select your database → <strong>Configure</strong> tab.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Azure SQL database elastic pools</strong></p>
+<p>In environments where multiple independent projects each use a single database, you can store individual databases in an <em>elastic pool</em>. The databases in an elastic pool are on a single Azure SQL Database server and share a set number of dynamically allocated resources (DTUs or vCores), which helps minimize overall expenses. See the <a href="https://docs.microsoft.com/en-us/azure/sql-database/sql-database-elastic-pool" target="_blank">Elastic pools</a> Microsoft documentation for more information.</p>
+</div>
+
+
+</body>
+</html>

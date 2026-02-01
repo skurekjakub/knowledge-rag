@@ -1,0 +1,941 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Model object type relationships</title>
+</head>
+<body>
+<p>You can model the following types of relationships between object types:</p>
+<ol type="1">
+<li>
+<a href="#parent-child-relationships">Parent-child</a> – A parent-child relationship is a special case of a <a href="https://en.wikipedia.org/wiki/One-to-many_(data_model)" target="_blank">one-to-many relationship</a>. It models dependent relationships where the existence of some objects (children) does not make sense without another object (parent). In this type of relationship, deleting the parent object also causes the deletion of all its children. An example is an employer and their employees – if the employer ceases to exist, so do all their employees.</li>
+<li>
+<a href="#one-to-many-relationships">One-to-many (many-to-one)</a> – A <a href="https://en.wikipedia.org/wiki/One-to-many_(data_model)" target="_blank">one-to-many relationship</a> exists when a single instance of object <code>A</code> may be linked with many instances of object <code>B</code>, but one instance of object <code>B</code> is linked to only one instance of <code>A</code>. A typical example is the set of orders a customer has made on a given site.</li>
+<li>
+<a href="#many-to-many-relationships">Many-to-many</a> – A <a href="https://en.wikipedia.org/wiki/Many-to-many_(data_model)" target="_blank">many-to-many relationship</a> defines an associative structure between two or more object types using a special <em>binding object type</em> that stores the identifiers of all objects involved in the relationship as foreign keys. Modeling the relationship using a supplementary database table reduces the problem to modeling multiple one-to-many relationships. A typical example of a many-to many relationship is one between roles and users – a user can be assigned to many roles, and a role can include many users. The binding table associates the identifiers of user and role objects.</li>
+</ol>
+<h2 id="parent-child-relationships">Parent-child relationships</h2>
+<p>A parent-child relationship is a type of hierarchy where distinct, connected objects have a logical relationship. A <em>parent</em> is something that comes before its <em>child</em> or <em>children</em>. At the time a child is created, its parent must already exist.</p>
+<p>You can use the <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">type information</a> to define a parent-child hierarchy for the object types representing your data model. Every object (record in the database) of a child object type contains a reference to the specified parent object. Setting parent-child relationships ensures that the system can provide automation for the connected objects, such as the automatic deletion of child objects together with their parents.</p>
+<p>To model a parent-child relationship between two object types:</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application and edit the data class that will be the <strong>child</strong> in the relationship.</li>
+<li>Switch to the <strong>Database columns</strong> tab and add a new database column with the <em>Integer number</em> data type. This column will store the IDs of the parent objects (a <em>foreign key</em>).
+<ul>
+<li>
+<strong>Tip</strong>: A common convention is to suffix columns storing the identifiers of objects with the <strong>ID</strong> suffix.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Generate</a> the code for the object type again.</li>
+<li>Edit the code of the generated <em>Info</em> class.</li>
+<li>Set the <code>parentIDColumn</code> and <code>parentObjectType</code> parameters in the constructor of the <code>TYPEINFO</code> member (last two parameters):
+<ul>
+<li><p><strong>parentIDColumn</strong> – the name of the column that stores the IDs of parent objects.</p></li>
+<li>
+<p><strong>parentObjectType</strong> – the name of the parent object type as defined in the type information of the parent class. Generated <em>Info</em> classes store the names in the static <code>OBJECT_TYPE</code> constant.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Sample child object type info constructor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public static readonly ObjectTypeInfo TYPEINFO = new ObjectTypeInfo(
+      providerType: typeof(ChildObjectInfoProvider), 
+      objectType: OBJECT_TYPE, 
+      objectClassName: "Acme.ChildObject",
+      idColumn: "ChildObjectID", 
+      timeStampColumn: null, 
+      guidColumn: null, 
+      codeNameColumn: null, 
+      displayNameColumn: "ChildObjectDisplayName",
+      binaryColumn: null,
+      parentIDColumn: "ParentObjectID", 
+      parentObjectType: ParentObjectInfo.OBJECT_TYPE)
+  {
+      TouchCacheDependencies = true,
+  };
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>Save the changes and rebuild the solution.</li>
+</ol>
+<p>The parent-child relationship is now established. When creating new child objects via the API, ensure the added foreign key column is populated with the identifier of the parent object. Otherwise, the system cannot properly handle the referential relationship automatically.</p>
+<p>To reflect this relationship in the administration interface, you need to ensure your custom interface elements create and display child objects correctly. See the following sections for details:</p>
+<ul>
+<li><a href="#child-object-listing-pages">Child object listing pages</a></li>
+<li><a href="#child-object-create-pages">Child object create pages</a></li>
+</ul>
+<p>Parent-child relationships also come with certain inherent limitations, see the <a href="#parent-child-limitations">Parent-child limitations</a> section for more information.</p>
+<h3 id="child-object-listing-pages">Child object listing pages</h3>
+<p>To show only objects that are the children of a specific parent, listing pages must filter the objects by the identifier of a specific parent. When adding listing pages, use UI page structures such as the following:</p>
+<ul>
+<li>Parent object listing
+<ul>
+<li>Parent object create</li>
+<li>Parent object edit section (adds a URL slug with the identifier of the <strong>parent</strong> to the URL)
+<ul>
+<li>Parent object edit</li>
+<li>
+<strong>Child object listing</strong> (consumes the URL slug with the <strong>parent</strong> object’s identifier)
+<ul>
+<li>
+<a href="#child-object-create-pages">Child object create</a> (consumes the identifier of the <strong>parent</strong>)</li>
+<li>Child object edit section (adds a URL slug with the identifier of the <strong>child</strong> to the URL)
+<ul>
+<li>
+<a href="#child-object-edit-pages">Child object edit</a> (consumes the identifiers of the selected <strong>parent</strong> and <strong>child</strong>)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>And parse the parent identifier using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#retrieve-parameters-from-the-url">page model binders</a>. To filter the set of objects according to the currently selected parent, use a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template#modify-loaded-data">query modifier</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Child object listing page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[assembly: UIPage(
+    parentType: typeof(ParentObjectEditSection), 
+    slug: "children", 
+    uiPageType: typeof(ChildObjectList), 
+    name: "Child object listing", 
+    templateName: TemplateNames.LISTING, 
+    order: 200)]
+
+public class ChildObjectList : ListingPage
+{
+    protected override string ObjectType =&gt; ChildObjectInfo.OBJECT_TYPE;  
+
+    // Parses the parent object's identifier from the URL
+    [PageParameter(typeof(IntPageModelBinder))]
+    public int ParentId { get; set; }
+
+    public override Task ConfigurePage()
+    {
+        ...
+
+        // Ensures links to child object edit pages
+        // Child edit pages are parameterized by the identifier of the parent
+        // and the identifier of the child (PageParameterConstants.PARAMETERIZED_SLUG)
+        // For this reason, you need to specify the identifier of the current parent
+        // (the method automatically appends the identifier of each child - row item - to the URL)
+        PageConfiguration.AddEditRowAction&lt;ChildObjectEdit&gt;(parameters:
+            new PageParameterValues
+                {
+                    { typeof(ParentObjectEditSection), ParentId }
+                });
+
+        // Displays only the children of the parent identified by 'ParentId'
+        PageConfiguration.QueryModifiers
+            // Displays only children of the currently selected parent object
+            .AddModifier((query, _) =&gt;
+            {
+                return query.WhereEquals(nameof(ChildObjectInfo.ParentID), ParentId);
+            });
+
+        return base.ConfigurePage();
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="child-object-create-pages">Child object create pages</h3>
+<p>When creating the child object via the administration interface, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template#use-edit-pages-to-create-new-objects">create pages</a> must populate the foreign key column with the identifier of the parent object. To finalize an object after it was created via the UI, the create page template provides the <code>FinalizeInfoObject</code> method. The create page must also obtain the identifier of the parent object. You can leverage UI page hierarchies such as the following to parse the parent identifier using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#retrieve-parameters-from-the-url">page model binders</a>:</p>
+<ul>
+<li>Parent object listing
+<ul>
+<li>Parent object create</li>
+<li>Parent object edit section (adds a URL slug with the identifier of the <strong>parent</strong> to the URL)
+<ul>
+<li>Parent object edit</li>
+<li>
+<a href="#child-object-listing-pages">Child object listing</a> (consumes the identifier of the <strong>parent</strong>)
+<ul>
+<li>
+<strong>Child object create</strong> (consumes the identifier of the <strong>parent</strong>)</li>
+<li>Child object edit section (adds a URL slug with the identifier of the <strong>child</strong> to the URL)
+<ul>
+<li>
+<a href="#child-object-edit-pages">Child object edit</a> (consumes the identifiers of the selected <strong>parent</strong> and <strong>child</strong>)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Child object create page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[assembly: UIPage(
+    parentType: typeof(ChildObjectList), 
+    slug: "create", 
+    uiPageType: typeof(ChildObjectCreate), 
+    name: "Child object create", 
+    templateName: TemplateNames.EDIT, 
+    order: UIPageOrder.First)]
+
+// Child object create page that redirects to 'ChildObjectEdit' after the object is created
+public class ChildObjectCreate : CreatePage&lt;ChildObjectInfo, ChildObjectEdit&gt;
+{
+    // Gets the identifier of the parent from the URL (dictated by the UI page hierarchy)
+    [PageParameter(typeof(IntPageModelBinder), typeof(ParentObjectEditSection))]
+    public int ParentId { get; set; }
+
+    public ChildObjectCreate(IFormComponentMapper formComponentMapper, IFormDataBinder formDataBinder, IPageLinkGenerator pageLinkGenerator)
+        : base(formComponentMapper, formDataBinder, pageLinkGenerator)
+    {
+    }
+
+    public override Task ConfigurePage()
+    {
+        // Ensures correct URL for child object edit pages when redirected after object creation
+        AdditionalLinkParameters.Add(
+            new PageParameterValues
+            {
+                { typeof(ChildObjectEditSection), ParentId }
+            });
+
+        return base.ConfigurePage();
+    }
+
+    protected override Task FinalizeInfoObject(ChildObjectInfo infoObject, IFormFieldValueProvider fieldValueProvider, CancellationToken cancellationToken)
+    {
+        // Sets the parent identifier to the foreign key column 'ParentID'
+        infoObject.ParentID = ParentId;
+
+        return base.FinalizeInfoObject(infoObject, fieldValueProvider, cancellationToken);
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="child-object-edit-pages">Child object edit pages</h3>
+<p>Child object edit pages behave as regular edit page. The only difference is that, depending on the UI page hierarchy of your implementation, their URLs may be parameterized multiple times. For example, assuming the following page hierarchy:</p>
+<ul>
+<li>Parent object listing
+<ul>
+<li>Parent object create</li>
+<li>Parent object edit section (adds a URL slug with the identifier of the <strong>parent</strong> to the URL)
+<ul>
+<li>Parent object edit</li>
+<li>
+<a href="#child-object-listing-pages">Child object listing</a> (consumes the identifier of the <strong>parent</strong>)
+<ul>
+<li>
+<a href="#child-object-create-pages">Child object create</a> (consumes the identifier of the <strong>parent</strong>)</li>
+<li>Child object edit section (adds a URL slug with the identifier of the <strong>child</strong> to the URL)
+<ul>
+<li>
+<strong>Child object edit</strong> (consumes the identifiers of the selected <strong>parent</strong> and <strong>child</strong>)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>The edit page URL is parameterized by:</p>
+<ul>
+<li>the identifier of the parent (parent object edit section)</li>
+<li>the identifier of the child (child object edit section)</li>
+</ul>
+<p>When <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#page-urls-and-routing">generating links</a> to these pages, you need to keep this in mind and pass the appropriate parameters. For example, the <code>AddEditRowAction</code> <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template#add-row-actions">ListingPage extension method</a> must be supplied with the identifier of the parent (the method ensures the identifier of the child – a row in the listing – automatically).</p>
+<p>See the following snippets for a sample implementation:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Child object edit section</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+[assembly: UIPage(
+    parentType: typeof(ChildObjectListing), 
+    slug: PageParameterConstants.PARAMETERIZED_SLUG, 
+    uiPageType: typeof(ChildObjectEditSection), 
+    name: "Edit section for child objects", 
+    templateName: TemplateNames.SECTION_LAYOUT, 
+    order: UIPageOrder.NoOrder)]
+
+public class ChildObjectEditSection : EditSectionPage&lt;ChildObjectInfo&gt;
+{
+}
+
+</code></pre>
+</div>
+
+<p>The following example assumes the object type has a corresponding <a href="/documentation/developers-and-admins/customization/object-types">“edit” UI form</a> defined.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Child object edit page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+[assembly: UIPage(
+    parentType: typeof(ChildObjectEditSection), 
+    slug: "edit", 
+    uiPageType: typeof(ChildObjectEdit), 
+    name: "Edit child", 
+    templateName: TemplateNames.EDIT, 
+    order: UIPageOrder.First)]
+
+public class ChildObjectEdit : InfoEditPage&lt;ChildObjectInfo&gt;
+{
+    public ChildObjectEdit(IFormComponentMapper formComponentMapper, IFormDataBinder formDataBinder) : base(formComponentMapper, formDataBinder)
+    {
+    }
+
+    [PageParameter(typeof(IntPageModelBinder), typeof(ChildObjectEditSection))]
+    public override int ObjectId { get; set; }
+}
+
+</code></pre>
+</div>
+
+<h3 id="parent-child-limitations">Parent-child limitations</h3>
+<h4 id="content-item-or-page-objects-as-parents">Content item or page objects as parents</h4>
+<p>Custom child objects under content item or page classes as the parent are <strong>NOT</strong> supported. Content items and pages in Xperience are complex data structures that consist of multiple classes and have special logic for handling other factors, such as workflows and multilingual support.</p>
+<p>Parent-child relationships that include content items or pages do not provide the automatic functionality that works for other classes, such as deleting of child objects along with the parent page.</p>
+<h4 id="self-referencing-parent-child-relationships">Self-referencing parent-child relationships</h4>
+<p>The system does <strong>NOT</strong> support self-referential parent child relationships. Such cases would lead to various problems, for example when creating the first object of the given object type (an existing parent must be assigned to each object).</p>
+<p>The recommended approach is to create a separate object type for each level of the hierarchy, with a root that does not have a parent at the top. If you need to model a tree hierarchy with variable depth, you can create <a href="#one-to-many-relationships">database columns that store references</a> to the same object type, and use those to handle the parent-child hierarchy.</p>
+<h2 id="one-to-many-relationships">One-to-many relationships</h2>
+<p>One-to-many relationships are based on database columns that store references to objects of other types (<em>foreign keys</em>). Such references allow each object of the given object type to have a relationship with an object of another type. For example, you can assign users, members, or any other object in the system to custom objects.</p>
+<p>To ensure that the system automatically handles dependencies for your references, you need to register the reference fields in the <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">type information</a>. With correct configuration, the system maintains referential integrity of relationships for <a href="/documentation/developers-and-admins/ci-cd">CI/CD</a>, or when removing references to deleted objects.</p>
+<p>You can define references in two possible directions:</p>
+<ul>
+<li>From a custom object type to another object type</li>
+<li>From any <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">extendable system class</a> to custom object types</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>References to content item or page objects are not supported</strong></p>
+<p>The system does <strong>NOT</strong> support creating references from custom classes to content item or page objects. Content items and pages are complex data structures that consist of multiple classes and have special logic for handling other factors, such as workflows and multilingual support.</p>
+</div>
+
+<h3 id="add-references-from-custom-object-types">Add references from custom object types</h3>
+<p>To create a reference from a custom object type to another object type:</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application.</li>
+<li>Edit the custom module and data class where you wish to add the reference.</li>
+<li>On the <strong>Database columns</strong> tab, create a <strong>New field</strong>.
+<ul>
+<li><p>A common convention is to suffix identifier columns with the <strong>ID</strong> suffix.</p></li>
+<li><p>Set the field’s <strong>Data type</strong> to <em>Integer number</em>.</p></li>
+<li><p>Select the target object type in the <strong>Reference to</strong> selector.</p></li>
+<li>
+<p>Choose a <strong>Reference type</strong> to determine how the system handles referential integrity and automatic removal of objects when a referenced object is deleted. For more information about the available options, see the table describing the <code>ObjectDependencyEnum</code> values below.</p>
+
+<div>
+
+</div>
+<div>
+<p>The <strong>Required</strong> flag in the field settings controls whether the reference field must have a target object set (not to be confused with the <em>Required</em> option of the <strong>Reference type</strong> setting).</p>
+</div>
+</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>. You can create any number of reference fields using the same approach.</li>
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Regenerate the code</a> for the modified object type. If you have already customized the <em>Info</em>, <em>IInfoProvider</em> or <em>InfoProvider</em> classes, manually compare and copy the differences caused by the reference fields to avoid overwriting your changes.</li>
+<li>(Optional) Set the ID columns as foreign keys in your database. See <a href="#configure-foreign-key-columns-in-the-database">Configure foreign key columns in the database</a> for more information.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Important</strong>: The <em>Reference</em> settings that you configure for fields on the <strong>Database fields</strong> tab only serve as input for the default code generated for the <em>Info</em> class. Changing the field settings after you generate your code does NOT change the behavior of the reference fields. To make changes, you need to adjust the code of the given <em>Info</em> class or regenerate the code.</p>
+</div>
+
+<p>The type information definition in the generated <em>Info</em> code automatically includes the required object dependencies based on the <em>Reference</em> settings of your fields. If you view the code, you can see that the <code>DependsOn</code> property in the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers" target="_blank">initializer</a> of the <code>TYPEINFO</code> member contains a <code>List</code> collection of <code>ObjectDependency</code> objects.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Object dependencies</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Defines references from a custom object type to User and Culture
+DependsOn = new List&lt;ObjectDependency&gt;
+{
+    // CustomTypeUserID and CustomTypeCultureID identify the foreign key columns defined for the custom object type
+    new ObjectDependency("CustomTypeUserID", UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required),
+    new ObjectDependency("CustomTypeCultureID", CultureInfo.OBJECT_TYPE, ObjectDependencyEnum.NotRequired)
+},
+
+</code></pre>
+</div>
+
+<p>Each <code>ObjectDependency</code> object defines one reference from the custom object type to another type in the system. <code>ObjectDependency</code> objects have the following parameters:</p>
+<ul>
+<li><p><strong>column (string)</strong> – the name of the foreign key column that stores the IDs of the referenced objects.</p></li>
+<li><p><strong>object type (string)</strong> – the name of the object type that is the target of the reference (accessible via the <code>OBJECT_TYPE</code> constant exposed by <em>Info</em> classes).</p></li>
+<li>
+<p><strong>reference type (ObjectDependencyEnum)</strong> – determines how the system handles referential integrity and automatic removal of objects when a referenced object is deleted. The value must be one of the options from the <code>ObjectDependencyEnum</code>:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>
+Value
+</p>
+</td>
+<td>
+<p>
+Description
+</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>
+NotRequired
+</p>
+</td>
+<td>
+<p>
+Represents an optional (<em>weak</em>) reference. If the referenced object is deleted, the system sets a <code>null</code> value to the foreign key column.
+</p>
+<p>
+The column that stores the IDs of the referenced objects must support empty/null values (the <strong>Required</strong> flag cannot be enabled).
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+RequiredHasDefault
+</p>
+</td>
+<td>
+<p>
+If the referenced object is deleted, the system automatically assigns a default object instead of setting <code>null</code> to the foreign key column.
+</p>
+<p>
+To set the default object for your custom object types, you need to override the <code>GetDefaultObject</code> method in the code of the given <em>Info</em> class.
+</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assign a default object</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>protected override BaseInfo GetDefaultObject()::newline::{::newline::::tab::// Gets the object of the custom type whose code name is "default"::newline::::tab::CustomTypeInfo defaultObject = CustomInfo.Provider.Get("default");::newline::::tab::return defaultObject;::newline::}::newline::</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>
+Required
+</p>
+</td>
+<td colspan="1">
+<p>
+The system always maintains the integrity and consistency of the reference as long as a value is set (<em>strong reference</em>). The value can still be <code>null</code> if the <strong>Required</strong> flag is disabled for the given field.
+</p>
+<p>
+If the referenced object is deleted, the system automatically deletes all objects connected as references.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+Binding
+</p>
+</td>
+<td>
+<p>
+Only intended for the reference fields of dedicated binding object types used to model many-to-many relationships (via <a href="https://en.wikipedia.org/wiki/Associative_entity" target="_blank">associative tables</a>). Works the same way as the <code>Required</code> dependency type.
+</p>
+<p>
+See: <a href="#many-to-many-relationships">Many-to-many relationships</a>
+</p>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<h3 id="add-references-from-extendable-system-objects">Add references from extendable system objects</h3>
+<p>You can extend existing objects in the system to store references to custom object types.</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application.</li>
+<li>Edit the module and the data class that you wish to extend.</li>
+<li>On the <strong>Database columns</strong> tab, create a <strong>New field</strong> using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.
+<ul>
+<li>A common convention is to suffix identifier columns with the <strong>ID</strong> suffix.</li>
+<li>Set the field’s <strong>Data type</strong> to <em>Integer number</em>.</li>
+<li>Either keep the field hidden and handle the values in code, adjust an existing UI form, or create a completely new UI form that manages the dependency.</li>
+<li>There are no <em>Reference</em> settings to configure for the field with this type of reference.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the field.</li>
+<li>(Optional) Set the ID columns as foreign keys in your database. See <a href="#configure-foreign-key-columns-in-the-database">Configure foreign key columns in the database</a> for more information.</li>
+</ol>
+<p>You can repeat the process above for any number of customizable system object types. Once the reference database columns (<em>foreign keys</em>) are created, you need to register them as dependencies in the type information of your custom class:</p>
+<ol type="1">
+<li><p>In an IDE, edit the <em>Info</em> code of the custom object that is the <strong>target of the reference</strong>.</p></li>
+<li>
+<p>In the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers" target="_blank">initializer</a> of the TYPEINFO object, assign a <em>List</em> collection of<code>ExtraColumn</code> objects into the <code>Extends</code> property.</p>
+<ul>
+<li>Create an <code>ExtraColumn</code> object for each custom reference that targets the given object type.</li>
+</ul>
+</li>
+<li><p>Save the changes and rebuild the project.</p></li>
+</ol>
+<p><code>ExtraColumn</code> objects accept the following parameters:</p>
+<ul>
+<li>
+<strong>extended object type (string)</strong> – the name of the object type where you added the reference field (the extendable system object).</li>
+<li>
+<strong>column (string)</strong> – the name of the foreign key column in the extended class that stores the IDs of the referenced objects.</li>
+<li>
+<strong>reference type (ObjectDependencyEnum)</strong> – determines how the system handles referential integrity and automatic removal of objects when a referenced object is deleted. The value must be one of the options from the <code>ObjectDependencyEnum</code>. See the table in the <a href="#add-references-from-custom-object-types">Add references from custom object types</a> section for details.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Defines references from the Contact and User classes to a custom class
+Extends = new List&lt;ExtraColumn&gt;()
+{
+    new ExtraColumn(ContactInfo.OBJECT_TYPE, "ContactCustomClassID", ObjectDependencyEnum.Required),
+    new ExtraColumn(UserInfo.OBJECT_TYPE, "UserCustomClassID", ObjectDependencyEnum.NotRequired)
+}
+
+</code></pre>
+</div>
+
+<p>The code informs the system that the specified field of the extended class stores references to another class. During the initialization of the application, the system automatically inserts an object dependency into the type information definition of the extended class.</p>
+<h3 id="edit-references-from-the-ui">Edit references from the UI</h3>
+<p>To make the added reference (foreign key) columns editable from the create or edit pages of the corresponding object, follow this general approach:</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application and edit the extended data class.</li>
+<li>Switch to the <strong>UI Forms</strong> tab and edit the UI form used to create or edit the object (the process is analogous for both).</li>
+<li>Add a new to the UI Form with the following properties:
+<ol type="1">
+<li>
+<strong>Database column:</strong> New field without database column</li>
+<li>
+<strong>Field name:</strong> choose a suitable name, you will be accessing and configuring this field via the API</li>
+<li>
+<strong>Data type:</strong> Text</li>
+<li>
+<strong>Required:</strong> Yes (checkbox selected)</li>
+<li>
+<strong>Form component:</strong> Dropdown selector</li>
+<li>
+<strong>Data source:</strong> leave empty (will be populated later using the API)</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The modified UI form now displays an empty Dropdown selector. The next step is to populate it with the available reference targets.</p>
+<ol type="1">
+<li><p>In an IDE, edit the UI page used to create or edit the extended object (the process is analogous for both).</p></li>
+<li>
+<p>Override the <code>GetFormItems</code> method and populate the dropdown selector field with the identifiers and display names of the target objects.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Dropdown data source using GetFormItems()</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ // Populates the dropdown with custom Office objects
+ protected override async Task&lt;ICollection&lt;IFormItem&gt;&gt; GetFormItems()
+ {
+     // Gets the collection of form components for the UI form displayed by this page
+     var items = await base.GetFormItems();
+
+     // Gets all items that can be the target of the relationship
+     // Formats the data according to the requirements of the 'Dropdown selector' component: &lt;identifier&gt;;&lt;displayName&gt;
+     // Use constructor dependency injection to obtain required services
+     var selectorOptions = officeInfoProvider.Get().GetEnumerableTypedResult()
+                                             .OrderBy(s =&gt; s.OfficeName)
+                                             .Select(x =&gt; $"{x.OfficeID};{x.OfficeName}");
+
+     // Gets the Dropdown form component by its UI form field name
+     var officeSelector = items.OfType&lt;IFormComponent&gt;()
+                               .FirstOrDefault(i =&gt; i.Name == "OfficeSelect") as DropDownComponent;
+
+     // Sets the Dropdown component's data source property
+     officeSelector.Properties.Options = string.Join("\r\n", selectorOptions);
+
+     return items;
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Override the <code>FinalizeInfoObject</code> method and ensure the identifier from the selector is saved into the foreign key column.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Set foreign key references using FinalizeInfoObject()</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ protected override Task FinalizeInfoObject(OfficeJobInfo infoObject, IFormFieldValueProvider fieldValueProvider, CancellationToken cancellationToken)
+ {
+     base.FinalizeInfoObject(infoObject, fieldValueProvider, cancellationToken);
+
+     // Gets the submitted value from the UI form field dropdown 
+     fieldValueProvider.TryGet&lt;string&gt;("OfficeSelect", out var value);
+
+     // Sets the value to the foreign key column
+     // The field is required, so no validation is needed, we know the value is always there and in the format we need
+     infoObject.OfficeJobParentID = Int32.Parse(value);
+
+     // Sets the object to the database
+     return Task.CompletedTask;
+ }
+
+ </code></pre>
+</div>
+</li>
+<li><p>Rebuild the project.</p></li>
+</ol>
+<p>If you navigate to the page with the edited UI form, you can use the added dropdown selector to set the target of the dependency. Note that if the edited UI form is present on multiple pages, you need to repeat the process for each affect page or separate the logic to a shared base class.</p>
+<p></p>
+<h2 id="many-to-many-relationships">Many-to-many relationships</h2>
+<p>A <em>many-to-many relationship</em> occurs when multiple records in a table are associated with multiple records in another table. A typical example of a many-to many relationship is one between roles and users. A user can be assigned to many roles, and a role can include many users.</p>
+<p>MSSQL doesn’t allow you to implement a direct many-to-many relationship between tables. However, you can break the many-to-many relationship into multiple one-to-many relationships by using a <strong>binding object type</strong> with its own table (an <a href="https://en.wikipedia.org/wiki/Associative_entity" target="_blank">associative table</a>). Each record in the binding type’s table contains the value of the primary keys of the object types it associates (<em>foreign keys</em>).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>References to content item or page objects are not supported</strong></p>
+<p>The system does <strong>NOT</strong> support creating binding object types between custom objects and content item or page objects. Content items and pages are complex data structures that consist of multiple classes and database tables, and have special logic for handling other factors, such as workflows and multilingual support.</p>
+</div>
+
+<h3 id="add-binding-classes">Add binding classes</h3>
+<p>Use the following steps to create a binding between objects:</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application and edit the custom module where you want to create the binding.</li>
+<li>Select the <strong>Classes</strong> tab and click <strong>New class</strong>.</li>
+<li>Fill in the <strong>Class name</strong> and <strong>Code name</strong>.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>Now define the database columns storing the foreign keys of the related objects:</p>
+<ol type="1">
+<li>Switch to the <strong>Database columns</strong> tab.</li>
+<li>Select <strong>New field</strong> and fill in the following values using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.
+<ol type="1">
+<li>
+<strong>Data type</strong>: Integer number</li>
+<li>
+<strong>Required</strong>: yes (checkbox selected)</li>
+<li>
+<strong>Reference to</strong>: select the appropriate object type</li>
+<li>
+<strong>Reference type</strong>: Binding</li>
+</ol>
+</li>
+<li>Repeat for all foreign keys in the relationship (two at minimum).</li>
+</ol>
+<p>The system creates the corresponding table in the database. Perform the following steps to configure the binding and finalize the database table:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Generate the binding’s code</a>.</li>
+<li>Include the files into your project.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for best practices.</li>
+</ul>
+</li>
+<li>Edit the generated <em>Info</em> class and find the <code>TYPEINFO</code> member.</li>
+<li>Add the <code>IsBinding</code> property to the <code>ObjectTypeInfo</code> initializer and set the value to <code>true</code>. See <a href="#Modelobjecttyperelationships-bindinginfoconfig">Object type configuration</a> for details.</li>
+<li>Save the changes and rebuild the solution.</li>
+<li>(Optional) Set the ID columns as foreign keys in your database. See <a href="#configure-foreign-key-columns-in-the-database">Configure foreign key columns in the database</a> for more information.</li>
+</ol>
+<p>The binding object type is now ready. You can create relationships between objects using the API or prepare a user interface for this purpose.</p>
+<h3 id="object-type-configuration">Object type configuration </h3>
+<p>The <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">type information</a> is code that defines the general behavior and basic properties of object types. You can configure the type information inside the <em>Info</em> class of a given binding using the <code>TYPEINFO</code> member.</p>
+<p>Generated binding <em>Info</em> classes have <strong>most</strong> of the type information set automatically by the code generator. You need to configure the remaining properties and verify the rest is set correctly.</p>
+<p><strong>Parameters of the ObjectTypeInfo constructor</strong>:</p>
+<ul>
+<li>
+<strong>idColumn (4)</strong> – the name of the identity column of the binding.</li>
+<li>
+<strong>parentID (11)</strong> – the name of the column that stores the ID of the <strong>first</strong> object type in the relationship.</li>
+<li>
+<strong>parentObjectType (12)</strong> – the object type name of the <strong>first</strong> object type in the relationship. Get the value from the <code>OBJECT_TYPE</code> constant in the given type’s <em>Info</em> class.</li>
+</ul>
+<p><strong>Properties in the ObjectTypeInfo initializer</strong>:</p>
+<ul>
+<li>
+<strong>IsBinding</strong> – must always be set to true for bindings<em>.</em> This property <strong>is not automatically set by the code generator</strong> and must be added manually!</li>
+<li>
+<strong>DependsOn</strong> – List of <code>ObjectDependency</code> objects representing the object types in the relationship. Add an <code>ObjectDependency</code> for each related object <strong>except</strong> for the one specified via the <em>parent</em> parameters in the constructor.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Binding class configuration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Sample type information definition for a general binding
+// The first object in the binding ALWAYS needs to be defined in the ObjectTypeInfo constructor
+public static ObjectTypeInfo TYPEINFO = new ObjectTypeInfo(
+    providerType: typeof(ObjectBindingInfoProvider), 
+    objectType: OBJECT_TYPE, 
+    objectClassName: "Acme.ObjectBinding", 
+    idColumn: "ObjectBindingID", 
+    timeStampColumn: null, 
+    guidColumn: null, 
+    codeNameColumn: null, 
+    displayNameColumn: null, 
+    binaryColumn: null,
+    parentIDColumn: "ForeignKeyOne", 
+    parentObjectType: "ObjectType.One")
+{
+    // Must be added manually, not handled by code generators
+    IsBinding = true,
+    // Adds other object types to the binding relationship
+    DependsOn = new List&lt;ObjectDependency&gt;()
+    {
+        new ObjectDependency("ForeignKeyTwo", "ObjectType.Two", ObjectDependencyEnum.Binding),
+    },
+};
+
+</code></pre>
+</div>
+
+<h3 id="add-objects-to-a-many-to-many-relationships-from-the-ui">Add objects to a many-to-many relationships from the UI</h3>
+<p>You typically add objects to many-to-many relationships from the editing interface of one of the objects in the association. That is, you can leverage the following <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI page</a> structure to obtain the identifier of the object using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#parameterized-url-slugs">page model binders</a>:</p>
+<ul>
+<li>Object listing page
+<ul>
+<li>Object edit section (adds a URL slug with the identifier of the <strong>source object</strong> to the URL)
+<ul>
+<li>Source object edit</li>
+<li>Source object many-to-many relationship management (typically a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/binding-ui-page-template">binding page</a>)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>For example, you add roles to users either when editing the role object or the user object. Therefore, you can always obtain the identifier of one of the objects in the association from the UI page hierarchy.</p>
+<h4 id="implementation">Implementation</h4>
+<p>To create the page that manages the many-to-many relationship (this process is analogous for all object types associated via a given binding relation), create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/binding-ui-page-template">binding UI page</a> that lists objects associated to the object being edited.</p>
+<ul>
+<li>Use a page model binder to get the identifier of the edited object from the URL.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Many-to-many management binding page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Demonstrates how to manage a many-to-many relationship for a custom Office object that is associated 
+// to UserInfo objects (system users). This association is constructed from the Offices side of the relationship 
+// (i.e., the page URL structure contains the identifier of an office object)
+
+public class OfficeWorkers : InfoBindingPage&lt;OfficeUserInfo, UserInfo&gt;
+{
+    // Configures the ID of the edited binding object
+    [PageParameter(typeof(IntPageModelBinder))]
+    public override int EditedObjectId { get; set; }
+
+    // Returns the name of the property that is used as the source in the binding object type
+    protected override string SourceBindingColumn =&gt; nameof(OfficeUserInfo.OfficeID);
+
+    // Returns the name of the property that is used as the target in the binding object type
+    protected override string TargetBindingColumn =&gt; nameof(OfficeUserInfo.AssignedUserID);
+
+    // Configures the listing of workers assigned to the office
+    public override async Task ConfigurePage()
+    {
+        // Configures captions of buttons and listings
+        PageConfiguration.AddBindingButtonText = "Add workers";
+        PageConfiguration.ExistingBindingsListing.Caption = "Users assigned as workers";
+        PageConfiguration.SaveBindingsButtonText = "Confirm";
+        PageConfiguration.BindingSidePanelListing.Caption = "Select users as workers";
+
+        // Configures columns displayed in the listing of existing bindings
+        PageConfiguration.ExistingBindingsListing.ColumnConfigurations
+            .AddColumn(nameof(UserInfo.UserName), "User name", searchable: true, defaultSortDirection: SortTypeEnum.Asc);
+
+        // Configures columns displayed in the listing of available object
+        PageConfiguration.BindingSidePanelListing.ColumnConfigurations
+            .AddColumn(nameof(UserInfo.UserName), "User name", searchable: true, defaultSortDirection: SortTypeEnum.Asc);
+
+        await base.ConfigurePage();
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The basic management UI is now ready. Users can create and remove associations using the added interface elements.</p>
+<p></p>
+<h2 id="configure-foreign-key-columns-in-the-database">Configure foreign key columns in the database</h2>
+<p>The system does not provide automatic management of foreign keys on the database level. You need to manually set the added foreign key columns as foreign keys in the corresponding database tables. This is not required to ensure correct functionality of foreign key columns, but is recommended to leverage the performance and data consistency advantages of foreign key constraints.</p>
+<p>You can either use SQL Server Management Studio or execute an SQL script. See <a href="https://learn.microsoft.com/en-us/sql/relational-databases/tables/create-foreign-key-relationships" target="_blank">Create Foreign Key Relationships</a> for more information.</p>
+
+</body>
+</html>

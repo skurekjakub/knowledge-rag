@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Role management</title>
+</head>
+<body>
+<p>Xperience uses a role-based system to manage the permissions of <a href="/documentation/developers-and-admins/configuration/users/user-management">user accounts</a>. Roles define permissions that determine what users can and cannot do within individual administration UI applications. The number of roles assignable to each user account is not limited; permissions of a given account are determined by the union of permissions granted by individual roles. </p>
+<p>The system by default provides the <strong>Administrator</strong> role that grants full permissions to all features and applications in the product. Initially, the administrator account created during the installation process is the only user with this role. As one of the requirements when inviting new users to the system is assigning a role to their account, we strongly recommend setting up additional roles with restricted access (such as <em>Editor</em> or <em>Contributor</em>) to prevent any misuse of granted privilege.</p>
+<p>You can grant four main types of permissions for most applications in the system:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Permission</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>View</p>
+</td>
+<td>
+<p>The most basic permission required to interact with an application in Xperience. Without the <strong>View</strong> permission, users cannot see the corresponding application in the administration, access it via direct URLs, or use it in any other way.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Create</p>
+</td>
+<td>
+<p>Grants permission to create objects in the corresponding application. </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Update</p>
+</td>
+<td>
+<p>Grants permission to modify existing objects in the corresponding application.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Delete</p>
+</td>
+<td colspan="1">
+<p>Grants permission to delete existing objects in the corresponding application.</p>
+</td>
+</tr>
+</table>
+
+<p>Not every application needs all permissions. For example, <em>Create</em>, <em>Update</em>, and <em>Delete</em> are not relevant for the <strong>Event Log</strong> application, which only displays events that occurred in the system.</p>
+<p>In addition to the permissions summarized in the table above, applications may also have permissions related to their specific functionality.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Application</p>
+</td>
+<td>
+<p>Permission</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td rowspan="2">
+<p>Website channel applications</p>
+</td>
+<td>
+<p>Access channel</p>
+</td>
+<td>
+<p>Allows users to see and access the website channel application in the administration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Manage permissions</p>
+</td>
+<td>
+<p>Allows users to grant <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a> to other roles.</p>
+<p>Roles with this permission always have full privileges for all pages in the website channel.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content hub</p>
+</td>
+<td>
+<p>Synchronize</p>
+</td>
+<td>
+<p>Allows users to <a href="/documentation/business-users/content-sync">synchronize</a> content items from one instance of Xperience to another.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email channel applications</p>
+</td>
+<td>
+<p>Send email</p>
+</td>
+<td>
+<p>Allows users to send or schedule <a href="/documentation/business-users/digital-marketing/emails">emails</a> of the <em>Regular</em> type.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Forms</p>
+</td>
+<td>
+<p>Synchronize</p>
+</td>
+<td>
+<p>Allows users to <a href="/documentation/business-users/content-sync">synchronize</a> forms from one instance of Xperience to another.</p>
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+<p>Media libraries</p>
+</td>
+<td>
+<p>Manage media library</p>
+</td>
+<td>
+<p>Allows users to perform file operations within media libraries, e.g., upload and delete media files.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Migrate media library</p>
+</td>
+<td>
+<p>Allows users to <a href="/guides/architecture/media-libraries-migration-guidance">migrate media libraries</a> to Content hub.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Channel management</p>
+</td>
+<td>
+<p>Manage headless channel API keys</p>
+</td>
+<td>
+<p>Allows users to create, enable or disable API keys for <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channels</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Scheduled tasks</p>
+</td>
+<td>
+<p>Run tasks</p>
+</td>
+<td>
+<p>Allows users to run non-system <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled tasks</a>.</p>
+</td>
+</tr>
+</table>
+
+<p>Developers can also define suitable feature-specific permissions when creating custom applications and UI pages for the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">administration</a>.</p>
+<h2 id="manage-roles">Manage roles</h2>
+<p>You manage roles in the <strong>Role management</strong> application.</p>
+<h3 id="create-roles">Create roles</h3>
+<ol type="1">
+<li>In the <strong>Role management</strong> application, select <strong>New role</strong>.</li>
+<li>Enter the role:
+<ol type="1">
+<li>
+<strong>Role name</strong> – used when working with the role in the administration interface.</li>
+<li>
+<em>(Optional)</em> <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</li>
+<li>
+<em>(Optional)</em> <strong>Description</strong> – information about the role.</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The role is created in the system. You can now:</p>
+<ul>
+<li><a href="#assign-permissions-to-roles">Assign permissions to roles</a></li>
+<li><a href="#assign-users-to-roles">Assign users to roles</a></li>
+</ul>
+<h3 id="assign-permissions-to-roles">Assign permissions to roles</h3>
+<p>You assign permissions via a role’s <strong>Permissions</strong> tab. Open the <strong>Role management</strong> application and select a role. Then, switch to the role’s <strong>Permissions</strong> tab.</p>
+<p>Each application groups all permissions that can be granted under a <strong>Permission set</strong>. Use the assignment interface to define permissions for the selected role.</p>
+<p></p>
+<p>Selecting <strong>Add permission set</strong> creates a new item for the role. Use the application selector to choose the application for which to define permissions. For workspace-scoped applications, you define the permission set for the application in a specific workspace. For example, you can grant all permissions for Content hub in workspace A and only the <em>View</em> permission for Content hub in workspace B.</p>
+<p>The selector on the right lists the permissions available for the application. <strong>View</strong> is always preselected and non-removable – other permissions are redundant if the role cannot access the application in the first place. Applications without explicitly defined permission sets are inaccessible and hidden from the administration interface for all users in the given role.</p>
+<h3 id="assign-users-to-roles">Assign users to roles</h3>
+<p>Users are assigned to roles on the <strong>Assigned users</strong> tab.</p>
+<ol type="1">
+<li>Open the <strong>Role management</strong> application and select a role.</li>
+<li>Switch to the <strong>Assigned users</strong> tab.</li>
+<li>Add users to the role via <strong>Add user</strong>.</li>
+</ol>
+<p>The users are now assigned to the role.</p>
+<h3 id="assign-roles-to-users">Assign roles to users</h3>
+<p>You can also assign roles to individual users via the <strong>Users</strong> application.</p>
+<ol type="1">
+<li>Open the <strong>Users</strong> application.</li>
+<li>Select a user.</li>
+<li>Assign roles using the <strong>Role</strong> dropdown on the <strong>General</strong> tab.</li>
+</ol>
+<h3 id="assign-roles-when-inviting-new-users">Assign roles when inviting new users</h3>
+<p>Assigning a role is also necessary when inviting new users to the system via <strong>New user</strong> in the <strong>Users</strong> application.</p>
+<p></p>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Event log</title>
+</head>
+<body>
+<p>The event log stores information about significant events that occur in the system. It is useful to view logged information if unwanted behavior occurs in the system and you want to find out where the problem originates or get additional details.</p>
+<p>To view the event log, open the <strong>Event log</strong> application.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Find relevant events</strong></p>
+<p>When investigating issues or errors in the system, try to examine the <strong>Source</strong> and <strong>Event code</strong> of logged events. These two properties uniquely describe the nature of the event in most cases. For more information, select specific events in the log and view their full <strong>Description</strong> or other relevant properties.</p>
+<p>The search bar allows you to find items with a source or event code matching the entered text. You can also <strong>Filter</strong> the list of events.</p>
+</div>
+
+<h2 id="configure-the-event-log">Configure the event log</h2>
+<p>The verbosity and severity of the entries in the event log can be adjusted via application settings. For detailed instructions and technical information about logging, see <a href="/documentation/developers-and-admins/development/logging">Logging</a>.</p>
+<p>Additionally, you can configure the event log functionality in the <strong>Settings</strong> application within the Xperience administration. The following settings are available in the <strong>System → Event log</strong> category.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Setting</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Event log size</p>
+</td>
+<td>
+<p>Limits the maximum number of events stored in the Event log.</p>
+<ul>
+<li>When exceeded by 10%, this percentage of the oldest events is deleted from the log in a batch. You can adjust the percentage using the <strong>CMSLogKeepPercent</strong> configuration key (via the project’s <em>appsettings.json</em> file).</li>
+<li>Old events that exceed the limit are not deleted immediately but only after a new event is logged.</li>
+<li>Set the value to <code>0</code> if you do not want the system to log any events.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Log object actions</p>
+</td>
+<td colspan="1">
+<p>If enabled, basic create, edit, and delete actions for Xperience objects are logged in the Event log.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Log to database</p>
+</td>
+<td>
+<p>Indicates if events are logged to the database, i.e., the default log displayed in the <em>Event log</em> application.</p>
+<p>Does not apply if the <strong>Event log size</strong> setting is 0.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Log to file system</p>
+</td>
+<td colspan="1">
+<p>Indicates if events are logged to an <strong>App_Data\logEvents.log</strong> file in the project directory.</p>
+<p>Does not apply if the <strong>Event log size</strong> setting is 0.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

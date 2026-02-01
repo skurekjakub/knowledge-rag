@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Macro signatures</title>
+</head>
+<body>
+<p>Whenever <a href="/documentation/developers-and-admins/configuration/macro-expressions">macro expressions</a> are saved in the administration, the system automatically adds a security signature. Signatures ensure the integrity of macros and identify the user who entered the macro.</p>
+<p>Every macro signature contains an identifier of the macro’s author and a hash of the given expression. To increase the level of security, the hash function used when creating macro signatures appends a salt to the input (a sequence of additional characters). The salt value depends on the <a href="#configure-the-hash-salt-for-macro-signatures">configuration</a> of the application’s environment, so the signatures are by default not valid when deploying macros to other instances of Xperience.</p>
+<h2 id="configure-the-hash-salt-for-macro-signatures">Configure the hash salt for macro signatures</h2>
+<p>The system appends a <a href="http://en.wikipedia.org/wiki/Salt_%28cryptography%29" target="_blank">salt</a> to the input of the hash function that creates macro signatures.</p>
+<p>If a specific hash salt value is not assigned during the installation of a new Xperience project, a randomly generated <a href="http://en.wikipedia.org/wiki/GUID" target="_blank">GUID</a> is assigned. The salt value is configured through the <code>CMSHashStringSalt</code> key in the <em>appsettings.json</em> file. Instances without this configuration key use the application’s main database connection string as the salt (the exact <code>CMSConnectionString</code> value in the <em>appsettings.json</em> file).</p>
+<p>We strongly recommend having the hash salt configuration key set to a specific value, which provides the following benefits:</p>
+<ul>
+<li>
+<strong>Stability</strong> –  you do not need to re-sign macros if your connection string changes</li>
+<li>
+<strong>Deployment</strong> – you can use the same salt for other instances of Xperience, which makes it easier to deploy data containing macros</li>
+</ul>
+<p>The best option is to set the hash salt value before you start creating content in your project. If you plan to <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment">deploy to the SaaS environment</a>, use the hash salt value provided for your project in <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Impact of hash salt changes</strong></p>
+<p>Changing the salt causes all current hash values to become invalid, including the signatures of macros. Having invalid macros throughout the system may lead to problems. You need to <a href="#re-sign-macros">re-sign macros</a> immediately after changing the hash salt value. In addition to macro signatures, the system uses the <code>CMSHashStringSalt</code> value for other hash functions.</p>
+</div>
+
+<p>To change the salt value for your application, edit the <code>CMSHashStringSalt</code> configuration key. You can use any string as the value, but the salt should be random and at least 16 characters long. For example:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSHashStringSalt": "e68b9ad6-a461-4707-8e3e-ece73f03dd02",
+
+</code></pre>
+</div>
+
+<h2 id="re-sign-macros">Re-sign macros</h2>
+<p>If the hash salt value used by your application changes, the security signatures of existing macro expressions become invalid. For example, you may encounter problems with unresolved macros:</p>
+<ul>
+<li>After setting a new custom salt via the <code>CMSHashStringSalt</code> configuration key.</li>
+<li>When deploying data containing macros (e.g., <a href="/documentation/business-users/digital-marketing/contact-groups">Contact groups</a> with conditions) to an instance of Xperience with a different hash salt.</li>
+<li>If your application does not have a custom hash salt, and the connection string has changed (for example when moving to a different server or after setting a new database password).</li>
+</ul>
+<p>If you encounter such problems, you need to re-sign macros.</p>
+<p>Xperience provides a <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/" target="_blank">.NET command-line interface</a> command that re-signs all macros in the system:</p>
+<ol type="1">
+<li><p>Open the command line prompt.</p></li>
+<li><p>Navigate to your Xperience project’s root directory.</p></li>
+<li>
+<p>Use <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-run" target="_blank">dotnet run</a> to execute the <code>--kxp-resign-macros</code> command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build -- --kxp-resign-macros --old-salt "Old_Salt" --new-salt "New_Salt"
+
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Command parameters</strong></p>
+<p>The <code>--kxp-resign-macros</code> command has the following parameters:</p>
+<div>
+<table>
+<tr>
+<td>
+<p>
+<code>–old-salt</code><br>OR<br><code>–sign-all</code>
+</p>
+</td>
+<td>
+<p>
+If you specify the <code>–old-salt</code> parameter, only macros that have a valid signature under the old salt are re-signed and the identifiers of the macro authors remain unchanged. You need to enter the old salt that was used to generate the security hash of existing macro expressions in the system.
+</p>
+<p>
+With the <code>–sign-all</code> parameter, the macro re-signing process skips the signature integrity check and creates new signatures for all macros. You do not need to enter the old salt value in this case. The new signatures contain the identity of the user specified in the <code>–username</code> parameter.
+</p>
+<p>
+<strong>Security warning</strong>: With the <code>–sign-all</code> parameter, the resigning also includes macros that are unsigned or have invalid signatures. If your system’s data contains invalid macros, such macros receive valid signatures and represent potential security threats.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+<code>–new-salt</code>
+</p>
+</td>
+<td>
+<p>
+Optional parameter that sets the hash salt used to re-sign macros. If not specified, macros are automatically re-signed using the application’s current hash salt value.
+</p>
+<p>
+For example, use the <code>–new-salt</code> parameter if you are planning to change your application’s hash salt, or when preparing macros for deployment to other Xperience instances.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+<code>–username</code>
+</p>
+</td>
+<td>
+<p>
+The name of the user added to macro signatures when re-signing all macros with the <code>–sign-all</code> parameter.
+</p>
+</td>
+</tr>
+</table>
+</div>
+<p>We recommend running the command with the <code>--no-build</code> parameter to avoid an unnecessary project build.</p>
+<p>Add the parameters after the <code>--</code> syntax separator to pass the options directly to the Xperience application and avoid conflicts with .NET CLI parameters.</p>
+</div>
+</li>
+</ol>
+<p>The command replaces the security signature in occurrences of macros based on the specified paramaters.</p>
+
+</body>
+</html>

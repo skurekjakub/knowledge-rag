@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Scheduled tasks</title>
+</head>
+<body>
+<p>Scheduled tasks in Xperience allow you to automate recurring operations by executing tasks at defined intervals. You can manage the scheduling and configuration of these recurring processes using the <strong>Scheduled tasks</strong> application.</p>
+<h2 id="create-scheduled-tasks">Create scheduled tasks</h2>
+<p>Creating scheduled tasks is a two-step process. Each scheduled task consists of:</p>
+<ul>
+<li>a class that implements the <code>IScheduledTask</code> interface</li>
+<li>a task configuration provided via the <em>Scheduled tasks</em> application</li>
+</ul>
+<p>First, create the task class. The entry point for scheduled task logic is the <code>Execute</code> method.</p>
+<ol type="1">
+<li>
+<p>Create a new class in your project and implement the <code>IScheduledTask</code> interface.</p>
+<ul>
+<li>We recommend adding custom code to dedicated assemblies. See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example scheduled task implementation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using System.Threading;
+ using System.Threading.Tasks;
+ using Microsoft.Extensions.Logging;
+
+ using CMS.Core;
+ using CMS.Scheduler;
+
+ public class HelloScheduledTask : IScheduledTask
+ {
+     private readonly ILogger&lt;HelloScheduledTask&gt; logger;
+
+     // Supports dependency injection to resolve required services
+     public HelloScheduledTask(ILogger&lt;HelloScheduledTask&gt; logger)
+     {
+         this.logger = logger;
+     }
+
+     // Called by the system when running the scheduled task
+     public Task&lt;ScheduledTaskExecutionResult&gt; Execute(ScheduledTaskConfigurationInfo task, CancellationToken cancellationToken)
+     {
+         // Logs a warning event
+         logger.LogWarning(new EventId(0, "NOTIFICATION"), "Hello from my scheduled task!");
+
+         // Indicates successful task completion
+         return Task.FromResult(ScheduledTaskExecutionResult.Success);
+     }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Register the scheduled task using the <code>RegisterScheduledTask</code> assembly attribute. You can either pair task registration with its implementation or use a dedicated file. A task must be registered using a unique identifier and its implementing class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Scheduled task registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ // Only registered scheduled tasks can be configured via the 'Scheduled tasks' application.
+ [assembly: RegisterScheduledTask(identifier: "Acme.HelloScheduledTask", typeof(HelloScheduledTask))]
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+We recommend using a unique prefix in your identifiers to prevent conflicts when deploying components to other projects. For example, use prefixes matching your company name.
+</div>
+</li>
+</ol>
+<p>In this example, the task only <a href="/documentation/developers-and-admins/development/logging">logs</a> a warning event. After configuring the task in the system, you can view the <a href="/documentation/developers-and-admins/configuration/event-log">Event log</a> application and see the events being logged.</p>
+<p>Inside the <code>Execute</code> method:</p>
+<ul>
+<li><p>Use <code>ScheduledTaskConfigurationInfo</code> to access the configuration of the associated task from the <strong>Scheduled tasks</strong> application (e.g., task name and last or next run times).</p></li>
+<li>
+<p><code>ScheduledTaskExecutionResult</code> returns a message describing the task execution result. The returned value is displayed in the <em>Last result</em> column in the <em>Scheduled tasks</em> application. If your task doesn’t execute successfully, we strongly recommend returning a custom value to help with troubleshooting. For successful task runs, you can use <code>ScheduledTaskExecutionResult.Success</code> as a shortcut to return an empty string.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+Scheduled tasks are executed in a dedicated worker thread. The code run from the <code>Execute</code> method doesn’t have access to contextual information about the application or the current request.
+</div>
+</li>
+</ul>
+<h2 id="configure-scheduled-tasks">Configure scheduled tasks</h2>
+<p>Scheduled tasks must be configured via the <strong>Scheduled tasks</strong> application. The application pairs registered scheduled task classes with <em>scheduled task configurations</em>. Task configurations hold information about the task logic to execute, last task result, next scheduled task run times, and so on.</p>
+<p>To create a scheduled task configuration:</p>
+<ol type="1">
+<li>Open the <strong>Scheduled tasks</strong> application.</li>
+<li>Select <strong>New scheduled task configuration</strong> and enter:
+<ol type="1">
+<li>
+<strong>Scheduled task configuration name</strong> – display name of the configuration.</li>
+<li>
+<strong>Task implementation</strong> – the task logic to run. Select from task identifiers assigned via <code>RegisterScheduledTask</code>.
+<ul>
+<li>
+<strong>NOTE</strong>: The system uses task identifiers to pair a task configuration from the <em>Scheduled tasks</em> application with its logic (the task implementation). Changing the identifier for tasks already assigned via the <em>Scheduled tasks</em> application requires you to reselect the implementation under the new identifier. Tasks that have the renamed implementation assigned error out on their next run otherwise.</li>
+</ul>
+</li>
+<li>
+<strong>Enabled</strong> – indicates if the task is periodically processed by the system according to the configured <strong>Task schedule</strong>.</li>
+<li>
+<strong>Task schedule</strong> – configured for individual scheduled tasks, and determines when tasks are <em>ready for execution</em>. See <a href="#configure-task-schedule">Configure task schedule</a>.</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>The system now executes the task regularly according to the specified interval.</p>
+<h3 id="configure-task-schedule">Configure task schedule</h3>
+<p>The <strong>Task schedule</strong> section controls the next run time for the corresponding scheduled task. Next run time determines when tasks are <em>ready for execution</em>. The system checks for tasks that are ready to be executed every 30 seconds and:</p>
+<ul>
+<li>Runs the task.</li>
+<li>Sets the next run time for the task.</li>
+</ul>
+<p>To configure the task interval for individual scheduled tasks:</p>
+<ol type="1">
+<li>Open the <strong>Scheduled tasks</strong> application.</li>
+<li>Select a scheduled task configuration.</li>
+<li>Configure the <strong>Task schedule</strong> section and <strong>Save</strong> your changes.</li>
+</ol>
+<p>The task schedule is now changed.</p>
+<h2 id="scheduled-tasks-overview">Scheduled tasks overview</h2>
+<p>The <em>Scheduled tasks</em> application provides an overview of all tasks currently registered in the system.</p>
+<p></p>
+<ul>
+<li>
+<strong>Last run</strong> – time of last task run.</li>
+<li>
+<strong>Last result</strong> – the last value returned by the <code>Execute</code> method. Useful for task troubleshooting.</li>
+<li>
+<strong>Next run</strong> – time of the next scheduled task run. Tasks that are still running by the time their next run time comes up are skipped and the next run time is adjusted forward according to the scheduled interval.</li>
+<li>
+<strong>Runs</strong> – cumulative count of task runs.</li>
+</ul>
+<p>You can also manually run () tasks outside their schedule or delete () the particular task configuration from the system via the <em>Actions</em> column.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>System scheduled tasks</strong></p>
+<p>The application also transparently lists all scheduled tasks used by the system infrastructure. These tasks are mainly visible to provide troubleshooting assistance and cannot be interacted with in any way.</p>
+</div>
+
+<h2 id="scheduler-reliability">Scheduler reliability</h2>
+<p>The scheduler runs together with the application within the web application process. As a result, scheduled tasks cannot be executed if the corresponding web application is not running. Depending on the hosting environment and the process manager used to host the application. Some process managers, such as Internet Information Services (IIS) automatically suspend application processes after a long period of inactivity to conserve resources. This behavior can often be suppressed with the correct configuration.</p>
+<p>To ensure that scheduled tasks are processed regularly, ensure that the Xperience application’s worker process does not shut down if no one accesses the application for a certain period of time. For example, set the <strong>Start Mode</strong> advanced setting of the used application pool in IIS to <em>AlwaysRunning</em>.</p>
+<h2 id="scheduled-tasks-in-multi-instance-environments">Scheduled tasks in multi-instance environments</h2>
+<p>In environments with <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">multiple application instances</a>, scheduled tasks that are ready to run are assigned to one of the active instances (in a nondeterministic way). Task execution only occurs once, regardless of the number of instances.</p>
+<p>Tasks launched manually via the <em>Scheduled tasks</em> application run on the specific instance that handled the given request.</p>
+
+</body>
+</html>

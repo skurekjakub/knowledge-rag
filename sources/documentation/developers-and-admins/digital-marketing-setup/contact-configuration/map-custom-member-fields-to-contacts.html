@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Map custom member fields to contacts</title>
+</head>
+<body>
+<p>When a visitor <a href="/documentation/developers-and-admins/development/registration-and-authentication">registers</a> as a <a href="/documentation/business-users/members">member</a>, the system logs the <em>Member registration</em> <a href="/documentation/business-users/digital-marketing/contact-activities">activity</a>. The activity is logged for a <a href="/documentation/business-users/digital-marketing/contact-management">contact</a>, not directly for the registered member.</p>
+<p>As part of this process, the system maps the member data submitted during registration to the corresponding contact. By default, the member <strong>email address</strong> is mapped (for contacts with an empty value in their email field). In their initial state, members contain a basic set of fields required for simple authentication scenarios, and only the email address is relevant for contacts.</p>
+<p>If you have <a href="/documentation/developers-and-admins/development/registration-and-authentication/add-fields-to-member-objects">added custom fields to the member object</a>, for example a first and last name, you can extend the member-contact mapping behavior by creating and registering an <code>IMemberToContactMapper</code> implementation.</p>
+<h2 id="implement-the-custom-member-field-mapper">Implement the custom member field mapper</h2>
+<p>We recommend extending the default implementation of the <code>IMemberToContactMapper</code> service using the <a href="/documentation/developers-and-admins/customization/decorate-system-services#decorate-services-via-dependency-injection">decorator customization pattern</a>. First map your custom member fields to the contact (without setting the <code>ContactInfo</code> object), and then call the default implementation to map the email address and save the contact details.</p>
+<p>Start by preparing a separate project for custom classes in your Xperience solution:</p>
+<ol type="1">
+<li>Open your solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) with class discovery enabled to the solution, or re-use an existing assembly.</li>
+<li>Reference the project from your Xperience website project.</li>
+</ol>
+<p>Continue by implementing the custom class:</p>
+<ol type="1">
+<li>Create a new custom class. For example, name the class <code>CustomMemberToContactMapper</code>.</li>
+<li>Make the class implement the <code>IMemberToContactMapper</code> interface.</li>
+<li>Add the <code>Map</code> method:
+<ul>
+<li>Get any required data from the <code>MemberInfo</code> parameter, and set the values into the <code>ContactInfo</code> parameter.</li>
+<li>Use the <a href="/documentation/developers-and-admins/customization/decorate-system-services#decorate-services-via-dependency-injection">decorator customization pattern</a> to call the default implementation of the <code>Map</code> method. This ensures mapping of the member email address (if the contact’s email is empty), and then saves the <code>ContactInfo</code> object.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+The default implementation does not save any changes made to the <code>MemberInfo</code> object.
+</div>
+</li>
+<li>Register the implementation using the <code>RegisterImplementation</code> assembly attribute.</li>
+</ol>
+<h3 id="example">Example</h3>
+<p>The following code example demonstrates how to implement contact mapping of custom <em>FirstName</em> and <em>LastName</em> member fields.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mapping custom member fields to contact fields</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS;
+using CMS.ContactManagement;
+using CMS.Membership;
+
+using Kentico.OnlineMarketing.Web.Mvc;
+
+[assembly: RegisterImplementation(typeof(IMemberToContactMapper), typeof(CustomMemberToContactMapper))]
+
+public class CustomMemberToContactMapper : IMemberToContactMapper
+{
+    // Stores the default implementation of the IMemberToContactMapper service
+    private readonly IMemberToContactMapper memberToContactMapper;
+
+    public CustomMemberToContactMapper(IMemberToContactMapper memberToContactMapper)
+    {
+        this.memberToContactMapper = memberToContactMapper;
+    }
+
+    /// Maps the member's first and last name to the contact
+    public void Map(MemberInfo member, ContactInfo contact)
+    {
+        // Gets the values from the member and sets them into the corresponding contact fields
+        contact.ContactFirstName = member.GetValue&lt;string&gt;("FirstName", null);
+        contact.ContactLastName = member.GetValue&lt;string&gt;("LastName", null);
+
+        /* Calls the default IMemberToContactMapper.Map implementation
+           This ensures mapping of the member email address (if the contact's email is empty) and saves the `ContactInfo` object
+           If you choose not to call the default implementation, you need to manually:
+            - Map the MemberEmail field to the ContactEmail field 
+              We only recommend updating the contact email if the value is empty. Do not overwrite existing email address values.
+            - Save the contact object (using the IInfoProvider&lt;ContactInfo&gt;.Set method)
+        */
+        memberToContactMapper.Map(member, contact);
+    }
+}
+</code></pre>
+</div>
+
+<p>Now when a visitor submits your registration form, the values of the custom first name and last name member fields are automatically mapped to the contact for which the <em>Member registration</em> activity is logged.</p>
+
+</body>
+</html>

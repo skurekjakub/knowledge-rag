@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Delete inactive contacts</title>
+</head>
+<body>
+<p>The <a href="/documentation/business-users/digital-marketing/contact-management">contact management</a> features in Xperience generate a very large amount of data, particularly on high‑traffic websites. The system creates contacts and logs <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a> for every visitor (depending on the project’s <a href="/documentation/developers-and-admins/data-protection/cookies">default cookie level</a>), which may be overwhelming for your marketers.</p>
+<p>Additionally, an extremely high volume of contact data can lead to performance issues in administration UIs related to contacts, and result in an excessively large database. This increases storage costs and complicates maintenance operations such as backups or restores.</p>
+<p>To mitigate these issues, we recommend that you configure the system to regularly delete unnecessary contacts. By default, Xperience allows you to <a href="#enable-automatic-deletion-of-inactive-contacts">enable automatic deletion of contacts</a> who have not performed any activities over a specified number of days.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom contact deletion</strong></p>
+<p>If the default deletion of inactive contacts does not satisfy your project’s requirements, developers can <a href="#implement-custom-deletion-of-contacts">implement custom deletion of contacts</a> with any conditions for selecting inactive, outdated or otherwise unnecessary contacts.</p>
+</div>
+
+<h2 id="consequences-of-deleting-contacts">Consequences of deleting contacts</h2>
+<p>Deleting contacts also removes associated data, notably:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/data-protection/consent-management">Consent agreements</a> given by the contacts</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/contact-activities">Activities</a> logged for the contacts</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/customer-journeys">Customer journey</a> conversions related to the contacts</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">Email recipients</a> matching the contacts</li>
+</ul>
+<p>Only set up automatic contact deletion if you are sure this data will not be needed in the future. In particular, consent agreements may be required to maintain compliance with data protection laws.</p>
+<h2 id="enable-automatic-deletion-of-inactive-contacts">Enable automatic deletion of inactive contacts</h2>
+<p>To set up the system’s default inactive contact deletion:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application in the Xperience administration interface.</li>
+<li>Navigate to the <strong>Digital marketing → Contact management</strong> category in the settings tree.</li>
+<li>Select the <strong>Delete contacts who have not been active for the last X days</strong> option.</li>
+<li>Fill in the <strong>Last X days</strong> value.
+<ul>
+<li>The system deletes contacts who do not have any <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a> logged within the specified number of days, counting into the past from the current date.</li>
+<li>The minimum value is 7 days.</li>
+<li>For contacts who do not have any activities logged, the contact’s creation date is considered as the time of the last activity.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The system now starts deleting inactive contacts according to the specified criteria.</p>
+<h3 id="how-exactly-are-contacts-deleted">How exactly are contacts deleted?</h3>
+<p>The system deletes contacts using the <strong>Delete inactive contacts</strong> <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled task</a>. The task runs in a way that does not significantly impact your application’s performance:</p>
+<ul>
+<li>Starts running once per day at 2 AM in the time zone of the server where the application is running.</li>
+<li>Deletes contacts in batches of 1000.</li>
+<li>Waits for 1 minute between each batch.</li>
+<li>Has a maximum total run time of 4 hours (until 6 AM). If any inactive contacts remain at this point, they stay in the system until the task executes again the following day.</li>
+</ul>
+<h2 id="implement-custom-deletion-of-contacts">Implement custom deletion of contacts</h2>
+<p>If deleting contacts based on inactivity duration doesn’t meet your project’s needs, you can create a custom automated task for contact cleanup. This approach lets you define your own criteria for selecting which contacts are still relevant and which are suitable for deletion.</p>
+<ol type="1">
+<li>Make sure the system’s <a href="#enable-automatic-deletion-of-inactive-contacts">default inactive contact deletion</a> is disabled.
+<ul>
+<li>In <strong>Settings → Digital marketing → Contact management</strong>, select the <strong>Do not delete contacts</strong> option.</li>
+</ul>
+</li>
+<li>Create a custom <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled task</a>:
+<ol type="1">
+<li>
+<p>In the task’s <code>Execute</code> method, define a <code>WhereCondition</code> to select the contacts you want to delete.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Where condition resources</strong></p>
+To learn more about the Where condition API, see <a href="/documentation/developers-and-admins/api/objectquery-api#limit-retrieved-results-sql-where">Limit retrieved results</a>. For a full list of the available <code>Where*</code> filtering methods, see the <a href="https://api-reference.kentico.com/api/CMS.DataEngine.WhereConditionBase-1.html" target="_blank">API reference</a>.
+</div>
+</li>
+<li><p>Use the <code>IContactsBulkDeletionService</code> service to bulk delete contacts who match the condition.</p></li>
+<li><p>Set a suitable <em>Start time</em> and <em>Period</em> in the <a href="/documentation/developers-and-admins/customization/scheduled-tasks#configure-task-schedule">scheduled task configuration</a> based on your task’s implementation and requirements.</p></li>
+</ol>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Scheduled task that deletes contacts with an empty email address</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
+using CMS.Core;
+using CMS.ContactManagement;
+using CMS.DataEngine;
+using CMS.Scheduler;
+
+// Registers the scheduled task
+[assembly: RegisterScheduledTask(identifier: "Acme.ContactCleanerTask", typeof(CustomContactCleanerTask))]
+
+public class CustomContactCleanerTask : IScheduledTask
+{
+    private readonly IContactsBulkDeletionService contactDeletionService;
+    private readonly ILogger&lt;CustomContactCleanerTask&gt; logger;
+
+    // Constructor that obtains required services using dependency injection
+    public CustomContactCleanerTask(IContactsBulkDeletionService contactDeletionService, ILogger&lt;CustomContactCleanerTask&gt; logger)
+    {
+        this.contactDeletionService = contactDeletionService;
+        this.logger = logger;
+    }
+
+    // Called by the system when running the scheduled task
+    public async Task&lt;ScheduledTaskExecutionResult&gt; Execute(ScheduledTaskConfigurationInfo task, CancellationToken cancellationToken)
+    {
+        var dateOneWeekAgo = DateTime.Now.AddDays(-7);
+
+        try
+        {
+            // WhereCondition that selects contacts that are at least 7 days old and have an empty email address
+            var condition = new WhereCondition()
+                            .WhereLessThan(nameof(ContactInfo.ContactCreated), dateOneWeekAgo)
+                            .And()
+                            .WhereEmpty(nameof(ContactInfo.ContactEmail));
+
+            // Deletes contacts matching the specified condition
+            // Doesn't specify a batch size, which means that contacts are deleted in batches of 1000 (automatically repeats)
+            await contactDeletionService.BulkDelete(condition);
+
+            // Indicates successful task completion
+            return ScheduledTaskExecutionResult.Success;
+        }
+        catch (Exception ex)
+        {
+            // If an exception occurs while deleting contacts, logs an error with the exception details
+            logger.LogError(new EventId(0, nameof(Execute)), ex, "An error occurred while deleting contacts");
+            return new ScheduledTaskExecutionResult("An error occurred while deleting contacts. See the event log for detailed information.");
+        }
+    }
+}
+</code></pre>
+</div>
+
+<p>Your scheduled task now automatically deletes contacts based on your custom selection criteria.</p>
+<h3 id="manual-batch-processing-for-advanced-scenarios">Manual batch processing for advanced scenarios</h3>
+<p>If your project has specific performance requirements or limitations, you can take manual control over the batch processing used during contact deletion.</p>
+<p>The <code>IContactsBulkDeletionService.BulkDelete</code> method can be called with an optional <code>batchLimit</code> parameter, which specifies how many contacts are deleted within a single batch. In this case, each call of the method only deletes a single batch, and you need to manually handle batch processing and iteration.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Required service instances (obtained using dependency injection)
+private readonly IInfoProvider&lt;ContactInfo&gt; contactInfoProvider;
+private readonly IContactsBulkDeletionService contactDeletionService;
+
+// ...
+
+// Gets the total number of contacts matching the deletion condition
+int numberOfContactsToBeDeleted = contactInfoProvider.Get().Where(condition).Count;
+
+// Deletes matching contacts in batches of 500
+int batchSize = 500;
+int deletedCount = 0;
+
+while (deletedCount &lt; numberOfContactsToBeDeleted)
+{
+    // Deletes a batch of contacts
+    await contactDeletionService.BulkDelete(condition, batchSize);
+    deletedCount += batchSize;
+    
+    // Adds a small delay between batches
+    await Task.Delay(1000);
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

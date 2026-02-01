@@ -1,0 +1,407 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Integrate with decoupled systems</title>
+</head>
+<body>
+<p>In modern architectures, your Xperience project may need to interact with other external systems that operate independently, without shared databases and other internal resources. You can integrate Xperience with these decoupled systems by establishing asynchronous messaging through a <a href="#messaging-service">messaging service</a>, which facilitates the exchange of messages between the systems. Depending on your use case, Xperience can act as either <a href="#xperience-as-a-message-producer">message producer</a>, <a href="#xperience-as-a-message-consumer">message consumer</a>, or both.</p>
+<p>The following architectural overview illustrates the flow of messages between an Xperience project and a decoupled system:</p>
+<p></p>
+<p>Decoupled integrations can be utilized in a wide range of scenarios. Some examples include:</p>
+<ul>
+<li>send data submitted by customers through <a href="/documentation/business-users/digital-marketing/forms">forms</a> into your CRM</li>
+<li>synchronize <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog/model-product-stock">product</a> data in Xperience with your inventory management system</li>
+<li>communicate with various types of business and ticketing systems</li>
+</ul>
+<p>This page explains how to set up a decoupled integration with Xperience, covering the <a href="#key-concepts">key concepts</a>, configuration steps to <a href="#xperience-as-a-message-consumer">consume</a> and <a href="#xperience-as-a-message-producer">produce</a> messages, and an <a href="#example">example implementation</a>.</p>
+<h2 id="key-concepts">Key concepts</h2>
+<p>The following concepts address the key points of decoupled integrations in Xperience:</p>
+<ul>
+<li>
+<a href="#message-triggers">Message triggers</a> – determine when messages should be sent from Xperience</li>
+<li>
+<a href="#message-contents">Message contents</a> – define what data is exchanged</li>
+<li>
+<a href="#messaging-service">Messaging service</a> – handle the transmission of messages between systems</li>
+<li>
+<a href="#messaging-libraries">Messaging libraries</a> – use code abstractions for working with the service</li>
+</ul>
+<h3 id="message-triggers">Message triggers</h3>
+<p>When sending messages from your project, you need to determine what actions require communication with the decoupled system. In Xperience, significant operations are represented by <a href="/documentation/developers-and-admins/customization/handle-global-events">events</a>. Event handling allows you to implement custom logic to send messages when those events occur.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Learn about events and event handling</strong></p>
+<p>See the corresponding pages about <a href="/documentation/developers-and-admins/customization/handle-global-events">global events</a> and <a href="/documentation/developers-and-admins/customization/handle-global-events/handle-object-events">object events</a> or consult the <a href="/documentation/developers-and-admins/customization/handle-global-events/reference-global-system-events">global events reference</a> to learn about available events and their handling.</p>
+</div>
+
+<p>You can also choose to send messages directly from appropriate places in your <a href="/documentation/developers-and-admins/customization/integrate-custom-code">custom code</a> without relying on the provided events.</p>
+<h3 id="message-contents">Message contents</h3>
+<p>Messages represent structured data to be exchanged between systems. To ensure consistency, a message can be implemented as a class in a shared library, accessible from both systems.</p>
+<p>For example, you can transfer:</p>
+<ul>
+<li>
+<a href="/documentation/business-users/content-hub/content-items">Content item</a> data</li>
+<li>
+<a href="/documentation/business-users/website-content">Page</a> data</li>
+<li>Submitted <a href="/documentation/business-users/digital-marketing/forms">form</a> data</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/contact-management">Contact</a> data</li>
+</ul>
+<h3 id="messaging-service">Messaging service</h3>
+<p>To enable communication with a decoupled system, you need to set up an external messaging service. You can use cloud-based messaging services such as <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview" target="_blank">Azure Service Bus</a> or self-managed message brokers, for instance, <a href="https://www.rabbitmq.com/" target="_blank">RabbitMQ</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note:</strong> An external messaging service is required both for <a href="/documentation/developers-and-admins/saas/saas-overview">SaaS</a> and <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private-cloud</a> deployments, as it’s not a part of the system or <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</p>
+</div>
+
+<p>Depending on your requirements, you can configure different communication patterns:</p>
+<ul>
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview#queues" target="_blank">Message queues</a> – a single stream of messages typically received by one consumer.</li>
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview#topics" target="_blank">Topics and subscriptions</a> – enable one-to-many communication and categorization of messages by topic.</li>
+</ul>
+<h3 id="messaging-libraries">Messaging libraries</h3>
+<p>You can use existing libraries that already implement typical messaging patterns to send and receive messages. These libraries provide an abstraction on top of the actual messaging service, making it easier to switch between different messaging platforms without significantly changing your application code.</p>
+<p>The sample code on this page uses the <a href="https://rebus.fm/what-is-rebus/" target="_blank">Rebus</a> library. Similar functionality can be provided by other frameworks and libraries, for example, <a href="https://masstransit.io/introduction" target="_blank">Mass Transit</a> and <a href="https://wolverinefx.net/" target="_blank">Wolverine</a>.</p>
+<h2 id="xperience-as-a-message-producer">Xperience as a message producer</h2>
+<p>The following steps outline how to configure Xperience to send messages, using the <a href="https://rebus.fm/what-is-rebus/" target="_blank">Rebus</a> library and <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview" target="_blank">Azure Service Bus</a> with the <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview#queues" target="_blank">queue</a> messaging pattern. You can use other services and libraries to achieve the same result.</p>
+<ol type="1">
+<li>Prerequisites:
+<ol type="a">
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues?tabs=connection-string" target="_blank">Set up a queue</a> in your Azure Service Bus <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview#namespaces" target="_blank">namespace</a>.</li>
+<li>Install the <a href="https://www.nuget.org/packages/Rebus" target="_blank">Rebus</a> and <a href="https://www.nuget.org/packages/Rebus.ServiceProvider" target="_blank">Rebus.ServiceProvider</a> NuGet packages.</li>
+<li>Define a <a href="#message-contents">message</a> based on your scenario.</li>
+</ol>
+</li>
+<li>Configure the Rebus library in the <code>Program.cs</code> file:
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Rebus.Config;
+ using Rebus.Routing.TypeBased;
+
+ ...
+
+ builder.Services.AddRebus(configure =&gt; configure
+     .Transport(t =&gt; t.UseAzureServiceBusAsOneWayClient("##connectionString##"))
+     .Routing(r =&gt; r.TypeBased().Map&lt;OutgoingMessage&gt;("##queue-name##")));
+
+ ...
+
+ </code></pre>
+</div>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/handle-global-events">Handle events</a> and send messages from the handler.
+<ul>
+<li>See the <a href="#handle-events-and-send-messages">Example</a> section for a full implementation.</li>
+</ul>
+</li>
+</ol>
+<h2 id="xperience-as-a-message-consumer">Xperience as a message consumer</h2>
+<p>The following steps outline how to configure Xperience to receive messages, using the <a href="https://rebus.fm/what-is-rebus/" target="_blank">Rebus</a> library and <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview" target="_blank">Azure Service Bus</a> with the <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview#queues" target="_blank">queue</a> messaging pattern. You can use other services and libraries to achieve the same result.</p>
+<ol type="1">
+<li>
+<p>Prerequisites:</p>
+<ol type="a">
+<li>
+<a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues?tabs=connection-string" target="_blank">Set up a queue</a> in your Azure Service Bus <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview#namespaces" target="_blank">namespace</a>.</li>
+<li>Install the <a href="https://www.nuget.org/packages/Rebus" target="_blank">Rebus</a> and <a href="https://www.nuget.org/packages/Rebus.ServiceProvider" target="_blank">Rebus.ServiceProvider</a> NuGet packages.</li>
+<li>Define a <a href="#message-contents">message</a> based on your scenario.</li>
+</ol>
+</li>
+<li>
+<p>Configure the Rebus library in the <code>Program.cs</code> file:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Rebus.Config;
+
+ builder.Services.AddRebus(configure =&gt; configure
+         .Transport(t =&gt; t.UseAzureServiceBus("##connectionString##", "##queue-name##")));
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Create a message handler by implementing the <code>IHandleMessages</code> Rebus interface:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>SampleMessageHandler.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Rebus.Handlers;
+
+ public class SampleMessageHandler : IHandleMessages&lt;IncomingMessage&gt;
+ {
+     public Task Handle(IncomingMessage message)
+     {
+         // Custom logic to process the message
+     }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Register the handler in the <code>Program.cs</code> file:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ builder.Services.AddRebusHandler&lt;SampleMessageHandler&gt;();
+ </code></pre>
+</div>
+</li>
+</ol>
+<h2 id="example">Example</h2>
+<p>When a brand new article is published, you might want to automatically promote it on social media to gain more traction. This example shows an integration where Xperience sends a message to a decoupled system handling social media publishing when a new article is published for the first time.</p>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>This example uses the <a href="https://rebus.fm/what-is-rebus/" target="_blank">Rebus</a> library and <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview" target="_blank">Azure Service Bus</a>. To follow along with this example, install the <a href="https://www.nuget.org/packages/Rebus" target="_blank">Rebus</a> and <a href="https://www.nuget.org/packages/Rebus.ServiceProvider" target="_blank">Rebus.ServiceProvider</a> NuGet packages, <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues?tabs=connection-string" target="_blank">set up a queue</a> in your Azure Service Bus namespace and obtain the corresponding <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues?tabs=connection-string" target="_blank">connection string</a>.</p>
+<p>It’s important to note that the principles shown in this example are not limited to specific platforms and can be implemented with other messaging libraries and services.</p>
+<h3 id="define-the-message">Define the message</h3>
+<p>Create a class in a library shared by both systems.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>NewArticlePublishedMessage.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public class NewArticlePublishedMessage
+{
+    public string ArticleTitle { get; init; }
+    public string ArticleSummary { get; init; }
+    public string ArticleText { get; init; }
+    public string ArticleUrl { get; init; }
+}
+</code></pre>
+</div>
+
+<h3 id="configure-the-rebus-library">Configure the Rebus library</h3>
+<p>Add the Rebus library to your project with the following configuration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Rebus.Config;
+using Rebus.Routing.TypeBased;
+
+...
+
+builder.Services.AddRebus(configure =&gt; configure
+    .Transport(t =&gt; t.UseAzureServiceBusAsOneWayClient("##connectionString##"))
+    .Routing(r =&gt; r.TypeBased().Map&lt;NewArticlePublishedMessage&gt;("##queue-name##")));
+
+...
+</code></pre>
+</div>
+
+<h3 id="handle-events-and-send-messages">Handle events and send messages</h3>
+<p>Create a <a href="/documentation/developers-and-admins/customization/handle-global-events">handler</a> for the <code>WebPageEvents.Publish.Execute</code> event that will send messages when the event takes place. Assign the handler to the event in a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom initialization module</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>CustomMessagingModule.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.Core;
+using CMS.ContentEngine;
+using CMS.DataEngine;
+using CMS.Websites;
+
+using Rebus.Bus;
+
+using Microsoft.Extensions.DependencyInjection;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(Custom.CustomMessagingModule))]
+
+namespace Custom
+{
+    public class CustomMessagingModule : Module
+    {
+        private IBus bus;
+        private IWebPageUrlRetriever webPageUrlRetriever;
+
+        // Module class constructor, the system registers the module under the name 'CustomMessagingModule'
+        public CustomMessagingModule()
+                : base(nameof(CustomMessagingModule))
+        {
+        }
+
+        // Contains initialization code that is executed when the application starts
+        protected override void OnInit(ModuleInitParameters parameters)
+        {
+            base.OnInit(parameters);
+
+            // Injects the Rebus IBus service used to send messages
+            bus = parameters.Services.GetRequiredService&lt;IBus&gt;();
+
+            // Injects the IWebPageUrlRetriever service used to retrieve the URL of the article
+            webPageUrlRetriever = parameters.Services.GetRequiredService&lt;IWebPageUrlRetriever&gt;();
+
+            // Assigns the custom handler to the event
+            WebPageEvents.Publish.Execute += Article_Published_EventHandler;
+
+            // Implement the Article_Published_EventHandler
+            // See the code block below for the implementation 
+
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Article published event handler</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Sends a message to the message queue when a page of the 'ArticlePage' content type is published for the first time
+private void Article_Published_EventHandler(object sender, PublishWebPageEventArgs e)
+{
+    // The content type of the articles to be promoted
+    string eligibleContentType = "Acme.ArticlePage";
+
+    // Excludes pages that are not published for the first time and the pages of content types other than 'Acme.ArticlePage' 
+    if (e.IsFirstTimePublished == false || e.ContentTypeName != eligibleContentType)
+    {
+        return;
+    }
+
+    // Obtains necessary data from the event arguments ('PublishWebPageEventArgs')
+    int articleId = e.ID;
+    string articleLanguage = e.ContentLanguageName;
+    ContentItemDataEventContainer articleData = e.ContentItemData;
+
+    // Retrieves article field values from the data container and assigns them to newly instantiated variables
+    // 'ContentItemDataEventContainer.TryGetValue()' returns true if the specified key exists in the container and outputs its value to the provided variable
+    articleData.TryGetValue("ArticleTitle", out string articleTitle);
+    articleData.TryGetValue("ArticlePageSummary", out string articleSummary);
+    articleData.TryGetValue("ArticlePageText", out string articleText);
+
+    // Retrieves the article URL using the 'IWebPageUrlRetriever'
+    WebPageUrl articleUrl = webPageUrlRetriever.Retrieve(articleId, articleLanguage).GetAwaiter().GetResult();
+
+    // Creates a new message with the article data
+    NewArticlePublishedMessage message = new NewArticlePublishedMessage()
+    {
+        ArticleTitle = articleTitle,
+        ArticleSummary = articleSummary,
+        ArticleText = articleText,
+        // Assigns the absolute URL of the article to the message property
+        ArticleUrl = articleUrl.AbsoluteUrl
+    };
+
+    // Sends the message to the queue
+    bus.Send(message);
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

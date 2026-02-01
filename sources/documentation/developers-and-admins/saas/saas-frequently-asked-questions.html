@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SaaS - Frequently asked questions</title>
+</head>
+<body>
+<p>This page provides answers to frequently asked questions (FAQ) and highlights common issues developers may encounter when developing projects for SaaS deployments.</p>
+<h2 id="what-to-do-when-starting-with-xperience-by-kentico-saas">What to do when starting with Xperience by Kentico SaaS?</h2>
+<p>You have just received an invitation to an Xperience by Kentico SaaS project. What steps should you take to get started with SaaS development? What materials about SaaS are available?</p>
+<p>The following materials provide guidance for users who first encounter the Xperience by Kentico SaaS:</p>
+<ul>
+<li>
+<a href="/guides/configuration/saas">SaaS</a> guides will help you navigate the necessary steps to access your Xperience Portal project for the first time and enable your team to work on it.</li>
+<li>
+<a href="/documentation/developers-and-admins/saas">SaaS</a> page in the documentation provides links to all documentation materials relating to SaaS.</li>
+<li>The following materials contain useful information. However, they are not part of the official documentation and therefore may contain information that is not up-to-date with the latest Xperience releases:
+<ul>
+<li>
+<a href="https://community.kentico.com/blog/xperience-by-kentico-ci-cd-developer-scenarios" target="_blank">Xperience by Kentico CI/CD developer scenarios</a> blog post by Sean Wright</li>
+<li>
+<a href="https://community.kentico.com/blog/xperience-by-kentico-saas-best-practices" target="_blank">Xperience by Kentico SaaS best practices</a> blog by Sean Wright</li>
+<li>
+<a href="https://www.milanlund.com/knowledge-base/kentico-xperience-portal-and-saas-from-setup-to-production" target="_blank">Kentico’s Xperience Portal and SaaS: From Setup to Production</a> article by Milan Lund</li>
+<li>
+<a href="https://www.milanlund.com/knowledge-base/handling-search-index-rebuilds-in-xperience-by-kentico-s-saas-environment" target="_blank">Handling Search Index Rebuilds in Xperience by Kentico’s SaaS Environment</a> article by Milan Lund</li>
+<li>
+<a href="https://konabos.com/blog/mastering-serialization-at-xperience-by-kentico" target="_blank">Mastering serialization at Xperience by Kentico</a> blog post by Lukasz Skowroński</li>
+<li>
+<a href="https://konabos.com/blog/how-to-migrate-content-from-prod-to-qa-within-your-saas-xperience-by-kentico" target="_blank">How to migrate content from PROD to QA within your SaaS Xperience by Kentico?</a> blog post by Lukasz Skowroński</li>
+<li>
+<a href="https://konabos.com/blog/set-up-xperience-by-kentico-on-docker-in-minutes" target="_blank">Set Up Xperience by Kentico on Docker in Minutes</a> blog post by Lukasz Skowroński</li>
+</ul>
+</li>
+</ul>
+<h2 id="how-does-xperience-by-kentico-saas-manage-certificates-and-cdn-for-my-project">How does Xperience by Kentico SaaS manage certificates and CDN for my project?</h2>
+<p>All SSL/TLS certificates for all domains are provided and automatically renewed by the platform. Certificates are automatically generated when validating a domain and are ready a few minutes after the validation is completed. CloudFlare CDN is provided for all projects, and it is not possible to use your own CDN.</p>
+<p>Customers cannot use custom digital certificates or custom CDNs with Xperience by Kentico SaaS. The SaaS environment manages certificates and CDN configuration for all tenants.</p>
+<h2 id="what-can-you-do-to-troubleshoot-your-project">What can you do to troubleshoot your project?</h2>
+<p>Your application has encountered an unexpected issue. Where can you look to troubleshoot the issue and find the cause of the problem?</p>
+<p>There are multiple tools to help you troubleshoot issues with the SaaS solution:</p>
+<ul>
+<li>Check the <a href="/documentation/developers-and-admins/configuration/event-log">Event log</a> in the Xperience administration interface.</li>
+<li>In the <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>:
+<ul>
+<li>Check the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#upload-a-deployment-package-to-your-xperience-portal-project">Deployment history</a> section in the <strong>Deployments</strong> application and download the deployment logs.
+<ul>
+<li>Note that deployments take a moment to be listed in the deployment history from when they are started.</li>
+</ul>
+</li>
+<li>Check the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#event-log-and-exceptions">event log and exceptions</a> for any unexpected issues.</li>
+<li>Check the <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#performance-metrics">performance metrics</a> for any recent spikes in resource usage.</li>
+<li>You can <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#restart-deployed-applications">restart the deployed application</a> to see if this resolves the issue.</li>
+</ul>
+</li>
+</ul>
+<p>Finally, you can check the current status of the Xperience SaaS infrastructure on the <a href="https://status.xperience-portal.com/" target="_blank">Xperience by Kentico Status</a> page.</p>
+<h2 id="how-can-you-troubleshoot-performance-issues-of-the-live-site">How can you troubleshoot performance issues of the live site?</h2>
+<p>Your live site has performance issues and you are trying to find out what is the bottleneck causing the issues.</p>
+<p>In <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#performance-metrics">Xperience Portal</a>, navigate to <strong>Monitoring → Project metrics</strong>, where you can see various information about the performance of your application in a specified time frame. You can identify which part of the application is causing the bottleneck and proceed accordingly. You can either optimize your project or, if the issue is the amount of traffic, upgrade your <a href="/documentation/developers-and-admins/saas/saas-service-plans">service plan</a>.</p>
+<p>Additionally, you can <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#alert-email-notifications">enable email notifications</a> to alert you when performance metrics of your project are on the limit of your <a href="/documentation/developers-and-admins/saas/saas-service-plans">service plan</a>. See <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#alerts">Alerts</a> for more information.</p>
+<p>Finally, you can check the current status of the Xperience SaaS infrastructure on the <a href="https://status.xperience-portal.com/" target="_blank">Xperience by Kentico Status</a> page.</p>
+<h2 id="how-to-resolve-database-inconsistencies-on-saas-environments">How to resolve database inconsistencies on SaaS environments?</h2>
+<p>Database inconsistencies may be introduced for various reasons (custom development, integration and migration scenarios) to databases of SaaS projects, but developers do not have direct access to run SQL scripts on databases of applications deployed in SaaS environments.</p>
+<p>You can use <a href="/documentation/developers-and-admins/ci-cd/ci-cd-database-migration-scripts">CD migration scripts</a> to perform SQL queries on the database of applications deployed in <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-the-package-to-another-deployment-environment">SaaS environments</a>. However, remember to always <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#create-a-manual-restore-point">create a restore point</a> before modifying the database.</p>
+<p>If the previous solution does not work for you, you can also leverage <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment#deploy-a-large-amount-of-data-during-initial-deployments">custom restore</a> to resolve database inconsistencies. Custom restore requires uploading a whole exported database that will be swapped with the one currently in use. You can obtain the deployed database through an <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#create-a-manual-export">export</a>. Review whether this option suits your needs, as it causes downtime in the target environment and the changes cannot be propagated to other environments without using custom restore for each environment.</p>
+<h2 id="how-to-resolve-broken-deployment-package-in-the-production-environment">How to resolve broken deployment package in the Production environment?</h2>
+<p>You may encounter an issue where you deploy a package to the SaaS environment and promote it to the <em>Production</em> environment before realizing that the package is faulty and causes issues on your live site.</p>
+<p>There are two options how to handle this situation:</p>
+<ul>
+<li>You can <a href="/documentation/developers-and-admins/deployment/deploy-to-the-saas-environment/manage-saas-deployments#restore-from-a-restore-point">restore a previous restore point</a> of your application directly from the Xperience Portal interface. The system automatically creates backups before each deployment. Note that you may lose content created between the faulty deployment and the time when you choose to restore the backup.</li>
+<li>You can create a new deployment package that fixes the previous issue if possible. The advantage is that all recently created content is preserved. This approach works best when using smaller and more frequent deployments which enable you to identify the cause of the issue.</li>
+</ul>
+<h2 id="what-is-the-user-limit-in-xperience-portal">What is the user limit in Xperience Portal?</h2>
+<p>A common misunderstanding is that when using the Xperience SaaS there is a limit of 20 users for the entire solution, including the Xperience administration interface. The user limit only applies to the users in the <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>. The number of users in the administration interface of your Xperience application is not limited.</p>
+<h2 id="how-to-obtain-license-keys-for-local-development">How to obtain license keys for local development?</h2>
+<p>Why can you not create license keys in the client portal and where should you create your license keys?</p>
+<p>License keys for SaaS development are generated in the <strong>License key generator</strong> application in the <a href="/documentation/developers-and-admins/saas/xperience-portal">Xperience Portal</a>.</p>
+<p>See <a href="/documentation/developers-and-admins/installation/licenses#license-keys-for-saas-local-development">Licenses</a> for more information.</p>
+<h2 id="what-xperience-by-kentico-versions-are-supported-in-saas">What Xperience by Kentico versions are supported in SaaS?</h2>
+<p>The minimum Xperience by Kentico version for new projects that can be deployed to the SaaS environment is <strong>30.1.0</strong>. If you are using an earlier version, you need to <a href="/documentation/developers-and-admins/installation/update-xperience-by-kentico-projects">update</a> your project to the latest version before deploying it to the SaaS environment. Existing projects are not affected, but we recommend updating them to the latest version.</p>
+
+</body>
+</html>

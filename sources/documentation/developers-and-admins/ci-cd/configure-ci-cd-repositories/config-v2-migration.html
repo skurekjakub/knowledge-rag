@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Migrate CI/CD repository.config to v2</title>
+</head>
+<body>
+<p>Xperience by Kentico version <strong>30.4.0</strong> introduced a new version of <strong>repository.config</strong> files. This updated format provides support for advanced filtering of <a href="/documentation/developers-and-admins/api/content-item-api/content-item-database-structure">content items</a>. The migration steps described on this page introduce all the added features and their recommended usage. However, you can also find the information in <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-object-types">Include/Exclude object types</a> and <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#filter-individual-objects">Filter individual objects</a>.</p>
+<h2 id="migrate-v1-repository.config-files-to-v2">Migrate v1 repository.config files to v2</h2>
+<p>Follow these steps to migrate your existing <em>repository.config</em> files to v2:</p>
+<ol type="1">
+<li><p>Prepare a clean migration environment where you can test CI/CD restore operations.</p></li>
+<li><p><a href="#update-the-repositoryconfiguration-element">Update the RepositoryConfiguration element</a></p></li>
+<li><p><a href="#include-object-types">Include object types to the repository</a></p></li>
+<li>
+<p><a href="#include-content-items">Include content items to the repository</a></p>
+<ul>
+<li>Not required if you don’t use CI/CD to track and synchronize content item data between instances.</li>
+</ul>
+</li>
+<li><p><a href="#update-object-type-filters">Update object type filters</a></p></li>
+<li>
+<p><a href="#configure-content-item-filters">Configure content item filters</a></p>
+<ul>
+<li>Not required if you don’t use CI/CD to track and synchronize content item data between instances.</li>
+</ul>
+</li>
+<li>
+<p>Run a test serialization with the migrated config file.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ dotnet run --no-build --kxp-ci-store
+ </code></pre>
+</div>
+</li>
+</ol>
+<h3 id="update-the-repositoryconfiguration-element">Update the RepositoryConfiguration element</h3>
+<p>Add <code>Version="2"</code> to the <code>RepositoryConfiguration</code> element inside <strong>respository.config</strong>.</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;!-- Version 1 config --&gt;
+&lt;RepositoryConfiguration
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+&lt;!-- Version 2 config --&gt;
+&lt;RepositoryConfiguration 
+  Version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+</code></pre>
+</div>
+
+<h3 id="include-object-types">Include object types</h3>
+<p>In v1 configs, the repository automatically included all object types if no restrictions were specified using the <code>IncludedObjectTypes</code> element.</p>
+<p>In v2, configuration files must explicitly specify all object types included in the repository via the <code>IncludedObjectTypes</code> element. To include all supported objects, use <code>&lt;IncludeAll /&gt;</code> as shorthand. See <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">Reference - CI/CD object types</a> for an overview of object types that support CI/CD.</p>
+<p>The <code>ExcludedObjectTypes</code> element’s behavior remains unchanged. However, in v2 config files, it excludes object types only from the list specified via <code>IncludedObjectTypes</code>.</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;!-- Version 1 config --&gt;
+&lt;RepositoryConfiguration ...&gt;
+
+    &lt;!-- This element is optional and if not present,
+    CI/CD by default serializes all supported objects. --&gt;
+    &lt;IncludedObjectTypes&gt;
+    &lt;/IncludedObjectTypes&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+&lt;!-- Version 2 config --&gt;
+&lt;RepositoryConfiguration ...&gt;
+
+    &lt;!-- This element is required and must explicitly
+    list all object types held by the repository. --&gt;
+    &lt;IncludedObjectTypes&gt;
+        &lt;!-- Shorthand to include all supported objects --&gt;
+        &lt;IncludeAll /&gt;
+        &lt;!-- Includes users and roles --&gt;
+        &lt;ObjectType&gt;CMS.User&lt;/ObjectType&gt;
+        &lt;ObjectType&gt;CMS.Role&lt;/ObjectType&gt;
+    &lt;/IncludedObjectTypes&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h3 id="include-content-items">Include content items</h3>
+<p>Content items are no longer tracked by including <code>cms.contentitem</code> and related dependencies. Instead, the process now mirrors object type handling – users must explicitly list all tracked content items within the configuration file.</p>
+<p>Two new configuration elements facilitate this:</p>
+<ul>
+<li>
+<p><code>IncludedContentItemsOfType</code> – stores a list of content type code names. The repository tracks all content items that match the types specified in this collection. Omitting this element results in <strong>NO</strong> content items tracked by the repository. The <code>&lt;IncludeAll /&gt;</code> element provides a shorthand method for including all system content items, mirroring its function for including all object types. However, careless usage of <code>IncludeAll</code> can have severly negative performance consequences.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>IncludeAll usage</strong></p>
+<p>In <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> scenarios outside of the <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates#initial-deployment-to-target-instance">initial CD deployment</a>, always prefer explicitly listing all types tracked by the repository to using <code>&lt;IncludeAll /&gt;</code>.</p>
+<p>When you run <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#store-objects-to-a-cd-repository">kxp-cd-store</a> (store operation), the system correctly identifies content item types present in the source environment and serializes them. However, when you run <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment#restore-the-cd-repository-to-the-database">kxp-cd-restore</a> (restore operation) with <code>&lt;IncludeAll /&gt;</code>, the process iterates over <strong>all content item of all types</strong> that exist on the target environment, regardless of whether they were present in the source repository data. This can lead to extremely long processing times and potential timeouts if the target environment contains substantially more content types or items than the source repository, as every target item of every type must be processed during the restore.</p>
+<p><strong>Recommendation:</strong> For these reasons, we strongly advise against using <code>&lt;IncludeAll /&gt;</code> for regular CD deployments to production or other target environments <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates#initial-deployment-to-target-instance">after the initial setup</a>. Instead, explicitly list the code names of each content item type you intend to track via CD in the <code>&lt;IncludedContentItemsOfType&gt;</code> section using <code>&lt;ContentType&gt;</code> elements.</p>
+</div>
+</li>
+<li><p><code>ExcludedContentItemsOfType</code> – provides an optional mechanism to refine which content items are tracked. While the element itself is optional, if included in the configuration, it must contain one or more <code>ContentType</code> elements specifying the code names of content types to exclude. Functionally, it is a subtraction. The content types listed within <code>ExcludedContentItemsOfType</code> are removed from the set of items initially defined by the <code>IncludedContentItemsOfType</code> element. This is useful for scenarios where you want to include a broad category (using <code>&lt;IncludeAll /&gt;</code> within <code>IncludedContentItemsOfType</code>) but specifically omit certain types from being tracked by the repository.</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;!-- Version 2 config --&gt;
+&lt;RepositoryConfiguration ...&gt;
+
+    &lt;!-- Defines the types of content items tracked by the repository.
+    NOTE: This element is specific to Version 2 configurations. --&gt;
+    &lt;IncludedContentItemsOfType&gt;
+        &lt;!-- Shorthand to include all content items of all types --&gt;
+        &lt;IncludeAll /&gt;
+        &lt;!-- Includes all content items of a specific type --&gt;
+        &lt;ContentType&gt;DancingGoat.Coffee&lt;/ContentType&gt;
+        &lt;ContentType&gt;DancingGoat.Article&lt;/ContentType&gt;
+    &lt;/IncludedContentItemsOfType&gt;
+
+    &lt;!-- Optional: Define types to exclude from the set defined above
+    NOTE: This element must contain at least one ContentType element if added. --&gt;
+    &lt;ExcludedContentItemsOfType&gt;
+        &lt;!-- Exclude items of the 'DancingGoat.Article' type --&gt;
+        &lt;ContentType&gt;DancingGoat.Article&lt;/ContentType&gt;
+    &lt;/ExcludedContentItemsOfType&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<h4 id="website-channel-folders">Website channel folders</h4>
+<p>Website channel folders (used to group pages in the content tree) must be tracked using a dedicated <strong>##WebPageFolders##</strong> placeholder.</p>
+
+<div>
+<pre><code>
+&lt;IncludedContentItemsOfType&gt;
+  &lt;ContentType&gt;##WebPageFolders##&lt;/ContentType&gt;
+&lt;/IncludedContentItemsOfType&gt;
+</code></pre>
+</div>
+
+<h3 id="update-object-type-filters">Update object type filters</h3>
+<p>Several object types directly related to content item data storage can no longer be filtered using <code>ObjectFilters</code> (<a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#FilteringLegacy">Filter individual objects</a>). Attempting to filter any of the following object types directly using elements like <code>&lt;IncludedCodeNames ObjectType="..."&gt;</code> now results in an exception during processing:</p>
+<p>Content items:</p>
+<ul>
+<li>cms.contentitem</li>
+<li>cms.contentitemcommondata</li>
+<li>cms.contentitemlanguagemetadata</li>
+<li>cms.contentitemreference</li>
+</ul>
+<p>Pages:</p>
+<ul>
+<li>cms.webpageitem</li>
+<li>cms.webpageformerurlpath</li>
+<li>cms.webpageurlpath</li>
+</ul>
+<p>Emails:</p>
+<ul>
+<li>emaillibrary.emailconfiguration</li>
+<li>emaillibrary.sendconfiguration</li>
+</ul>
+<p>Headless items:</p>
+<ul>
+<li>cms.headlessitem</li>
+</ul>
+<p>To control which content items are tracked and synchronized via CI/CD, you must instead use the dedicated content item filtering elements: <a href="#configure-content-item-filters">Configure content item filters</a>.</p>
+<h3 id="configure-content-item-filters">Configure content item filters</h3>
+<p>For more granular control beyond type-level inclusion/exclusion, the <code>ContentItemFilters</code> element allows filtering of individual content items based on their code names, irrespective of type.</p>
+<p>Within this element, child elements <code>IncludedContentItemNames</code> and <code>ExcludedContentItemNames</code> specify item code name patterns that filter individual tracked items. You can use the <code>%</code> character as a wildcard to match multiple code names. For example:</p>
+<ul>
+<li>
+<code>prefix_%</code> matches all code names starting with <strong>prefix_</strong>.</li>
+<li>
+<code>%_suffix</code> matches all code names ending with <strong>_suffix</strong>.</li>
+</ul>
+<p>This name-based filtering acts as a secondary layer in content item processing – it only applies to content items included via <code>IncludedContentItemsOfType</code> and not removed by <code>ExcludedContentItemsOfType</code>. It cannot introduce items whose types were not selected in the first filtering stage.</p>
+<p>The following code demonstrates content item filtering on a simple example:</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;!-- Example: Include only 'DancingGoat.Article' 
+items whose code names start with 'News_' --&gt;
+&lt;RepositoryConfiguration ...&gt;
+
+    &lt;!-- Step 1: Include the relevant content item TYPE --&gt;
+    &lt;IncludedContentItemsOfType&gt;
+        &lt;!-- Only items of this type are considered for the filtering step --&gt;
+        &lt;ContentType&gt;DancingGoat.Article&lt;/ContentType&gt;
+    &lt;/IncludedContentItemsOfType&gt;
+
+    &lt;!-- Step 2: Apply secondary filtering based on
+    individual item code names. This filter only applies to items
+     whose type ('DancingGoat.Article') was included above --&gt;
+    &lt;ContentItemFilters&gt;
+        
+        &lt;!-- Include only items whose code names match the pattern 'News_%' --&gt;
+        &lt;IncludedContentItemNames&gt;
+            News_%
+        &lt;/IncludedContentItemNames&gt;
+
+        &lt;!-- You could also use &lt;ExcludedContentItemNames&gt; 
+        here to exclude specific names. For example: 
+
+        &lt;ExcludedContentItemNames&gt;
+            News_Internal%
+        &lt;/ExcludedContentItemNames&gt; 
+        
+        --&gt;
+    &lt;/ContentItemFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This setup first selects all items of the type <code>DancingGoat.Article</code> and then applies the <code>ContentItemFilters</code> to keep only those articles whose code names begin with <strong>News_</strong>.</p>
+
+</body>
+</html>

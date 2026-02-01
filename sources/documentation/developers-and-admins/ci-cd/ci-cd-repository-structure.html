@@ -1,0 +1,532 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>CI/CD repository structure</title>
+</head>
+<body>
+<p>When using <a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> or <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a>, the system serializes database data into XML and stores the results on the file system in a repository folder.</p>
+<p>The files are further organized within the following folder structure:</p>
+<ul>
+<li>
+<p><strong>Channel level folders</strong> – the top level separates objects based on their relationship with channels: <strong>@global</strong> for global objects, <strong>&lt;channel code name&gt;</strong> for content and configuration objects related to individual channels (such as pages or emails).</p>
+<ul>
+<li>
+<p><strong>Object type folders</strong> – the next level contains folders for specific types of objects, based on <strong><em>object type names</em></strong> (see <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">Reference - CI/CD object types</a> to learn more).</p>
+<ul>
+<li>
+<strong>Object files</strong> – individual XML files are named according to the <strong><em>code name</em></strong> of the corresponding object. Object types without code names use the value of a non-unique field, followed by a unique hash. Object types without any easily readable identifying fields use their GUID value for the file name.</li>
+<li>
+<strong>Binding data files</strong> – binding data is not stored in separate files for individual binding records, but combined for each main object in the relationship. The binding XML data contains an identifier of the main object (parent) in the relationship, and then identifiers of all objects that have the given relationship with the main object, along with any other data stored by the binding. The binding files are named after the main object in format: <strong><em>&lt;object name&gt;@&lt;unique hash&gt;</em></strong>
+</li>
+<li>
+<strong>Parent object folders</strong> – object types that belong under a parent type use an additional level of subfolders – objects are separated into folders named according to the parent object in format: <strong><em>&lt;parent object name&gt;@&lt;unique hash&gt;</em></strong>. For object types that have multiple possible parent types, the folder name also contains a <strong><em>&lt;parent object type&gt;_</em></strong> prefix.</li>
+<li>
+<strong>Separated field files</strong> – certain types of objects store the values of specific data fields in separate files (placed next to the main XML file). For example, content items with a <em>Content item asset</em> field store the asset’s binary data as a separate file. The separated files use names in format <strong><em>&lt;object name&gt;#&lt;separated field identifier&gt;</em></strong> and have an appropriate extension.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Lock files</strong> – the repository contains a <strong>.lock</strong> folder with temporary lock files used during store and restore operations. You can safely delete or ignore this folder in your source control system.</p></li>
+<li><p><strong>Repository configuration file</strong> – the repository contains an XML configuration file (<em>repository.config</em> by default), which is used to adjust the behavior or CI/CD operations and exclude object types or individual objects. See <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories">Exclude objects from CI/CD</a>.</p></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Long names and forbidden characters</strong></p>
+<p>Very long folder and file names automatically replace the middle of the name with <strong>..</strong> characters, preceded and followed by a limited number of characters from the start and end of the name. To ensure the uniqueness of the name, an <strong>@</strong> symbol followed by a fixed-length hash value is appended.</p>
+<p>For example: <em>longpagetypeprefix..pagetypenameend@fe6fd25d3e.xml</em></p>
+<p>If an object name contains characters that are not allowed in file names (for example slashes or backslashes), the given characters are removed and the same unique hash is appended.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Source control ignore rules</strong></p>
+<p>Certain source control systems may have ignore rules, such as <em>gitignore</em>, which can unintentionally exclude files or folders used in the CI/CD repository (for example, the <em>*.class</em> and <em>*.user</em> file and folder extensions).</p>
+<p>Such rules may prevent your environment from working correctly. We recommend that you evaluate ignore rules for the repository and disable them as required.</p>
+</div>
+
+<h2 id="example---repository-structure">Example - Repository structure</h2>
+<p><strong>Note</strong>: The example does not include all <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types">object types supported by CI/CD</a>.</p>
+
+<div>
+<p>App_Data\CIRepository</p>
+<ul>
+<li>
+<p>@global</p>
+<ul>
+<li>
+<p>cms.channel</p>
+<ul>
+<li>dancinggoat.xml</li>
+<li>dancinggoatemails.xml</li>
+</ul>
+</li>
+<li>
+<p>cms.contentlanguage</p>
+<ul>
+<li>en.xml</li>
+</ul>
+</li>
+<li>
+<p>cms.contenttype</p>
+<ul>
+<li>dancinggoat.articlepage.xml</li>
+<li>dancinggoat.cafe.xml</li>
+<li>dancinggoat.homepage.xml</li>
+</ul>
+</li>
+<li>
+<p>cms.role</p>
+<ul>
+<li>administrator.xml</li>
+<li>dancinggoat.digitalchannelmanager.xml</li>
+</ul>
+</li>
+<li>
+<p>contentitemdata.dancinggoat.cafe</p>
+<ul>
+<li>newyork-xn4wcoi7@f9f4b7d19c
+<ul>
+<li>6f1f362b-6b10-4279-a43e-add609bfb952_en@9fe0105a7b.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>DancingGoat</p>
+<ul>
+<li>
+<p>cms.contentitem</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8.xml</li>
+<li>donatewithus-ib1owx14.xml</li>
+</ul>
+</li>
+<li>
+<p>cms.contentitemcommondata</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8@229b3e934c
+<ul>
+<li>455ecded-6b64-485c-ad3c-d4b96effa019_en@e80ce4a807</li>
+</ul>
+</li>
+<li>donatewithus-ib1owx14@d2b2946b0a
+<ul>
+<li>9246d73c-ac38-4318-b31d-d6540369c730_en@35b7656f37</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>cms.contentitemlanguagemetadata</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8@229b3e934c
+<ul>
+<li>0a9c1cfb-bc49-4de7..bcb72a271515_en-us@198d133b1e.xml</li>
+</ul>
+</li>
+<li>donatewithus-ib1owx14@d2b2946b0a
+<ul>
+<li>70e50ccf-53a7-4d1c..f460b1926823_en-us@91887bc8f9.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>cms.webpageitem</p>
+<ul>
+<li>articles@6cbaf541d4
+<ul>
+<li>articles_coffee_beverages_explained@57ca1005db.xml</li>
+<li>articles_donate_with_us@aa902b35ab.xml</li>
+</ul>
+</li>
+<li>articles@53f6ddebaf.xml</li>
+</ul>
+</li>
+<li>
+<p>cms.webpageurlpath</p>
+<ul>
+<li>articles_coffee_beverages_explained@9afb1e62f2
+<ul>
+<li>articles_coffee-beverages-explained_en@4ea0f3386e.xml</li>
+</ul>
+</li>
+<li>articles_donate_with_us@24682d9230
+<ul>
+<li>articles_donate-with-us_en@c600fb80ee.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>cms.websitechannel</p>
+<ul>
+<li>dancinggoat@3d35796746
+<ul>
+<li>55e3ae4b-3843-46b8-95d5-79611c371d6f.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>contentitemdata.dancinggoat.articlepage</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8@229b3e934c
+<ul>
+<li>cd602cee-95c2-4e21-90f3-63e1fd7af896_en@08bac1e16a.xml</li>
+</ul>
+</li>
+<li>donatewithus-ib1owx14@d2b2946b0a
+<ul>
+<li>8309ebb9-f6d2-44fc-a4fe-27c3903b9a81_en@e15397089c.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>DancingGoatEmails</p>
+<ul>
+<li>…</li>
+</ul>
+</li>
+<li><p>repository.config</p></li>
+</ul>
+</div>
+
+<h2 id="storage-structure-for-specific-object-types">Storage structure for specific object types</h2>
+<h3 id="content-items">Content items</h3>
+<p>The system uses multiple object types to store the content and settings of <a href="/documentation/business-users/content-hub">content items</a>. As a result, the resulting CI/CD files use a more complex structure than standard objects.</p>
+<p>Content items are global objects serialized under the <em>@global</em> folder. Each item is divided into multiple folders and files:</p>
+<ul>
+<li>
+<em>cms.contentitem</em> – stores general system information about the content item.</li>
+<li>
+<em>cms.contentitemcommondata</em> – stores metadata about the item such as the current workflow and version statuses. Organized under subfolders matching the parent content item.</li>
+<li>
+<em>cms.contentitemlanguagemetadata</em> – metadata for specific language variants of the item. Organized under subfolders matching the parent content item.</li>
+<li>
+<em>contentitemdata.&lt;content type code name&gt;</em> – data stored in the <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> of the item’s <a href="/documentation/developers-and-admins/development/content-types">content type</a>. Items with fields of the <em>Content item asset</em> data type also contain the referenced asset binary next to the XML definition.</li>
+</ul>
+<p>For example, a <em>“Bolivia Finca Illimani</em>” reusable content item of the <em>DancingGoat.Coffee</em> content type could be, depending on the type’s fields and supported language variants, serialized into the following XML files:</p>
+
+<div>
+<p>App_Data\CIRepository</p>
+<ul>
+<li>@global
+<ul>
+<li>cms.contentitem
+<ul>
+<li>boliviafincaillimani-c77ome92.xml</li>
+</ul>
+</li>
+<li>cms.contentitemcommondata
+<ul>
+<li>boliviafincaillimani-c77ome92@4af5d5cd12
+<ul>
+<li>b8f2c34d-9391-4ac4-aa7d-3e1918ae8436_en@288568df8a.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>cms.contentitemlanguagemetadata
+<ul>
+<li>boliviafincaillimani-c77ome92@4af5d5cd12
+<ul>
+<li>bc0d5a69-0257-4bbf-9906-b3a6b6d5f867_en@6b1ab2f0c2.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>contentitemdata.dancinggoat.coffee
+<ul>
+<li>boliviafincaillima..7d-3e1918ae8436_en@f22af72b2b
+<ul>
+<li>734cce16-db74-4114-8a71-50cfcd1136e5.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h3 id="pages">Pages</h3>
+<p>The system uses multiple object types to store the content and settings of <a href="/documentation/business-users/website-content">pages</a>. As a result, the resulting CI/CD files use a more complex structure than standard objects.</p>
+<p>Pages are serialized under a specific <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>. Each page is divided into multiple folders and files:</p>
+<ul>
+<li>
+<em>cms.contentitem</em> – stores general system information about the page.</li>
+<li>
+<em>cms.contentitemcommondata</em> – stores metadata about the page such as the current workflow and version statuses. Organized under subfolders matching the parent content item for the page.</li>
+<li>
+<em>cms.contentitemlanguagemetadata</em> – metadata for specific language variants of the page. Organized under subfolders matching the parent content item for the page.</li>
+<li>
+<em>cms.webpageitem</em> – data about the page’s position in the website channel’s content tree. Organized into subfolders matching the parent-child hierarchy of the page tree.</li>
+<li>
+<em>cms.webpageurlpath</em> – stores the <a href="/documentation/business-users/website-content/manage-page-urls">URL path</a> data of the page. Organized under subfolders matching the parent content item for the page.</li>
+<li>
+<em>contentitemdata.&lt;content type code name&gt;</em> – data stored in the <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> of the page’s <a href="/documentation/developers-and-admins/development/content-types">content type</a>.</li>
+</ul>
+<p>For example, a <em>“Coffee Beverages Explained”</em> page with the <em>DancingGoat.ArticlePage</em> content type under the <em>DancingGoat</em> website channel could be, depending on the page’s <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> and language variants, serialized into the following XML files:</p>
+
+<div>
+<p>App_Data\CIRepository</p>
+<ul>
+<li>DancingGoat
+<ul>
+<li>
+<p>cms.contentitem</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8.xml</li>
+</ul>
+</li>
+<li>
+<p>cms.contentitemcommondata</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8@229b3e934c
+<ul>
+<li>455ecded-6b64-485c-ad3c-d4b96effa019_en@e80ce4a807.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>cms.contentitemlanguagemetadata</p>
+<ul>
+<li>coffeebeveragesexplained-ouq66na8@229b3e934c
+<ul>
+<li>0a9c1cfb-bc49-4de7-9cd6-bcb72a271515_en@198d133b1e.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>cms.webpageitem</p>
+<ul>
+<li>articles@6cbaf541d4
+<ul>
+<li>articles_coffee_beverages_explained@57ca1005db.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>cms.webpageurlpath</p>
+<ul>
+<li>articles_coffee_beverages_explained@9afb1e62f2
+<ul>
+<li>articles_coffee-beverages-explained@4ea0f3386e.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>contentitemdata.dancinggoat.articlepage</p>
+<ul>
+<li>
+<p>coffeebeveragesexp..3c-d4b96effa019_en@878c71bd71</p>
+<ul>
+<li>cd602cee-95c2-4e21-90f3-63e1fd7af896_en@08bac1e16a.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h3 id="emails">Emails</h3>
+<p>The system uses multiple object types to store the content and settings of <a href="/documentation/business-users/digital-marketing/emails">emails</a>. As a result, the resulting CI/CD files use a more complex structure than standard objects.</p>
+<p>Emails are serialized under a specific <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>. Each email is divided into multiple folders and files:</p>
+<ul>
+<li>
+<em>cms.contentitem</em> – stores general system information about the email.</li>
+<li>
+<em>cms.contentitemcommondata</em> – stores metadata about the email such as the current workflow and version statuses. Organized under subfolders matching the parent content item for the email.</li>
+<li>
+<em>cms.contentitemlanguagemetadata</em> – metadata for specific language variants of the email. Organized under subfolders matching the parent content item for the email.</li>
+<li>
+<em>contentitemdata.&lt;content type code name&gt;</em> – data stored in the <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> of the email’s <a href="/documentation/developers-and-admins/development/content-types">content type</a>.</li>
+<li>
+<em>emaillibrary.emailconfiguration</em> – stores the email purpose and other assorted metadata.</li>
+<li>
+<em>emaillibrary.sendconfiguration</em> – sendout settings for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a>.</li>
+<li>
+<em>emaillibrary.sendconfigurationcontactgroup</em> – included and excluded <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> in the sendount settings for <a href="/documentation/business-users/digital-marketing/emails/send-regular-emails-to-subscribers">regular emails</a>.</li>
+</ul>
+<p>For example, a <em>“Dancing Goat Regular”</em> email with the <em>DancingGoat.Email</em> content type under the <em>DancingGoatEmail</em> email channel could be, depending on the type’s <a href="/documentation/developers-and-admins/customization/field-editor">fields</a>, serialized into the following XML files:</p>
+
+<div>
+<p>App_Data\CIRepository</p>
+<ul>
+<li>DancingGoatEmails
+<ul>
+<li>cms.contentitem
+<ul>
+<li>dancinggoatregular-jspvrlaw.xml</li>
+</ul>
+</li>
+<li>cms.contentitemcommondata
+<ul>
+<li>dancinggoatregular-jspvrlaw@c9e8075026
+<ul>
+<li>556e64e1-33ad-4745..f8f325852_en_draft@536bc3c16d.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>cms.contentitemlanguagemetadata
+<ul>
+<li>dancinggoatregular-jspvrlaw@c9e8075026
+<ul>
+<li>6f1792c0-399f-49e5-b0c3-5b03e9607d47_en@e6c32b6adf.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>emaillibrary.emailconfiguration
+<ul>
+<li>dancinggoatregular-jspvrlaw.xml</li>
+</ul>
+</li>
+<li>emaillibrary.sendconfiguration
+<ul>
+<li>dancinggoatregular-jspvrlaw@a8301b74b5
+<ul>
+<li>715d8987-f654-4bbc-9add-6f90add97072.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>emaillibrary.sendconfigurationcontactgroup
+<ul>
+<li>dancinggoatregular..-9cbf-562d43bcefb3@6edd158a18.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h3 id="headless-items">Headless items</h3>
+<p>The system uses multiple object types to store the content and settings of <a href="/documentation/business-users/headless-content">headless items</a>. As a result, the resulting CI/CD files use a more complex structure than standard objects.</p>
+<p>Headless items are serialized under a specific <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a>. Each item is divided into multiple folders and files:</p>
+<ul>
+<li>
+<em>cms.contentitem</em> and <em>cms.headlessitem</em> – stores general system information about the headless item.</li>
+<li>
+<em>cms.contentitemcommondata</em> – stores metadata about the item such as the current workflow and version statuses. Organized under subfolders matching the parent headless item.</li>
+<li>
+<em>cms.contentitemlanguagemetadata</em> – metadata for specific language variants of the item. Organized under subfolders matching the parent headless item.</li>
+<li>
+<em>contentitemdata.&lt;content type code name&gt;</em> – data stored in the <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> of the item’s <a href="/documentation/developers-and-admins/development/content-types">content type</a>.</li>
+</ul>
+<p>For example, an <em>“Acme hammer”</em> headless item with the <em>Acme.Product</em> content type under the <em>AcmeStore</em> headless channel could be, depending on the type’s <a href="/documentation/developers-and-admins/customization/field-editor">fields</a>, serialized into the following XML files:</p>
+
+<div>
+<p>App_Data\CIRepository</p>
+<ul>
+<li>AcmeStore
+<ul>
+<li>cms.contentitem
+<ul>
+<li>acmehammer-lx3egsq6.xml</li>
+</ul>
+</li>
+<li>cms.contentitemcommondata
+<ul>
+<li>acmehammer-lx3egsq6@7ae7d097cb
+<ul>
+<li>f4f1c1e7-fd79-4253-8031-83e750910300_en@f64dd408c7.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>cms.contentitemlanguagemetadata
+<ul>
+<li>acmehammer-lx3egsq6@7ae7d097cb
+<ul>
+<li>a0ab3aa4-170b-4091-96ba-2d54cf63e8fc_en@6b0e527ea5.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>cms.headlessitem
+<ul>
+<li>acmehammer-lx3egsq6.xml</li>
+</ul>
+</li>
+<li>contentitemdata.acme.product
+<ul>
+<li>acmehammer-lx3egsq6_f4f1..31-83e750910300_en@fa109c2e74
+<ul>
+<li>0fc5a1ce-e263-4d37-9f61-6253b2f983ea.xml</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+<h3 id="forms">Forms</h3>
+<p>The system uses multiple object types to store the definitions and settings of <a href="/documentation/business-users/digital-marketing/forms">Forms</a>. As a result, the files containing the serialized data of forms use a more complex structure than standard objects.</p>
+<p>Each form is serialized into the following <strong>global</strong> items:</p>
+<ul>
+<li><strong>cms.formclass</strong></li>
+<li><strong>cms.form</strong></li>
+</ul>
+<p><strong>Note</strong>:</p>
+<ul>
+<li>CI/CD does NOT serialize form data submissions collected from visitors.</li>
+<li>Global <strong>cms.formfeaturedfield</strong> items hold the system’s definitions of featured form fields (options displayed in the <strong>Featured</strong> category when <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">adding fields to forms</a>).</li>
+</ul>
+<p>For example, a form with the <em>“UserFeedback”</em> code name would be serialized into the following XML files:</p>
+
+<div>
+<p>CMS\App_Data\CIRepository</p>
+<ul>
+<li>
+<p>@global</p>
+<ul>
+<li>cms.form
+<ul>
+<li>userfeedback.xml</li>
+</ul>
+</li>
+<li> cms.formclass
+<ul>
+<li>bizform.userfeedback.xml</li>
+</ul>
+</li>
+<li>cms.formfeaturedfield
+<ul>
+<li>kentico.featured.businessphone.xml</li>
+<li>kentico.featured.companyname.xml</li>
+<li>kentico.featured.consentagreement.xml</li>
+<li>kentico.featured.email.xml</li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+</body>
+</html>

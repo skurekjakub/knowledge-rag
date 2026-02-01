@@ -1,0 +1,616 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Bundle static assets of builder components</title>
+</head>
+<body>
+<p>Components developed for the system’s <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form</a> Builder features (such as <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>) often require custom CSS and JavaScript assets to achieve their desired appearance and functionality.</p>
+<p>With complex components, the number of such assets quickly multiplies and it becomes impractical to include them on pages individually. Moreover, keeping request count and static asset size low helps improve page performance. For these reasons, we recommend using <a href="https://docs.microsoft.com/en-us/aspnet/core/client-side/bundling-and-minification" target="_blank">bundling and minification</a> for your static assets.</p>
+<p>Use the following process to implement bundling and minification:</p>
+<ol type="1">
+<li>Choose and set up a bundling and minification process suitable for your needs and workflow. The implementation and used tools are completely in your hands.</li>
+<li>Create bundles for your component assets and provide them to Xperience:
+<ul>
+<li><p>Create separate CSS and JS bundles for both the page and form builder.</p></li>
+<li><p>Create separate bundles for the live site and the Xperience administration interface. Certain assets, such as <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">Inline editor</a> registration scripts, are only required when using the Page Builder editing interface in the administration and vice versa.</p></li>
+<li>
+<p>The bundles must have specific names, be placed into designated locations within the project’s web root, and contain assets depending on the type of the bundle.</p>
+
+<div>
+
+</div>
+<div>
+<p>See the <a href="#bundles">Bundles</a> section for detailed information about the default bundle names and locations.</p>
+</div>
+</li>
+<li><p>(Optional) If you do not wish to use the default bundle names and locations, you can <a href="#customize-bundle-locations-and-sources">specify a custom location and sources for individual bundles</a>.</p></li>
+</ul>
+</li>
+</ol>
+<p>The system includes and renders the resulting bundles on pages where Builder functionality is enabled:</p>
+<ul>
+<li>For the Page Builder on pages that call the <code>PageBuilderScriptsAsync</code> and <code>PageBuilderStyles</code> <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">extension methods</a>.</li>
+<li>For the Form Builder automatically when creating forms in the administration interface and on pages containing forms.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Example</strong></p>
+<p>The <a href="#sample-bundling-and-minification-process">Sample bundling and minification process</a> section demonstrates how to configure a simple bundling process using the <a href="https://gruntjs.com/" target="_blank">Grunt</a> automation library. The process bundles files from the default source directories and places the created bundles into the default locations.</p>
+</div>
+
+<h2 id="system-bundling-features">System bundling features</h2>
+<h3 id="handling-missing-bundles">Handling missing bundles</h3>
+<p>The system stores information about the source directories of files that comprise each bundle. If a bundle is not found in the expected location, files from the corresponding source directories are linked individually as a fallback. Every file results in a new <em>script</em> tag on the page. This can be useful, for example, for debugging purposes in a development environment.</p>
+<p>Each bundle has a preconfigured default source directory (listed in the <a href="#bundles">Bundles</a> section). If necessary, you can add additional source directories via <a href="#add-source-directories-for-a-bundle">provided options classes</a>.</p>
+<h3 id="bundle-caching">Bundle caching</h3>
+<p>The system automatically caches served bundles to reduce application overhead.</p>
+<p><strong>Note</strong>: If your bundling process creates an empty file for a bundle, the given bundle is not included in the page at all. This information is also cached by the system to reduce unnecessary overhead. However, adding content to a previously empty bundle requires clearing the cache to ensure the change is reflected on the site (e.g., by restarting the application).</p>
+<h2 id="bundles">Bundles</h2>
+<p>The following sections describe the default names and locations required for individual bundle types:</p>
+<ul>
+<li><a href="#page-builder-bundles">Page Builder component bundles</a></li>
+<li><a href="#form-builder-bundles">Form Builder component bundles</a></li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Complementary system bundles</strong></p>
+<p>For each bundle described below, the system automatically includes a bundle containing the scripts and styles required by the system’s default builder components, such as the <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">Form</a> widget and individual <a href="/documentation/developers-and-admins/development/builders/form-builder">form components</a>. These bundles can be identified by their <em>system</em> prefix, and the rules for their inclusion are the same as those for user-created bundles.  </p>
+</div>
+
+<h3 id="page-builder-bundles">Page Builder bundles</h3>
+<p>Static assets for custom Page Builder components need to be split between the following types of bundles:</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="1">
+<p>Bundle</p>
+</td>
+<td>
+<p>Bundle name</p>
+</td>
+<td>
+<p>Bundle location (~/wwwroot/Content/Bundles/)</p>
+</td>
+<td>
+<p>Bundle source directory (within ~/wwwroot/)</p>
+</td>
+<td>
+<p>Bundle contents</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-PBSA"></span> Administration scripts</p>
+</td>
+<td>
+<p>pageComponents.min.js</p>
+</td>
+<td>
+<p>Admin/pageComponents.min.js</p>
+</td>
+<td>
+<p>PageBuilder/Admin/**/*.js</p>
+</td>
+<td>
+<p>Included in the administration interface when editing pages that use the <a href="/documentation/developers-and-admins/development/content-types">Page Builder feature</a>.</p>
+<p>The bundle must contain <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline editor</a> registration and configuration scripts together with any other functionality you wish to enable for your components within the Page Builder editing interface that is not required on the live site.</p>
+<p>For a clean directory structure, we recommend placing scripts comprising the bundle into individual directories based on component type. For example:</p>
+<ul>
+<li>~/wwwroot/PageBuilder/Admin/InlineEditors/*.js</li>
+<li>~/wwwroot/PageBuilder/Admin/ModalDialogs/*.js</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-PBCSSA"></span> Administration styles</p>
+</td>
+<td>
+<p>pageComponents.min.css</p>
+</td>
+<td>
+<p>Admin/pageComponents.min.css</p>
+</td>
+<td>
+<p>PageBuilder/Admin/**/*.css</p>
+</td>
+<td>
+<p>Included in the administration interface when editing pages that use the <a href="/documentation/developers-and-admins/development/content-types">Page Builder feature</a>.</p>
+<p>The bundle must contain all styles you wish to use for your components in the Page Builder editing interface.</p>
+<p>For a clean directory structure, we recommend placing styles comprising the bundle into individual directories based on component type. For example:</p>
+<ul>
+<li>~/wwwroot/PageBuilder/Admin/Widgets/*.css</li>
+<li>~/wwwroot/PageBuilder/Admin/Sections/*.css</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-PBSLS"></span> Live site scripts</p>
+</td>
+<td>
+<p>pageComponents.min.js</p>
+</td>
+<td>
+<p>Public/pageComponents.min.js</p>
+</td>
+<td>
+<p>PageBuilder/Public/**/*.js</p>
+</td>
+<td>
+<p>Included on the live site.</p>
+<p>The bundle must contain all scripts required for the functionality of your custom Page Builder components on the live site.</p>
+<p>For a clean directory structure, we recommend placing scripts comprising the bundle into individual directories based on component type. For example:</p>
+<ul>
+<li>~/wwwroot/PageBuilder/Public/Widgets/*.js</li>
+<li>~/wwwroot/PageBuilder/Public/Sections/*.js</li>
+<li>~/wwwroot/PageBuilder/Public/PageTemplates/*.js</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-PBCSSLS"></span> Live site styles</p>
+</td>
+<td>
+<p>pageComponents.min.css</p>
+</td>
+<td>
+<p>Public/pageComponents.min.css</p>
+</td>
+<td>
+<p>PageBuilder/Public/**/*.css</p>
+</td>
+<td>
+<p>Included on the live site.</p>
+<p>The bundle must contain all styles required to correctly display custom components.</p>
+<p>For a clean directory structure, we recommend placing styles comprising the bundle into individual directories based on component type. For example:</p>
+<ul>
+<li>~/wwwroot/PageBuilder/Public/Widgets/*.css</li>
+<li>~/wwwroot/PageBuilder/Public/Sections/*.css</li>
+<li>~/wwwroot/PageBuilder/Public/PageTemplates/*.css</li>
+</ul>
+</td>
+</tr>
+</table>
+
+<h3 id="form-builder-bundles">Form Builder bundles</h3>
+<p>Static assets for custom Form Builder components need to be split into three bundles:</p>
+<ul>
+<li>A bundle containing component scripts.</li>
+<li>Two bundles containing component styles: one for the live site, the other for the administration interface.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<td colspan="1">
+<p>Bundle</p>
+</td>
+<td>
+<p>Bundle name</p>
+</td>
+<td>
+<p>Bundle location (within ~/wwwroot/Content/Bundles/)</p>
+</td>
+<td>
+<p>Bundle source directory (within ~/wwwroot/)</p>
+</td>
+<td>
+<p>Bundle contents</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-FBCSSA"></span> Administration styles</p>
+</td>
+<td>
+<p>formComponents.min.css</p>
+</td>
+<td>
+<p>Admin/formComponents.min.css</p>
+</td>
+<td>
+<p>FormBuilder/Admin/**/*.css</p>
+</td>
+<td>
+<p>Included when accessing the Form Builder editing interface in the administration.</p>
+<p>The bundle must contain all styles you wish to use for your form components in the Form Builder editing interface in the Xperience administration.</p>
+<p>For a clean directory structure, we recommend placing styles comprising the bundle into individual directories. For example:</p>
+<ul>
+<li>~/wwwroot/FormBuilder/Admin/FormComponents/*.css</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-FBS"></span> Administration and live site scripts</p>
+</td>
+<td>
+<p>formComponents.min.js</p>
+</td>
+<td>
+<p>Public/formComponents.min.js</p>
+</td>
+<td>
+<p>FormBuilder/Public/**/*.js</p>
+</td>
+<td>
+<p>Included on pages with forms and when accessing the form builder editing interface in the administration.</p>
+<p>The bundle must contain all scripts required for the correct functionality of your custom Form Builder components.</p>
+<p>There is no dedicated bundle for the administration interface. This bundle is linked both when rendering forms on the live site (via the <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">Form widget</a>) and when composing forms via the Form Builder interface.</p>
+<p>For a clean directory structure, we recommend placing scripts comprising the bundle into individual directories. For example:</p>
+<ul>
+<li>~/wwwroot/FormBuilder/Public/FormComponents/*.js</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p><span id="Bundlestaticassetsofbuildercomponents-FBCSSLS"></span> Live site styles</p>
+</td>
+<td>
+<p>formComponents.min.css</p>
+</td>
+<td>
+<p>Public/formComponents.min.css</p>
+</td>
+<td>
+<p>FormBuilder/Public/**/*.css</p>
+</td>
+<td>
+<p>Included on pages with forms.</p>
+<p>The bundle must contain all styles required to correctly display your Form Builder components on the live site.</p>
+<p>For a clean directory structure, we recommend placing styles comprising the bundle into individual directories. For example:</p>
+<ul>
+<li>~/wwwroot/FormBuilder/Public/FormComponents/*.css</li>
+</ul>
+</td>
+</tr>
+</table>
+
+<h2 id="sample-bundling-and-minification-process">Sample bundling and minification process</h2>
+<p>The following example demonstrates a bundling and minification process using Node.js with the <a href="https://gruntjs.com/" target="_blank">Grunt</a> JavaScript task runner for automation. The process cleans all output directories, concatenates the CSS and JS files from relevant directories, performs minification, and outputs the resulting bundles into the default directories expected by the system. </p>
+<p>The process uses the following Grunt plugins:</p>
+<ul>
+<li>
+<strong>grunt-contrib-clean</strong> for output directory cleaning</li>
+<li>
+<strong>grunt-contrib-concat</strong> for bundling</li>
+<li>
+<strong>grunt-contrib-cssmin</strong> for CSS minification</li>
+<li>
+<strong>grunt-terser</strong> for JavaScript minification</li>
+</ul>
+<p>First, add Grunt together with the plugins to your project’s <em>package.json</em> file, create a new <strong>Gruntfile.js</strong> and load the plugins:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Gruntfile.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+module.exports = function (grunt) {
+
+    // Loads required Grunt plugins
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-terser');
+
+    grunt.initConfig({
+        // Contains task definitions
+    });
+}
+
+</code></pre>
+</div>
+
+<p>Define the tasks used to create the individual bundles:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Gruntfile.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+grunt.initConfig({
+
+        // Cleans all bundle output directories
+        clean: {
+            formBuilder: ['wwwroot/Content/Bundles/Public/formComponents.css', 'wwwroot/Content/Bundles/Public/formComponents.min.css', 'wwwroot/Content/Bundles/Admin/formComponents.css',             
+                          'wwwroot/Content/Bundles/Admin/formComponents.min.css', 'wwwroot/Content/Bundles/Public/formComponents.js', 'wwwroot/Content/Bundles/Public/formComponents.min.js'],
+
+            pageBuilder: ['wwwroot/Content/Bundles/Public/pageComponents.css', 'wwwroot/Content/Bundles/Public/pageComponents.min.css', 'wwwroot/Content/Bundles/Admin/pageComponents.css', 
+                          'wwwroot/Content/Bundles/Admin/pageComponents.min.css', 'wwwroot/Content/Bundles/Public/pageComponents.js', 'wwwroot/Content/Bundles/Public/pageComponents.min.js', 
+                          'wwwroot/Content/Bundles/Admin/pageComponents.js', 'wwwroot/Content/Bundles/Admin/pageComponents.min.js']
+        },
+
+        // Bundles files from the default source directories
+        concat: {
+            formBuilder: {
+                files: {
+                    // Styles for the live
+                    'wwwroot/Content/Bundles/Public/formComponents.css': ['wwwroot/FormBuilder/Public/**/*.css'],
+                    // Styles for the administration interface
+                    'wwwroot/Content/Bundles/Admin/formComponents.css': ['wwwroot/FormBuilder/Admin/**/*.css'],
+                    // Scripts included on both the live site and administration 
+                    'wwwroot/Content/Bundles/Public/formComponents.js': ['wwwroot/FormBuilder/Public/**/*.js']
+                }
+            },
+            pageBuilder: {
+                files: {
+                    // Styles for the live site
+                    'wwwroot/Content/Bundles/Public/pageComponents.css': ['wwwroot/PageBuilder/Public/**/*.css'],
+                    // Styles for the administration interface
+                    'wwwroot/Content/Bundles/Admin/pageComponents.css': ['wwwroot/PageBuilder/Admin/**/*.css'],
+                    // Scripts for the live site
+                    'wwwroot/Content/Bundles/Public/pageComponents.js': ['wwwroot/PageBuilder/Public/**/*.js'],
+                    // Scripts for the administration
+                    'wwwroot/Content/Bundles/Admin/pageComponents.js': ['wwwroot/PageBuilder/Admin/**/*.js']
+                }
+            }
+        },
+
+        // Minifies the resulting CSS bundles
+        cssmin: {
+            formBuilder: {
+                files: {
+                    'wwwroot/Content/Bundles/Public/formComponents.min.css': 'wwwroot/Content/Bundles/Public/formComponents.css',
+                    'wwwroot/Content/Bundles/Admin/formComponents.min.css': 'wwwroot/Content/Bundles/Admin/formComponents.css'
+                }
+            },
+            pageBuilder: {
+                files: {
+                    'wwwroot/Content/Bundles/Public/pageComponents.min.css': ['wwwroot/Content/Bundles/Public/pageComponents.css'],
+                    'wwwroot/Content/Bundles/Admin/pageComponents.min.css': ['wwwroot/Content/Bundles/Admin/pageComponents.css']
+                }
+            }
+        },
+
+        // Minifies the resulting JS bundles
+        terser: {
+            formBuilder: {
+                files: {
+                    'wwwroot/Content/Bundles/Public/formComponents.min.js': ['wwwroot/Content/Bundles/Public/formComponents.js']
+                }
+            },
+            pageBuilder: {
+                files: {
+                    'wwwroot/Content/Bundles/Public/pageComponents.min.js': ['wwwroot/Content/Bundles/Public/pageComponents.js'],
+                    'wwwroot/Content/Bundles/Admin/pageComponents.min.js': ['wwwroot/Content/Bundles/Admin/pageComponents.js']
+                }
+            }
+        }
+});
+
+</code></pre>
+</div>
+
+<p>Finally, register alias tasks that batch the created tasks for convenience:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Gruntfile.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Running the 'formBuilder' and 'pageBuilder' tasks automatically executes all tasks provided in the array
+grunt.registerTask('formBuilder', ['clean:formBuilder', 'concat:formBuilder', 'cssmin:formBuilder', 'terser:formBuilder']);
+grunt.registerTask('pageBuilder', ['clean:pageBuilder', 'concat:pageBuilder', 'cssmin:pageBuilder', 'terser:pageBuilder']);
+
+</code></pre>
+</div>
+
+<p>Using the created tasks, you can automate the bundling and minification process for your static assets. </p>
+<h2 id="customize-bundle-locations-and-sources">Customize bundle locations and sources</h2>
+<p>You can customize the location where Xperience expects bundles and their contents (to be linked individually, in case the <a href="#handling-missing-bundles">bundle is not found</a>). For this purpose, the system provides the <code>PageBuilderBundlesOptions</code> and <code>FormBuilderBundlesOptions</code> options classes. </p>
+<p>The options classes expose properties that allow you to configure the corresponding bundle:</p>
+<ul>
+<li>
+<strong>PageBuilderBundlesOptions</strong>
+<ul>
+<li><a href="#Bundlestaticassetsofbuildercomponents-PBSA">PageBuilderAdminScripts</a></li>
+<li><a href="#Bundlestaticassetsofbuildercomponents-PBCSSA">PageBuilderAdminStyles</a></li>
+<li><a href="#Bundlestaticassetsofbuildercomponents-PBSLS">PageBuilderPublicScripts</a></li>
+<li><a href="#Bundlestaticassetsofbuildercomponents-PBCSSLS">PageBuilderPublicStyles</a></li>
+</ul>
+</li>
+<li>
+<strong>FormBuilderBundlesOptions</strong>
+<ul>
+<li><a href="#Bundlestaticassetsofbuildercomponents-FBCSSA">FormBuilderAdminStyles</a></li>
+<li><a href="#Bundlestaticassetsofbuildercomponents-FBS">FormBuilderPublicScripts</a></li>
+<li><a href="#Bundlestaticassetsofbuildercomponents-FBCSSLS">FormBuilderPublicStyles</a></li>
+</ul>
+</li>
+</ul>
+<p>These properties can be configured using the conventional ASP.NET Core <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options" target="_blank">options pattern</a>. See the following sections for details about specific configuration options:</p>
+<ul>
+<li><a href="#change-the-bundle-location-and-name">Change the bundle location and name</a></li>
+<li><a href="#add-source-directories-for-a-bundle">Add source directories for a bundle</a></li>
+<li><a href="#link-jquery-as-part-of-builder-scripts">Link jQuery as part of builder scripts</a></li>
+<li><a href="#use-a-different-jquery-version">Use a different jQuery version</a></li>
+</ul>
+<h3 id="change-the-bundle-location-and-name">Change the bundle location and name</h3>
+<p>You can change the file name and path where the system looks for individual bundles. Set the <code>WebRootBundlePath</code> property provided by the individual bundle objects within the options classes.</p>
+<p>For example, the following code demonstrates how to set a custom location for the <a href="#Bundlestaticassetsofbuildercomponents-FBCSSLS">FormBuilderPublicStyles</a> bundle within the application’s startup class:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+builder.Services.Configure&lt;FormBuilderBundlesOptions&gt;(options =&gt;
+{
+    // Sets a custom path to the style sheet bundle used by form builder components on the live site
+    // The specified path implicitly starts from the application's web root (~/wwwroot/ folder)
+    options.FormBuilderPublicStyles.WebRootBundlePath = "My/Custom/Bundle/Path.min.css";
+});
+
+</code></pre>
+</div>
+
+<h3 id="add-source-directories-for-a-bundle">Add source directories for a bundle</h3>
+<p>If the default directories (described in the <a href="#page-builder-bundles">page</a> and <a href="#form-builder-bundles">form</a> builder bundles sections) aren’t sufficient, the options class allows you to add additional source directories for each bundle. The system links all files from the specified directories if a corresponding bundle is not found. See <a href="#handling-missing-bundles">Handling missing bundles</a>.</p>
+<p>Add new directories to the list provided via the Contents.IncludeWebRootDirectories property of the bundle you wish to configure.  </p>
+<p>For example, the following code adds <em>~/wwwroot/Some/Directory</em> to the list of sources for the bundle of Page Builder component styles linked on the live site. If the corresponding bundle is not found, the system includes the CSS files from the specified directory as well:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+builder.Services.Configure&lt;PageBuilderBundlesOptions&gt;(options =&gt;
+{
+    // Adds a source directory for the bundle of styles used by Page Builder components on the live site
+    // All added paths implicitly start from the application's web root (~/wwwroot/ folder)
+    options.PageBuilderPublicStyles.Contents.IncludedWebRootDirectories.Add("Some/Directory");
+});
+
+</code></pre>
+</div>
+
+<h3 id="link-jquery-as-part-of-builder-scripts">Link jQuery as part of builder scripts</h3>
+<p>You can have the system link the <strong>jQuery 3.5.1</strong> library on live site pages with Page Builder or Form Builder content. The library is not required by either builder and remains accessible primarily for backward compatibility.</p>
+
+<div>
+<p><em>jQuery</em> is considered deprecated and will be phased out completely in one of the future major releases. The library will not be updated, even in the case of new vulnerability disclosures. Projects with custom components that rely on the library should consider referencing an external implementation to prevent possible issues in the future.</p>
+</div>
+
+<p>Enable jQuery via the <code>CMSBuilderScriptsIncludeJQuery</code> configuration key:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+    "CMSBuilderScriptsIncludeJQuery": true
+}
+</code></pre>
+</div>
+
+<h4 id="use-a-different-jquery-version">Use a different jQuery version</h4>
+<p>If you wish to use a different jQuery version on your pages, specify the path to your custom jQuery bundle using the <code>JQueryCustomBundleWebRootPath</code> property of the FormBuilderBundlesOptions object:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+...
+
+builder.Services.Configure&lt;FormBuilderBundlesOptions&gt;(options =&gt;
+{
+    // Specifies a custom jQuery bundle to link instead of the system default
+    // All paths implicitly start from the application's web root (~/wwwroot/ folder)
+    options.JQueryCustomBundleWebRootPath = "Path/To/My/jQuery/Bundle";
+});
+
+</code></pre>
+</div>
+
+<p>When you set a custom path, the system links the bundle at the specified location instead of the default jQuery version.</p>
+
+</body>
+</html>

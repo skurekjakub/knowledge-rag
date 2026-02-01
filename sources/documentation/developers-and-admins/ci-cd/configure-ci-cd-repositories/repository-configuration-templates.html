@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Repository configuration templates</title>
+</head>
+<body>
+<p>This page lists common CI/CD scenarios and their corresponding recommended repository configuration. In a typical deployment workflow, you may have multiple <code>repository.config</code> files, each suitable for a different type of deployment. You can use the templates provided on this page as a starter when defining your CI/CD deployment workflows.</p>
+
+<div>
+
+</div>
+<div>
+<p>The templates demonstrated on this page make use of features introduced in <strong>v2</strong> of the <code>repository.config</code> file and will not work with the legacy configuration format. See: <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/config-v2-migration">Migrate CI/CD repository.config to v2</a> to learn how to convert legacy configuration files to the new format.</p>
+</div>
+
+<ul>
+<li>
+<a href="#continuous-integration">Continuous Integration</a>
+<ul>
+<li><a href="#collaborative-development-workflow">Collaborative development workflow</a></li>
+</ul>
+</li>
+<li>
+<a href="#continuous-deployment">Continuous Deployment</a>
+<ul>
+<li><a href="#initial-deployment-to-target-instance">Initial deployment to target instance</a></li>
+<li><a href="#add-a-new-type-of-content-items">Add a new type of content items</a></li>
+<li><a href="#deploy-specific-content-item-data">Deploy specific content item data</a></li>
+<li><a href="#deploy-object-type-changes">Deploy object type changes</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="continuous-integration">Continuous Integration</h2>
+<h3 id="collaborative-development-workflow">Collaborative development workflow</h3>
+<p>For development teams working collaboratively on local instances and using the CI/CD feature to synchronize changes (e.g., via a shared Git repository), the following <code>repository.config</code> configuration is recommended as a baseline. It ensures that all supported object types and content items are included by default, simplifying the setup for typical local development requirements.</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;IncludedObjectTypes&gt;
+    &lt;!-- Includes all supported object types by default --&gt;
+    &lt;IncludeAll /&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;IncludedContentItemsOfType&gt;
+    &lt;!-- Includes all supported content items by default --&gt;
+    &lt;IncludeAll /&gt;
+  &lt;/IncludedContentItemsOfType&gt;
+
+  &lt;ObjectFilters&gt;
+  &lt;/ObjectFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This configuration provides a simple starting point; it assumes fairly content-light instances primarily used for feature development. You can customize it further by replacing <code>&lt;IncludeAll /&gt;</code> with specific <code>&lt;ContentType&gt;</code> elements or by adding exclusion rules (<code>&lt;ExcludedObjectTypes&gt;</code>, <code>&lt;ExcludedContentItemsOfType&gt;</code>, <code>&lt;ContentItemFilters&gt;</code>) if needed for your specific project workflow and requirements.</p>
+<h2 id="continuous-deployment">Continuous Deployment</h2>
+<h3 id="initial-deployment-to-target-instance">Initial deployment to target instance</h3>
+<p>When using CD to perform an initial population of a target instance with data from the repository (especially content items), the following configuration is recommended.</p>
+<ul>
+<li>
+<p><strong>Private cloud deployments</strong> – Use the <code>Create</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#configure-cd-restore-mode">restore mode</a> to ensure only new objects and items are added, preventing accidental updates or deletions of any pre-existing data on the target instance. Using <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-object-types">IncludedObjects</a> and <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-content-items">IncludedContentItemOfType</a> with <code>&lt;IncludeAll /&gt;</code> ensures all data stored in the repository source is considered for this initial push.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>IncludeAll usage</strong></p>
+<p>In <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a> scenarios outside of the <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories/repository-configuration-templates#initial-deployment-to-target-instance">initial CD deployment</a>, always prefer explicitly listing all types tracked by the repository to using <code>&lt;IncludeAll /&gt;</code>.</p>
+See <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-content-items">Include content items</a> for more information.
+</div>
+</li>
+<li><p><strong>SaaS deployments</strong> – Use the <code>Create</code> restore mode to ensure only new objects and items are added, preventing accidental updates or deletions of any pre-existing data on the target instance. While the example uses <code>&lt;IncludeAll /&gt;</code> for simplicity, initial deployments to <a href="/documentation/developers-and-admins/saas">SaaS</a> environments have specific requirements. For these deployments, you must explicitly list all desired object types using <code>&lt;ObjectType&gt;</code> elements within <code>&lt;IncludedObjectTypes&gt;</code> instead of using the <code>&lt;IncludeAll /&gt;</code> shorthand.</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  Version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Run the restore in Create --&gt;
+  &lt;RestoreMode&gt;
+    Create
+  &lt;/RestoreMode&gt;
+
+  &lt;!-- Include all object types --&gt;
+  &lt;IncludedObjectTypes&gt;
+    &lt;IncludeAll /&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;!-- Include all content items of all types --&gt;
+  &lt;IncludedContentItemsOfType&gt;
+    &lt;IncludeAll /&gt;
+  &lt;/IncludedContentItemsOfType&gt;
+
+  &lt;ObjectFilters&gt;
+  &lt;/ObjectFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This setup is specifically tailored for seeding an environment. For regular updates via CD after the initial deployment, you would typically change the <code>&lt;RestoreMode&gt;</code> (allowing updates/deletions) and use more specific filters instead of <code>&lt;IncludeAll /&gt;</code>. See the following sections describing these common scenarios:</p>
+<ul>
+<li><a href="#add-a-new-type-of-content-items">Add a new type of content items</a></li>
+<li><a href="#deploy-specific-content-item-data">Deploy specific content item data</a></li>
+<li><a href="#deploy-object-type-changes">Deploy object type changes</a></li>
+</ul>
+<h3 id="add-a-new-type-of-content-items">Add a new type of content items</h3>
+<p>When deploying a new content type (and its associated content items) to an existing environment using CD, we recommend the following approach. This configuration focuses on adding only the new type and its items without affecting existing data.</p>
+<ul>
+<li><p>Use the <code>Create</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#configure-cd-restore-mode">restore mode</a> to ensure that the deployment only adds new entities (the content type definition, related objects, and the new content items) and does not modify or delete any existing data on the target instance.</p></li>
+<li><p>Ensure the relevant object types (like the content type definition itself, <strong>cms.contenttype</strong>) are included in <code>&lt;IncludedObjectTypes&gt;</code>.</p></li>
+<li><p>Add the code name of the new content type (e.g., <strong>New.ContentType</strong>) to the <code>&lt;IncludedContentItemsOfType&gt;</code> section. This tells the CD process to consider items of this specific new type during the restore operation.</p></li>
+<li><p>Optionally, to also transfer changes to reusable field schemas, include the <a href="/documentation/developers-and-admins/ci-cd/reference-ci-cd-object-types#rfs_tracking">relevant objects</a>.</p></li>
+<li><p>Optionally, you can use <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#filter-individual-content-items">&lt;ContentItemFilters&gt;</a> if you need to apply specific name-based filtering to the items of the new type being deployed.</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  Version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Run the restore in Create --&gt;
+  &lt;RestoreMode&gt;
+    Create
+  &lt;/RestoreMode&gt;
+
+  &lt;IncludedObjectTypes&gt;
+    &lt;!-- Include the content type definition --&gt;
+    &lt;ObjectType&gt;cms.contenttype&lt;/ObjectType&gt;
+    &lt;!-- Holds reusable field schema definitions
+    required to track schema changes. --&gt;
+    &lt;ObjectType&gt;cms.class&lt;/ObjectType&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;IncludedContentItemsOfType&gt;
+    &lt;!-- Add items of the new content type --&gt;
+    &lt;ContentType&gt;New.ContentType&lt;/ContentType&gt;
+  &lt;/IncludedContentItemsOfType&gt;
+
+  &lt;ObjectFilters&gt;
+    &lt;!-- Include reusable field schema data --&gt;
+    &lt;IncludedCodeNames ObjectType="cms.class"&gt;
+            CMS.ContentItemCommonData
+    &lt;/IncludedCodeNames&gt;
+  &lt;/ObjectFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This configuration helps safely introduce new types of content items into your environment using CD.</p>
+<h3 id="deploy-specific-content-item-data">Deploy specific content item data</h3>
+<p>When your goal is to update existing content items of certain <a href="/documentation/developers-and-admins/development/content-types">types</a>, we recommend using the following configuration:</p>
+<ul>
+<li><p>Use the <code>CreateUpdate</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#configure-cd-restore-mode">restore mode</a>. This allows the CD process to update existing content items found in the repository source and also create any new items of the specified types that might be included in the source. It avoids deleting items present on the target but missing from the source.</p></li>
+<li><p>Explicitly list the code name of the content type whose items you intend to update within the <code>&lt;IncludedContentItemsOfType&gt;</code> section using <code>&lt;ContentType&gt;</code> elements.</p></li>
+<li><p>Optionally, use <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#filter-individual-content-items">&lt;ContentItemFilters&gt;</a> to further refine the deployment to only specific items within the selected types based on their code names or wildcard patterns. This is recommended for targeted updates.</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  Version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;!-- Run the restore in CreateUpdate --&gt;
+  &lt;RestoreMode&gt;
+    CreateUpdate
+  &lt;/RestoreMode&gt;
+
+  &lt;!-- &lt;IncludedObjectTypes&gt; omitted from the sample --&gt;
+
+  &lt;IncludedContentItemsOfType&gt;
+    &lt;!-- Other listed types omitted from the sample --&gt;
+    &lt;ContentType&gt;Updated.ContentType&lt;/ContentType&gt;
+  &lt;/IncludedContentItemsOfType&gt;
+
+  &lt;ContentItemFilters&gt;
+    &lt;IncludedContentItemNames&gt;
+      &lt;!-- Some more granular filtering applied --&gt;
+    &lt;/IncludedContentItemNames&gt;
+  &lt;/ContentItemFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This configuration allows you to push data updates for specific content items efficiently without affecting unrelated content or objects.</p>
+<h3 id="deploy-object-type-changes">Deploy object type changes</h3>
+<p>When deploying general changes (updates or additions) to specific object types (e.g., Users, Roles, Settings) using Continuous Deployment CD, use the following template as starter.</p>
+<ul>
+<li><p>Use the <code>CreateUpdate</code> <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#configure-cd-restore-mode">restore mode</a>. This mode allows the CD process to create new objects and update existing objects of the specified types if they are present in the repository source. It will <em>not</em> delete objects from the target environment that are missing from the source.</p></li>
+<li><p>Explicitly list the code names of the specific object types you are deploying changes for within the <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#includeexclude-object-types">&lt;IncludedObjectTypes&gt;</a> section (e.g., <strong>cms.user</strong>) using <code>&lt;ObjectType&gt;</code> elements. Avoid using <code>&lt;IncludeAll /&gt;</code> for these targeted updates unless you intend to process all object types.</p></li>
+<li><p>Optionally, use <a href="/documentation/developers-and-admins/ci-cd/configure-ci-cd-repositories#filter-individual-objects">&lt;ObjectFilters&gt;</a> to apply more granular filtering within the specified object types, if needed (e.g., deploying only specific users or roles).</p></li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RepositoryConfiguration
+  Version="2"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+  &lt;RestoreMode&gt;CreateUpdate&lt;/RestoreMode&gt;
+
+  &lt;IncludedObjectTypes&gt;
+    &lt;!-- Other listed object types omitted from the sample --&gt;
+    &lt;ObjectType&gt;cms.user&lt;/ObjectType&gt;
+  &lt;/IncludedObjectTypes&gt;
+
+  &lt;!-- &lt;IncludedContentItemsOfType&gt; omitted from the sample --&gt;
+
+  &lt;!-- Specify additional object filters as required --&gt;
+  &lt;ObjectFilters&gt;
+  &lt;/ObjectFilters&gt;
+
+&lt;/RepositoryConfiguration&gt;
+
+</code></pre>
+</div>
+
+<p>This approach allows for controlled updates to specific parts of your application’s configuration or object data via the CD process.</p>
+
+</body>
+</html>

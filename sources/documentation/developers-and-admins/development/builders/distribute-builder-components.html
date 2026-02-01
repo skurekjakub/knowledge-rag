@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Distribute builder components</title>
+</head>
+<body>
+<p>After you create a custom <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> or <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> component for your project, you might want to share the code of this component among other projects inside your company, or with the rest of the world. </p>
+<p>The most common way of distributing code in the .NET community is using <a href="https://docs.microsoft.com/en-us/nuget/what-is-nuget" target="_blank">NuGet packages</a>. NuGet packages are code bundles containing compiled code along with other content needed in the projects for which they are created. Developers can share these packages with other developers directly or by publishing them to public or private hosts (such as <a href="https://www.nuget.org/" target="_blank">nuget.org</a>). Another possible way of distributing your code is simply by sharing the code packaged in <a href="https://en.wikipedia.org/wiki/Zip_(file_format)" target="_blank">ZIP files</a>.</p>
+<p>On this page, you can read about best practices related to distributing builder components. See the following sections for information about individual types of components:</p>
+<ul>
+<li><a href="#widgets">Widgets</a></li>
+<li><a href="#inline-property-editors">Inline property editors</a></li>
+<li><a href="#page-builder-sections">Page Builder sections</a></li>
+<li><a href="#page-templates">Page templates</a></li>
+<li><a href="#form-components">Form components</a></li>
+<li><a href="#form-builder-sections">Form Builder sections</a></li>
+<li><a href="#personalization-condition-types-with-a-custom-configuration-dialog">Personalization condition types with a custom configuration dialog</a></li>
+<li><a href="#single-class-components">Single class components</a></li>
+</ul>
+<h2 id="widgets">Widgets</h2>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your widget identifiers to prevent conflicts when deploying the widgets to other projects. For example, the prefix can match your company’s name.</li>
+<li>Store all text displayed by the widgets using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your widgets in the <em>~/App_Data/Global/Resources</em>directory.</li>
+<li>Place all custom code into <em>~/Components/PageBuilder/Widgets/&lt;WidgetIdentifier&gt;</em>. This includes the widget’s:
+<ul>
+<li>Controller.</li>
+<li>Property and view models.</li>
+<li>View files.</li>
+</ul>
+</li>
+<li>Place administration-only script and stylesheet files into the <em>~/wwwroot/PageBuilder/Admin/Widgets/&lt;WidgetIdentifier&gt;</em> directory.</li>
+<li>Place general script and stylesheet files into the <em>~/wwwroot/PageBuilder/Public/Widgets/&lt;WidgetIdentifier&gt;</em> directory.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a> for more information.</p>
+<h2 id="inline-property-editors">Inline property editors</h2>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your inline editor identifiers to prevent conflicts when deploying the editors to other projects. For example, the prefix can match your company’s name.</li>
+<li>Store all text displayed by the inline editors using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your inline editors in the <em>~/App_Data/Global/Resources</em> directory.</li>
+<li>Place all custom code into <em>~/Components/PageBuilder/InlineEditors/&lt;InlineEditorIdentifier&gt;</em>. This includes the editor’s:
+<ul>
+<li>View models.</li>
+<li>View files.</li>
+</ul>
+</li>
+<li>Place script and stylesheet files into the <em>~/wwwroot/PageBuilder/Admin/InlineEditors/&lt;InlineEditorIdentifier&gt;</em> directory.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">Inline editors for widget properties</a> for more information.</p>
+<h2 id="page-builder-sections">Page Builder sections</h2>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your section identifiers to prevent conflicts when deploying the widgets to other projects. For example, the prefix can match your company’s name.</li>
+<li>Store all text displayed by the widgets using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your widgets in the <em>~/App_Data/Global/Resources</em> directory.</li>
+<li>Place all custom code into <em>~/Components/PageBuilder/Sections/&lt;SectionIdentifier&gt;</em>. This includes the section’s:
+<ul>
+<li>Controller.</li>
+<li>View model.</li>
+<li>View files.</li>
+</ul>
+</li>
+<li>Place administration-only script and stylesheet files into the <em>~/wwwroot/PageBuilder/Admin/Sections/&lt;SectionIdentifier&gt;</em> directory.</li>
+<li>Place general script and stylesheet files into the <em>~/wwwroot/PageBuilder/Public/Sections/&lt;SectionIdentifier&gt;</em> directory.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Sections for Page Builder</a> for more information.</p>
+<h2 id="page-templates">Page templates</h2>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your page template identifiers to prevent conflicts when deploying the page templates to other projects. For example, the prefix can match your company’s name.</li>
+<li>Store all text displayed by the page templates using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your page templates in the <em>~/App_Data/Global/Resources</em> directory.</li>
+<li>Place all custom code into <em>~/Components/PageBuilder/Templates/&lt;TemplateIdentifier&gt;</em>. This includes the template’s:
+<ul>
+<li>View model.</li>
+<li>View files.</li>
+</ul>
+</li>
+<li>Place administration-only script and stylesheet files into the <em>~/wwwroot/PageBuilder/Admin/Templates/&lt;TemplateIdentifier&gt;</em> directory.</li>
+<li>Place general script and stylesheet files into the <em>~/wwwroot/PageBuilder/Public/Templates/&lt;TemplateIdentifier&gt;</em> directory.</li>
+<li>Place your <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-filtering">page template filters</a> into the <em>~/Components/PageBuilder/Templates/PageTemplateFilters</em> directory.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">Page templates for Page Builder</a> for more information.</p>
+<h2 id="form-components">Form components</h2>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your form component identifiers to prevent conflicts when deploying the components to other projects. For example, the prefix can match your company’s name.</li>
+<li>Store all text displayed by the form components using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your components in the <em>~/App_Data/Global/Resources</em> directory.</li>
+<li>Place all custom code into <em>~/Components/FormBuilder/FormComponents/&lt;FormComponentIdentifier&gt;</em>. This includes the component’s:
+<ul>
+<li>Form component classes.</li>
+<li>Form component properties.</li>
+<li>View files.</li>
+</ul>
+</li>
+<li>Place administration-only script and stylesheet files into the <em>~/wwwroot/FormBuilder/Admin/FormComponents/&lt;ComponentIdentifier&gt;</em> directory.</li>
+<li>Place general script and stylesheet files into the <em>~/wwwroot/FormBuilder/Public/FormComponents/&lt;ComponentIdentifier&gt;</em> directory.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/form-builder/form-components">Form components</a> for more information.</p>
+<h2 id="form-builder-sections">Form Builder sections</h2>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your form section identifiers to prevent conflicts when deploying the sections to other projects. For example, the prefix can match your company’s name.</li>
+<li>Store all text displayed by the form builder sections using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your sections in the <em>~/App_Data/Global/Resources</em> directory.</li>
+<li>Place all custom code into <em>~/Components/FormBuilder/FormSections/&lt;FormSectionIdentifier&gt;</em>. This includes the section’s:
+<ul>
+<li>Controllers.</li>
+<li>Model classes.</li>
+<li>View files.</li>
+</ul>
+</li>
+<li>Place administration-only script and stylesheet files into the <em>~/wwwroot/FormBuilder/Admin/FormSections/&lt;FormSectionIdentifier&gt;</em> directory.</li>
+<li>Place general script and stylesheet files into the <em>~/wwwroot/FormBuilder/Public/FormSections/&lt;FormSectionIdentifier&gt;</em> directory.</li>
+</ul>
+<p>See <a href="/documentation/developers-and-admins/development/builders/form-builder/form-sections">Form sections</a> for more information.</p>
+<h2 id="personalization-condition-types-with-a-custom-configuration-dialog">Personalization condition types with a custom configuration dialog</h2>
+<ul>
+<li><p>Use a <strong>unique prefix</strong> in your condition type identifiers to prevent conflicts when deploying the condition types to other projects. For example, the prefix can match your company’s name.</p></li>
+<li><p>Store all text displayed by the condition types using resource strings. Create a <strong>designated RESX file</strong> for the resource strings of each of your condition types in the <em>~/App_Data/Global/Resources</em> directory.</p></li>
+<li>
+<p>Place all code into <em>~/Components/PageBuilder/Personalization/&lt;ConditionIdentifier&gt;</em>. This includes the condition’s:</p>
+<ul>
+<li>Type classes.</li>
+<li>Dialog controllers.</li>
+<li>Dialog models.</li>
+<li>Dialog views.</li>
+</ul>
+</li>
+<li><p>Place administration-only CSS and JavaScript files into the <em>~/wwwroot/PageBuilder/Admin/Personalization/&lt;ConditionIdentifier&gt;</em> directory.</p></li>
+<li><p>Place general CSS and JavaScript files into the <em>~/wwwroot/PageBuilder/Public/Personalization/&lt;ConditionIdentifier&gt;</em> directory.</p></li>
+</ul>
+<p>See <a href="/documentation/business-users/digital-marketing/widget-personalization">Personalize Page Builder widgets</a> for more information.</p>
+<h2 id="single-class-components">Single class components</h2>
+<p>When distributing components consisting of a single class, such as <a href="/documentation/business-users/digital-marketing/widget-personalization">personalization condition types</a> or <a href="/documentation/developers-and-admins/development/builders/form-builder/form-builder-validation-rules">Form Builder validation rules</a>:</p>
+<ul>
+<li>Use a <strong>unique prefix</strong> in your component identifiers to prevent conflicts when deploying the components to other projects. For example, the prefix can match your company’s name.</li>
+<li>For text displayed by the components in the admin UI, use <a href="/documentation/developers-and-admins/customization/admin-ui-localization">localization files</a>.</li>
+</ul>
+
+</body>
+</html>

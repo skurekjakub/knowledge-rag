@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Register custom providers</title>
+</head>
+<body>
+<p>To replace the system implementations of <a href="/documentation/developers-and-admins/customization/customize-system-providers">provider or helper classes</a> with your custom ones, use assembly attributes:</p>
+<ol type="1">
+<li><p>Edit your provider class.</p></li>
+<li>
+<p>Add a using statement for the <strong>CMS</strong> namespace:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS;
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Register your custom providers by adding assembly attributes above the class declaration:</p>
+<ul>
+<li><code>RegisterCustomProvider</code></li>
+<li><code>RegisterCustomHelper</code></li>
+</ul>
+</li>
+</ol>
+<p>The parameter of each attribute must contain the exact type of the custom class extending the given object (obtained using the <code>typeof</code> notation).</p>
+<p>The customization automatically targets the provider object that matches the parent of the specified custom class.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Registers custom providers
+[assembly: RegisterCustomProvider(typeof(CustomUserInfoProvider))]
+[assembly: RegisterCustomProvider(typeof(CustomMemberInfoProvider))] 
+
+</code></pre>
+</div>
+
+<p>The system now uses your customized providers instead of the default functionality.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Enabling class discovery</strong></p>
+<p>If your custom class is located in its own assembly (<em>Class Library</em> project), you need to make sure class discovery is enabled for the project. Otherwise, the <em>RegisterCustom</em> attributes cannot work. See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a>.</p>
+</div>
+
+
+</body>
+</html>

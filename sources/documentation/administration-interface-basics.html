@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Administration interface basics</title>
+</head>
+<body>
+<p>You can access the Xperience by Kentico administration using your browser:</p>
+<ol type="1">
+<li><p>In your browser, navigate to the sign-in page: <strong>https://&lt;domain&gt;/admin</strong> (for example: <strong>https://localhost/admin</strong>)</p></li>
+<li>
+<p>Enter your credentials into the sign-in dialog.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Default administrator account</strong></p>
+<p>The default account is <strong>administrator</strong> with the password specified during the <a href="/documentation/developers-and-admins/installation">installation process</a>.</p>
+</div>
+</li>
+<li><p>Once you sign in, the Xperience administration opens.<br>
+</p></li>
+</ol>
+<h2 id="xperience-administration-interface">Xperience administration interface</h2>
+<p>The system takes you to Xperience’s administration dashboard when you sign in. The dashboard consists of tiles representing various applications you will use to perform your daily tasks. No matter where you are in the administration interface, you can use the following elements to navigate around Xperience.</p>
+<p></p>
+
+<table>
+<tr>
+<td>
+<p><strong>Application list</strong></p>
+</td>
+<td>
+<p>The menu on the left side gives you access to all Xperience applications. The applications are conveniently grouped into dedicated areas according to their function, e.g., <strong>Digital marketing</strong> or <strong>Configuration</strong>.</p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Press <strong>Enter</strong> to open the selected application group or application. (<strong>Tip:</strong> Use <strong>keyboard shortcut F2</strong> to open the application list.)</li>
+<li>
+<strong>Search box</strong>: search for applications inside Xperience.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Channels</strong></p>
+</td>
+<td>
+<p><strong>Channels</strong> is a section of the application list, which allows you to open various channel applications. Channel applications are created dynamically whenever a new channel (website or email) is created. By default, the name of the channel application corresponds with the display name of the channel.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Home button</strong></p>
+</td>
+<td>
+<p>Returns you to the application dashboard.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Breadcrumbs</strong></p>
+</td>
+<td>
+<p>Displays the current application and your location within the application. You can click on items in the breadcrumbs to navigate back within the Xperience structure.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Product information</strong></p>
+</td>
+<td>
+<p>Displays the name and the current version of the product.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>User menu</strong></p>
+</td>
+<td>
+<p>Expands a user menu where you can adjust the settings and preferences of your user account.</p>
+<p>Actions:</p>
+<ul>
+<li>Account: You can change settings, such as username, password, or contact email.</li>
+<li>Sign out: Use it to <strong>Sign out</strong> of the administration. Signing out takes you back to the sign-in page.</li>
+</ul>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Do you need to open applications quickly?</strong></p>
+<p>To speed up your navigation around the application, use the <strong>F2 key</strong> on the keyboard to open the application list.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Do you prefer searching through the application list?</strong></p>
+<p>If the application has more than one word in its name, use each word’s initial to find what you need quickly. For example, searching for “<em>c h</em>” lists the <em>Content hub</em> application.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Do you need to work with more than one application?</strong></p>
+<p>You can open any number of applications simultaneously in different browser tabs. Simply open Xperience administration in a new tab and select the application you need.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Do you work with the same applications all the time?</strong></p>
+<p>Improve your workflow and bookmark the applications you work with in your browser. You’ll have quick access to any application straight from your bookmarks bar.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Supported browsers</strong></p>
+<p>Xperience by Kentico supports the latest major versions of the following browsers: </p>
+<ul>
+<li>Chrome</li>
+<li>Firefox</li>
+<li>Microsoft Edge</li>
+<li>Safari on Mac OS</li>
+</ul>
+<p>See other <a href="/documentation/developers-and-admins/installation/system-requirements">browser requirements</a>.</p>
+</div>
+
+<h2 id="applications">Applications</h2>
+<p>The Xperience platform is split into different <strong><em>applications</em></strong>.</p>
+<p>Applications group functionality and can be used to accomplish various tasks. For example, you segment your audience in <strong>Contact groups</strong>, manage user accounts in <strong>Users</strong>, or view various information in the <strong>Event log</strong>. </p>
+<h2 id="administration-interface-url-structure">Administration interface URL structure</h2>
+<p>You can open applications from the dashboard or application list and bookmark the URLs.</p>
+<p>The URL of the Xperience administration interface consists of the following parts:</p>
+<ul>
+<li>Base URL: <code>&lt;domain&gt;/admin/</code> (opens the administration dashboard itself).</li>
+<li>Applications in URL: <code>&lt;domain&gt;/admin/&lt;application name&gt;/&lt;application-specific parameter&gt;</code>.
+<ul>
+<li>E.g., the Forms application’s URL contains the <code>/forms</code> application-specific parameter, while the Contact management application’s URL contains the <code>/contacts</code> parameter.</li>
+</ul>
+</li>
+</ul>
+<h2 id="time-in-the-administration">Time in the administration</h2>
+<p>All time values in the administration are displayed in the local time zone of each user. For example: <em>01:30 PM (GMT+02:00)</em></p>
+<p>The time zone is detected according to the browser and environment settings of the user’s device.</p>
+
+</body>
+</html>

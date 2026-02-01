@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Add fields to member objects</title>
+</head>
+<body>
+<p>Xperience by Kentico provides the option to extend the objects representing members (visitors who register an account in the system) with additional fields.</p>
+<p>The default member object is composed of a set of basic fields required to fulfill simple authentication scenarios. The object can store names, emails, passwords, and supports external logins. However, this may not be sufficient for more advanced scenarios that need to capture more specific user data – personal information, data from social identity providers, etc.</p>
+<p>For instance, your application may want to store additional information – first and last names, a profile picture URL – for users that sign in using an <a href="/documentation/developers-and-admins/development/registration-and-authentication/external-authentication">external authentication provider</a> (Google, Twitter, Facebook, Auth0, etc.). This can be achieved by extending member objects with additional fields that capture the desired data.</p>
+<p>When adding new fields:</p>
+<ul>
+<li><a href="#add-the-new-fields-to-the-memberinfo-object">Add the new fields to the MemberInfo object</a></li>
+<li><a href="#modify-the-applicationuser-class">Modify ApplicationUser to account for the added fields</a></li>
+<li><a href="#configure-asp.net-identity-to-work-with-the-modified-applicationuser">Configure ASP.NET Identity to work with the modified ApplicationUser</a></li>
+<li><a href="#display-added-fields-in-the-members-application">Display the added fields in the Members application</a></li>
+</ul>
+<h3 id="add-the-new-fields-to-the-memberinfo-object">Add the new fields to the MemberInfo object</h3>
+<p>The first step is to define new fields for <code>CMS.Membership.MemberInfo</code>. The class is connected to Xperience’s ORM framework and its API is used when saving members to the database. Extending the object adds new columns to the <strong>CMS_Member</strong> database table, where the additional data will be stored (for more information about the architecture, see <a href="#remarks-applicationuser-and-memberinfo">Remarks - ApplicationUser and MemberInfo</a>).</p>
+<ol type="1">
+<li>In the admin UI, open the <strong>Modules</strong> application.</li>
+<li>Select the <strong>Membership</strong> module.</li>
+<li>Switch to the <strong>Classes</strong> tab.</li>
+<li>Select the <strong>Member</strong> class.</li>
+<li>Switch to the <strong>Database columns</strong> tab.</li>
+<li>Create new fields based on your requirements using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</li>
+</ol>
+<p>You have added custom fields to the member object. For more information about the ORM framework in Xperience, see: <a href="/documentation/developers-and-admins/api/database-table-api">Database table API</a>, <a href="/documentation/developers-and-admins/customization/object-types">Object types</a>, <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">Extend system object types</a></p>
+<h3 id="modify-the-applicationuser-class">Modify the ApplicationUser class</h3>
+<p>The added fields now need to be reflected in the <code>ApplicationUser</code> class to make them available for use within ASP.NET Identity APIs.</p>
+<ol type="1">
+<li>In your project, create a new class that inherits from <code>Kentico.Membership.ApplicationUser</code> .</li>
+<li>In the class, declare properties corresponding to the object type fields added via the <strong>Modules</strong> application.</li>
+<li>Override the <code>MapFromMemberInfo</code> and <code>MapToMemberInfo</code> methods and:
+<ol type="1">
+<li>Call the base implementation of each method. This ensures the default mapping<em>.</em>
+</li>
+<li>Get and set values of the custom properties you wish to have available using <code>MemberInfo.GetValue</code> and <code>MemberInfo.SetValue</code>
+</li>
+</ol>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ExtendedApplicationUser class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS.Membership;
+
+using Kentico.Membership;
+
+namespace MemberCustomization
+{
+    // Extends the default Kentico.Membership.ApplicationUser object
+    public class ExtendedApplicationUser : ApplicationUser
+    {
+        // Exposes the existing 'MemberId' property of the 'MemberInfo' object
+        public int MemberId
+        {
+            get;
+            set;
+        }
+
+        // Property that corresponds to a custom field specified in the Modules application in the admin UI
+        public string FirstName
+        {
+            get;
+            set;
+        }
+
+        // Ensures field mapping between Xperience member objects and the Kentico.Membership ASP.NET Identity implementation
+        // Called when retrieving member from Xperience via Kentico.Membership.ApplicationUserManager&lt;TUser&gt;
+        public override void MapFromMemberInfo(MemberInfo source)
+        {
+            // Calls the base class implementation of the MapFromMemberInfo method
+            base.MapFromMemberInfo(source);
+
+            // Maps the 'MemberId' property to the extended member object
+            MemberId = source.MemberID;
+
+            // Sets the value of the 'FirstName' property
+            FirstName = source.GetValue&lt;string&gt;("FirstName", null);
+        }
+
+        // Ensures field mapping between Xperience member objects and the Kentico.Membership ASP.NET Identity implementation
+        // Called when creating or updating members using Kentico.Membership.ApplicationUserManager&lt;TUser&gt;
+        public override void MapToMemberInfo(MemberInfo target)
+        {
+            // Calls the base class implementation of the MapToMemberInfo method
+            base.MapToMemberInfo(target);
+
+            // Maps the 'MemberId' property to the extended member object
+            target.MemberID = MemberId;
+
+            // Sets the value of the 'FirstName' MemberInfo field
+            target.SetValue("FirstName", FirstName);
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The extended class is now ready. The main benefit of this approach is that it enables you to work with the added custom fields using strongly-typed properties.</p>
+<h3 id="configure-asp.net-identity-to-work-with-the-modified-applicationuser">Configure ASP.NET Identity to work with the modified ApplicationUser</h3>
+<p>In your application’s startup file (<strong>Program.cs</strong> by default), edit the Identity configuration. Substitute the <code>ApplicationUser</code> class with the extendedclass(<code>ExtendedApplicationUser</code> in this example).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs - ASP.NET Identity configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+builder.Services.AddIdentity&lt;ExtendedApplicationUser, NoOpApplicationRole&gt;(options =&gt;
+{
+    options.SignIn.RequireConfirmedAccount = true;
+})
+    .AddUserStore&lt;ApplicationUserStore&lt;ExtendedApplicationUser&gt;&gt;()
+    .AddRoleStore&lt;NoOpApplicationRoleStore&gt;()
+    .AddUserManager&lt;UserManager&lt;ExtendedApplicationUser&gt;&gt;()
+    .AddSignInManager&lt;SignInManager&lt;ExtendedApplicationUser&gt;&gt;();
+
+</code></pre>
+</div>
+
+<p>When working with Identity services in code, use the extended user class, for example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public AccountController(UserManager&lt;ExtendedApplicationUser&gt; userManager, SignInManager&lt;ExtendedApplicationUser&gt; signInManager)
+
+</code></pre>
+</div>
+
+<p>The Identity implementation now works with the extended member objects. You can use the additional fields to capture more information from users during <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication">forms authentication</a>, or store additional claims from an <a href="/documentation/developers-and-admins/development/registration-and-authentication/external-authentication">external identity provider</a>.</p>
+<h3 id="display-added-fields-in-the-members-application">Display added fields in the Members application</h3>
+<p>To display the fields added to the <em>Member</em> object type in the <strong>Membership</strong> application (e.g., when inspecting details of selected members), add the fields to the object type’s <em>Edit</em> UI form:</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application and navigate to <strong>Membership</strong> → <strong>Classes</strong> → <strong>Member</strong> → <strong>UI forms</strong>.</li>
+<li>Select the <strong>Edit</strong> UI form.</li>
+<li>Select <strong>New field</strong>. The <strong>Database column</strong> selector opens.
+<ul>
+<li>Use the selector to choose from among the columns added to the Member class. Data submitted via the created form field is persisted in the selected column.</li>
+</ul>
+</li>
+<li>Add the new columns to the form using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</li>
+</ol>
+<p>The added columns now show in the modified UI form when viewing member details in the <strong>Members</strong> application.</p>
+<p>Additionally, to display the added fields in the member listing (on the root page of the application), write an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">extender</a> for the <code>MemberList</code> <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template">listing UI page</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Display a 'FirstName' column in the listing</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Threading.Tasks;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.UIPages;
+
+public class MemberListExtender : PageExtender&lt;MemberList&gt;
+{
+    public override Task ConfigurePage()
+    {
+        base.ConfigurePage();
+
+        // Displays a 'FirstName' column in the listing
+        Page.PageConfiguration.ColumnConfigurations
+                .AddColumn("FirstName");
+
+        return Task.CompletedTask;
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="remarks-applicationuser-and-memberinfo">Remarks – ApplicationUser and MemberInfo</h3>
+<p>Xperience applications implement authentication using <a href="https://learn.microsoft.com/en-us/aspnet/identity/overview/getting-started/introduction-to-aspnet-identity" target="_blank">ASP.NET Identity</a>. The implementation uses the <code>Kentico.Membership.ApplicationUser</code> type derived from <code>IdentityUser</code> to represent members. When saving member data to the database (<code>CreateAsync</code> or <code>UpdateAsync</code> methods on <code>UserManager</code>), Xperience maps data from <code>ApplicationUser</code> to <code>CMS.Membership.MemberInfo</code> objects. <code>MemberInfo</code> objects are connected to the system’s <a href="/documentation/developers-and-admins/api/database-table-api">ORM framework</a>, which is then used to persist the data to the database.</p>
+<p>Conversely, when retrieving member data from the database (<code>UserManager.FindBy*</code> methods), the member is first retrieved as <code>MemberInfo</code> and then converted to <code>ApplicationUser</code>. The transfer of data between objects from both sides of the flow is handled by the <code>MapFromMemberInfo</code> and <code>MapToMemberInfo</code> methods on <code>ApplicationUser</code>.</p>
+<p>The main benefit of the additional layer introduced by <code>ApplicationUser</code> is the ability to work with added fields using strongly-typed properties. This would not be possible if Identity worked directly with <code>MemberInfo</code>, because system <strong>*Info</strong> class definitions cannot be easily extended with new fields (they are not declared as <code>partial</code> classes). The only way to access custom fields is via the <strong>GetValue</strong> and <strong>SetValue</strong> methods, which do not allow for direct typed access (see <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">Extend system object types</a>). For a more detailed overview of Xperience’s Identity architecture, see <a href="/documentation/developers-and-admins/development/registration-and-authentication">Registration and authentication</a>.</p>
+
+</body>
+</html>

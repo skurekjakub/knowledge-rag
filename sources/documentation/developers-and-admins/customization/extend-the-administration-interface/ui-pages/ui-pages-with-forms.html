@@ -1,0 +1,432 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI pages with forms</title>
+</head>
+<body>
+<p>The admin UI provides the following ways to create UI pages that contain forms to submit data to the back end:</p>
+<ul>
+<li>
+<strong>Object type edit pages</strong> – directly edit <a href="/documentation/developers-and-admins/customization/object-types">objects types</a> managed by the system. Display forms suitable for editing the specified object based on its UI form definition. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">Object type edit pages</a> for details<em>.</em>
+</li>
+<li>
+<strong>Model-based edit pages</strong> – use a custom model class with metadata to define forms that can submit any data to the back end. Covered on this page.</li>
+</ul>
+<h2 id="create-model-based-edit-pages">Create model-based edit pages</h2>
+<p>Pages based on model classes must derive from the <code>ModelEditPage&lt;TModel&gt;</code> base class. Substitute the <code>TModel</code> generic with a model class that describes the form to render.</p>
+<ol type="1">
+<li>First, prepare the model class that describes the form and its behavior using
+<ul>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a></li>
+<li><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">UI form component validation rules</a></li>
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">UI form component visibility conditions</a> as required. For example:</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example form model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ // Describes a form used to send an email specified by the 'Subject' and 'Body' fields to 'Recipients'
+ public class EmailModel
+ {
+     [EmailValidationRule(AllowMultipleAddresses = true)]
+     [TextInputComponent(Label = "To", Order = 1, Tooltip = "Email receiver(s). Supports multiple addresses separated by semicolons.")]
+     public string Recipients { get; set; }
+
+     [TextInputComponent(Label = "Subject", Order = 2)]
+     public string Subject { get; set; }
+
+     [TextAreaComponent(Label = "Body", Order = 3)]
+     [VisibleIfNotEmpty(nameof(Subject))]
+     public string Body { get; set; }
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>Implement the page class:
+<ol type="1">
+<li>Create a new class that inherits from <code>ModelEditPage&lt;TModel&gt;</code>.</li>
+<li>Substitute the generic parameter with the form model class created in the previous step. When implementing the page, you need to override the <code>Model</code> abstract property and initialize it with an instance of the form model class. The system uses the class to prepare form components according to the model’s attribute annotations. You can also use this step to initialize the form fields with a default value if required.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example edit page based on a model class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base;
+
+ public class EmailForm : ModelEditPage&lt;EmailModel&gt;
+ {
+     private EmailModel model;
+
+     // Mandatory constructor providing instances of required services to the base class
+     // Can be used to initialize additional dependencies via dependency injection
+     public EmailForm(IFormItemCollectionProvider formItemCollectionProvider,
+                     IFormDataBinder formDataBinder)
+         : base(formItemCollectionProvider, formDataBinder)
+     {
+     }
+
+     protected override EmailModel Model
+     {
+         get
+         {
+             if (model is null)
+             {
+                 model = new EmailModel()
+                 {
+                     // Initializes the 'Recipients' field to a default value
+                     Recipients = "administrator@admin.com"
+                 };
+             }
+             return model;
+         }
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>The two classes created so far form the core of the UI page. The last thing to implement is the logic handling submitted form data. For this purpose, override and implement the <code>ProcessFormData</code> method. The method behaves as a standard <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">command handler method</a> that receives the following parameters from the client:
+<ul>
+<li>
+<strong>model</strong> – the data submitted from the client.</li>
+<li>
+<strong>formItems</strong> – a collection of form components comprising the client form.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Handle submitted data on the back end</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ protected override async Task&lt;ICommandResponse&gt; ProcessFormData(EmailModel model, ICollection&lt;IFormItem&gt; formItems)
+ {
+     // Custom logic that processes the submited data
+     // e.g., sends an email using IEmailClient
+     var result = await emailClient.SendEmail(new EmailMessage
+     {
+         From = "admin@site.com",
+         Recipients = model.Recipients,
+         Subject = model.Subject,
+         Body = model.Body
+     });
+
+     // Initializes a client response
+     var response = ResponseFrom(new FormSubmissionResult(result.Success
+                                                         ? FormSubmissionStatus.ValidationSuccess
+                                                         : FormSubmissionStatus.ValidationFailure)
+     {
+         // Returns the submitted field values to the client (repopulates the form)
+         Items = await formItems.OnlyVisible().GetClientProperties(),
+     });
+
+     if (result.Success)
+     {
+         response.AddSuccessMessage($"Email sent to {model.Recipients}.");
+     }
+     else
+     {
+         response.AddErrorMessage(string.Format("Email sending failed."));
+     }
+
+     return response;
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>You can use the method to manipulate the submitted data as required.</p>
+<p>The page’s back-end definition is now ready. Register it in the system to make it available in the admin UI.</p>
+<h2 id="register-model-based-edit-pages">Register model-based edit pages</h2>
+<p>Pages based on model classes must use the <code>Kentico.Xperience.Admin.Base.TemplateNames.EDIT</code> client template. The template is necessary for specific form features, such as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility condition</a> evaluation.</p>
+<p>Otherwise, these pages follow the same registration pattern as other UI pages. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#register-ui-pages">Register UI pages</a> for more information.</p>
+<h2 id="raise-a-confirmation-prompt-on-submit">Raise a confirmation prompt on submit</h2>
+<p>If <code>ConfirmationConfiguration</code> is provided within <code>ConfigurePage</code>, users are prompted to confirm their action when saving changes. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Enable confirmation dialog display</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public override async Task ConfigurePage()
+{
+    ...
+
+    PageConfiguration.SubmitConfiguration.ConfirmationConfiguration = new ConfirmationConfiguration()
+    {
+        Title = "Dialog caption",
+        Detail = "Dialog text",
+        Button = "Button label",
+        // Optionally renders a form within the dialog
+        FormModel = typeof(ConfirmationDialogModel)
+    };
+}
+
+</code></pre>
+</div>
+
+<p>Additionally, the dialog can also display an arbitrary form. Typically you would want to offer a multiple-choice selector that allows you to further control how the back end processes the submitted data.</p>
+<p>The form must be defined within a dedicated model class and annotated with <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>. <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">Validation rules</a> are also supported.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add forms to configuration dialogs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ConfirmationDialogFormModel
+{
+    [RequiredValidationRule]
+    [RadioGroupComponent(Inline = false, Order = 1,
+         Options = $"submit;Submit\r\nsubmitandlog;Submit and log\r\n")]
+    public string ChooseOne { get; set; } = "option1";
+}
+
+</code></pre>
+</div>
+
+<p>To access the data on form submit, use <code>GetValidatedConfirmationModel&lt;T&gt;</code> within <code>ProcessFormData</code> (<a href="#lifecycle-of-model-based-edit-pages">Lifecycle of model-based edit pages</a>).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Control back-end flow based on confirmation form data</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+protected override async Task&lt;ICommandResponse&gt; ProcessFormData(EmailModel model, ICollection&lt;IFormItem&gt; formItems)
+{
+    // The system binds the form from the confirmation dialog to the model &lt;T&gt;
+    var confirmationDialogFormData = GetValidatedConfirmationModel&lt;ConfirmationDialogFormModel&gt;();
+
+    // Decide the evaluation flow based on the submitted data
+    if (string.Equals(confirmationDialogFormData.ChooseOne, "submitandlog", StringComparison.OrdinalIgnoreCase))
+    {
+        // Logs the submitted data
+        // logger is an instance of ILogger&lt;T&gt; injected using dependency injection
+        logger.LogInformation(new EventId(0, "SUBMIT"), $"Submitted data {confirmationDialogFormData}");
+    }
+
+    return ResponseFrom(new FormSubmissionResult(FormSubmissionStatus.ValidationSuccess))
+                                     .AddInfoMessage($"Selected {confirmationDialogFormData.ChooseOne}");
+}
+
+</code></pre>
+</div>
+
+<h2 id="lifecycle-of-model-based-edit-pages">Lifecycle of model-based edit pages</h2>
+<p>This section details the lifecycle of model-based edit pages and their available customization points. You can use this information to customize the pages’ behavior at specific stages of their lifecycle. See the following diagram (red borders indicate steps where you can customize the behavior).</p>
+<p></p>
+<h3 id="model-class-initialization">Model class initialization</h3>
+<p>This is the first step of the page’s initialization process. At this point, the model class that defines the rendered form is instantiated. You can use this step to initialize the form with default values. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Model definition initialization</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+protected override EmailModel Model
+{
+    get
+    {
+        if (model is null)
+        {
+            model = new EmailModel()
+            {
+                // Initializes the 'Recipients' field to a default value
+                Recipients = "administrator@admin.com"
+            };
+        }
+        return model;
+    }
+} 
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>If you need to grab data from other objects, you can use <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#parameterized-url-slugs">parameterized URLs</a> to get the object’s identifier, retrieve it, and use its properties to populate the form.</p>
+</div>
+
+<h3 id="page-configuration">Page configuration</h3>
+<p>This step allows you to configure the <a href="#register-model-based-edit-pages">client template</a> (<code>TemplateNames.EDIT</code>) used to render the page. Model-based edit pages allow the same configuration as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates">object edit pages</a>. Among others, you can set the page’s</p>
+<ul>
+<li>heading,</li>
+<li>callouts,</li>
+<li>confirmation dialogs,</li>
+<li>and submit button text.</li>
+</ul>
+<p>See the object edit page <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template#reference---pageconfiguration">PageConfiguration reference</a> for details.</p>
+<h3 id="form-component-configuration">Form component configuration</h3>
+<p>At this point, you can modify the collection of form components instantiated from the metadata of the provided form model class. The system provides the <code>GetFormItems</code> method for this purpose. For example, you can:</p>
+<ul>
+<li>
+<p>Disable specific components.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  protected override async Task&lt;ICollection&lt;IFormItem&gt;&gt; GetFormItems()
+  {
+      var items = await base.GetFormItems();
+
+      var component = items.OfType&lt;TextInputComponent&gt;()
+                           .Single(i =&gt; String.Equals(i.Name, nameof(FormModel.FirstName), StringComparison.OrdinalIgnoreCase));
+
+      component.Properties.EditMode = FormEditMode.Disabled;
+
+      return items;
+  }
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p>Post-configure <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">form component properties</a> using data not available from the model class, such as information from stored options configurations.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  protected override async Task&lt;ICollection&lt;IFormItem&gt;&gt; GetFormItems()
+  {
+      var items = await base.GetFormItems();
+
+      items.OfType&lt;PasswordComponent&gt;().ToList().ForEach(i =&gt;
+      {
+          // 'adminIdentityOptions' is an instance of the 'AdminIdentityOptions' options class injected via constructor DI
+          // Maps the password policy used by the admin UI to the component
+          i.Properties.RequiredLength = adminIdentityOptions.Value.PasswordOptions.RequiredLength;
+          i.Properties.RequireDigit = adminIdentityOptions.Value.PasswordOptions.RequireDigit;
+      });
+
+      return items;
+  }
+
+  </code></pre>
+</div>
+</li>
+<li><p>Otherwise dynamically configure the form components in ways that the attribute notation doesn’t allow.</p></li>
+</ul>
+<h3 id="data-processing">Data processing</h3>
+<p>How the back end should respond to data submitted from the client is handled in the <code>ProcessFormData</code> method.</p>
+<h3 id="general-customization">General customization</h3>
+<p>One general adjustment that applies throughout the page’s lifecycle is overriding and customizing the <code>IsEditedObjectValid</code> method. By default, the method checks if the form model class is initialized (not <code>null</code>). If you need to enforce stricter requirements on the model, this method is the place to implement them.</p>
+
+</body>
+</html>

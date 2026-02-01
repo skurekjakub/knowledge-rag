@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>CI/CD</title>
+</head>
+<body>
+<p><strong>Continuous Integration</strong> and <strong>Continuous Deployment</strong> (CI/CD) enable Xperience projects to work in an automated software development and deployment flow.</p>
+<p>Both features serialize the data of objects from the database into XML files within a <strong>repository</strong> on the file system. These repositories can then be restored into an Xperience database in a desired environment.</p>
+<section id="continuous-integration">
+<h3><a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a></h3>
+<p>With Continuous Integration enabled, the system tracks local changes made to database objects, and automatically transfers them to the developer’s repository. Developers track the CI repository in a <a href="https://en.wikipedia.org/wiki/Revision_control" target="_blank">source control system</a> (for example, <a href="https://git-scm.com/" target="_blank">Git</a> or <a href="https://subversion.apache.org/" target="_blank">Subversion</a>) together with other code and project files. The repository is then used to synchronize database data between team members.</p>
+</section>
+<section id="continuous-deployment">
+<h3><a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a></h3>
+<p>Developers prepare new projects or updates for existing ones within a dedicated development environment. Once the project is ready to be published, data from the development database is stored into a CD repository, which is then deployed to another Xperience instance in a staging, UAT or production environment.</p>
+</section>
+
+</body>
+</html>

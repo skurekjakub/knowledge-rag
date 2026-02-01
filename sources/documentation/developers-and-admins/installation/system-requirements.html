@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>System requirements</title>
+</head>
+<body>
+<p>This page summarizes the requirements for installing, developing, and hosting Xperience by Kentico projects.</p>
+<h2 id="software-requirements">Software requirements</h2>
+<p>The machine where you want to run Xperience must have the following components installed:</p>
+<ul>
+<li>
+<a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">.NET 8</a> through <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0" target="_blank">.NET 10</a>.</li>
+<li>Microsoft SQL Server 2019 or newer (including the free <a href="https://www.microsoft.com/en-us/sql-server/sql-server-editions-express" target="_blank">SQL Server Express Edition</a> and corresponding LocalDB editions). The <strong><a href="https://docs.microsoft.com/en-us/sql/relational-databases/collations/collation-and-unicode-support" target="_blank">collation</a></strong> set for the SQL server <strong><em>must be case-insensitive</em></strong>.</li>
+<li>Tools that support ASP.NET Core development, such as <a href="https://visualstudio.microsoft.com/vs/" target="_blank">Visual Studio 2022</a>, or <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a> for use during development.</li>
+</ul>
+<p>You can run Xperience on operating systems that support .NET 8 through .NET 10, including Windows, macOS, and various Linux distributions. For specific supported OS versions, refer to:</p>
+<ul>
+<li><a href="https://github.com/dotnet/core/blob/main/release-notes/8.0/supported-os.md" target="_blank">Supported operating systems for .NET 8</a></li>
+<li><a href="https://github.com/dotnet/core/blob/main/release-notes/9.0/supported-os.md" target="_blank">Supported operating systems for .NET 9</a></li>
+<li><a href="https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md" target="_blank">Supported operating systems for .NET 10</a></li>
+</ul>
+<h3 id="task-specific-requirements">Task-specific requirements</h3>
+<p>To run Xperience, only the <a href="#software-requirements">required components</a> are needed. However, some tasks may depend on additional components:</p>
+<ul>
+<li>
+<a href="https://nodejs.org/en/download" target="_blank">Node.js 22</a> or newer. Required for running the <a href="/documentation/developers-and-admins/development/content-types/management-api#management-api-mcp-server">Management API MCP server</a> and building <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">custom admin UI components</a>.</li>
+<li>
+<a href="https://react.dev/" target="_blank">React v18.3.1</a>. Required for building <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">custom admin UI components</a>.</li>
+</ul>
+<h2 id="hosting-requirements">Hosting requirements</h2>
+<h3 id="saas-hosting">SaaS hosting</h3>
+<p>We recommend hosting your projects in <a href="/documentation/developers-and-admins/saas/saas-overview">Kentico’s SaaS</a>, allowing you to offload the set up and management of application hosting to Kentico.</p>
+<h3 id="private-cloud-hosting">Private cloud hosting</h3>
+<p>If you want to host your Xperience by Kentico applications in a <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud">private cloud</a> environment, for an average project, the server has minimum requirements of:</p>
+<ul>
+<li>4 GB memory (RAM)</li>
+<li>200 MB database size</li>
+</ul>
+<p>The recommended hosting parameters depend on various aspects, such as the scale of the project, its architecture, implementation details, expected traffic, use of cache, utilization of background processes, etc. We recommend that you carry out your own performance testing and choose adequate hosting resources based on the results.</p>
+<h2 id="browser-requirements">Browser requirements</h2>
+
+<table>
+<tr>
+<td>
+<p>Recommended resolution and screen size</p>
+</td>
+<td>
+<p>The Xperience administration is optimized for the 1920x1080 resolution (also known as 1080p or Full HD) on full-size desktop monitors. Xperience makes use of the resolution to display graph areas and other elements correctly. Using Xperience on lower resolutions or smaller screens may result in some of the UI elements displaying incorrectly.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Supported browsers</p>
+</td>
+<td>
+<p>Xperience by Kentico supports the following browsers: </p>
+<ul>
+<li>Chrome</li>
+<li>Firefox</li>
+<li>Microsoft Edge</li>
+<li>Safari on Mac OS</li>
+</ul>
+<p>We officially support and strongly recommend using the <strong><em>latest versions</em></strong> of the browsers. Older browser versions (up to several versions back) should work correctly but may display simplified renderings of certain components.</p>
+<p>The list of supported browsers above also applies to <strong><em>visitors of websites</em></strong> running on Xperience.</p>
+<p>However, the exact browser requirements always depend on the implementation of specific websites. With appropriate styling, live websites can work well in a wide variety of browsers, including responsiveness and general support for mobile browsers.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>JavaScript</p>
+</td>
+<td>
+<p>JavaScript must be enabled and allowed in the browser for the administration to work correctly.</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

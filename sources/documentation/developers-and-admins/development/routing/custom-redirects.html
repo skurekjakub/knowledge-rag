@@ -1,0 +1,17 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Custom redirects</title>
+</head>
+<body>
+<p>Xperience provides the <code>IWebPageRedirectManager</code> API, which enables the creation of redirects from custom URL paths to pages. Custom redirects can be useful during upgrades or for creating redirects from pages that were <a href="/documentation/business-users/website-content/delete-pages">deleted</a>. Existing redirects from deleted pages can also be managed through <code>IWebPageRedirectManager</code>.</p>
+<p>Custom redirects are not intended for redirects from existing pages. To create a redirect from an existing page, the page has to be <a href="/documentation/business-users/website-content/edit-and-publish-pages#unpublish-pages">unpublished</a> via the admin UI or the <code>IWebPageManager</code> <a href="/api/content-management/pages#unpublish-pages">API</a>. The redirect can be created during the process or added later via the admin UI.</p>
+<h2 id="create-or-update-a-custom-redirect">Create or update a custom redirect</h2>
+<p>To create a custom redirect, use the <code>CreateOrUpdateRedirect</code> method in <code>IWebPageRedirectManager</code>. The parameter <code>webPageUrlPath</code> is used to pass the URL path to redirect from.</p>
+<p>If the <code>webPageUrlPath</code> parameter matches a <a href="/documentation/business-users/website-content/manage-page-urls#former-urls">former URL</a> that is not a redirect from a deleted page, or when it matches <a href="/documentation/business-users/website-content/manage-page-urls">any URL of a page</a>, the system throws an exception.</p>
+<p>Existing URLs managed by the system that don’t fulfill the conditions above are custom redirects or redirects from deleted pages. If the provided path matches such a URL, the target of the redirect from this URL is updated. The system checks only against the URLs included in the <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">content tree-based routing</a>. Otherwise, if the provided URL path doesn’t match any existing URL path in the system, the custom redirect is created with the provided parameters.</p>
+<p>See <a href="/api/content-management/page-url-management#create-redirects-using-iwebpageredirectmanager">API examples</a> for a code sample of creating a custom redirect.</p>
+
+</body>
+</html>

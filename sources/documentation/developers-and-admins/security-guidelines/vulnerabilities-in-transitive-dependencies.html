@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Vulnerabilities in transitive dependencies</title>
+</head>
+<body>
+<p>A dependency is a software component released by a third-party, which is required by the Xperience product. See <a href="https://community.kentico.com/documentation/third-party-software-licenses" target="_blank">Third party software licenses</a> to view a list of dependencies and the licenses under which they are used.</p>
+<p>Kentico distinguishes between two types of dependencies:</p>
+<ul>
+<li>
+<strong>Direct dependencies</strong><br>
+Packages that are explicitly added and required by our product. We have full control over the version used and we are fully responsible for keeping the usage of these dependencies up-to-date and secure.</li>
+<li>
+<strong>Transitive dependencies</strong><br>
+Packages that are indirectly required, meaning they are dependencies of our direct dependencies. They are managed by the authors of these direct dependencies. We do not have direct control over their versions, but they can still impact our product and should be monitored.</li>
+</ul>
+<p>When a vulnerability with a <a href="https://www.first.org/cvss/" target="_blank">CVSS</a> score of 7 and higher is discovered in a transitive dependency, we aim to provide a temporary fix, <a href="https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages#transitive-packages" target="_blank">overriding the version</a> by adding a direct reference to the Xperience by Kentico packages. This override is monitored by us and removed once a new version of the direct dependency that references the fixed transitive dependency becomes available.</p>
+<p>For vulnerabilities with a score below 7, it is <strong>your responsibility</strong> to monitor and manage them. We recommend <a href="https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages" target="_blank">setting up the NuGet audit process</a> in your development and deployment pipeline to stay informed. If vulnerabilities are discovered, you need to override affected transitive dependencies in your project.</p>
+<p>The version override may lead to discrepancies between the versions expected by your project and those introduced by the override, which need to be <a href="https://learn.microsoft.com/en-us/nuget/concepts/dependency-resolution" target="_blank">resolved</a> to ensure compatibility and stability.</p>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page templates</title>
+</head>
+<body>
+<p>Page templates provide content editors with greater control over a page’s layout. Templates are prepared by the site’s developers and assigned by editors when <a href="/documentation/business-users/website-content/create-pages">creating new pages</a> or changing the layout of existing pages. Depending on the implementation, page templates can combine means to display <a href="/guides/architecture/content-modeling/content-modeling-guide">structured content</a> (edited on a page’s <em>Content</em> tab) with predefined editable areas for <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder</a>.</p>
+<h2 id="page-template-types">Page template types</h2>
+<p>Xperience supports the following types of page templates:</p>
+<ul>
+<li><p><strong>Default page templates</strong> – determine a page’s layout. Templates of this type first need to be created by the site’s developers.</p></li>
+<li>
+<p><strong>Preset page templates</strong> – can be saved from pages that were created using <em>default page templates</em> . A <em>preset page template</em> inherits the original template’s layout, along with all <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder content</a> used on the page. Preset templates can then be used as a starting point for new pages. The Page Builder content on pages created using preset templates can be freely adjusted without impacting other pages – all modifications only affect the current page (there is no logical connection between the content of pages created with the same template).</p>
+<ul>
+<li>Page content edited via the <em>Content</em> <a href="/documentation/business-users/website-content">view mode</a> <strong>will not be</strong> saved in the preset template.</li>
+</ul>
+</li>
+</ul>
+<h2 id="create-pages-based-on-page-templates">Create pages based on page templates</h2>
+<p>To use page templates when creating pages:</p>
+<ol type="1">
+<li>
+<p>Ask a developer to define a page template in the code of your site.</p>
+
+<div>
+
+</div>
+<div>
+<p>See <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">Page templates for Page Builder</a> for developer instructions.</p>
+</div>
+</li>
+<li>
+<p>As an editor, you can now <a href="/documentation/business-users/website-content/create-pages">create</a> a page based on a page template in the Xperience administration.</p>
+
+<div>
+
+</div>
+<div>
+<p>Page templates may only be available for certain types of pages. The available template options depend on your site’s implementation.</p>
+</div>
+</li>
+</ol>
+<p>Editors can save this page as a <em>preset page template</em> with the Page Builder content created on the page. See <a href="#save-pages-as-preset-page-templates">Save pages as preset page templates</a>.</p>
+<h3 id="configure-page-templates">Configure page templates</h3>
+<p>You can configure a page template to further control the overall appearance of the page. The available configuration options depend on the implementation prepared by the site’s developers.</p>
+<ol type="1">
+<li>Open a page based on a template and select the <strong>Page Builder</strong> view mode.</li>
+<li>Click the orange configure button () located in the bottom-left corner of the view.<br>
+</li>
+<li>Configure any available properties in the dialog.<br>
+</li>
+<li>
+<strong>Apply</strong> the changes.</li>
+</ol>
+<p>The configured properties now apply to the template for the given page. Any other pages that use the same template have their own separate property configuration. Depending on the available properties, the changes are reflected in the page’s appearance or behavior on the website.</p>
+<h2 id="change-templates-of-existing-pages">Change templates of existing pages</h2>
+<p>You can change the page template of an existing page, provided there is more than one page template available for the given page.</p>
+<ol type="1">
+<li><p>Open a page based on a template and select the <strong>Page Builder</strong> view mode.</p></li>
+<li><p>Click the orange change template button (<i></i>) located in the bottom-left corner of the view.<br>
+</p></li>
+<li>
+<p>Select one of the available page templates.<br>
+</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preserving Page Builder content when changing <em>default</em> page templates</strong></p>
+<p>When changing the <em>default</em> page template for a page, you have the option to <em>Keep current widgets and sections if possible</em>. This option allows you to preserve widgets and sections from the current template if the new template contains editable areas with matching identifiers. Otherwise, Page Builder content from the current page is discarded. If you’re unsure about the expected behavior on your site, consult your site’s administrators.</p>
+</div>
+</li>
+<li><p><strong>Apply</strong> the changes.</p></li>
+</ol>
+<p>The page now uses the selected template. </p>
+<h2 id="save-pages-as-preset-page-templates">Save pages as preset page templates</h2>
+<p>If you want to reuse Page Builder content, such as the layout of sections or content of widgets, you can save template-based pages as preset templates. Structured page data (edited in the <em>Content</em> view mode) <strong>is not</strong> saved within preset templates.</p>
+<ol type="1">
+<li>
+<a href="/documentation/business-users/website-content/create-pages">Create or edit</a> a page based on a template.</li>
+<li>
+<a href="/documentation/business-users/website-content/edit-and-publish-pages">Edit the page</a> and add desired content in the <strong>Page Builder</strong> view mode.</li>
+<li>
+<strong>Save</strong> your changes and select <strong>Save as preset template</strong>. A new dialog window opens.<br>
+</li>
+<li>Enter the template’s fields: <strong>Name</strong> and <strong>Icon</strong> to identify the template.
+<ul>
+<li>
+<strong>Name</strong> – display name of the template.</li>
+<li>
+<strong>Description</strong> – detailed description of the template.</li>
+<li>
+<strong>Icon</strong> – icon under which the template is displayed in the administration.<br>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the preset template.</li>
+</ol>
+<p>You now have a preset template that you can select when creating new pages that support the original default template. Such pages automatically start with the Page Builder content stored within the preset template and can be further adjusted. Changes made in the content of one page <strong>do not</strong> affect the content of other pages that use the same preset page template.</p>
+<h2 id="manage-preset-page-templates">Manage preset page templates</h2>
+<p>You can see a list of your saved templates in the <strong>Preset page templates</strong> tab in the <strong>Preset templates</strong> application.</p>
+<p></p>
+<p>The tab displays a listing with the names and descriptions of individual preset page templates. It also displays the base default templates from which the preset templates are derived.</p>
+<h3 id="edit-preset-page-templates">Edit preset page templates</h3>
+<p>Direct editing of preset page templates is not currently supported. In order to change a template, you need to <a href="#delete-preset-page-templates">delete</a> it and <a href="#save-pages-as-preset-page-templates">save</a> it again.</p>
+<h3 id="delete-preset-page-templates">Delete preset page templates</h3>
+<p>To delete a saved preset template:</p>
+<ol type="1">
+<li>Open the <strong>Preset templates</strong> application.</li>
+<li>Open the <strong>Preset page templates</strong> tab.</li>
+<li>
+<strong>Delete</strong> () the template.</li>
+</ol>
+<p>You have now successfully deleted the page template. Note, that this has no impact on the pages created from the template.</p>
+
+</body>
+</html>

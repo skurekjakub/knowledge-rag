@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Guidelines for stable customization</title>
+</head>
+<body>
+<p>This page contains guidelines for working with the <a href="/documentation/developers-and-admins/api">Xperience by Kentico API</a> and other parts of the application in customization or integration scenarios. The goal of these recommendations is to help developers create stable code and minimize problems when updating to newer versions.</p>
+<h2 id="api-usage">API usage</h2>
+<p>Xperience by Kentico is built with a strong focus on stability and long-term reliability. The platform’s <a href="/documentation/developers-and-admins/api">API</a> is designed to provide developers with a consistent and predictable experience, ensuring that customizations and integrations remain robust across updates. Xperience helps you build solutions with confidence, minimizing the risk of unexpected breaking changes.</p>
+<p>Despite this commitment to long-term stability, the Xperience development lifecycle requires parts of the API to change over time. The impact of such changes is mitigated by compatibility policies and clear deprecation practices. Backward compatibility is maintained for at least 12 months after a feature is deprecated or an API member is marked as obsolete.</p>
+<p>In most cases, the API provides a replacement for obsolete members, which is clearly described in the obsolete workaround message. The replacement will exist side-by-side with the obsolete API member for the duration of the compatibility period. This will give you time to make any necessary changes.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>API compatibility exceptions</strong></p>
+<p>There may be rare exceptions of breaking changes that occur either without prior notice or within the 12-month compatibility period. For example, if Kentico needs to address a security vulnerability, or make unavoidable architectural changes required for the product’s future evolution. However, Kentico will always provide guidance or automated solutions to keep updates as smooth as possible.</p>
+</div>
+
+<h3 id="api-not-intended-for-public-use">API not intended for public use</h3>
+<p>The following Xperience API is technically publicly available, but is not intended for public use. Such API members may be changed or removed without prior notice, and without providing a replacement.</p>
+<ul>
+<li><p><strong>Obsolete API</strong> – API marked as <a href="https://learn.microsoft.com/en-us/dotnet/api/system.obsoleteattribute" target="_blank">obsolete</a>. In most cases has a preferred alternative, and will most likely be removed in the future, causing your code to break.</p></li>
+<li><p><strong>Internal namespaces</strong> – API contained in namespaces with the <code>.Internal</code> suffix. Such API should be considered as unstable, and may be subject to breaking changes during any update.</p></li>
+<li>
+<p><strong>API documented as internal</strong> – in rare cases, an API member needs to be public, but is only intended for use by the framework infrastructure and not intended for public use. Such members are explicitly documented in their <code>&lt;remarks&gt;</code> or <code>&lt;summary&gt;</code> as internal. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Internal API remark</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  /// &lt;remarks&gt;
+  /// This API supports the framework infrastructure and is not intended to be used directly from public code.
+  /// &lt;/remarks&gt;
+  </code></pre>
+</div>
+</li>
+<li>
+<p><strong>Constructors of infrastructure classes</strong> – certain publicly accessible classes are designed to be invoked by the framework infrastructure, and are not intended to be directly instantiated in user code. The constructors of such classes may be subject to breaking changes during any update. The following are examples of infrastructure classes:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI page classes</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form component classes</a>
+<ul>
+<li>You can interact with admin UI classes via the appropriate API, such as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extenders</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">form component attributes</a>.</li>
+</ul>
+</li>
+<li>Controllers handling various system endpoints (with the <code>Controller</code> suffix)</li>
+</ul>
+</li>
+</ul>
+<h3 id="experimental-api">Experimental API</h3>
+<p>In some cases, new features in Xperience are released in <strong>preview mode</strong>. Such features may be incomplete, have known limitations, and are subject to changes. Preview mode is primarily intended to allow developers and other users to familiarize themselves with the feature and give feedback.</p>
+<p>API related to preview mode features is typically <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/attributes/general#experimental-attributes" target="_blank">marked as experimental</a> and usage will result in warnings when compiling your project. The warnings are treated as errors for reporting purposes. To use the code, you need to <a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/syslib-diagnostics/experimental-overview#suppress-warnings" target="_blank">suppress</a> the warnings.</p>
+<p>Experimental API is not intended for use in production code. By suppressing the warnings and using the API, you acknowledge the fact that the API may change during any update, until the feature is fully released and the experimental attributes are removed.</p>
+<h3 id="system-user-context">System user context</h3>
+<p>Xperience contains an internal system <a href="/documentation/developers-and-admins/configuration/users/user-management">user</a> with the <strong>kentico-system-service</strong> user name. This user account serves as the “author” of changes performed by automated tasks in the system, such as the restoration of <a href="/documentation/developers-and-admins/configuration/content-sync-configuration">content sync</a> operations.</p>
+<p>You can use this account in custom code that requires user context, but is not actually performed by a person interacting with the UI. For example, a suitable scenario is management of <a href="/api/content-management/content-items">content items</a> or <a href="/api/content-management/pages">pages</a> via the <code>IContentItemManager</code> or <code>IWebPageManager</code> classes in a custom <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled tasks</a>.</p>
+<h2 id="admin-ui">Admin UI</h2>
+<p>The Xperience administration interface is designed to be highly <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">extensible and customizable</a>. However, the following aspects of the admin UI are <strong>not guaranteed to be stable</strong> and may change without prior notice during any update:</p>
+<ul>
+<li>
+<strong>URLs</strong> – The URLs of applications and individual pages in the admin UI are not changed frequently, but we strongly recommend that you avoid creating dependencies on the exact URL structure. To <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages#generate-urls-to-other-administration-pages">generate stable links or references</a> to UI pages, use the <code>IPageLinkGenerator</code> service.</li>
+<li>
+<strong>HTML output</strong> – The design, rendered HTML code, and logic of admin UI pages may be updated to accommodate design improvements and functional changes. Such modifications can impact custom implementations of <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/administration-interface-ui-tests">admin UI tests</a> that depend on underlying components of the system, such as the <code>data-testid</code> attribute. Avoid coupling your code to the exact HTML output of the admin UI unless absolutely necessary.</li>
+</ul>
+<h2 id="database">Database</h2>
+<p>Kentico aims to keep the Xperience by Kentico database schema as stable as possible. Tables are often added or expanded with new columns during updates, but breaking changes, such as table and column renaming or removal, only occur in rare cases. Such database changes are planned as part of major version updates and will be clearly communicated in the product’s <a href="/documentation/changelog">Changelog</a>.</p>
+<h3 id="data-access-and-management">Data access and management</h3>
+<p>Avoid direct access to the Xperience database structures (custom SQL scripts, procedures, etc.). The <a href="/documentation/developers-and-admins/api">API</a> is the primary way to work with data in Xperience.</p>
+<p>You may encounter advanced scenarios where direct database access is required, typically for performance optimization of operations that handle very large amounts of data. In these cases, use caution and provide test coverage for your functionality to ensure that your custom queries remain compatible with any database schema or data changes.</p>
+<h3 id="extend-the-default-database-tables">Extend the default database tables</h3>
+<p><strong>Never modify Xperience tables manually</strong> in the database – adding or removing columns, changing column data types, etc.</p>
+<p>If you wish to add a custom column, you can do so in the administration UI for customizable data classes. See <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">Extend system object types</a> for more information and detailed instructions.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Unique names for custom fields</strong></p>
+<p>When adding custom fields to <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">customizable classes</a> or their UI forms, include a unique prefix in the <strong>Field name</strong> (for example your company name). The prefix ensures uniqueness for the field name, and prevents conflicts with system fields that may be added in the future.</p>
+</div>
+
+<h3 id="add-custom-database-tables">Add custom database tables</h3>
+<p>If you need to store data in a custom table within the Xperience database, use the administration UI to create one of the following objects:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Content type</a> – for content, files, and other data that you wish to deliver through your application’s channels (websites, emails, etc.).</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/object-types">Data class under a custom module</a> – a powerful option for fully integrating custom data into Xperience. Requires more extensive custom development.</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">Form</a> – suitable for data that you wish to collect from website visitors.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Content modeling</strong></p>
+<p>See the for in-depth information and recommendations on structuring content in Xperience.</p>
+</div>
+
+<p>In all cases, the system automatically creates a database table based on the options that you configure. Any fields (columns) that you define for the table remain unchanged during updates. In rare cases, an update may add new general fields required by the system. Such additions should not break or affect the table’s functionality.</p>
+<p>When creating objects representing custom database tables, always use a unique prefix (namespace) in the code name of the object and the matching table name. This convention prevents conflicts with system objects and tables that may be added in the future. Never use the following code name prefixes for custom objects or database tables: <strong>aira</strong>, <strong>cd</strong>, <strong>ci</strong>, <strong>cj</strong>, <strong>cms</strong>, <strong>commerce</strong>, <strong>emaillibrary</strong>, <strong>form</strong>, <strong>om</strong></p>
+<h3 id="database-table-indexes">Database table indexes</h3>
+<p>Customization of <a href="https://learn.microsoft.com/en-us/sql/relational-databases/indexes/indexes" target="_blank">database table indexes</a> is supported, but may require additional maintenance during updates:</p>
+<ul>
+<li>You can drop the default indexes and create custom indexes for tables. Xperience does not provide index management features, and such changes need to be performed manually (via scripts or Database management systems, such as SQL Server Management Studio).</li>
+<li>Use a <strong>unique prefix</strong> or other naming convention for your custom indexes and maintain documentation to keep track of the changes.</li>
+<li>Xperience updates may fail if the system attempts to create an index that is not compatible with your custom indexes. For example, if you drop a table’s default clustered index and create your own, the update may fail if it attempts to update or recreate the default clustered index.</li>
+<li>After applying an update, review each table with custom indexes and make sure the indexes are still relevant and fulfill your requirements.</li>
+</ul>
+<h3 id="other-database-objects">Other database objects</h3>
+<p>Other than database tables, you can also add your own objects, such as stored procedures, views, functions, etc.</p>
+<ul>
+<li>Do not directly modify the default Xperience database objects. Updates can overwrite any database object and the customizations will be lost.</li>
+<li>Always use a <strong>unique prefix</strong> or other naming convention for custom database objects. The prefix prevents conflicts with system objects that may be added in the future.</li>
+<li>If you need to use a modified version of an Xperience database object, create your own custom object and copy the code from the original (use a unique naming convention). Then make any required modifications and ensure that your custom functionality uses the changed version of the database object.</li>
+</ul>
+<h2 id="default-data---ui-forms">Default data - UI forms</h2>
+<p>All installations of Xperience automatically include a set of default objects, and some of these objects are critical components of the system. In most cases, such default objects are protected and cannot be deleted or modified in the administration UI.</p>
+<p><a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types#Extendsystemobjecttypes-UIForms">UI forms</a> of <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types#customizable-data-classes">customizable data classes</a> are one exception of critical default objects which you can interact with.</p>
+<ul>
+<li>Whenever possible, avoid using the default UI forms in your custom admin UI. Instead, create your own UI forms under the given customizable class and add any required fields. You can replace the UI form on an existing UI page using a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extender</a>.</li>
+<li>You can safely add your own custom fields to the default UI forms.</li>
+<li>The default UI forms and their fields are protected against deletion and non-compatible changes (<em>Field name</em>, <em>Data type</em>, etc.).</li>
+<li>Any changes to the optional settings (<em>Default value</em>, <em>Field appearance</em> settings, etc.) of one of the default UI form fields may be <strong>overwritten during any update</strong>. Carefully consider if such changes are truly necessary, and if so, maintain documentation of the changes so that you can easily recover if a custom change is lost during an update.</li>
+</ul>
+<h2 id="custom-templating-expressions">Custom templating expressions</h2>
+<p>Templating can be a powerful tool that allows users to create dynamic content by combining static text or templates with variable data. Expressions or placeholders used by a templating feature are typically distinguished from regular text using special syntax delimiters.</p>
+<p>If you need to introduce a custom templating language or expression syntax into your Xperience implementation, <strong>avoid using the following delimiter patterns</strong>, which are reserved by native functionality in Xperience:</p>
+<ul>
+<li>
+<code>{%...%}</code> – used for <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">macro syntax</a>
+</li>
+<li>
+<code>{$...$}</code> – used for <a href="/documentation/developers-and-admins/customization/admin-ui-localization">admin UI localization</a> functionality</li>
+<li>
+<code>{{...}}</code> – used for placeholders in <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> and <a href="/documentation/business-users/digital-marketing/emails#personalize-emails-with-dynamic-text">dynamic text in emails</a>
+</li>
+</ul>
+<p>Using these reserved delimiters in your custom templating implementation can lead to parsing conflicts, unexpected behavior, or interference with existing Xperience functionality.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Future compatibility considerations</strong></p>
+<p>Xperience by Kentico may expand its templating and macro functionality to additional locations in future updates. Areas that currently do not process these expressions may gain such capabilities, potentially affecting custom templating implementations that use conflicting delimiter syntax.</p>
+</div>
+
+<p>To avoid the issues described above, we recommend using a delimiter pattern that is unique and clearly identifiable as part of your custom implementation. For example, <code>@acme{...}</code> or <code>@custom[...]</code>.</p>
+
+</body>
+</html>

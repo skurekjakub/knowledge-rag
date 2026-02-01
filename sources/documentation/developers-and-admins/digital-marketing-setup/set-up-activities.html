@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Set up activities</title>
+</head>
+<body>
+<p>Activities represent actions that your <a href="/documentation/business-users/digital-marketing/contact-management">contacts</a> perform. For example, the system logs activities when visitors view <a href="/documentation/business-users/website-content">pages</a> or submit <a href="/documentation/business-users/digital-marketing/forms">forms</a>. The gathered <a href="/documentation/business-users/digital-marketing/contact-activities">activity log</a> allows you to evaluate the behavior of contacts and visitors across your content channels.</p>
+<h2 id="activity-logging-requirements">Activity logging requirements</h2>
+<p>Activity logging for contacts in Xperience is <strong>enabled by default</strong>.</p>
+<p>Due to <a href="/documentation/developers-and-admins/data-protection">personal data protection</a> policies, most activities are only logged for visitors who give <a href="/documentation/developers-and-admins/data-protection/consent-development">consent to be tracked as contacts</a> and have the required <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a> set (<em>Visitor</em> or <em>All</em>).</p>
+<p>Some activities are logged automatically without any setup. However, certain activities require additional adjustments of your application.</p>
+<h3 id="activity-logging-based-on-legitimate-interest">Activity logging based on legitimate interest</h3>
+<p>The system logs <strong>Form submission</strong> and <strong>Member registration</strong> activities even for visitors who have not given tracking consent.</p>
+<p>Data added into the system as a result of such activities only includes information explicitly entered into the related <a href="/documentation/business-users/digital-marketing/forms">form</a> (or <a href="/documentation/developers-and-admins/development/registration-and-authentication">member registration</a> form).</p>
+<p>For example, when an untracked visitor submits a form, the system creates a new contact with data based on the form’s <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">mapping of fields to contact attributes</a>. If the form contains an email address field and the submitted email matches an existing contact, the data is instead added or updated for the given contact. This type of activity logging does not enable any other type of tracking for the visitor.</p>
+<p>Additionally, the system does not include sensitive context-specific information when logging such activities (for example URLs, channel identifiers, etc.).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Important</strong></p>
+<p>You need to ensure that usage of personal data collected through such activities falls under legitimate interest purposes, based on your project’s legal requirements. For example, you may be able to legally use the data to send <a href="/documentation/developers-and-admins/digital-marketing-setup/custom-form-autoresponder-emails">form autoresponder emails</a>. However, using the data to send unsolicited marketing messages may be a breach of <a href="/documentation/developers-and-admins/data-protection">data protection regulations</a>.</p>
+</div>
+
+<h2 id="activity-type-overview">Activity type overview</h2>
+<p>Xperience by Kentico tracks the following activities:</p>
+
+<table>
+<thead>
+<tr>
+<td colspan="1">
+<p>Activity type</p>
+</td>
+<td colspan="1">
+<p>Code name</p>
+</td>
+<td colspan="1">
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td colspan="1">
+<p>Click</p>
+</td>
+<td colspan="1">
+<p>click</p>
+</td>
+<td colspan="1">
+<p>The visitor performed a click on a website.</p>
+<p>Logged via <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">headless tracking API</a> or <a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">cross-site tracking</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Data input</p>
+</td>
+<td colspan="1">
+<p>datainput</p>
+</td>
+<td colspan="1">
+<p>The visitor entered data through a specific input. For example, such activities can be logged in headless tracking scenarios when a visitor submits information through a form in an external mobile app.</p>
+<p>Logged via <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">headless tracking API</a> or <a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">cross-site tracking</a>.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Email click</p>
+</td>
+<td colspan="1">
+<p>emailclick</p>
+</td>
+<td colspan="1">
+<p>The recipient of an <a href="/documentation/business-users/digital-marketing/emails">email</a> clicked a link within the content.</p>
+<p><strong>Logging requirements</strong></p>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">Email statistic tracking</a> must be enabled and set up for your application.</p>
+<p>To ensure compliance with data protection regulations, email activity logging is not active by default. Developers need to implement logic that decides when it is possible to track email activities for specific contacts, for example based on <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>. See <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking/log-email-activities">Log email activities</a> for detailed information.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Form submission</p>
+</td>
+<td colspan="1">
+<p>bizformsubmit</p>
+</td>
+<td colspan="1">
+<p>The visitor submitted a <a href="/documentation/business-users/digital-marketing/forms">form</a>.</p>
+<p>Logged automatically.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Landing page</p>
+</td>
+<td colspan="1">
+<p>landingpage</p>
+</td>
+<td colspan="1">
+<p>The visitor opened a page when first viewing a website channel.</p>
+<p><strong>Logging requirements</strong></p>
+<p>To log <em>Landing page</em> activities, you need to <a href="#enable-the-activity-tracking-feature">enable the activity tracking feature</a> for your application.</p>
+<p>The <em>Landing page</em> activity logging is affected by the <em>CMSLandingPageLoaded</em> cookie, which expires after 20 minutes. The expiration period of the key is renewed every time the website channel is accessed again.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Member registration</p>
+</td>
+<td colspan="1">
+<p>memberregistration</p>
+</td>
+<td colspan="1">
+<p>The visitor registers as a <a href="/documentation/business-users/members">member</a>. Logged when the member becomes active (enabled), for example after confirming the registration when using double opt-in via <a href="/documentation/developers-and-admins/development/registration-and-authentication/forms-authentication#email-confirmation">email confirmation</a>.</p>
+<p>Logged automatically.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Page visit</p>
+</td>
+<td colspan="1">
+<p>pagevisit</p>
+</td>
+<td colspan="1">
+<p>The visitor viewed a web page. The page can be presented by an Xperience <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>, a site using the <a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking">headless tracking API</a>, or a site covered by <a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking">cross-site tracking</a>.</p>
+<p><strong>Logging requirements</strong></p>
+<p>To log <em>Landing page</em> and <em>Page visit</em> activities, you need to <a href="#enable-the-activity-tracking-feature">enable the activity tracking feature</a> for your application.</p>
+</td>
+</tr>
+</table>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom activity types</strong></p>
+<p>In addition to the default activity types, you can define your own custom types. Logging of custom activities always needs to be ensure by the project’s developers, according to the intended purpose of the activities.</p>
+<p>See <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">Custom activities</a> for more information.</p>
+</div>
+
+<h3 id="default-activity-type-internals">Default activity type internals</h3>
+<p>Some of the default activity types are logged with references to other entities in the system that are related to the given activity. These references are stored as identifier values in the <code>ActivityItemID</code> and <code>ActivityItemDetailID</code> columns of individual activity records.</p>
+<p>Understanding these values can be useful for developers in advanced scenarios, for example when implementing custom reports for activity data.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Activity type</p>
+</td>
+<td>
+<p>Logged references</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Email click</p>
+</td>
+<td>
+<p><strong>ActivityItemID</strong> – the ID of the related email configuration entity (record stored in the <code>EmailLibrary_EmailConfiguration</code> table and represented by <code>EmailConfigurationInfo</code> in the API).</p>
+<p><strong>ActivityItemDetailID</strong> – the ID of the related email link entity (record stored in the <code>EmailLibrary_EmailLink</code> table and represented by <code>EmailLinkInfo</code> in the API).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Form submission</p>
+</td>
+<td>
+<p><strong>ActivityItemID</strong> – the ID of the submitted <a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">form</a> entity (record stored in the <code>CMS_Form</code> table, represented by <code>BizFormInfo</code> in the API).</p>
+<p><strong>ActivityItemDetailID</strong> – the ID of the <a href="/documentation/business-users/digital-marketing/forms/manage-form-submissions">form submission</a> entity (record stored in the form’s dedicated database table, represented by <code>BizFormItem</code> in the API).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Member registration</p>
+</td>
+<td>
+<p><strong>ActivityItemID</strong> – the ID of the created <a href="/documentation/business-users/members">member</a> entity (record stored in the <code>CMS_Member</code> table and represented by <code>MemberInfo</code> in the API).</p>
+</td>
+</tr>
+</table>
+
+<h2 id="enable-the-activity-tracking-feature">Enable the activity tracking feature</h2>
+<p>To log the <em>Landing page</em> and <em>Page visit</em> activities, you need to explicitly enable the activity tracking feature for your application. The feature registers routes that receive and process activity logging requests.</p>
+<ol type="1">
+<li><p>Open your project in Visual Studio.</p></li>
+<li><p>Edit the <strong>Program.cs</strong> file.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/enable-application-features">Enable</a> activity tracking by calling the <code>UseActivityTracking</code> method of the <code>IFeaturesBuilder</code> delegate. Pass the delegate as an argument to <code>AddKentico</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Activities.Web.Mvc;
+ using Kentico.Web.Mvc;
+
+ ...  
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ ...
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     features.UseActivityTracking();
+ });
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>To log page visits for <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a>, register the activity logging script onto all pages by calling the <code>ActivityLoggingScriptV2</code> extension method in views.</p>
+<ul>
+<li><p>Call the method in your website’s main layout (and any other used layouts) to ensure that performed activities are logged for every page.</p></li>
+<li><p>The logging script runs asynchronously, so we recommend adding it at the end of the <em>&lt;head&gt;</em> tag in the page code.</p></li>
+<li>
+<p>The method’s <code>logPageVisit</code> parameter must be <code>true</code>. This is the default state if you call the method without any parameters.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @using Kentico.Activities.Web.Mvc
+
+  @* Registers scripts that ensure logging of page-related activities *@
+  @Html.Kentico().ActivityLoggingScriptV2()
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+<p>Enabling the <code>UseActivityTracking</code> feature ensures that the system registers routes that receive activity logging requests.</p>
+<p>After adding the code mentioned above, the <em>Page visit</em> activity is logged every time a page is visited, and the <em>Landing page</em> activity is logged every time a visitor opens a page when first viewing the website.</p>
+<h2 id="enable-or-disable-specific-activity-types">Enable or disable specific activity types</h2>
+<p>By default, logging is enabled for all <a href="#activity-type-overview">activity types</a>. You can disable or re-enable individual activity types at any time:</p>
+<ol type="1">
+<li>Open the <strong>Contact management</strong> application in the Xperience administration.</li>
+<li>Switch to the <strong>Activity</strong> <strong>types</strong> tab.</li>
+<li>Select the activity type that you wish to configure.</li>
+<li>Select or clear the <strong>Enabled</strong> checkbox.</li>
+<li>
+<strong>Save</strong> the activity type.</li>
+</ol>
+<h2 id="activity-and-contact-update-processing">Activity and contact update processing</h2>
+<p>When activities or contact detail updates occur, the system initially saves the data into the application memory. This data is then batch processed from the memory into the database every 10 seconds by default.</p>
+<p>If your system processes a large number of activities and contact updates, you can consider increasing the default interval:</p>
+<ol type="1">
+<li><p>Edit your project’s configuration file (<em>appsettings.json</em> by default).</p></li>
+<li>
+<p>Add the <code>CMSProcessContactActionsInterval</code> key. Increase the value to reflect how often you want the activities and contact updates to be processed.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Processing activities and contact updates every 30 seconds</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ "CMSProcessContactActionsInterval": 30,
+
+ </code></pre>
+</div>
+</li>
+<li><p>Save the file.</p></li>
+</ol>
+<p>The system now processes activities and contact detail updates according to the configured interval. The interval affects the following:</p>
+<ul>
+<li>How often the application saves logged activities and contact detail updates from the memory into the database.</li>
+<li>How often the system recalculates data that could be affected by activities and contact updates, such as contact groups conditions, automation process triggers, scores, etc.</li>
+</ul>
+
+</body>
+</html>

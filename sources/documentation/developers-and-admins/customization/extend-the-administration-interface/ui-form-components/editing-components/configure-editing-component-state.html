@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Configure editing component state</title>
+</head>
+<body>
+<p>When <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">defining editable properties</a> for <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a>, or <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components, you can use the API to configure the state of the assigned editing component.</p>
+<p>This configuration is only intended for advanced scenarios where statically configuring component values is not sufficient. In most cases, you can directly set the component’s properties, visibility conditions and validation rules via the corresponding attribute notation. A typical use case is creating dynamic data sources for selector components, such as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">DropDownComponent</a> or <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">RadioGroupComponent</a>.</p>
+<p>Component state is configured via <code>FormComponentConfigurator</code> classes that can run custom code at specific points in an editing component’s lifecycle. Configurators allow you to modify all aspects of the component: properties, assigned visibility conditions, validation rules, and default value.</p>
+<p>Configurator classes must:</p>
+<ol type="1">
+<li>
+<p>Inherit from the <code>FormComponentConfigurator&lt;TFormComponent&gt;</code> base class.</p>
+
+<div>
+
+</div>
+<div>
+<p>Use the <code>FormComponentConfigurator</code> class from the <code>Kentico.Xperience.Admin.Base.Forms</code> namespace.</p>
+</div>
+</li>
+<li><p>Target a specific form component type via the generic <code>TFormComponent</code> parameter of the base class. For implementing the types of out-of-the-box components, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Reference - Admin UI form components</a>.</p></li>
+<li>
+<p>Implement the <code>async</code> <code>Configure(FormComponent, IFormFieldValueProvider)</code> method.</p>
+<ul>
+<li>The <code>FormComponent</code> parameter contains the instance of the configured component. Access and modify its <code>Properties</code>, <code>VisibilityConditions</code> or <code>ValidationRules</code> according to your configurator’s requirements.</li>
+<li>
+<code>IFormFieldValueProvider</code> allows you to access the values of properties in the given dialog that <strong>precede</strong> the component being configured (according to the <code>Order</code> property that can be set when <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">assigning editing components</a>).</li>
+</ul>
+</li>
+</ol>
+<h2 id="assign-configurators">Assign configurators</h2>
+<p>Assign configurators to property editing components via the <code>FormComponentConfiguration</code> attribute (available in the <code>Kentico.Xperience.Admin.Base.FormAnnotations</code> namespace).</p>
+<p>The attribute has several possible constructors for configurator assignment:</p>
+<ul>
+<li>For configurators without any dependencies on the values of other components in the dialog:
+<ul>
+<li><code>FormComponentConfiguration(configuratorType)</code></li>
+<li><code>FormComponentConfiguration(identifier)</code></li>
+<li>This configurator is invoked only during the initial load of the configuration dialog. See <a href="#Configureeditingcomponentstate-initial">Set the initial component state</a>.</li>
+</ul>
+</li>
+<li>For configurators with dependencies on the values of other components in the dialog:
+<ul>
+<li>Configurators with a single dependency:
+<ul>
+<li><code>FormComponentConfiguration(configuratorType, dependencyFieldName)</code></li>
+<li><code>FormComponentConfiguration(identifier, dependencyFieldName)</code></li>
+</ul>
+</li>
+<li>Configurators with multiple dependencies:
+<ul>
+<li><code>FormComponentConfiguration(configuratorType, dependencyFieldNames)</code></li>
+<li><code>FormComponentConfiguration(identifier, dependencyFieldNames)</code></li>
+</ul>
+</li>
+<li>This configurator is invoked during the initial load of the configuration dialog and every time the value of the fields designated as dependencies change. See <a href="#Configureeditingcomponentstate-dependency">Establish dependencies between fields</a>.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Differences between the <code>FormComponentConfiguration</code> constructors with <code>configuratorType</code> and <code>identifier</code> parameters</strong></p>
+<p>If you want to be able to <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">deploy your project without the Xperience administration</a>, you can only use the constructors with the <code>identifier</code> parameter when assigning configurators to any of the editing components in your live site project. Otherwise your live site code will maintain dependencies on the <em>Kentico.Xperience.Admin</em> NuGet package. Before you can use the constructors with the <code>identifier</code> parameter, you need to register the form component configurator under the identifier via the <code>RegisterFormComponentConfigurator</code> assembly attribute.</p>
+<p>When assigning configurators to editing components used in the administration or when you don’t need to completely separate the live site project from the administration, you can use the <code>FormComponentConfiguration</code> constructors with either the <code>configuratorType</code> or <code>identifier</code> parameter.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>You can assign at most <strong>one</strong> component configurator per editing component.</p>
+</div>
+
+<h2 id="set-the-initial-component-state"> Set the initial component state</h2>
+<p>Configurators assigned via <code>FormComponentConfiguration(configuratorType)</code> or <code>FormComponentConfiguration(identifier)</code> are invoked only on the initial load of the given configuration dialog. Use such configurators if you need to assign a dynamic value (variable) to a component’s properties, visibility conditions or validation rules. For fixed values, directly use the corresponding attribute notation.</p>
+<p>To assign a configurator to a property:</p>
+<ol type="1">
+<li>Edit the class containing the component’s properties (e.g., a <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widget properties model class</a>).</li>
+<li>Identify the property whose editing component you want to configure.</li>
+<li>Decorate the property with the <code>FormComponentConfiguration</code> attribute.</li>
+<li>In the attribute’s constructor, specify the desired configurator using one of the attributes’s properties:
+<ul>
+<li>
+<code>configuratorType</code> – the underlying type of the class that implements the component configurator you want to use.</li>
+<li>
+<code>identifier</code> – the string identifier under which the the component configurator is registered.</li>
+</ul>
+</li>
+</ol>
+<h2 id="establish-dependencies-between-fields"> Establish dependencies between fields</h2>
+<p>Form component configurators can be used to establish dependencies between fields within a dialog. A typical use case is a selector component that changes its available selection options based on the value of other fields.  </p>
+<p>For fields with dependencies, the configurator is called during the initial load of the configuration dialog, and every time the value of any field marked as a dependency changes.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Property order requirement</strong></p>
+<p>Value dependencies between properties are restricted by the order in which the properties are displayed in the configuration dialog. A dependency can only be established with properties of a lower order (controlled by the <code>Order</code> property that can be set when <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">assigning editing components</a>).</p>
+</div>
+
+<p>To assign a configurator with field value dependencies to a property:</p>
+<ol type="1">
+<li>Edit the class containing the component’s properties (e.g., a <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">widget properties model class</a>).</li>
+<li>Identify the property whose editing component you want to configure.</li>
+<li>Decorate the property with the <code>FormComponentConfiguration</code> attribute.</li>
+<li>In the attribute’s constructor:
+<ol type="1">
+<li>Specify the desired configurator using one of the attributes’s properties:
+<ul>
+<li>
+<code>configuratorType</code> – the underlying type of the class that implements the component configurator you want to use.</li>
+<li>
+<code>identifier</code> – the string identifier under which the the component configurator is registered.</li>
+</ul>
+</li>
+<li>Specify the fields on which the configurator depends using one of the attributes’s properties:
+<ul>
+<li>
+<code>dependencyFieldName</code> – the name of the property whose change in value causes the configurator to reconfigure the component (i.e., call the <code>Configure</code> method again). Use the <code>nameof</code> operator.</li>
+<li>
+<code>dependencyFieldNames</code> – an array of names of properties whose change in value causes the configurator to reconfigure the component (i.e., call the <code>Configure</code> method again). To identify each property in the array, use the <code>nameof</code> operator.</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<p>The example below shows a sample implementation of a component configurator and its usage.</p>
+<h3 id="example">Example</h3>
+<p>The following example shows how to create country and state selector fields.</p>
+<p>The country selector uses an <code>IDropDownOptionsProvider</code> implementation to load the country data.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - country options provider</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+using CMS.Globalization;
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+// Data provider for loading countries into a drop-down list   
+public class CountryDropDownOptionsProvider : IDropDownOptionsProvider
+{
+    private readonly IInfoProvider&lt;CountryInfo&gt; countryProvider;
+
+    // Obtains required dependencies using constructor injection
+    public CountryDropDownOptionsProvider(IInfoProvider&lt;CountryInfo&gt; countryProvider)
+    {
+        this.countryProvider = countryProvider;
+    }
+
+    public async Task&lt;IEnumerable&lt;DropDownOptionItem&gt;&gt; GetOptionItems()
+    {
+        // Retrieves all countries from the database 
+        // Transforms country data to the drop-down item format
+        return (await countryProvider.Get().GetEnumerableTypedResultAsync())
+                                           .Select(c =&gt; new DropDownOptionItem() 
+                                            {
+                                                Value = c.CountryID.ToString(),
+                                                Text = c.CountryDisplayName 
+                                            });
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The state selector uses a configurator to display states available for the selected country. The configurator takes the country selector as a dependency. Every time a user selects a different country, it fetches the corresponding states from the database. If the selected country is not subdivided into states, the configurator hides the field instead.</p>
+<p>In this case, the configurator is registered to the system via the <code>RegisterFormComponentConfigurator</code> assembly attribute and later assigned to the state selector field using the configurator’s identifier.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - state configurator</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+using CMS.Globalization;
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+// Registers the 'StateConfigurator' under the 'stateConfigurator' identifier
+[assembly: RegisterFormComponentConfigurator("stateConfigurator", typeof(StateConfigurator))]
+
+// Configurator for components of the 'DropDownComponent' type that populates the drop-down with 
+// a selection of all states based on the country selected in another field
+public class StateConfigurator : FormComponentConfigurator&lt;DropDownComponent&gt;
+{
+    private readonly IInfoProvider&lt;StateInfo&gt; stateInfoProvider;
+
+    // Obtains required dependencies using constructor injection
+    public StateConfigurator(IInfoProvider&lt;StateInfo&gt; stateInfoProvider)
+    {
+        this.stateInfoProvider = stateInfoProvider;
+    }
+
+    public override async Task Configure(DropDownComponent formComponent, IFormFieldValueProvider formFieldValueProvider, CancellationToken cancellationToken)
+    {
+        // Gets the identifier of the country selected in the field marked as a dependency
+        var countryId = GetCountryId(formFieldValueProvider);
+
+        // If no country is selected (typically on initial page load), hides the state selector
+        if (!countryId.HasValue)
+        {
+            HideField(formComponent);
+            return;
+        }
+
+        // Gets all states for a given country                        
+        var states = await stateInfoProvider.Get().WhereEquals("CountryID", countryId).GetEnumerableTypedResultAsync();
+
+        // Hides the state selector component if subdivision into states doesn't exist for the selected country
+        if (!states.Any())
+        {                                
+            HideField(formComponent);
+        }
+        else
+        {
+            // Populates the state selector with states that belong to the selected country
+            var stateItems = states.Select(s =&gt; s.StateID + ";" + s.StateDisplayName);                
+            formComponent.Properties.Options = String.Join("\r\n", stateItems);
+        }
+    }
+
+    private int? GetCountryId(IFormFieldValueProvider formFieldValueProvider)
+    {
+        if (formFieldValueProvider.TryGet&lt;string&gt;(nameof(MyWidgetProperties.Country), out var countryId))
+        {
+            if (!String.IsNullOrEmpty(countryId))
+            {
+                return Int32.Parse(countryId);
+            }
+        }
+        return null;
+    }
+
+    private void HideField(DropDownComponent formComponent)
+    {            
+        formComponent.VisibilityConditions.Add(new Invisible());
+    }
+}
+
+// Custom visibility condition that is always false, used to dynamically hide fields
+public class Invisible : VisibilityCondition
+{
+    public override bool Evaluate(IFormFieldValueProvider formFieldValueProvider)
+    {
+        return false;
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The following code assigns the country data provider and state configurator to <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">DropDownComponent</a> properties:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - country and state selector usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class MyWidgetProperties : IWidgetProperties
+{
+    [DropDownComponent(Label = "Country", Order = 0, Tooltip = "Select your country", DataProviderType = typeof(CountryDropDownOptionsProvider))]
+    public string Country { get; set; } 
+
+    [DropDownComponent(Label = "State", Order = 1)] 
+    // Assigns 'StateConfigurator' to the field using the configurator identifier and sets 'Country' as a dependency
+    [FormComponentConfiguration("stateConfigurator", nameof(Country))]
+    public string State { get; set; }
+}
+
+</code></pre>
+</div>
+
+<p>When the widget properties dialog is opened, the configurator ensures that the state field only shows when selecting a state for the country chosen via the <strong>Country</strong> property makes sense and populates the drop-down with relevant choices. In this example, <code>StateConfigurator.Configure</code> is called on the initial load of the dialog and every time a country is selected using the <strong>Country</strong> drop-down.</p>
+
+</body>
+</html>

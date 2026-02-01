@@ -1,0 +1,601 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Cache dependency keys</title>
+</head>
+<body>
+<p>This page list dummy cache keys and their format for all supported objects in the system.</p>
+
+<div>
+
+</div>
+<div>
+<p>Avoid setting dependencies on all objects of a particular type via <code>|all</code>. Clearing the cache every time any object of a given type changes has a high chance of significantly reducing the effectivness of your caching solution. Always prefer targeting specific objects either via code name or GUID.</p>
+</div>
+
+<h2 id="reusable-content-items">Reusable content items</h2>
+<p>The following cache keys are touched when the <strong>Published</strong> version of the target reusable <a href="/documentation/business-users/content-hub">content item</a> changes.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you need to set cache dependencies for other workflow states, use the <code>contentitem|allstates|*</code> prefix. Where <code>*</code> can be substituted for any expression from the table that begins with <code>contentitem</code>. For example:</p>
+<ul>
+<li><code>contentitem|allstates|all</code></li>
+<li><code>contentitem|allstates|byschema|MySchema</code></li>
+</ul>
+</div>
+
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Dependency on</p>
+</td>
+<td>
+<p>Cache key format</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>All items</p>
+</td>
+<td>
+<p>contentitem|all</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|all</code></p>
+</td>
+<td>
+<p>Targets all items in the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ID</p>
+</td>
+<td>
+<p>contentitem|byid|&lt;ID&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byid|53</code></p>
+</td>
+<td rowspan="2">
+<p>Targets an item by its database ID and optionally language variant.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ID and language variant</p>
+</td>
+<td>
+<p>contentitem|byid|&lt;ID&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byid|53|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name</p>
+</td>
+<td>
+<p>contentitem|byname|&lt;codeName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byname|TheArtOfCoffeeCupping-pzodajb5</code></p>
+</td>
+<td rowspan="2">
+<p>Targets an item by its code name and optionally language variant.</p>
+<p>Code names of content items can be found on the <strong>Properties</strong> tab when editing items in the <strong>Content hub</strong> application.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name and language variant</p>
+</td>
+<td>
+<p>contentitem|byname|&lt;codeName&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byname|TheArtOfCoffeeCupping-pzodajb5|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GUID</p>
+</td>
+<td>
+<p>contentitem|byguid|&lt;GUID&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byguid|affc44f3-...</code></p>
+</td>
+<td rowspan="2">
+<p>Targets an item by its GUID and optionally language variant.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GUID and language variant</p>
+</td>
+<td>
+<p>contentitem|&lt;GUID&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byguid|affc44f3-...|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content type</p>
+</td>
+<td>
+<p>contentitem|bycontenttype|&lt;contentType&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|bycontenttype|Medio.Clinic</code></p>
+</td>
+<td rowspan="2">
+<p>Targets all items of the given content type and optionally language variant.</p>
+<p><code>contentType</code> must match the full code name (namespace and name) of the targeted content type.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content type and language variant</p>
+</td>
+<td>
+<p>contentitem|bycontenttype|&lt;contentType&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|bycontenttype|Medio.Clinic|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">Reusable field schema</a> name</p>
+</td>
+<td>
+<p>contentitem|byschema|{schemaname}</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byschema|MySchema</code></p>
+</td>
+<td rowspan="2">
+<p>Targets all items using the given schema name and optionally language variant.</p>
+<p><code>schemaname</code> must match the name of the targeted schema.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Reusable field schema name and item language variant</p>
+</td>
+<td>
+<p>contentitem|byschema|{schemaname}|{language}</p>
+<p><strong>Example:</strong></p>
+<p><code>contentitem|byschema|MySchema|czech</code></p>
+</td>
+</tr>
+</table>
+
+<h2 id="pages">Pages</h2>
+<p>The following cache keys are touched when the <strong>Published</strong> version of the target <a href="/documentation/business-users/website-content">page</a> changes.</p>
+<p>If you need to set cache dependencies for other workflow states, use the <code>webpageitem|allstates|*</code> prefix. Where <code>*</code> can be substituted for any expression from the table, omitting the <code>webpageitem</code> prefix. For example: <code>webpageitem|allstates|all</code>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Dependency on</p>
+</td>
+<td>
+<p>Cache key format</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>webpageitem|all</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|all</code></p>
+</td>
+<td>
+<p>Targets all pages in the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>All in website channel</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|all</p>
+<p><strong>Example:</strong> <code>webpageitem|bychannel|MyChannel|all</code></p>
+</td>
+<td>
+<p>Targets all pages under the specified website channel.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ID</p>
+</td>
+<td>
+<p>webpageitem|byid|&lt;ID&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|byid|53</code></p>
+</td>
+<td rowspan="2">
+<p>Targets a page by it’s database ID and optionally language variant.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ID and language variant</p>
+</td>
+<td>
+<p>webpageitem|byid|&lt;ID&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|byid|53|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name</p>
+</td>
+<td>
+<p>webpageitem|byname|&lt;codeName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|byname|TheArtOfCoffeeCupping-pzodajb5</code></p>
+</td>
+<td rowspan="2">
+<p>Targets a page by its code name and optionally language variant.</p>
+<p>The code name of a page can be found on the <strong>Properties</strong> tab when viewing pages under website channels.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name and language variant</p>
+</td>
+<td>
+<p>webpageitem|byname|&lt;codeName&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|byname|TheArtOfCoffeeCupping-pzodajb5|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GUID</p>
+</td>
+<td>
+<p>webpageitem|byguid|&lt;GUID&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|byguid|affc44f3-...</code></p>
+</td>
+<td rowspan="2">
+<p>Targets an item by its GUID and optionally language variant.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GUID and language variant</p>
+</td>
+<td>
+<p>webpageitem|byguid|&lt;GUID&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|byguid|affc44f3-...|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content type in website channel</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|bycontenttype|&lt;contentType&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|bychannel|MyChannel|bycontenttype|My.Article</code></p>
+</td>
+<td rowspan="2">
+<p>Targets all pages of the specified content type and optionally language variant in the given channel.</p>
+<p><code>contentType</code> must match the full code name (namespace and name) of the targeted content type.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Content type in website channel and language variant</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|bycontenttype|&lt;contentType&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|bychannel|MyChannel|bycontenttype|My.Article|czech</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page path in website channel</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|bypath|&lt;pagePath&gt;</p>
+<p><strong>Example:</strong> <code>webpageitem|bychannel|MyChannel|bypath|/Home</code></p>
+</td>
+<td rowspan="2">
+<p>Targets a page with the specified page path, channel, and optionally language variant.</p>
+<p><code>pagePath</code> must be a valid tree path.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+<p>Changing a page’s path touches both the old and the new <code>bypath</code> dependency.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page path and language variant in website channel</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|bypath|&lt;pagePath&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong> <code>webpageitem|bychannel|MyChannel|bypath|/Home|greek</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page path children in website channel</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|childrenofpath|&lt;pagePath&gt;</p>
+<p><strong>Example:</strong> <code>webpageitem|bychannel|MyChannel|childrenofpath|/Articles</code></p>
+</td>
+<td rowspan="2">
+<p>Targets all children on all sublevels of the specified page path. Optionally targets only specified language variants.</p>
+<p><code>pagePath</code> must be a valid tree path.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Page path children of language variant in website channel</p>
+</td>
+<td>
+<p>webpageitem|bychannel|&lt;channelName&gt;|childrenofpath|&lt;pagePath&gt;|&lt;languageName&gt;</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|bychannel|MyChannel|childrenofpath|/Articles|greek</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">Reusable field schema</a> name</p>
+</td>
+<td>
+<p>webpageitem|bychannel|{channel}|byschema|{schemaname}</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|bychannel|MyChannel|byschema|MySchema</code></p>
+</td>
+<td rowspan="2">
+<p>Targets all pages using the specified schema name and optionally language variant in the given channel.</p>
+<p><code>schemaname</code> must match the name of the targeted schema.</p>
+<p><code>languageName</code> must match the code name of a language registered in the <strong>Languages</strong> application.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Reusable field schema name and page language variant</p>
+</td>
+<td>
+<p>webpageitem|bychannel|{channel}|byschema|{schemaname}|{language}</p>
+<p><strong>Example:</strong></p>
+<p><code>webpageitem|bychannel|MyChannel|byschema|MySchema|czech</code></p>
+</td>
+</tr>
+</table>
+
+<h2 id="reusable-field-schemas">Reusable field schemas</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Dependency on</p>
+</td>
+<td>
+<p>Cache key format</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Schema name</p>
+</td>
+<td>
+<p>reusablefieldschema|byname|{name}</p>
+<p><strong>Example:</strong></p>
+<p><code>reusablefieldschema|byname|MySchema</code></p>
+</td>
+<td>
+<p>Targets a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> by its name. Touched when anything related to the schema changes (e.g., schema update, assignment to content type, removal).</p>
+</td>
+</tr>
+</table>
+
+<h2 id="media-files">Media files</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Dependency on</p>
+</td>
+<td>
+<p>Cache key format</p>
+</td>
+<td>
+<p>Example</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>GUID</p>
+</td>
+<td>
+<p>mediafile|&lt;guid&gt;</p>
+</td>
+<td>
+<p>mediafile|1ced44f3-f2fc- …</p>
+</td>
+<td>
+<p>Cache dependencies can only target <a href="/documentation/business-users/media-libraries/manage-media-files">media library files</a> using their GUID.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="settings">Settings</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Dependency on</p>
+</td>
+<td>
+<p>Cache key format</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Code name</p>
+</td>
+<td>
+<p>cms.settingskey|byname|&lt;settingCodeName&gt;</p>
+</td>
+<td>
+<p>Targets the <a href="/documentation/developers-and-admins/configuration/settings">settings</a> specified by the given code name.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="general-objects">General objects</h2>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Dependency on</p>
+</td>
+<td>
+<p>Cache key format</p>
+</td>
+<td>
+<p>Example</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>All</p>
+</td>
+<td>
+<p>&lt;object type&gt;|all</p>
+</td>
+<td>
+<p>cms.user|all</p>
+</td>
+<td>
+<p>Targets all administration users in the system.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ID</p>
+</td>
+<td>
+<p>&lt;object type&gt;|byid|&lt;id&gt;</p>
+</td>
+<td>
+<p>cms.user|byid|53</p>
+</td>
+<td>
+<p>Targets the administration user with the specific ID.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name</p>
+</td>
+<td>
+<p>&lt;object type&gt;|byname|&lt;code name&gt;</p>
+</td>
+<td>
+<p>cms.user|byname|administrator</p>
+</td>
+<td>
+<p>Targets the administration user with the specific code name.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GUID</p>
+</td>
+<td>
+<p>&lt;object type&gt;|byguid|&lt;guid&gt;</p>
+</td>
+<td>
+<p>cms.user|byguid|1ced44f3-f2fc- …</p>
+</td>
+<td>
+<p>Targets the administration user with the specific GUID.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="form-data-records">Form data records</h2>
+<p>The system currently does not touch any dummy cache keys when changes occur for data submitted via <a href="/documentation/business-users/digital-marketing/forms">forms</a>.</p>
+<p>As a workaround, developers can prepare custom <a href="/documentation/developers-and-admins/customization/handle-global-events">event handlers</a> for <code>BizFormItemEvents</code>. Use the handler method to touch a custom cache key, and then enter the key into your cache dependencies. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+private void FormItem_InsertAfterHandler(object sender, BizFormItemEventArgs e)
+{
+    // Touches a custom cache key, for example: "customformdata|bizform.contactus"
+    CacheHelper.TouchKey("customformdata|" + e.Item.BizFormClassName);
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

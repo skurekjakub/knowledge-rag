@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Dependency injection</title>
+</head>
+<body>
+<p>When developing applications with Xperience, you may need to use service classes provided by the API. For example, services for managing users, handling digital marketing activities, and more.</p>
+<p>To use a service, you first need to create a service instance. We recommend instantiating Xperience services via dependency injection.</p>
+
+<div>
+
+</div>
+<div>
+<p>If you are not familiar with the dependency injection design pattern in general, we recommend that you learn about it first. For example, you can start with the <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection" target="_blank">Dependency Injection</a> article.</p>
+</div>
+
+<h2 id="dependency-injection-design-pattern">Dependency injection design pattern</h2>
+<p>Dependency injection is a design pattern that is common to many programming languages and environments. Instead of instantiating a service instance inside a class constructor, you can pass the service instance into the constructor as a parameter. This way classes (e.g. controllers) do not need to obtain and configure the instance of a class they depend on.</p>
+<p>The following code snippet shows a general example of the dependency injection design approach. Notice that the controller constructor accepts an instance of a service created by the dependency injection <a href="#dependency-injection-providers">provider</a>, without the need to instantiate explicitly.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class AccountController : Controller
+{
+    private readonly IMembershipActivityLogger mMembershipActivityLogger;
+
+    public AccountController(IMembershipActivityLogger membershipActivityLogger)
+    {
+        mMembershipActivityLogger = membershipActivityLogger;
+    }
+
+    ...
+
+}
+
+</code></pre>
+</div>
+
+<p>Developing applications with the dependency injection pattern in mind provides the following benefits:</p>
+<ul>
+<li>Less maintenance – changing object implementation is easier without strong coupling.</li>
+<li>Easier testing – application logic can be tested in isolation from its dependent objects.</li>
+<li>Loose coupling – classes are not directly dependent on one another.</li>
+</ul>
+<h2 id="dependency-injection-providers">Dependency injection providers</h2>
+<p>ASP.NET Core Web applications come with a dependency injection provider developed by Microsoft. The provider is designed to serve the needs of the framework and most consumer applications. However, it can also be replaced with another third-party service container.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Service container requirements</strong></p>
+<p>To be compatible with Xperience, third-party service containers must support the features available in the minimum .NET version specified in the <a href="/documentation/developers-and-admins/installation/system-requirements">current system requirements</a>, including <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?#keyed-services" target="_blank">Keyed services</a>.</p>
+</div>
+
+<p>Xperience adds all of its services into the application’s <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" target="_blank">IServiceCollection</a> during the <code>IServiceCollection.AddKentico()</code> call (see <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects">Configure new projects</a>). This approach is completely independent of the service provider used by the application.</p>
+<p>For example, to substitute the default Microsoft service container with <a href="https://autofac.org/" target="_blank">Autofac</a>:</p>
+<ol type="1">
+<li><p>Add the <strong>Autofac.Extensions.DependencyInjection</strong> NuGet package to your project.</p></li>
+<li>
+<p>Call <code>IHostBuilder.UseServiceProviderFactory(new AutofacServiceProviderFactory())</code> when building the web application.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ var builder = WebApplication.CreateBuilder(args);
+
+ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
+ // Register services directly with Autofac here
+ builder.Host.ConfigureContainer&lt;ContainerBuilder&gt;(builder =&gt; builder.RegisterModule(new MyApplicationModule()));
+
+ var app = builder.Build();
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The application now uses Autofac for dependency resolution.</p>
+
+</body>
+</html>

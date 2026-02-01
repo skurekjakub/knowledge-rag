@@ -1,0 +1,611 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>ObjectQuery API</title>
+</head>
+<body>
+<p>The Xperience ObjectQuery API provides an abstraction layer over the SQL database. Developers use ObjectQuery to retrieve data from the Xperience database. The main advantages of using ObjectQuery are:</p>
+<ul>
+<li>strongly typed and enumerable results</li>
+<li>independence on specific versions of SQL syntax</li>
+<li>security</li>
+</ul>
+<p>ObjectQuery call example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var query = UserInfo.Provider.Get();
+
+</code></pre>
+</div>
+
+<p>The example query retrieves all users stored within Xperience.</p>
+<p>The resulting collection contains <strong>Info</strong> objects. One instance of an <em>Info</em> object represents one row of data from the database. In this case, the result is a set of <code>UserInfo</code> objects holding the data of individual users. The result allows you to iterate through the records using a foreach statement.</p>
+<p>Similarly to users, you can use ObjectQuery to retrieve any other type of object. The Xperience API offers <code>IInfoProvider</code> interfaces (services) for individual object types, with a <code>Get</code> method that performs an appropriate ObjectQuery call. The <code>IInfoProvider</code> services can be added to your code <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">using dependency injection</a> or accessed through the <code>Provider</code> property of the corresponding <code>Info</code> class.</p>
+<p>The following table provides an example of the naming conventions.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Object</p>
+</td>
+<td>
+<p>Info class name</p>
+</td>
+<td>
+<p>IInfoProvider service</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>User</p>
+</td>
+<td>
+<p>UserInfo</p>
+</td>
+<td>
+<p>IUserInfoProvider</p>
+</td>
+</tr>
+</table>
+
+<h2 id="select-specific-columns">Select specific columns</h2>
+<p>ObjectQuery allows you to select only those columns that you need to work with. Selecting only the required columns is a good practice that prevents issues with performance of your code by transferring only the necessary data from the database server to the application server.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var columnsQuery = UserInfo.Provider.Get().Columns("FirstName", "LastName", "UserName");
+
+</code></pre>
+</div>
+
+<p>This example query retrieves all users but limits the data to the users’ first names, last names, and usernames.</p>
+<h2 id="limit-retrieved-results-sql-where">Limit retrieved results (SQL WHERE)</h2>
+<p>ObjectQuery provides a way to narrow down the resulting data using SQL syntax independent where conditions.</p>
+<p>Use predefined where condition methods that provide optimized performance and make your code easily readable. The predefined where condition methods include, but are not limited to:</p>
+<ul>
+<li>
+<code>WhereEquals("ColumnName", value)</code> – checks the equality of the value in the specified column with the value specified in the second parameter.</li>
+<li>
+<code>WhereGreaterThan("ColumnName", value)</code> – compares the value in the specified column with the second parameter.</li>
+<li>
+<code>WhereNull("ColumnName")</code>– select only rows where the specified column has a NULL value.</li>
+<li>
+<code>WhereNot(whereCondition)</code> – negates the specified where condition.</li>
+<li>
+<code>WhereStartsWith("ColumnName", "Value")</code> – only works for text columns. Selects only rows whose value in the specified column starts with the given value.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves all users whose first name is "Joe"
+var whereQuery = UserInfo.Provider.Get().WhereEquals("FirstName", "Joe");
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: Use Visual Studio’s IntelliSense to help you pick the right predefined where condition.</p>
+</div>
+
+<h3 id="logical-operators">Logical operators</h3>
+<p>ObjectQuery allows you to join together multiple where conditions.</p>
+<ul>
+<li>By default, the conditions are combined using an <code>AND</code> parameter.</li>
+<li>To place an <code>OR</code> operator between conditions, call the <code>Or()</code> method between the given <code>Where</code> methods.</li>
+<li>You can also explicitly call the <code>And()</code> method if you wish to make the code of your conditions clearer and easier to read.</li>
+</ul>
+<p><strong>Example 1</strong>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves users whose first name is "Joe" or last name is "Smith"
+var whereQuery = UserInfo.Provider.Get()
+    .Where("FirstName", QueryOperator.Equals, "Joe")
+    .Or()
+    .Where("LastName", QueryOperator.Equals, "Smith");
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>Generated condition</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+DECLARE @FirstName nvarchar(max) = N'Joe';
+DECLARE @LastName nvarchar(max) = N'Smith';
+
+...
+
+WHERE [FirstName] = @FirstName OR [LastName] = @LastName
+
+</code></pre>
+</div>
+
+<p><strong>Example 2</strong>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves all enabled users whose first name is "Joe" and email address ends with "localhost.local"
+var whereQuery = UserInfo.Provider.Get()
+    .WhereEquals("FirstName", "Joe")
+    .WhereEquals("UserEnabled", 1)
+    .WhereEndsWith("Email", "localhost.local");
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>Generated condition</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+DECLARE @FirstName nvarchar(max) = N'John';
+DECLARE @UserEnabled int = 1;
+DECLARE @Email nvarchar(max) = N'%localhost.local';
+
+...
+
+WHERE [FirstName] = @FirstName AND [UserEnabled] = @UserEnabled AND [Email] LIKE @Email
+
+</code></pre>
+</div>
+
+<h3 id="nested-where-conditions">Nested where conditions</h3>
+<p>If you need to construct complex where conditions with multiple <code>AND</code>/<code>OR</code> operators, use nested where conditions:</p>
+<p><strong>Note:</strong> You must use the <code>new</code>keyword to construct nested where conditions.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Retrieves users named "Smith", whose first name is "Joe" or "John"
+var nestedWhereQuery = UserInfo.Provider.Get()
+    .WhereEquals("LastName", "Smith")
+    .Where(new WhereCondition()
+        .WhereEquals("FirstName", "Joe")
+        .Or()
+        .WhereEquals("FirstName", "John")
+    );
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>SQL</span>
+</div>
+<strong>Generated condition</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+DECLARE @LastName nvarchar(max) = N'Smith';
+DECLARE @FirstName nvarchar(max) = N'Joe';
+DECLARE @FirstName1 nvarchar(max) = N'John';
+
+...
+
+WHERE [LastName] = @LastName AND ([FirstName] = @FirstName OR [FirstName] = @FirstName1)
+
+</code></pre>
+</div>
+
+<h2 id="order-query-results-sql-order-by">Order query results (SQL ORDER BY)</h2>
+<p>ObjectQuery can also sort data. Use the <code>OrderBy</code>, <code>OrderByAscending</code>, or <code>OrderByDescending</code> methods.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var orderedQuery = UserInfo.Provider.Get()
+    .WhereGreaterThan("UserCreated", DateTime.Now.AddDays(-7))
+    .OrderByDescending("UserCreated");
+
+</code></pre>
+</div>
+
+<p>This example retrieves users who registered or were created in the system during the past week. The results are in descending order.</p>
+<h2 id="limit-the-number-of-query-results-sql-top-n">Limit the number of query results (SQL TOP N)</h2>
+<p>ObjectQuery can also retrieve only a specified number of results.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var topNQuery = EventLogInfo.Provider.Get()
+    .TopN(5)
+    .OrderByDescending("EventTime");
+
+</code></pre>
+</div>
+
+<p>This example retrieves the latest 5 event log records with the newest ordered first.</p>
+<h2 id="join-multiple-tables-sql-join">Join multiple tables (SQL JOIN)</h2>
+<p>With ObjectQuery, you can combine data from two or more tables based on a common field.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var joinQuery = UserInfo.Provider.Get()
+    .Source(sourceItem =&gt; sourceItem.Join&lt;MediaFileInfo&gt;("UserID", "FileModifiedByUserID"))
+    .WhereEmpty("Email");
+
+</code></pre>
+</div>
+
+<p>This example retrieves users who have an empty email value, together with data about media files modified by the given users.</p>
+<p>The code on the second line appends <em>Media_File</em> table rows to the appropriate user records based on their ID. The code on the third line then selects only rows where the <em>Email</em> column is empty.</p>
+
+<div>
+
+</div>
+<div>
+<p>By default, the <code>Join&lt;TInfo&gt;</code> method performs an Inner join. For other types of joins, you can call the <code>LeftJoin&lt;TInfo&gt;</code> or <code>RightJoin&lt;TInfo&gt;</code> methods. See <a href="http://www.w3schools.com/sql/sql_join.asp" target="_blank">SQL Joins</a> for more information.</p>
+<p>For advanced scenarios, you can use the non-generic version of the <code>Join</code> method. In this case, you need to identify the target table via a <code>QuerySourceTable</code> object (requires the exact database table name, optionally allows you to specify an alias and <a href="https://docs.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql" target="_blank">SQL Hints</a>).</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Working with joined data</strong></p>
+<p>If you need to work with data containing columns from multiple tables, convert the result of the query to a <code>DataSet</code>. The default ObjectQuery result is strongly typed, so only allows you to access the data of a single Xperience <code>Info</code> class. Use the <code>Result</code> property of ObjectQuery to get the results as a <code>DataSet</code>.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Limitation</strong>: ObjectQuery joins cannot be used for tables located in different databases. In these cases, use separate ObjectQuery calls and then combine the resulting data manually.</p>
+</div>
+
+<h3 id="joining-3-or-more-tables">Joining 3 or more tables</h3>
+<p>You can chain together multiple <code>Join</code> methods to combine rows from 3 or more database tables.</p>
+<p><strong>Note</strong>: When you call the <code>Join</code> method for a query source, the <em>left column</em> parameter works with columns within the given query source table by default. When using multiple joins, we recommend that you explicitly specify both the table and column by adding a table name prefix to the left column name, for example: <em>“CMS_User.UserID”</em></p>
+<p>The following example joins together rows from 3 tables based on shared user IDs and returns the result as a DataSet.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Data;
+
+using CMS.ContactManagement;
+using CMS.MediaLibrary;
+using CMS.Membership;
+
+...
+
+DataSet data = UserInfo.Provider.Get()
+    .Source(sourceItem =&gt; sourceItem.Join&lt;MediaFileInfo&gt;("CMS_User.UserID", "FileModifiedByUserID")
+                                    .Join&lt;ContactInfo&gt;("CMS_User.UserID", "ContactOwnerUserID")
+            )
+    .Columns("UserID, UserName, ContactEmail, FileTitle")
+    .Result;
+
+</code></pre>
+</div>
+
+<h2 id="work-with-objectquery-results">Work with ObjectQuery results</h2>
+<p>ObjectQuery results are <a href="http://en.wikipedia.org/wiki/Lazy_loading" target="_blank">lazy-loaded</a>. Lazy loading increases performance by executing queries only when you need to work with their results. Most of the examples on this page only construct the proper queries. The SQL queries are executed when you either enumerate the results (using the foreach statement or by calling <code>GetEnumerableTypedResult</code>), or cast the query as a different type. When you work with the results after the query executed, the system does not perform any additional requests to the database.</p>
+<p>The most common example of working with query results is iterating through them. Use a standard foreach loop.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var userQuery = UserInfo.Provider.Get();
+
+foreach (UserInfo user in userQuery)
+{
+    // Do something with the UserInfo object
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Tip</strong>: You can access the results of ObjectQuery calls as a <code>DataSet</code> through the <code>Result</code> property. This is only recommended for data containing columns from multiple different object types or tables (joins and unions).</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>LINQ support</strong></p>
+<p>ObjectQuery provides limited support for <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/" target="_blank">LINQ</a>.</p>
+<p>Currently, we only recommend using LINQ for simple expressions, such as comparisons with constants. Any other expressions can lead to sub-optimal query execution. Use the ObjectQuery API directly to get optimal performance.</p>
+</div>
+
+<h3 id="asynchronous-execution-of-queries">Asynchronous execution of queries</h3>
+<p>The ObjectQuery API supports asynchronous loading of data from Xperience.</p>
+<p>After you prepare a query with any required parameters, you can execute it asynchronously by enumerating the results via the <code>GetEnumerableTypedResultAsync()</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Prepares a query that loads all users
+var userQuery = UserInfo.Provider.Get();
+
+// Asynchronously executes the query and loads the results into an enumerable collection
+IEnumerable&lt;UserInfo&gt; users = await userQuery.GetEnumerableTypedResultAsync();
+
+</code></pre>
+</div>
+
+<p>To asynchronously load a single Xperience object, call the <code>GetAsync</code> method of the corresponding <code>IInfoProvider</code> service.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Asynchronously loads a UserInfo object representing a specified user (by ID or GUID)
+Task&lt;UserInfo&gt; user = UserInfo.Provider.GetAsync(userId);
+
+</code></pre>
+</div>
+
+<h3 id="reuse-queries-mutability">Reuse queries (mutability)</h3>
+<p>ObjectQuery instances are mutable by default. This means that any changes (method calls) made to existing instances also modify the original query.</p>
+<p>If you wish to reuse an ObjectQuery instance without modifying the original, use one of the following approaches:</p>
+<ul>
+<li>Call the <code>Immutable()</code> method for the original query. This ensures automatic cloning of the ObjectQuery instance when it is modified.</li>
+<li>If you want to leave a query mutable, you can call the <code>Clone()</code> method to create a new instance which can then be modified without affecting the original.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Linq;
+using CMS.Membership;
+
+...
+
+// Creates an immutable query for loading users ordered by their full name
+var userQuery = UserInfo.Provider.Get()
+    .OrderBy("FullName")
+    .Immutable();
+
+// Gets a subset of users based on the original query
+var enabledUserList = userQuery
+    .WhereEquals("UserEnabled", 1)
+    .ToList();
+
+// Gets a list of users using the original unmodified query
+var userList = userQuery.ToList();
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

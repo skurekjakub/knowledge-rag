@@ -1,0 +1,1686 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Content item query</title>
+</head>
+<body>
+<p>This page provides information about the parameterization methods available for the <a href="/documentation/developers-and-admins/api/content-item-api/content-item-query-api">Content item API</a>. The methods allow you to adjust queries and limit which items are retrieved or specify which columns are loaded to improve performance, for example.</p>
+<h2 id="contentitemquerybuilder-methods">ContentItemQueryBuilder methods</h2>
+<h3 id="forcontenttype">ForContentType </h3>
+<p>Retrieves all items of the specified content type. Generates a subquery that can be further configured. See <a href="#content-query-parameterization">Content query parameterization</a> and <a href="#forcontenttype-parameterization">ForContentType parameterization</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves all content items of the 'Sample.Type' type
+builder.ForContentType("Sample.Type");
+</code></pre>
+</div>
+
+<h3 id="forcontenttypes">ForContentTypes </h3>
+<p>Retrieves all content items across all content types. Use the method’s <a href="#forcontenttypes-parameterization">inner parameterization</a> to limit the selection to a subset of items.</p>
+<p>Does not include content type field data and web page data by default. Use <a href="#FCTs-WCTF">WithContentTypeFields</a> or <a href="#FCTs-WWPD">WithWebPageData</a> to include it.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{
+    // Retrieves all items with the given reusable schema
+    parameters.OfReusableSchema("PageMetadata");
+});
+</code></pre>
+</div>
+
+<h3 id="parameters">Parameters </h3>
+<p>Specifies a set of parameters that apply to all items selected by individual subqueries. See <a href="#content-query-parameterization">Content query parameterization</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type")
+       .ForContentType("Sample.NewsRelease")
+       // Sorts all records according to the 'ContentItemName' column
+       .Parameters(globalParams =&gt; globalParams.OrderBy("ContentItemName"))
+
+</code></pre>
+</div>
+
+<h3 id="inlanguage">InLanguage</h3>
+<p>Selects items from the specified language. Use a language code name as specified in the <strong>Languages</strong> application. The <code>InLanguage</code> method is applied to the result of all its preceding subqueries in a query.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type")
+       .ForContentType("Sample.NewsRelease")
+       // Selects only items from the English language
+       .InLanguage("en");
+
+</code></pre>
+</div>
+
+<p>More advanced scenario including linked items:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("project.store", subqueryParameters =&gt;
+        {
+            // Retrieves all linked items up to the maximum depth of 1
+            subqueryParameters.WithLinkedItems(1);
+        })
+        // Selects only items from the English language
+        .InLanguage("en");
+
+</code></pre>
+</div>
+
+<p>You can see the order in which the query methods are evaluated in the following diagram:</p>
+<p></p>
+<h3 id="inworkspaces">InWorkspaces</h3>
+<p>Selects items from the specified <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspaces</a>. Use workspace code names as specified in the <strong>Workspaces</strong> application. The <code>InLanguage</code> method is applied to the result of all its preceding subqueries in a query.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type")
+       .ForContentType("Sample.NewsRelease")
+       // Selects only items from the WonkaFactory and Acme workspaces
+       .InWorkspaces("WonkaFactory", "Acme");
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>Website channel pages are not scoped under workspaces. Combining this method with <a href="#ReferenceContentitemquery-ForWebsite">ForWebsite</a> in a single query leads to an empty query result.</p>
+</div>
+
+<p>More advanced scenario including linked items:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("project.store", subqueryParameters =&gt;
+        {
+            // Retrieves all linked items up to the maximum depth of 1
+            subqueryParameters.WithLinkedItems(1);
+        })
+        // Selects only items from the WonkaFactory and Acme workspaces
+        .InWorkspaces("WonkaFactory", "Acme");
+
+</code></pre>
+</div>
+
+<p>You can see the order in which the query methods are evaluated in the following diagram:</p>
+<p></p>
+<h2 id="content-query-parameterization">Content query parameterization</h2>
+<h3 id="columns">Columns</h3>
+<p>Limits the columns that are retrieved by the query. See <a href="/documentation/developers-and-admins/api/content-item-api/content-item-database-structure">Content item database structure</a>.</p>
+<p>If not specified, the query by default includes all columns from all selected content types.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Retrieves only the 'Title' and 'Content' columns from 'Sample.Type'
+    subqueryParameters.Columns("Title", "Content");
+});
+</code></pre>
+</div>
+
+<p>If <em>Columns</em> is called multiple times for a content type, columns from all method calls are included.</p>
+<p>The method also supports column aliasing:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+builder.ForContentType("Sample.Type1", subqueryParameters =&gt;
+{
+    // Aliases 'Type1Title' as 'Title'
+    subqueryParameters.Columns(QueryColumn.Alias("Type1Title", "Title"));
+})
+ForContentType("Sample.Type2", subqueryParameters =&gt;
+{
+    // Aliases 'Type2Title' as 'Title'
+    subqueryParameters.Columns(QueryColumn.Alias("Type2Title", "Title"));
+})
+// Orders both 'Type1' and 'Type2'
+.Parameters(globalParameters =&gt; globalParameters.OrderBy("Title"));
+</code></pre>
+</div>
+
+<h4 id="urlpathcolumns">UrlPathColumns</h4>
+<p>A specialized extension method that adds only the columns required for <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">web page URL retrieval</a>. This method helps optimize performance when you need only URL-related data.</p>
+<p>When used with <a href="#forcontenttype-parameterization">ForContentType</a>, call the method inside the subquery parameterization action:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>UrlPathColumns usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7"><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Page", subqueryParameters =&gt;
+{
+    // Retrieves only columns required for URL path generation
+    subqueryParameters.ForWebsite("SampleChannel")
+                      .UrlPathColumns();
+});
+</code></pre>
+</div>
+
+<p>When used with <a href="#forcontenttypes-parameterization">ForContentTypes</a>, call the method on the global <code>Parameters</code> object:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>UrlPathColumns usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7"><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes( /* query parameters... */)
+       .Parameters(p =&gt;
+          // Retrieves only columns required for URL path generation
+          p.UrlPathColumns()
+       );
+</code></pre>
+</div>
+
+<p><code>UrlPathColumns</code> must be used in conjunction with <code>ForWebsite</code> or <code>WithWebPageData</code>. It automatically includes all columns required by the system to correctly resolve page URLs.</p>
+<p>You can combine <code>UrlPathColumns</code> with additional <code>Columns</code> calls if you need URL columns in addition to other fields:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>UrlPathColumns usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7-8"><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Page", subqueryParameters =&gt;
+{
+    // Retrieves URL path columns plus the Title field
+    subqueryParameters.ForWebsite("SampleChannel")
+                     .UrlPathColumns()
+                     .Columns("Title");
+});
+</code></pre>
+</div>
+
+<h3 id="offset">Offset</h3>
+<p>Offsets the records by the specified <code>index</code> (zero-based) and takes the next <code>X</code> items specified by <code>fetch</code>.</p>
+<p>Must be used together with <a href="#ReferenceContentitemquery-OrderByParam">OrderBy</a>, otherwise the pagination is not applied (as the system cannot guarantee a deterministic ordering of the returned results).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Takes the next 5 items starting from the 11th
+    subqueryParameters.Offset(10, 5);
+    subqueryParameters.OrderBy("ContentItemName");
+});
+</code></pre>
+</div>
+
+<h3 id="includetotalcount">IncludeTotalCount</h3>
+<p>Ensures that every retrieved item stores the total number of items, regardless of pagination applied by <em>Offset</em>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Includes the total number of items
+    subqueryParameters.IncludeTotalCount()
+    // Takes the next 5 items starting from the 11th
+    subqueryParameters.Offset(10, 5);
+    subqueryParameters.OrderBy("ContentItemName");
+});
+</code></pre>
+</div>
+
+<p>After executing the query, use <code>GetTotalCount</code> on an item in the result to get the total number of items.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var items = await queryExecutor.GetResult(builder, item =&gt; item);
+int? totalItemCount = items.First().GetTotalCount();
+</code></pre>
+</div>
+
+<h3 id="topn">TopN</h3>
+<p>Limits the number of records fetched from the database. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Takes the first 5 results from the selection
+    subqueryParameters.TopN(5);
+});
+</code></pre>
+</div>
+
+<h3 id="orderby">OrderBy</h3>
+<p>Allows ordering of the results based on the value of a specified column.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // By default, items in the specified columns are sorted in ascending order
+    subqueryParameters.OrderBy("ContentItemName");
+
+    // You can parameterize the behavior by providing an instance of 'CMS.DataEngine.OrderByColumn'
+    subqueryParameters.OrderBy(new OrderByColumn("ContentItemName", OrderDirection.Descending));
+});
+</code></pre>
+</div>
+
+<h3 id="where">Where</h3>
+<p>Inserts an <a href="https://learn.microsoft.com/en-us/sql/t-sql/queries/where-transact-sql" target="_blank">SQL WHERE</a> clause into the query.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WhereTrue</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Retrieves items that have the 'ShowInBanner' property set to true
+    subqueryParameters.Where(where =&gt; where.WhereTrue("ShowInBanner"));
+});
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WhereLike</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Multiple where operations are implicitly joined by AND
+    subqueryParameters.Where(where =&gt; where.WhereLike("ColumnA", "value")
+                                        .WhereLike("ColumnB", "value"));
+
+    // OR has to be specified explicitly
+    subqueryParameters.Where(where =&gt; where.WhereLike("ColumnA", "value")
+                                        .Or()
+                                        .WhereLike("ColumnB", "value"));
+});
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WhereStartsWith</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Retrieves items whose name starts with with 'Apple'  
+    subqueryParameters.Where(where =&gt; where.WhereStartsWith("ContentItemName", "Apple"));
+});
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The set of available <code>Where</code>extensions matches the expressivity of the SQL WHERE syntax. This page provides examples of only a few of the available methods.</p>
+</div>
+
+<h3 id="wherecontainstags">WhereContainsTags</h3>
+<p>Limits the query to content items that contain the <a href="/documentation/developers-and-admins/configuration/taxonomies">specified tags</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WhereContainsTags</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// A collection of tags, e.g., obtained from a Tag selector
+IEnumerable&lt;Guid&gt; tagIdentifiers;
+
+var builder = new ContentItemQueryBuilder()
+    .ForContentType(
+        "Some.Type",
+        subqueryParameters =&gt;
+            // Retrieves items with the specified tags
+            subqueryParameters.Where(where =&gt;
+                where.WhereContainsTags("SomeTaxonomy", tagIdentifiers))
+    ).InLanguage("en");
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WhereContainsTags</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// A collection of tags, e.g., obtained from a Tag selector
+IEnumerable&lt;Guid&gt; tagIdentifiers;
+var tagCollection = await TagCollection.Create(tagIdentifiers);
+
+var builder = new ContentItemQueryBuilder()
+    .ForContentType(
+        ArticlePage.CONTENT_TYPE_NAME,
+        subqueryParameters =&gt;
+            // Retrieves items with the specified tags and any child tags
+            subqueryParameters.Where(where =&gt;
+                where.WhereContainsTags("SomeTaxonomy", tagCollection))
+    ).InLanguage("en");
+</code></pre>
+</div>
+
+<h2 id="forcontenttype-parameterization">ForContentType parameterization</h2>
+<p>Methods described in this section can only be called from within subqueries generated by a <code>ContentItemBuilder.ForContentType</code> call. </p>
+<h3 id="forwebsite">ForWebsite </h3>
+<p>Configures the query to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve pages</a> from a specified <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>. Specify the following parameters:</p>
+<ul>
+<li>
+<code>websiteChannelName</code> – code name of the website channel from which the pages are retrieved.</li>
+<li>
+<code>pathMatch</code> – a parameter of type <code>PathMatch</code> used to limit the retrieved pages only to a certain section of the website’s content tree.</li>
+<li>
+<code>includeUrlPath</code> – indicates if the URL path should be included in the retrieved data.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ForWebsite</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Retrieves pages from the specified website channel
+    subqueryParameters.ForWebsite(
+                            websiteChannelName: "DancingGoatPages",
+                            pathMatch: PathMatch.Children("/Articles"),
+                            includeUrlPath: true);
+});
+</code></pre>
+</div>
+
+<p>See <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">Retrieve page content</a> for more information.</p>
+<h3 id="withlinkeditems">WithLinkedItems </h3>
+<p>Configures query to include <a href="/documentation/business-users/content-hub/content-items#link-content-items">linked content items</a> recursively up to the specified depth.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WithLinkedItems</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Retrieves all linked items up to the maximum depth of 2
+    subqueryParameters.WithLinkedItems(2);
+});
+</code></pre>
+</div>
+
+<p>If the collection includes web page items and you want to use web page specific data (such as URL and tree path), specify the <code>IncludeWebPageData</code> option.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IncludeWebPageData usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    // Retrieves all linked items up to the maximum depth of 2
+    // including web page data of linked web page items
+    subqueryParameters
+        .WithLinkedItems(2, options =&gt; options.IncludeWebPageData());
+});
+</code></pre>
+</div>
+
+<p>To see how the query result is bound to a model class, check out <a href="#ReferenceContentitemquery-WithLinkedItemsMap">WithLinkedItems mapping</a>.</p>
+<h3 id="linking">Linking </h3>
+<p>Retrieves all content items of the type specified in <code>ForContentType</code> that reference any of the content items from the provided collection in the given field. Enables loading data on-demand (lazily).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Linking</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves items of the 'project.staff' content type
+builder.ForContentType("project.staff", subqueryParameters =&gt;
+{
+    // Retrieves all content items of 'project.staff' type that reference any
+    // of the items in 'managersCollection' from their 'ManagerField' field
+    subqueryParameters.Linking("ManagerField", managersCollection);
+});
+</code></pre>
+</div>
+
+<p>For more information see <a href="#ReferenceContentitemquery-Linking">Linking details</a>.</p>
+<h3 id="linkedfrom">LinkedFrom </h3>
+<p>Retrieves content items of the type specified in <code>ForContentType</code> that are linked from the given field of items in the provided collection with the given content type. Enables loading data on-demand (lazily).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>LinkedFrom</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves items of the 'project.staff' content type
+builder.ForContentType("project.staff", subqueryParameters =&gt;
+{
+    // Items are retrieved for a collection of
+    // 'project.store' items - 'storesCollection' - and the field 'StaffField'
+    subqueryParameters.LinkedFrom("project.store", "StaffField", storesCollection);
+});
+</code></pre>
+</div>
+
+<p>For more information see <a href="#ReferenceContentitemquery-LinkedFrom">LinkedFrom details</a>.</p>
+<h3 id="linkedfromschemafield">LinkedFromSchemaField</h3>
+<p>Retrieves all content items of the type specified in <code>ForContentType</code> that are linked from a collection of items via a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable schema field</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>LinkedFromSchemaField usage example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentType("Sample.Type", subqueryParameters =&gt;
+{
+    subqueryParameters.LinkedFromSchemaField("SchemaFieldCodeName", contentItems);
+});
+</code></pre>
+</div>
+
+<p>For more information see <a href="#FCT-LinkedFromSchemaField">LinkedFromSchemaField details</a>.</p>
+<h3 id="seturllanguagebehavior">SetUrlLanguageBehavior</h3>
+<p>Defines the behavior for the language slug of URL paths when web pages are retrieved in a fallback language. This method is relevant when requesting multilingual content (<a href="#inlanguage">InLanguage</a>) and <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">retrieving page URL</a> information (e.g., through methods like <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">GetUrl()</a>, often with <a href="#ReferenceContentitemquery-ForWebsite">ForWebsite</a> or <a href="#FCTs-WWPD">WithWebPageData</a>).</p>
+<p>It accepts a <code>UrlLanguageBehavior</code> enum value:</p>
+<ul>
+<li>
+<code>UrlLanguageBehavior.UseRequestedLanguage</code> – When a page is served in a <a href="/documentation/developers-and-admins/configuration/languages#language-fallbacks">fallback language</a>, its URL path is generated based on the language originally requested by the <code>InLanguage</code> method. For instance, if Spanish is requested and an English page is returned as a fallback, the URL path will still be structured as if it were a Spanish page (e.g., using URL prefixes as configured in the <a href="/documentation/developers-and-admins/configuration/languages#set-up-a-new-language">Languages</a> application).</li>
+<li>
+<code>UrlLanguageBehavior.UseFallbackLanguage</code> (Default) – When a page is served in a fallback language, its URL path is generated based on the language of the actual fallback content. In the example below, the URL path would be structured as an English page.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Using SetUrlLanguageBehavior</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7"><code>
+// Assume 'builder' is an initialized ContentItemQueryBuilder
+
+// Within ForContentType configuration:
+builder.ForContentType("Sample.PageType", config =&gt;
+{
+    config.ForWebsite("MyWebsiteChannel")
+          .SetUrlLanguageBehavior(UrlLanguageBehavior.UseRequestedLanguage)
+})
+// Requesting multilingual content
+.InLanguage("spanish");
+
+// After executing the query:
+IEnumerable&lt;SamplePageType&gt; pages = await executor.GetMappedWebPageResult&lt;SamplePageType&gt;(builder);
+foreach (var page in pages)
+{
+    // If 'page' is an English fallback for a Spanish request, 
+    // its url will be in the format:
+    //
+    // '/&lt;spanishLanguageName&gt;/my-page-slug'
+    //
+    // due to 'UseRequestedLanguage'.
+    WebPageUrl url = page.GetUrl();
+}
+</code></pre>
+</div>
+
+<h2 id="forcontenttypes-parameterization">ForContentTypes parameterization</h2>
+<p>Methods described in this section can only be called from within subqueries generated by a <code>ContentItemBuilder.ForContentTypes</code> call.</p>
+<h3 id="ofcontenttype">OfContentType</h3>
+<p>Selects items with the specified content types.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve based on content type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{  
+    // Retrieves items of the 'Acme.Article', 'Acme.Blog' content types
+    parameters.OfContentType("Acme.Article", "Acme.Blog");
+});
+</code></pre>
+</div>
+
+<h3 id="ofreusableschema">OfReusableSchema</h3>
+<p>Selects items with the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve based on reusable field schema</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{  
+    // Retrieves items with the 'PageMetadata' reusable field schema
+    parameters.OfReusableSchema("PageMetadata");
+});
+</code></pre>
+</div>
+
+<h3 id="forwebsite-1">ForWebsite</h3>
+<p>Provides multiple overloads that can:</p>
+<ul>
+<li>select all pages in the system</li>
+<li>select pages based on their ID, GUID, or code names</li>
+<li>select pages from specific <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channels</a> and paths</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve web page items</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{
+    // Calls are mutually exclusive
+    // Shown to demonstrate available overloads
+
+    // Retrieves all pages in the system
+    parameters.ForWebsite();
+
+    // Retrieves pages with the provided GUIDs
+    // (e.g., from the 'Page selector' component)
+    parameters.ForWebsite(webPageGuids);
+
+    // Retrieves all pages under the 'Acme' channel and 'Articles' page path
+    parameters.ForWebsite(
+            websiteChannelName: "Acme",
+            pathMatch: PathMatch.Children("/Articles"));
+});
+</code></pre>
+</div>
+
+<p>Each overload also provides the optional <code>includeUrlPath</code> path parameter. <code>true</code> by default, it indicates whether web page URL data should be included in the query.</p>
+<p>If you want to retrieve pages and reusable content items in a single query, see the <a href="#FCTs-WWPD">WithWebPageData</a> method.</p>
+<h3 id="withcontenttypefields">WithContentTypeFields </h3>
+<p>By default, the result returned by <code>ForContentTypes</code> contains content item metadata (<em>CMS_ContentItem</em> table <a href="/documentation/developers-and-admins/api/content-item-api/content-item-database-structure#content-items">Content item database structure</a>) and <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> data. <code>WithContentTypeFields</code> also adds <a href="/documentation/developers-and-admins/development/content-types#add-fields">content type-specific fields</a> to the result.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WithContentTypeFields example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{
+    // Retrieves items with the 'PageMetadata' reusable field schema
+    // and includes content-type specific fields in the result
+    parameters.OfReusableSchema("PageMetadata")
+                .WithContentTypeFields();
+});
+</code></pre>
+</div>
+
+<h3 id="withwebpagedata">WithWebPageData </h3>
+<p>By default, the result returned by <code>ForContentTypes</code> contains content item metadata (<em>CMS_ContentItem</em> table <a href="/documentation/developers-and-admins/api/content-item-api/content-item-database-structure#content-items">Content item database structure</a>) and <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> data. <code>WithWebPageData</code> also adds website content-specific fields (such as URL and tree path) to the result.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WithWebPageData example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{
+    // Retrieves items with the 'PageMetadata' reusable field schema
+    // and includes web page specific fields in the result
+    parameters.OfReusableSchema("PageMetadata")
+                .WithWebPageData();
+});
+</code></pre>
+</div>
+
+<h3 id="withlinkeditems-1">WithLinkedItems</h3>
+<p>Configures query to include <a href="/documentation/business-users/content-hub/content-items#link-content-items">linked content items</a> recursively up to the specified depth. The parameterization behaves identically to its alternative in <a href="#ReferenceContentitemquery-WithLinkedItems">ForContentType</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>WithLinkedItems usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(subqueryParameters =&gt;
+{
+    // Retrieves all linked items up to the maximum depth of 2
+    subqueryParameters
+        .OfContentType(Article.CONTENT_TYPE_NAME)
+        .WithLinkedItems(2);
+});
+</code></pre>
+</div>
+
+<p>If the collection of linked items contains web page items, you need to specify the <code>IncludeWebPageData</code> option to include web page specific data (such as URL and tree path) of the web page items:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IncludeWebPageData usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(subqueryParameters =&gt;
+{
+    // Retrieves all linked items up to the maximum depth of 2
+    // including web page data of linked web page items
+    subqueryParameters
+        .OfContentType(Article.CONTENT_TYPE_NAME)
+        .WithLinkedItems(2, options =&gt; options.IncludeWebPageData());
+});
+</code></pre>
+</div>
+
+<p>To see how the query result is bound to a model class, check out <a href="#ReferenceContentitemquery-WithLinkedItemsMap">WithLinkedItems mapping</a>.</p>
+<h3 id="linking-1">Linking</h3>
+<p>The method behaves identically to <a href="#ReferenceContentitemquery-ForContentTypeLinking">ForContentType.Linking</a>, with the following exceptions:</p>
+<ul>
+<li>You need to specify the name of the content type whose items you want to retrieve, in addition to the field used to link the items. This is necessary to prevent ambiguities in case the searched content types contain identical field names.</li>
+<li>The usage is limited to one <code>Linking</code> call for each <code>ForContentTypes</code> subquery.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ForContentTypes.Linking usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+builder.ForContentTypes(subqueryParameters =&gt;
+{
+    // Retrieves items of the 'project.staff' type that link to
+    // any of the content items in 'managersCollection' via their 'ManagerField' field
+    subqueryParameters.Linking("project.staff", "ManagerField", managersCollection);
+});
+</code></pre>
+</div>
+
+<p>For more information see <a href="#ReferenceContentitemquery-Linking">Linking details</a>.</p>
+<h3 id="linkedfrom-1">LinkedFrom</h3>
+<p>The behavior is identical to <a href="#ReferenceContentitemquery-ForContentTypeLinkedFrom">ForContentType.LinkedFrom</a>, with the only difference being that you cannot chain multiple calls within a single subquery.</p>
+<p>For more information see <a href="#ReferenceContentitemquery-LinkedFrom">LinkedFrom details</a>.</p>
+<h3 id="linkingschemafield">LinkingSchemaField</h3>
+<p>Retrieves all content items that link to a collection of items via the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable schema field</a>. <a href="#FCT-LinkedFromSchemaField">LinkedFromSchemaField</a> complements this method by retrieving links from the opposite direction.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>LinkingSchemaField method usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var imageIdentifiers = new List&lt;int&gt;() { 1, 2, 3 };
+
+var builder = new ContentItemQueryBuilder().ForContentTypes(q =&gt;
+{
+    q.LinkingSchemaField("ProductImage", imageIdentifiers);
+});
+</code></pre>
+</div>
+
+<p>For more information see <a href="#FCT-LinkingSchemaField">LinkingSchemaField details</a>.</p>
+<h3 id="linkedfromschemafield-1">LinkedFromSchemaField</h3>
+<p>Retrieves all content items that are linked from a collection of items via a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable schema field</a>. <a href="#FCT-LinkingSchemaField">LinkingSchemaField</a> complements this method by retrieving links from the opposite direction.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>LinkedFromSchemaField method usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder().ForContentTypes(q =&gt;
+{
+    q.LinkedFromSchemaField("ProductImage", productIdentifiers);
+});
+</code></pre>
+</div>
+
+<p>For more information see <a href="#FCT-LinkedFromSchemaField">LinkedFromSchemaField details</a>.</p>
+<h3 id="insmartfolder">InSmartFolder</h3>
+<p>Retrieves content items that fulfill the filter conditions of the specified <a href="/documentation/business-users/content-hub/content-hub-folders#smart-folders">smart folder</a>. This allows content editors to control which items are retrieved directly in the <em>Content hub</em> UI, without needing to adjust the code.</p>
+<p>The smart folder can be specified by its ID, GUID, or code name. You can get the smart folder GUID from a field using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#smart-folder-selector">Smart folder selector</a> UI form component. You can also find the identifiers of smart folders in the <em>Content hub</em> application – expand the menu actions of a folder and select <em>Properties</em>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>InSmartFolder method usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves content items from the specified smart folder
+builder.ForContentTypes(parameters =&gt; parameters.InSmartFolder(smartFolderGuid));
+</code></pre>
+</div>
+
+<p>The <code>InSmartFolder</code> parameterization causes the query to return an <strong>empty result</strong> if the specified smart folder:</p>
+<ul>
+<li>Doesn’t exist</li>
+<li>Doesn’t have dynamic content delivery enabled</li>
+<li>Has invalid filter conditions (for example if a tag saved in the <em>Taxonomy</em> filter option was later deleted)</li>
+</ul>
+<p>The following scenarios are unsupported and result in an exception:</p>
+<ul>
+<li>Using multiple <code>inSmartFolder</code> calls for a single query</li>
+<li>Combining <code>InSmartFolder</code> with <code>ForWebsite</code>parameterization (smart folders are only supported for reusable content items, not pages)</li>
+</ul>
+<p>If you need to ensure that only items of one specific content type are retrieved (regardless of the smart folder’s filter condition), add <code>OfContentType</code> to the parameterization.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>InSmartFolder usage for a specific content type</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves items of one specific content type from a smart folder
+builder.ForContentTypes(parameters =&gt;
+{
+    parameters.InSmartFolder(smartFolderGuid)
+                .OfContentType("Sample.Type");
+});
+</code></pre>
+</div>
+
+<h3 id="seturllanguagebehavior-1">SetUrlLanguageBehavior</h3>
+<p>Defines the behavior for the language of URL paths when web pages are retrieved in a fallback language. This method is particularly relevant when using <a href="#inlanguage">InLanguage</a> and retrieving page URL information (e.g., through methods like <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content/retrieve-page-urls">GetUrl()</a> after ensuring necessary columns are loaded, often with <a href="#ReferenceContentitemquery-ForWebsite">ForWebsite</a> or <a href="#FCTs-WWPD">WithWebPageData</a>).</p>
+<p>It accepts a <code>UrlLanguageBehavior</code> enum value:</p>
+<ul>
+<li>
+<code>UrlLanguageBehavior.UseRequestedLanguage</code> – When a page is served in a <a href="/documentation/developers-and-admins/configuration/languages#language-fallbacks">fallback language</a>, its URL path is generated based on the language originally requested by the <code>InLanguage</code> method. For instance, if Spanish is requested and an English page is returned as a fallback, the URL path will still be structured as if it were a Spanish page (e.g., using URL prefixes as configured in the <a href="/documentation/developers-and-admins/configuration/languages#set-up-a-new-language">Languages</a> application).</li>
+<li>
+<code>UrlLanguageBehavior.UseFallbackLanguage</code> (Default) – When a page is served in a fallback language, its URL path is generated based on the language of the actual fallback content. In the example below, the URL path would be structured as an English page.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Using SetUrlLanguageBehavior</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7"><code>
+var builder = new ContentItemQueryBuilder();
+
+builder.ForContentTypes(parameters =&gt;
+{
+    parameters.ForWebsite("MyWebsiteChannel")
+              .WithWebPageData() // Ensure web page data is loaded
+              .SetUrlLanguageBehavior(UrlLanguageBehavior.UseRequestedLanguage)
+})
+.InLanguage("spanish"); // Requesting content in Spanish
+
+// After executing the query:
+IEnumerable&lt;SamplePageType&gt; pages = await executor.GetMappedWebPageResult&lt;SamplePageType&gt;(builder);
+foreach (var page in pages)
+{
+    // If 'page' is an English fallback for a Spanish request, 
+    // its url will be in the format:
+    //
+    // '/&lt;spanishLanguageName&gt;/my-page-slug'
+    //
+    // due to 'UseRequestedLanguage'.
+    WebPageUrl url = page.GetUrl();
+
+}
+</code></pre>
+</div>
+
+<h3 id="where-conditions">Where conditions</h3>
+<p>Where parameterization can be added to <code>ForContentTypes</code> queries using <a href="#Builder-Parameters">Parameters</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Adding Where conditions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+builder.ForContentTypes(parameters =&gt;
+{
+    // ...
+}).Parameters(parameters =&gt;
+{
+    parameters.Where(where =&gt; where) //...
+});
+</code></pre>
+</div>
+
+<h2 id="method-details">Method details</h2>
+<p>Methods described in this section can only be called from within subqueries generated by a <code>ContentItemBuilder.ForContentTypes</code> call or a <code>ContentItemBuilder.ForContentType</code> call.</p>
+<h3 id="withlinkeditems-2">WithLinkedItems </h3>
+<p><code>IContentQueryExecutor.GetMappedResult</code>, <code>IContentQueryExecutor.GetMappedWebPageResult</code>, or using the provided <code>IContentQueryModelTypeMapper</code> automatically binds the linked content item hierarchy to the specified model.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+IEnumerable&lt;ModelClass&gt; data =
+            queryExecutor.GetMappedResult&lt;ModelClass&gt;(builder);
+</code></pre>
+</div>
+
+<p>When mapping the data manually, use <code>GetLinkedItems</code> on the result to get the next level of references. This can be repeated up until the specified recursion level.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var data = queryExecutor.GetResult&lt;ContentItemDto&gt;(builder, resultSelector);
+
+private ContentItemDto resultSelector(IContentQueryDataContainer itemData)
+{
+    var item = new ContentItemDto
+    {
+        Title = itemData.GetValue&lt;string&gt;("Title"),
+        Text = itemData.GetValue&lt;string&gt;("Text"),
+
+        // Retrieves first-level linked items from the 'Author' field
+        AuthorName = itemData.GetLinkedItems("Author").First()
+                                .GetValue&lt;string&gt;("Name");
+
+        // Retrieves second-level linked items from the 'Author' field
+        AuthorProfileBlurb = 
+            itemData.GetLinkedItems("Author").First()
+                    .GetLinkedItems("Profile").First()
+                    .GetValue&lt;string&gt;("ProfileBlurb");
+    };
+
+    return item;
+}
+</code></pre>
+</div>
+
+<h3 id="linking-2">Linking </h3>
+<p>Retrieves all content items which reference any of the content items from the provided collection in the specified field. Enables loading data on-demand (lazily).</p>
+<p>The following diagram illustrates the behavior on a simple content model:</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>Combining this method with <a href="#ReferenceContentitemquery-LinkedFrom">LinkedFrom</a> in a single subquery is not supported.</p>
+</div>
+
+<p>The method can also be used together with <code>WithLinkedItems</code>. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Linking and WithLinkedItems</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves items of the 'project.staff' content type
+builder.ForContentType("project.staff", subqueryParameters =&gt;
+{
+    // Retrieves all items of 'project.staff' type that reference any of the
+    // items in 'managersCollection' from their 'ManagerField' together with
+    // all second-level references for the selected 'project.staff' items
+    subqueryParameters.Linking("ManagerField", managersCollection)
+                    .WithLinkedItems(2);
+});
+</code></pre>
+</div>
+
+<p></p>
+<p>The collection of items for which to retrieve references must implement the <code>IContentItemIdentifier</code> interface. The interface ensures fields required by each data model that wants to leverage this method.  The fields must be bound to the model during model binding within <code>ContentQueryExecutor.GetResult</code>.</p>
+<p><a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Generated content type classes</a> already implement <code>IContentItemIdentifier</code> via the <code>SystemFields</code> property. The following approach applies for custom model classes.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IContentItemIdentifier fields in custom model classes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var data = queryExecutor.GetResult&lt;ContentItemDto&gt;(builder, resultSelector);
+
+ManagerDto resultSelector(IContentQueryDataContainer itemData)
+{
+    var item = new ManagerDto
+    {
+        // Binds fields required by 'Linking'
+        ContentItemID = itemData.ContentItemID,
+        ContentItemLanguageID = itemData.ContentItemDataContentLanguageID,
+        // other fields...
+    };
+
+    return item;
+}
+
+// Example custom model class binding content items of the 'Manager' content type
+class ManagerDto : IContentItemIdentifier
+{
+    public int ContentItemID { get; }
+    public int ContentLanguageID { get; }
+    public IEnumerable&lt;ContentItemReference&gt; PictureField { get; }
+    public IEnumerable&lt;ContentItemReference&gt; AwardsField { get; }
+}
+</code></pre>
+</div>
+
+<h3 id="linkedfrom-2">LinkedFrom </h3>
+<p>Retrieves content items of a specific type linked from the given field in the provided collection. Enables loading data on-demand (lazily).</p>
+<p>The following diagram illustrates the behavior on a simple content model. Red arrows trace query evaluation:</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p>Combining this method with <a href="#ReferenceContentitemquery-Linking">Linking</a> in a single subquery is not supported.</p>
+</div>
+
+<p>The method can also be used together with <code>WithLinkedItems</code>. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Linked from and WithLinkedItems</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var builder = new ContentItemQueryBuilder();
+
+// Retrieves items of the 'project.staff' content type
+builder.ForContentType("project.staff", subqueryParameters =&gt;
+{  
+    // Items are retrieved for a collection of 'project.store' items and the field 'StaffField'
+    // together with all first-level references for the selected 'project.staff' items
+    subqueryParameters.LinkedFrom("project.store", "StaffField", storesCollection)
+                        .WithLinkedItems(1);
+});
+</code></pre>
+</div>
+
+<p></p>
+<p>The collection of items for which to retrieve references must implement the <code>IContentItemIdentifier</code> interface. The interface ensures fields required by each data model that wants to leverage this method. The fields must be bound to the model during model binding within <code>ContentQueryExecutor.GetResult</code>.</p>
+<p><a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Generated content type classes</a> by default implement <code>IContentItemIdentifier</code> via the <code>SystemFields</code> property. The following approach applies for custom model classes.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IContentItemIdentifier fields in custom model classes</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var data = queryExecutor.GetResult&lt;ContentItemDto&gt;(builder, resultSelector);
+
+StoreDto resultSelector(IContentQueryDataContainer itemData)
+{
+    var item = new StoreDto
+    {
+        // Binds fields required by `LinkedFrom`
+        ContentItemID = itemData.ContentItemID,
+        ContentItemLanguageID = itemData.ContentItemDataContentLanguageID,
+        // other fields...
+    };
+
+    return item;
+}
+
+// Example custom model class binding content items of the 'Store' content type
+class StoreDto : IContentItemIdentifier
+{
+    public int ContentItemID { get; }
+    public int ContentLanguageID { get; }
+    public IEnumerable&lt;ContentItemReference&gt; StaffField { get; }
+    public IEnumerable&lt;ContentItemReference&gt; ReferenceField { get; }
+    public IEnumerable&lt;ContentItemReference&gt; FaqField { get; }
+}
+</code></pre>
+</div>
+
+<h3 id="linkingschemafield-1">LinkingSchemaField </h3>
+<p>This method can only be called from within subqueries generated by a <code>ContentItemBuilder.ForContentTypes</code> call.</p>
+<p>Retrieves all content items that link to a collection of items via the specified <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable schema field</a>. <a href="#FCT-LinkedFromSchemaField">LinkedFromSchemaField</a> complements this method by retrieving links from the opposite direction.</p>
+<p>See the following diagram for an illustration of the method’s behavior on a simplified content model. The query retrieves all content items that link to the images from <code>imageIdentifiers</code> via the <em>ProductImage</em> reusable schema field. Red arrows trace the query evaluation:</p>
+<p></p>
+<p>In the diagram above, the method is called with the following parameters:</p>
+<ul>
+<li>
+<code>"ProductImage"</code> – the code name of a field that belongs to a reusable field schema. Reusable schema field code names must be unique across the system, it’s therefore sufficient to target fields directly.</li>
+<li>
+<code>imageIdentifiers</code> – IDs of content items with the <em>Image</em> content type.</li>
+</ul>
+<h3 id="linkedfromschemafield-2">LinkedFromSchemaField </h3>
+<p>Retrieves all content items that are linked from a collection of items via a <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable schema field</a>. <a href="#FCT-LinkingSchemaField">LinkingSchemaField</a> complements this method by retrieving links from the opposite direction.</p>
+<p>See the following diagram for an illustration of the method’s behavior on a simplified content model. The query retrieves all <em>Image</em> content items that are linked from <code>productIdentifiers</code> via the <em>ProductImage</em> reusable schema field. Red arrows trace the query evaluation:</p>
+<p></p>
+<p>In the diagram above, the method is called with the following parameters:</p>
+<ul>
+<li>
+<code>"ProductImage"</code> – the code name of a field that belongs to a reusable field schema. Reusable schema field code names are unique and can be targeted directly without specifying the corresponding schema.</li>
+<li>
+<code>productIdentifiers</code> – a collection of content items from content types using the <em>ProductFields</em> reusable field schema.</li>
+</ul>
+
+<div>
+<p>The collection of items for which to retrieve references must implement the <code>IContentItemIdentifier</code> interface. The interface ensures fields required by each data model that wants to leverage this method.</p>
+<p><a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">Generated content type classes</a> by default implement <code>IContentItemIdentifier</code> via the <code>SystemFields</code> property.</p>
+</div>
+
+<h2 id="icontentqueryexecutor-configuration">IContentQueryExecutor configuration</h2>
+<p>Apart from configuring the query itself, you can also fine tune its execution. You can do so by setting the properties of the <code>ContentQueryExecutionOptions</code> attribute and providing it to the <code>IContentQueryExecutor</code> interface.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>ForPreview</code></p>
+</td>
+<td>
+<p>If set to <em>true</em>, the query executor retrieves the queried items in their latest available version, regardless of their workflow state. Otherwise, the latest published version is retrieved.</p>
+<p>Default value: <em>false</em>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>IncludeSecuredItems</code></p>
+</td>
+<td>
+<p>If set to <em>true</em>, the query executor retrieves all items according to the query, including secured items. Otherwise, only items that are not secured are included in the query.</p>
+<p>Default value: <em>false</em>.</p>
+</td>
+</tr>
+</table>
+
+<p>To see how the configuration affects the data retrieval, check out the examples at <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">Retrieve page content</a>.</p>
+
+</body>
+</html>

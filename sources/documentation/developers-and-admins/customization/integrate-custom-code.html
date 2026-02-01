@@ -1,0 +1,358 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Integrate custom code</title>
+</head>
+<body>
+<p>When customizing or extending Xperience, developers often need to add code files (classes). Classes are required when integrating custom services (interface implementations) or other components.</p>
+<p>Instead of adding classes directly into the main web project, create the files as part of a separate <strong>Class Library</strong> project (assembly). Custom assemblies provide a cleaner separation of code and better reusability between different projects.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Group project assemblies within a solution</strong></p>
+<p>If you have not yet done so, we recommend creating a <a href="https://docs.microsoft.com/en-us/visualstudio/extensibility/internals/solutions-overview" target="_blank">solution file</a> for your project. Solutions allow you to track multiple assemblies within a single workspace, and to easily reference, navigate, and structure your codebase.</p>
+</div>
+
+<p>To create an assembly for custom classes in your Xperience solution:</p>
+<ol type="1">
+<li>Open your Xperience solution in Visual Studio.</li>
+<li>Create a new <em>Class Library</em> project in the solution.</li>
+<li>Add the Xperience API libraries to the project:
+<ol type="1">
+<li>Right-click the solution in the <strong>Solution Explorer</strong> and select <strong>Manage NuGet Packages for Solution</strong>.</li>
+<li>Select the desired <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">package</a> (e.g. <strong>Kentico.Xperience.Core</strong>).</li>
+<li>Install the package into the project (the version must match your main web project’s <em>Kentico.Xperience.WebApp</em> package).</li>
+</ol>
+</li>
+<li>Reference the project from your main web project.</li>
+</ol>
+<p>You can now add your custom classes under the created class library project.</p>
+<h2 id="enable-class-discovery">Enable class discovery</h2>
+<p>In many cases, the system needs to detect and process custom classes on application start. For example, this is required for all custom classes registered using an attribute, such as <code>RegisterImplementation</code>, <code>RegisterModule</code>, etc. </p>
+<p>To allow class discovery, you need to add the <code>AssemblyDiscoverable</code> assembly attribute to your <em>Class Library</em> project. We recommend using the following approach:</p>
+<ol type="1">
+<li><p>Create a dummy class within your project, for example, <em>AssemblyAttributes.cs</em>.</p></li>
+<li>
+<p>Add the <code>AssemblyDiscoverable</code> assembly attribute:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using CMS;
+
+ [assembly:AssemblyDiscoverable]
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The attribute ensures that Xperience processes your assembly on application start and discovers all contained custom classes that are properly registered.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Adding the assembly attribute to the csproj file</strong></p>
+<p>Adding assembly attributes to code files has advantages, such as proper compilation, warnings about potentially obsolete API, etc. However, if you do not wish to create a dummy class for this purpose, you can alternatively edit your project’s <em>csproj</em> file and add the assembly attribute there:</p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;ItemGroup&gt;
+    &lt;AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute"&gt;
+    &lt;/AssemblyAttribute&gt;
+&lt;/ItemGroup&gt;
+
+</code></pre>
+</div>
+</div>
+</div>
+
+<h2 id="store-application-resources-in-resource-files">Store application resources in resource files</h2>
+<p>We recommended storing all custom resources required by your customizations, such as text strings, in <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/create-resource-files" target="_blank">resource files</a> (.resx). Resource files enable a clear separation between source code and text. By centralizing text resources, .resx files ensure consistency and make it easier to maintain, modify, and find text strings used by the application.</p>
+<p>Create and register resource files in Xperience:</p>
+<ol type="1">
+<li>
+<p>Create a new .NET resource file. See <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/create-resource-files" target="_blank">Create resource files for .NET apps</a>.</p>
+
+<div>
+
+</div>
+<div>
+Each resource class must be defined in its own separate .cs file. .NET localization resource conventions do not allow combining multiple resource classes into a single file.
+</div>
+</li>
+<li>
+<p>Register the resource file in the system using the <code>RegisterLocalizationResource</code> attribute. The registration requires the type encapsulating the resource file, the language for which to use the resource, and optionally the resource target.</p>
+<p><code>SystemContext.SYSTEM_CULTURE_NAME</code> contains the default language code for English and should be used when creating English resource files. For localizing the admin UI to other languages, see <a href="/documentation/developers-and-admins/customization/admin-ui-localization">Admin UI localization</a>.</p>
+<p>The available resource targets are:</p>
+<ul>
+<li>
+<strong>LocalizationTarget.Server</strong> – Localization resources intended for the server. These resources are resolved dynamically and sent as part of API responses during request lifecycle processing. Default when no target provided.</li>
+<li>
+<strong>LocalizationTarget.Client</strong> – Localization resources intended for the client. These resources are bundled and sent to the browser during admin UI initialization, making them immediately available for client components.</li>
+<li>
+<strong>LocalizationTarget.Builder</strong> – Localization resources intended for <a href="/documentation/developers-and-admins/development/builders">builder</a> components. These resources are resolved and sent later as part of builder-specific request lifecycle operations.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example resource file registration - ~/Resources/AdminResourcesServer.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS.Base;
+ using CMS.Localization;
+
+ // Resource file registration for multiple languages
+ [assembly: RegisterLocalizationResource(typeof(AdminResourcesServer), LocalizationTarget.Server, SystemContext.SYSTEM_CULTURE_NAME)]
+ [assembly: RegisterLocalizationResource(typeof(AdminResourcesServer), LocalizationTarget.Server, "es-ES")]
+ [assembly: RegisterLocalizationResource(typeof(AdminResourcesServer), LocalizationTarget.Server, "de-DE")]
+
+ namespace MyProject.Resources;
+
+ // Class encapsulating the resource file
+ // Corresponding .resx files: AdminResourcesServer.resx, AdminResourcesServer.es-ES.resx, AdminResourcesServer.de-DE.resx
+ public class AdminResourcesServer { }
+ </code></pre>
+</div>
+</li>
+</ol>
+<h3 id="resource-key-naming">Resource key naming</h3>
+<p>Use a consistent prefix in your resource keys to prevent conflicts with system resources. For example, include the project or company name in your keys:</p>
+
+<div>
+<pre><code>
+// Good examples using company/project name prefixes
+mycompany.admin.users.createButton
+myproject.validation.emailRequired
+myapp.dashboard.welcomeMessage
+
+// Avoid generic keys that may conflict
+createButton
+validation
+welcomeMessage
+</code></pre>
+</div>
+
+<h3 id="retrieval-api">Retrieval API</h3>
+<p>Retrieve resource strings from registered resource files using <code>ILocalizationService</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - ILocalizationService usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Instance resolved using dependency injection
+private readonly ILocalizationService localizationService;
+
+// Resolves the string under 'myproject.validations.nocontentwarning'
+localizationService.GetString("myproject.validations.nocontentwarning")
+</code></pre>
+</div>
+
+<h2 id="integrate-third-party-libraries-troubleshooting">Integrate third-party libraries – troubleshooting</h2>
+<p>This section provides solutions to some issues you may encounter when integrating external libraries with the system.</p>
+<h3 id="database-connection-issues-when-scheduling-parallel-or-asynchronous-work-from-external-libraries">Database connection issues when scheduling parallel or asynchronous work from external libraries</h3>
+<p>When code from third-party libraries is responsible for scheduling asynchronous or parallel data retrieval from the Xperience database (e.g., using <code>Task.Run</code>), you may encounter unpredictable issues related to database connection, such as the following exceptions:</p>
+<ul>
+<li>Connection does not support <code>MultipleActiveResultSets</code>.</li>
+<li>There is already an open <code>DataReader</code> associated with this <code>Command</code>.</li>
+<li>
+<code>ExecuteReader</code> requires an open and available <code>Connection</code>. The current state of the connection is closed.</li>
+<li>
+<code>ExecuteNonQuery</code> requires an open and available <code>Connection</code>. The current state of the connection is open.</li>
+</ul>
+<p>These issues can be caused by improperly sharing per-thread contextual information, such as the database connection context, among individual worker threads that process the parallel or asynchronous requests. An example is a thread being assigned a database connection that was, in the meanwhile, closed inside a different thread.</p>
+<p>Consider the following code where <code>LoadData</code> is supplied by your custom code, while <code>ExternalLibrary</code> is called from within third-party code and is responsible for scheduling the data load operations from the Xperience database (spawning worker threads).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Asynchronous data retrieval via external library</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Assume this implementation resides in third-party code (e.g., NuGet references)
+public async Task ExternalLibrary()
+{
+    var tasks = new List&lt;Task&gt;();
+
+    for (int i = 0; i &lt; 100; ++i)
+    {
+        var t = Task.Run(async () =&gt;
+        {
+            await LoadData();
+        });
+        tasks.Add(t);
+    }
+
+    await Task.WhenAll(tasks);
+}
+
+public async Task LoadData()
+{
+    // Creates a new connection scope for this operation
+    using (new CMSConnectionScope(true))
+    using (var resources = 
+                await ConnectionHelper.ExecuteReaderAsync("SELECT ResourceID FROM CMS_Resource",
+                                                           null,
+                                                           QueryTypeEnum.SQLQuery,
+                                                           CommandBehavior.Default,
+                                                           CancellationToken.None))
+    {
+        await resources.ReadAsync();
+
+        // Process the data...
+    }
+}
+</code></pre>
+</div>
+
+<p>As implemented in the example, the <code>LoadData</code> method is not robust enough to ensure each spawned worker thread gets assigned a fresh database connection scope when <code>LoadData</code> is called from <code>ExternalLibrary</code> (simulating delegated execution via third-party code).</p>
+<p>To help maintain thread context separation, the system provides the <code>CMS.Base.ContextUtils.ResetCurrent</code> method, which ensures that the current thread (and all its child threads) are assigned a fresh connection scope instance. The method must be called before instantiating any context-sensitive objects, typically at the beginning of the delegated code.</p>
+<p>Using <code>ContextUtils.ResetCurrent</code> to fix the sample scenario above yields the following updated <code>LoadData</code> code.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ResetCurrent usage</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="5"><code>
+public async Task LoadData()
+{
+    // Clears residual context data inherited from the parent
+    // which scheduled the data load for execution (a thread from 'ExternalLibrary' in this case)
+    ContextUtils.ResetCurrent();
+
+    // Creates a new connection scope for this operation
+    using (new CMSConnectionScope(true))
+    using (var resources = 
+                await ConnectionHelper.ExecuteReaderAsync("SELECT ResourceID FROM CMS_Resource",
+                                                           null,
+                                                           QueryTypeEnum.SQLQuery,
+                                                           CommandBehavior.Default,
+                                                           CancellationToken.None))
+    {
+        await resources.ReadAsync();
+
+        // Process the data...
+    }
+}
+</code></pre>
+</div>
+
+<p>The <code>ContextUtils</code> class also provides the <code>PropagateCurrent</code> method, which is useful if you have direct control over the scheduling code (parallel or asynchronous operations). You can use a suitable overload of the <code>PropagateCurrent</code> method to pass the context of the current thread to all worker threads spawned by your logic without mutating the current (parent) context – and encountering similar problems with thread context sharing.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>PropagateCurrent example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="7"><code>
+var tasks = new List&lt;Task&gt;();
+
+for (int i = 0; i &lt; 100; ++i)
+{
+    // When a developer has control over scheduling the work, ContextUtils.PropagateCurrent() can be used
+    // to create a snapshot of current context and propagate its copy to individual work items
+    var t = Task.Run(ContextUtils.PropagateCurrent(async () =&gt;
+    {
+        using (new CMSConnectionScope(true))
+        using (var resources = 
+                    await ConnectionHelper.ExecuteReaderAsync("SELECT ResourceID FROM CMS_Resource",
+                                                               null,
+                                                               QueryTypeEnum.SQLQuery,
+                                                               CommandBehavior.Default,
+                                                               CancellationToken.None))
+        {
+            await resources.ReadAsync();
+
+            // Process the data...
+        }
+    }));
+
+    tasks.Add(t);
+}
+
+await Task.WhenAll(tasks);
+</code></pre>
+</div>
+
+
+</body>
+</html>

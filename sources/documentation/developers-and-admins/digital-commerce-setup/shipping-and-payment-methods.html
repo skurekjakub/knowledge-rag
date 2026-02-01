@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Shipping and payment methods</title>
+</head>
+<body>
+<p>Managing shipping and payment methods is a key part of setting up <a href="/documentation/developers-and-admins/digital-commerce-setup">digital commerce</a> in Xperience by Kentico. This page explains how to configure shipping and payment methods, extend system objects for business logic, and use content types to present information to customers.</p>
+<p>To configure shipping and payment methods, you need to:</p>
+<ol type="1">
+<li>
+<a href="#configure-shipping-methods">Configure shipping methods</a>.</li>
+<li>
+<a href="#configure-payment-methods">Configure payment methods</a>.</li>
+<li>
+<a href="#display-shipping-and-payment-methods">Display shipping and payment methods in the checkout process</a>.</li>
+<li>
+<a href="#implement-shipping-and-payment-methods">Implement business logic for shipping and payment methods</a>.</li>
+</ol>
+<h2 id="configure-shipping-methods">Configure shipping methods</h2>
+<p>To create a new shipping method:</p>
+<ol type="1">
+<li>Navigate to the <strong>Commerce configuration</strong> application.</li>
+<li>Select the <strong>Shipping methods</strong> tab.</li>
+<li>Select <strong>New shipping method</strong>.</li>
+<li>Set the properties of the new shipping method:
+<ul>
+<li>
+<strong>Shipping method name</strong> – the display name of shipping method used in the admin interface.</li>
+<li>
+<strong>Description</strong> – a brief description of the shipping method for internal users. We do not recommend you to use this description in the presentation layer.</li>
+<li>
+<strong>Enabled</strong> – whether the shipping method is enabled for use.</li>
+<li>
+<strong>Shipping price</strong> – the cost of using this shipping method. The exact way in which this price is included in the order total price depends on your implementation.</li>
+</ul>
+</li>
+</ol>
+<p>You can view all shipping methods in the <strong>Shipping methods</strong> listing and <a href="#display-shipping-and-payment-methods">display</a> them on your storefront.</p>
+<h3 id="retrieve-shipping-methods-in-code">Retrieve shipping methods in code</h3>
+<p>To retrieve shipping methods in your application, create a repository service that uses the <code>IInfoProvider&lt;ShippingMethodInfo&gt;</code> to query enabled shipping methods:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve a collection of enabled shipping methods</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// An instance of the shipping method info provider, obtained via dependency injection
+private readonly IInfoProvider&lt;ShippingMethodInfo&gt; shippingMethodInfoProvider;
+
+var shippingMethods = await shippingMethodInfoProvider.Get()
+        .WhereTrue(nameof(ShippingMethodInfo.ShippingMethodEnabled))
+        .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+        
+// Access properties of each shipping method
+foreach (ShippingMethodInfo shippingMethod in shippingMethods)
+{
+    // You can access all properties of the ShippingMethodInfo object
+    string name = shippingMethod.ShippingMethodName;
+    string description = shippingMethod.ShippingMethodDescription;
+    decimal price = shippingMethod.ShippingMethodPrice;
+    bool enabled = shippingMethod.ShippingMethodEnabled;
+}
+</code></pre>
+</div>
+
+<h2 id="configure-payment-methods">Configure payment methods</h2>
+<p>To create a new payment method:</p>
+<ol type="1">
+<li>Navigate to the <strong>Commerce configuration</strong> application.</li>
+<li>Select the <strong>Payment methods</strong> tab.</li>
+<li>Select <strong>New payment method</strong>.</li>
+<li>Set the properties of the new payment method:
+<ul>
+<li>
+<strong>Payment method name</strong> – the display name of the payment method used in the admin interface.</li>
+<li>
+<strong>Description</strong> – a brief description of the payment method for internal users. We do not recommend you to use this description in the presentation layer.</li>
+<li>
+<strong>Enabled</strong> – whether the payment method is enabled for use.</li>
+</ul>
+</li>
+</ol>
+<p>You can view all payment methods in the <strong>Payment methods</strong> listing and <a href="#display-shipping-and-payment-methods">display</a> them on your storefront.</p>
+<h3 id="retrieve-payment-methods-in-code">Retrieve payment methods in code</h3>
+<p>To retrieve payment methods in your application, create a repository service that uses the <code>IInfoProvider&lt;PaymentMethodInfo&gt;</code> to query enabled payment methods:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Retrieve a collection of enabled payment methods</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// An instance of the payment method info provider, obtained via dependency injection
+private readonly IInfoProvider&lt;PaymentMethodInfo&gt; paymentMethodInfoProvider;
+
+var paymentMethods = await paymentMethodInfoProvider.Get()
+        .WhereTrue(nameof(PaymentMethodInfo.PaymentMethodEnabled))
+        .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+        
+// Access properties of each payment method
+foreach (PaymentMethodInfo paymentMethod in paymentMethods)
+{
+    // You can access all properties of the PaymentMethodInfo object
+    string name = paymentMethod.PaymentMethodName;
+    string description = paymentMethod.PaymentMethodDescription;
+    bool enabled = paymentMethod.PaymentMethodEnabled;
+}
+</code></pre>
+</div>
+
+<h2 id="display-shipping-and-payment-methods">Display shipping and payment methods</h2>
+<p>The system objects for <a href="#configure-shipping-methods">shipping</a> and <a href="#configure-payment-methods">payment</a> methods can be <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">extended</a> to store internal business logic and configuration data, such as countries where a certain shipping method is available, processing timeframes, or integration settings with third-party providers.</p>
+<p>However, to display shipping and payment methods on your storefront, you need to create dedicated <a href="/documentation/developers-and-admins/development/content-types">content types</a>, one for shipping methods and one for payment methods. This separation ensures that you can localize the presentation data for different markets and languages, while keeping the internal business logic separate from the customer-facing content.</p>
+<p>The content types can have the following fields:</p>
+<ul>
+<li>
+<strong>Display name</strong> – the name of the shipping or payment method as it appears to customers.</li>
+<li>
+<strong>Description</strong> – a brief description of the shipping or payment method for customers.</li>
+<li>
+<strong>Icon</strong> – an optional visual representation of the shipping or payment method.</li>
+<li>
+<strong>Shipping/Payment method</strong> – an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#object-selector">object selector</a> field for selecting the associated shipping or payment method.</li>
+</ul>
+<p>When displaying shipping and payment methods, you can use the <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items">ContentRetriever API</a> to retrieve and display the relevant content items.</p>
+<h2 id="implement-shipping-and-payment-methods">Implement shipping and payment methods</h2>
+<p>After you create the objects representing <a href="#configure-shipping-methods">shipping</a> and <a href="#configure-payment-methods">payment</a> methods, you need to implement the business logic. This may include:</p>
+<ul>
+<li>Validating the selected shipping and payment methods during the checkout process. Availability of shipping methods may differ based on the selected shipping address.</li>
+<li>Calculating shipping costs based on the selected shipping method and the customer’s location. You need to handle different pricing rules and conditions, for example, free shipping for orders over a certain amount.</li>
+<li>Integrating with third-party payment gateways to process payments securely. Due to the customizability and variability of payment method providers, you need to account for different APIs and various authentication mechanisms.</li>
+<li>Handling any specific business rules or requirements related to shipping and payment methods. For example, you may need to implement age verification for certain payment methods or restrict shipping methods based on the customer’s location.</li>
+</ul>
+<p>You can see a simple example that showcases the basic functionality in the <code>DancingGoatCheckoutController.cs</code> file in the <a href="/documentation/developers-and-admins/installation#available-project-templates">Dancing Goat</a> sample site.</p>
+
+</body>
+</html>

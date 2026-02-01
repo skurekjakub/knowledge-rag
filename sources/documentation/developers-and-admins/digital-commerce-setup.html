@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Digital commerce setup</title>
+</head>
+<body>
+<p>The digital commerce feature helps you build simple online stores where you can sell physical or digital products. It gives you the basic tools, data structure, and actions you need to manage your shop and process orders. You can use it to set up product listings, handle purchases, and store customer data. Custom development is needed to fully set up and customize your shop, but this feature takes care of the main building blocks so you don’t have to start from scratch.</p>
+<p>To use the commerce features of Xperience by Kentico:</p>
+<ol type="1">
+<li>
+<a href="#enable-digital-commerce">Enable</a> the commerce feature.</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">Prepare a product catalog</a> and fill it with products.
+<ul>
+<li>You need to implement stock management to track product availability. You can do this by <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog/model-product-stock">modeling the product stock</a> as a custom module.</li>
+</ul>
+</li>
+<li>Implement <a href="/documentation/developers-and-admins/digital-commerce-setup/shipping-and-payment-methods">shipping and payment methods</a>.</li>
+<li>Implement the <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process">shopping cart and checkout process</a>.
+<ul>
+<li>The shopping cart and checkout interfaces need to be implemented as custom pages or widgets.</li>
+</ul>
+</li>
+<li>Configure <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses">order statuses</a> and set up notifications for order status changes.</li>
+<li>Display the product catalog on your storefront (your public-facing interface where customers browse and purchase products).
+<ul>
+<li>Depending on your product catalog model, you can either directly display product pages (if using pages to store products) or create pages for each product using custom code (if using the content hub to store products).</li>
+</ul>
+</li>
+</ol>
+<h2 id="enable-digital-commerce">Enable digital commerce</h2>
+<p>To enable the commerce feature:</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio and edit the <em>Program.cs</em> file.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/enable-application-features">Enable</a> the commerce feature in the application startup:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.Xperience.Commerce;
+
+ // ...
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ // ...
+
+ builder.Services.AddKentico(features =&gt;
+ {
+     // Enables digital commerce
+     features.UseCommerce();
+ });
+ </code></pre>
+</div>
+</li>
+</ol>
+<h2 id="reference-implementation">Reference implementation</h2>
+<p>The sample <a href="/documentation/developers-and-admins/installation#available-project-templates">Dancing Goat project</a> provides a production-ready implementation of the digital commerce solution that demonstrates how to integrate all commerce features into a working online store. The sample site includes complete implementations of:</p>
+<ul>
+<li>Product catalog modeling and display</li>
+<li>Price calculation with tax logic</li>
+<li>Shipping and payment method handling</li>
+<li>Shopping cart functionality</li>
+<li>Checkout process with multiple steps</li>
+<li>Order management and status tracking</li>
+<li>Promotions and discounts implementation</li>
+<li>Customer account integration with <a href="/documentation/developers-and-admins/development/registration-and-authentication">membership</a>
+</li>
+</ul>
+<p>Documentation pages in this section often reference specific parts of the Dancing Goat implementation when describing features and providing code examples. We recommend examining the sample site’s source code alongside this documentation to see how individual commerce components work together in a complete solution.</p>
+<p>The Dancing Goat implementation serves as a practical reference for:</p>
+<ul>
+<li>
+<strong>Architecture patterns</strong> – See how to structure your commerce-related services, controllers, and view models.</li>
+<li>
+<strong>Best practices</strong> – Learn recommended approaches for error handling, validation, and data flow.</li>
+<li>
+<strong>Integration examples</strong> – Understand how commerce features integrate with Xperience’s content management, membership, and other capabilities.</li>
+<li>
+<strong>Customization techniques</strong> – Explore examples of extending default behaviors to meet specific business requirements.</li>
+</ul>
+<p>You can use the Dancing Goat implementation as a starting point for your own commerce solution, adapting its patterns and code to your specific needs.</p>
+
+</body>
+</html>

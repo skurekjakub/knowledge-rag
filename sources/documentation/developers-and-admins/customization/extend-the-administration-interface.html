@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Extend the administration interface</title>
+</head>
+<body>
+<p>The Xperience administration interface exposes a comprehensive customization framework that enables developers to</p>
+<ul>
+<li>add new functionality to existing applications and pages,</li>
+<li>add entirely new pages with custom functionality to applications in the system,</li>
+<li>create new applications with dedicated UI and functionality, and</li>
+<li>create new UI form components to manage user input when editing objects and configuring other components.</li>
+</ul>
+<p>The administration consists of two main parts:</p>
+<ul>
+<li><p><strong>Client application</strong> – the front-end (client-side) part of the administration interface implemented as a single-page browser application using the <a href="https://en.wikipedia.org/wiki/React_(JavaScript_library)" target="_blank">React JavaScript library</a>. Provides a graphical abstraction over various management APIs that is suitable for business user interaction with the system.</p></li>
+<li>
+<p><strong>Back end</strong> – sits in the ASP.NET Core web application as a set of API endpoints called by the client application. The back-end implementation is responsible for interacting with Xperience APIs and other business logic to perform database operations (typically <a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete" target="_blank">CRUD</a> over system objects), calling specific management APIs according to instructions received from the client application, and various other tasks.</p>
+<p>All admin UI components (pages, applications) must contain a corresponding back-end definition and registration. For example, every page in the admin UI is registered on the back end using the following metadata:</p>
+<ul>
+<li>React component used to render the page</li>
+<li>the type that implements the page on the back end (handles requests from user interaction, provides data to display)</li>
+<li>the page’s parent</li>
+<li>the URL slug under which it’s accessible. A similar registration process is used for every admin UI element. With this approach, the back end drives the layout, appearance, and functionality of the entire administration application. The main benefit is that you can introduce new pages and other elements to the UI without writing any front-end code, assuming you reuse React components already available to the client application.</li>
+</ul>
+</li>
+</ul>
+<p>The following simplified diagram illustrates the described structure:</p>
+<p></p>
+<p>Both parts of the application communicate using a set of API endpoints. As a general rule, every action available in the client application has a corresponding handler on the back end that processes the request and ensures propagation to the database, if necessary. Typical examples are responding to user interactions (such as form submissions, button clicks) or during page requests to retrieve the data to display.</p>
+<h2 id="before-you-get-started">Before you get started</h2>
+<ol type="1">
+<li>Take a look at <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI customization model overview</a> for a brief overview of the available customization options.</li>
+<li>Follow the instructions on <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">Prepare your environment for admin development</a> to set up an environment needed for admin development. Depending on the type and scope of the planned customizations, you may need to write custom JavaScript modules for the client application, which requires additional tooling.</li>
+<li>Read the pages in this section to learn more about individual extensions.</li>
+</ol>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>AIRA</title>
+</head>
+<body>
+<p>AIRA is an AI-powered agent integrated into Xperience by Kentico. It helps users automate and streamline marketing and content management tasks through AI-driven features, and provides <a href="#aira-in-product-guidance">in-product guidance</a> on best practices.</p>
+<h2 id="privacy-and-data-protection">Privacy and data protection</h2>
+<p>All data processed by AIRA is commercially protected.</p>
+<p>Neither Kentico nor the underlying AI models store or log raw customer data inputs, prompts, or responses generated when using AIRA features. All data is discarded after each interaction with AIRA and is not used to train the underlying models. To learn more, see the privacy guarantees provided by Microsoft Azure for <a href="https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy" target="_blank">Azure OpenAI model privacy</a> and <a href="https://learn.microsoft.com/en-us/legal/cognitive-services/computer-vision/imageanalysis-data-privacy-security" target="_blank">Azure Image analysis privacy</a>.</p>
+<h2 id="aira-in-product-guidance">AIRA in-product guidance</h2>
+<p>AIRA provides in-product guidance through a built-in chatbot available directly in the Xperience by Kentico administration interface. It assists users by answering questions about features and workflows, offering best practice suggestions, and using Xperience by Kentico’s product documentation and guides as its primary source of information. This allows users to get quick assistance without leaving their current workspace.</p>
+<h3 id="customer-journey-insights">Customer journey insights</h3>
+<p>Using its in-product guidance, AIRA offers actionable insights into <a href="/documentation/business-users/digital-marketing/customer-journeys">customer journeys</a>. It can show you which <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a> are present in a journey, how they progress through each stage and which are the best and worst performing audience segments. These insights help marketers and content editors better understand audience behavior and optimize engagement strategies.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Overlaps between contact groups</strong><br>
+In some journeys, the same contacts may belong to multiple <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a>. This overlap can influence results when comparing segment performance. Keep this in mind when analyzing journeys, as contacts may be counted in more than one group.</p>
+<p><strong>Expectations from AIRA</strong><br>
+AIRA provides guidance by analyzing your journeys and contact group progression. Its recommendations are intended as insights to support your decision-making, not as prescriptive optimization steps.</p>
+</div>
+
+<h2 id="image-processing">Image processing</h2>
+<h3 id="automatically-select-image-focal-point">Automatically select image focal point</h3>
+<p>When using <a href="/documentation/business-users/content-hub/content-item-assets#image-variants">image variants</a>, AIRA automatically selects the most suitable focal point for an image during <a href="/documentation/business-users/content-hub/content-item-assets#upload-a-single-file">file upload</a>. This ensures that your image variants consistently capture the area of interest, eliminating the need for manual cropping or focal point selection for every image uploaded into the system.</p>
+<p>For AIRA to successfully select the focal point in an image, the image needs to have:</p>
+<ul>
+<li>a file size not larger than 20 MB</li>
+<li>dimensions of at least 50x50 pixels</li>
+<li>a <a href="/documentation/developers-and-admins/configuration/content-hub-configuration#customize-supported-file-types">file type</a> supported for <a href="/documentation/business-users/content-hub/content-item-assets#image-variants">image variants</a>
+</li>
+</ul>
+<p>If the automatic selection fails, the focal point is automatically placed at the center of the image.</p>
+<h3 id="automatically-generate-image-description">Automatically generate image description</h3>
+<p>When <a href="/documentation/business-users/content-hub/content-item-assets#mass-asset-upload">mass uploading</a> images, AIRA automatically generates an SEO-friendly description of an uploaded image and stores it in the <a href="/documentation/developers-and-admins/configuration/aira-configuration#add-aira-features-to-your-content-types">configured</a> text field. The description is generated in the currently selected language.</p>
+<h3 id="automatically-assign-tags-to-images">Automatically assign tags to images</h3>
+<p>When <a href="/documentation/business-users/content-hub/content-item-assets#mass-asset-upload">mass uploading</a> images, AIRA automatically <a href="/documentation/business-users/content-hub/content-items#add-tags-to-content-items">assigns tags</a> to the <a href="/documentation/developers-and-admins/configuration/aira-configuration#add-aira-features-to-your-content-types">configured</a> taxonomy field based on the image content.</p>
+<h2 id="aira-translations">AIRA translations</h2>
+<p>AIRA translations allow editors to translate existing content to new <a href="/documentation/developers-and-admins/configuration/languages">language variants</a> directly without having to translate it themselves or using external tools for translation. You can translate content of pages (including their <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> content), and content items.</p>
+
+<div>
+
+</div>
+<div>
+<p>Text links to your content are not translated automatically and need to be manually reviewed to ensure they lead to the correct language variant.</p>
+</div>
+
+<p>When translating content using AIRA, a draft of the content is created, which you can then review and publish, or you can delete it if you’re not satisfied with the translation. The translation process can be <a href="/documentation/developers-and-admins/configuration/aira-configuration#configure-aira-translations">configured</a>, which allows you to specify custom brand terminology, which words to leave untranslated, formatting rules, or other custom instructions.</p>
+<p>When translating multiple items at the same time, e.g., by using <a href="/documentation/business-users/content-hub/content-items#mass-translating">mass translation</a> or when linked items are translated with the original item, the set of items to be translated is sent to the “translation queue”, which you can check in the <em>Translation queue</em> application. The application displays any sets of items currently being processed and items queued for translation (note that it does not display singular items which were sent for translation, only ones in bulk). Once you start the translation of your items you can safely continue working while the translation finishes in the background.</p>
+<h2 id="rich-text-editor-refinements">Rich text editor refinements</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preview feature</strong></p>
+<p>This AIRA feature is currently in preview mode. Expect this feature to be updated and modified in upcoming versions, including breaking changes.</p>
+<p>Feel free to try out this AIRA feature, for example using the sample <em>Dancing Goat</em> <a href="/documentation/developers-and-admins/installation">project template</a> or other demo sites. You can share your feedback directly with the Kentico <a href="https://roadmap.kentico.com/" target="_blank">Product team</a>.</p>
+</div>
+
+<p>When editing <a href="/documentation/business-users/rich-text-editor">Rich text fields</a> that have the <em>Rich text editor refinements</em> or <em>Generate email content</em> <a href="/documentation/developers-and-admins/configuration/aira-configuration#add-aira-features-to-your-content-types">AIRA feature enabled</a>, you can use AIRA to refine selected pieces of your text. The feature is also available in the <a href="/documentation/developers-and-admins/configuration/aira-configuration#rich-text-refinements-in-page-builder-and-email-builder">rich text editors within Page Builder and Email Builder</a>.</p>
+<ol type="1">
+<li>Select a block of text in the editor.</li>
+<li>Select the <strong>Refine text</strong> button ().
+<ul>
+<li>The button appears next to the highlighted text. In Page Builder and Email Builder, the button can be a part of the editor toolbar.</li>
+</ul>
+</li>
+</ol>
+
+<div>
+<p></p>
+</div>
+<div>
+<p></p>
+</div>
+
+<ol start="3" type="1">
+<li>Choose one of the refinement options (make text shorter, improve spelling and grammar, etc.).</li>
+<li>The text is refined in place.
+<ul>
+<li>If you choose the <em>Apply custom prompt</em> option, describe the desired changes in the AIRA chat window. Then copy () the refined text back to the editor.</li>
+</ul>
+</li>
+</ol>
+<p>You can apply further refinements by selecting other options. Use <em>Undo</em> () and <em>Redo</em> () buttons to navigate between changes.</p>
+<p>Remember to <strong>Save</strong> the changes when you’ve finished.</p>
+<h2 id="generate-email-content">Generate email content</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preview feature</strong></p>
+<p>This AIRA feature is currently in preview mode. Expect this feature to be updated and modified in upcoming versions, including breaking changes.</p>
+<p>Feel free to try out this AIRA feature, for example using the sample <em>Dancing Goat</em> <a href="/documentation/developers-and-admins/installation">project template</a> or other demo sites. You can share your feedback directly with the Kentico <a href="https://roadmap.kentico.com/" target="_blank">Product team</a>.</p>
+</div>
+
+<p>When creating <a href="/documentation/business-users/digital-marketing/emails">emails</a> in Xperience, marketers can use AIRA features to generate content suggestions for email subjects and content fields.</p>
+<p>Once AIRA features are <a href="/documentation/developers-and-admins/configuration/aira-configuration#add-aira-features-to-your-content-types">configured</a> for your email content types, you can start generating content.</p>
+<ol type="1">
+<li>Open an email channel application.</li>
+<li>Create an email or select an existing one, and open the <strong>Content</strong> tab.</li>
+<li>Select the <strong>AIRA</strong> () button next to an email field.<br>
+</li>
+<li>Continue according to the type of the email field:
+<ul>
+<li><a href="#email-subject-fields">Email subject fields</a></li>
+<li><a href="#email-content-fields">Email content fields</a></li>
+</ul>
+</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Generated content language</strong></p>
+<p>AIRA generates content in the <a href="/documentation/developers-and-admins/configuration/languages">language</a> that is currently selected in the given application, for example the <em>Content language</em> assigned to an <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>. If content items are not available in the given language when loading source content from the <em>Content hub</em>, the system uses fallbacks based on the configured language settings.</p>
+<p>When using the <em>Generate email content</em> AIRA feature without a language context (for example in the UI of a custom module), content is generated in the system’s <a href="/documentation/developers-and-admins/configuration/languages">Default language</a>.</p>
+</div>
+
+<h3 id="email-subject-fields">Email subject fields</h3>
+<p>AIRA generates a list of email subject suggestions based on the content of the fields selected when <a href="/documentation/developers-and-admins/configuration/aira-configuration#add-aira-features-to-your-content-types">adding the AI feature</a>.</p>
+<p></p>
+<p>If the initial suggestions are not helpful, you can generate further suggestions by selecting the “quick refinement” buttons below the list. The refinements always apply only to the latest output generated by the AI. You can also describe adjustments yourself by typing into the prompt at the bottom of the AI panel.</p>
+<p>Once you find a suitable suggestion for your email subject, you can select the given line, which automatically inserts the text into the email’s <strong>Subject</strong> field. You can also copy and adjust the text manually. Remember to <strong>Save</strong> the email.</p>
+<h3 id="email-content-fields">Email content fields</h3>
+<p>In the <strong>Generate with AIRA</strong> panel, you first need to select content sources:</p>
+<ul>
+<li>
+<strong>Content hub</strong> – content is generated from the text fields of the selected content items (stored in the <a href="/documentation/business-users/content-hub">Content hub</a>), as well as any linked content items. The maximum length of the total source content is 10 000 characters (if exceeded, a warning is displayed and content over the limit is truncated). The system loads the latest edited content (<em>Draft</em> or custom workflow steps) of the specified content items, even if they are not published yet.</li>
+<li>
+<strong>Web URLs</strong> – content is generated from external sources found under the specified URLs. Add each URL on a new line.</li>
+<li>
+<strong>Custom description</strong> – write your own description of the content you want AIRA to generate. To get the best results, specify the maximum length of the generated text, describe the target audience, and what the reader should do after reading the content (call to action).</li>
+</ul>
+<p></p>
+<p>For optimal results when using the <strong>Content hub</strong> and <strong>Web URLs</strong> content sources, set the <strong>Target length (words)</strong> according to your requirements, select <strong>Provide additional parameters</strong>, and fill in all available options.</p>
+<p>Once your content sources and parameters are specified, select <strong>Generate</strong>, and wait for AIRA to produce the results.</p>
+<p>You can further refine the generated text using the buttons below the text area. The refinements always apply only to the latest output generated by AIRA. You can also describe adjustments yourself by typing into the prompt at the bottom of the AIRA panel.</p>
+<p>Once you are happy with the generated text, select <strong>Copy</strong> () to add the content into the email field. Remember to <strong>Save</strong> the email.</p>
+
+<div>
+
+</div>
+<div>
+<p>For <em>Rich text editor</em> fields, you can also adjust the resulting text at any time using <a href="#rich-text-editor-refinements">rich text editor refinements</a>.</p>
+</div>
+
+
+</body>
+</html>

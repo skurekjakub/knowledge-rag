@@ -1,0 +1,328 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email customization</title>
+</head>
+<body>
+<p>Xperience allows developers to customize the system’s email sending functionality. The <strong>default</strong> sending process adds emails to a queue, stored in the Xperience database. Emails from the queue are then sent out using either an SMTP server or via SendGrid. See <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a> to learn more about the default email functionality.</p>
+<p>If the default email functionality does not meet your project’s requirements, you can perform the following types of customization:</p>
+<ul>
+<li><a href="#custom-email-client">Integrate a custom client for sending emails</a></li>
+<li><a href="#custom-email-sending-functionality">Implement completely custom email sending functionality</a></li>
+<li><a href="#extend-the-default-email-functionality">Extend the default email functionality</a></li>
+</ul>
+<h2 id="custom-email-client">Custom email client</h2>
+<p>By implementing a custom email client, you can integrate with any custom or third‑party service for sending emails.</p>
+<p>With a custom email client, the system still adds emails to the Xperience email queue. However, emails are sent out from the queue using your custom email client.</p>
+
+<div>
+
+</div>
+<div>
+<p>Registering a custom email client <strong>overrides</strong> the default <a href="/documentation/developers-and-admins/configuration/email-configuration">SMTP or SendGrid clients</a>. You cannot combine both options, e.g., assign a custom client to one <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a> and default clients to others.</p>
+<p>See <a href="#custom-email-clients-and-channels">Custom email clients and channels</a> if you wish to use different custom email services for individual channels.</p>
+</div>
+
+<ol type="1">
+<li>Open your project’s solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) to your solution or re-use an existing one.</li>
+<li>Create a new class that implements the <code>IEmailClient</code> interface.</li>
+<li>Define the <code>SendEmail</code> method prescribed by the <code>IEmailClient</code> interface.
+<ul>
+<li>Validate that the properties of the email represented by the method’s <code>EmailMessage</code> parameter are set correctly by calling the <code>EmailMessage.Validate</code> extension method.</li>
+<li>Use the API of your email service to send out the email.</li>
+<li>Return a <code>Task&lt;EmailSendResult&gt;</code> value describing the result and details of the send operation.</li>
+</ul>
+</li>
+<li>Register your custom email client in the Xperience web application:
+<ol type="1">
+<li><p>Edit your application’s <strong>Program.cs</strong> file.</p></li>
+<li><p>Add your <code>IEmailClient</code> implementation <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectionserviceextensions.addsingleton" target="_blank">as a singleton</a> to the service container.</p></li>
+<li>
+<p>Call the <code>AddEmailQueueServices</code> method for <code>IServiceCollection</code> – this method adds services that load emails from the default Xperience email queue and pass them to the registered <code>IEmailClient</code> implementation.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using CMS.EmailEngine;
+
+ ...
+
+ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+ ...
+
+ // Registers a custom IEmailClient
+ builder.Services.AddSingleton&lt;IEmailClient, CustomEmailClient&gt;();
+
+ // Adds services required to process emails from the default Xperience email queue
+ builder.Services.AddEmailQueueServices();
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+</ol>
+<p>The system now adds emails to the queue just like when using the default SMTP or SendGrid clients. Users can <a href="/documentation/business-users/email-queue">monitor emails</a> in the queue using the <strong>Email queue</strong> application in the Xperience administration. When sending emails from the queue, the system uses the logic implemented in the <code>SendEmail</code> method of the registered <code>IEmailClient</code>.</p>
+<h3 id="custom-email-clients-and-channels">Custom email clients and channels</h3>
+<p>Custom <code>IEmailClient</code> implementations cannot be used in combination with the default <a href="/documentation/developers-and-admins/configuration/email-configuration">SMTP or SendGrid clients</a>.</p>
+<p>If you wish to use different email services for specific email channels or <a href="/documentation/developers-and-admins/configuration/notifications">notifications</a> and system emails not related to a specific channel, you need to branch the code in your client’s <code>SendEmail</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class CustomEmailClient : IEmailClient
+{
+    private readonly IInfoProvider&lt;EmailConfigurationInfo&gt; emailConfigurationInfoProvider;
+
+    public CustomEmailClient(IInfoProvider&lt;EmailConfigurationInfo&gt; emailConfigurationInfoProvider)
+    {
+        this.emailConfigurationInfoProvider = emailConfigurationInfoProvider;
+    }
+
+    public Task&lt;EmailSendResult&gt; SendEmail(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+    {
+        // ...
+
+        // The EmailConfigurationID of the EmailMessage parameter is '0' for system emails not related to a channel
+        // For channel-specific emails, you can use the ID to load the configuration object and get the related channel
+        int emailConfigurationId = emailMessage.EmailConfigurationID;
+
+        // Checks that the email message is related to an email channel with ID '1'
+        if (emailConfigurationInfoProvider.Get(emailConfigurationId).EmailConfigurationEmailChannelID == 1)
+        {
+            // Send emails to service 1
+        }
+
+        // ...
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="custom-email-sending-functionality">Custom email sending functionality</h2>
+<p>For projects with advanced custom email requirements, you can fully bypass and replace the default Xperience functionality, i.e. the database email queue and the overall sendout mechanism. For example, you can implement custom email functionality that stores emails on the file system, and then use an external service to pick up and mail them.</p>
+<ol type="1">
+<li>Open your project’s solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) to your solution or re-use an existing one.</li>
+<li>Create a new class that implements the <code>IEmailService</code> interface.</li>
+<li>Define the members prescribed by the <code>IEmailService</code> interface:
+<ul>
+<li>
+<code>ProcessingConfigured</code> – indicates whether processing of emails via the service is configured and enabled. Affects parts of the Xperience administration that rely on email sending (displaying of warning notifications, enabling/disabling buttons, etc.). For example, you can check whether an application setting is configured with an API key for the email service used by your implementation.</li>
+<li>
+<code>SendEmail</code> – perform any required logic to send out or store the email represented by the method’s <code>EmailMessage</code> parameter.</li>
+</ul>
+</li>
+<li>Register the custom service implementation by adding the <code>RegisterImplementation</code> assembly attribute above the class declaration.</li>
+</ol>
+<p>Email sending is now fully controlled by your custom service. In this scenario, the Xperience <strong>Email queue</strong> application is not functional and cannot be used to <a href="/documentation/business-users/email-queue">monitor emails</a> (unless your custom implementation is built around the default Xperience email queue).</p>
+<h3 id="log-email-statistics-with-a-custom-email-service">Log email statistics with a custom email service</h3>
+<p>In custom scenarios where you do not send emails via the the Xperience email queue, <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">tracking of email statistics</a> works in the following way:</p>
+<ul>
+<li>The number of <strong>Sent</strong> emails is not tracked (the default logging occurs when emails are sent from the email queue). If you wish to preserve tracking of sent emails, you must log the statistic hits in your custom code.</li>
+<li>Email <strong>Opens</strong> and <strong>Clicked</strong> links are tracked automatically, just like when using the default Xperience email functionality.</li>
+</ul>
+<p>To log statistics for sent emails, use the <code>IInfoProvider&lt;EmailStatisticsHitsInfo&gt;</code> and <code>EmailStatisticsHitsInfo</code> <a href="/documentation/developers-and-admins/api/database-table-api">API</a>. Depending on the implementation of your custom email service, you also need to ensure the following:</p>
+<ul>
+<li>Only log sent email statistic when emails are mailed out successfully. Most email APIs return result objects for mailout operations, which you can use in your conditions.</li>
+<li>To avoid heavy load on your database, we do not recommend logging hits separately for every sent email. You can prepare a queue or another buffering mechanism, and then log the hits in bulk (<code>IInfoProvider&lt;EmailStatisticsHitsInfo&gt;.BulkInsert</code>).</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System;
+using System.Threading.Tasks;
+
+using CMS;
+using CMS.EmailEngine;
+using CMS.EmailLibrary;
+
+// Registers the custom implementation of IEmailService
+[assembly: RegisterImplementation(typeof(IEmailService), typeof(Custom.CustomEmailService))]
+
+namespace Custom
+{
+    public class CustomEmailService : IEmailService
+    {
+        // Stores an instance of the email statistics hits provider
+        private readonly IInfoProvider&lt;EmailStatisticsHitsInfo&gt; emailStatisticsHitsProvider;
+
+        public CustomEmailService(IInfoProvider&lt;EmailStatisticsHitsInfo&gt; emailStatisticsHitsProvider)
+        {
+            this.emailStatisticsHitsProvider = emailStatisticsHitsProvider;
+        }
+
+        // Indicates whether processing of emails is configured
+        // Enables or disables parts of the admin UI that rely on email sending
+        public bool ProcessingConfigured
+        {            
+            get =&gt; true;
+        }
+
+        public Task SendEmail(EmailMessage message)
+        {
+            // Custom mailout logic
+
+            // Prepares an "email sent" statistics hit for the processed EmailMessage
+            var emailStatisticsSentHit = new EmailStatisticsHitsInfo()
+            {
+                EmailStatisticsHitsEmailConfigurationID = message.EmailConfigurationID,
+                EmailStatisticsHitsType = EmailStatisticsHitsType.Sent,
+                EmailStatisticsHitsTime = DateTime.Now,
+                EmailStatisticsHitsMailoutGUID = message.MailoutGuid
+            };
+
+            // Log statistic hits into the database
+            // We recommend storing/queuing the hits and then logging them in bulk
+            // using IInfoProvider&lt;EmailStatisticsHitsInfo&gt;.BulkInsert
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<h2 id="extend-the-default-email-functionality">Extend the default email functionality</h2>
+<p>The default Xperience email sending functionality allows you to add your own custom actions into the process. For example, you can duplicate sent emails and log them to an external location for auditing purposes.</p>
+<ol type="1">
+<li>Follow the customization steps described in the <a href="#custom-email-sending-functionality">Custom email sending functionality</a> section.</li>
+<li>In your <code>IEmailService</code> implementation, access the default <code>IEmailService</code> using constructor injection.</li>
+<li>When defining your class’s members, perform any required custom actions, and call the default service member at the appropriate location. For more information about this pattern, see <a href="/documentation/developers-and-admins/customization/decorate-system-services">Decorate system services</a>.</li>
+</ol>
+<p>With this type of customization, the system adds emails to the database queue, and users can <a href="/documentation/business-users/email-queue">monitor emails</a> using the <strong>Email queue</strong> application in the Xperience administration. You still need to <a href="/documentation/developers-and-admins/configuration/email-configuration">register an email client</a> (e.g., the default SMTP or SendGrid client) to send out the emails from the queue.</p>
+<h3 id="example---extended-iemailservice">Example - Extended IEmailService</h3>
+<p>The following example demonstrates how to define a custom email service that extends the default implementation. This sample uses all functionality of the default <code>IEmailService</code> email service, and extends it by <a href="/documentation/developers-and-admins/development/logging">logging an event</a> whenever the system sends an email. You can use the same approach to add any required custom functionality.</p>
+<p>Start by preparing a separate project for custom classes in your Xperience solution:</p>
+<ol type="1">
+<li>Open your project’s solution in Visual Studio.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/integrate-custom-code">Add a custom assembly</a> (<em>Class Library</em> project) with class discovery enabled to the solution or re-use an existing assembly.</li>
+<li>Reference the project from your Xperience website project.</li>
+</ol>
+<p>Continue by implementing the custom <code>IEmailService</code> class:</p>
+<ol type="1">
+<li>Add a new class under the custom project. For example, name the class: <em>CustomEmailService.cs</em>
+</li>
+<li>Make the class implement the <code>IEmailService</code> interface and define the required members.</li>
+<li>Register the custom service implementation by adding the <code>RegisterImplementation</code> assembly attribute above the class declaration.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
+using CMS;
+using CMS.Core;
+using CMS.EmailEngine;
+
+// Registers the custom implementation of IEmailService
+[assembly: RegisterImplementation(typeof(IEmailService), typeof(Custom.CustomEmailService))]
+
+namespace Custom
+{
+    public class CustomEmailService : IEmailService
+    {
+        // Stores an instance of the default IEmailService implementation
+        private readonly IEmailService defaultEmailService;
+        // Stores an instance of the logging service
+        private readonly ILogger&lt;CustomEmailService&gt; logger;
+
+        public CustomEmailService(IEmailService defaultEmailService, ILogger&lt;CustomEmailService&gt; logger)
+        {
+            this.defaultEmailService = defaultEmailService;
+            this.logger = logger;
+        }
+
+        // Indicates whether processing of emails is configured
+        // Enables or disables parts of the admin UI that rely on email sending
+        public bool ProcessingConfigured
+        {
+            // Leaves the default email processing detection
+            // True if email queue services and an IEmailClient are registered on application start
+            get =&gt; defaultEmailService.ProcessingConfigured;
+        }
+
+        // Sends out email messages
+        public Task SendEmail(EmailMessage message)
+        {
+            // Adds the email message to the queue using the default email service
+            Task emailTask = defaultEmailService.SendEmail(message);
+
+            // Custom action that creates a log entry when an email is sent
+            string detail = string.Format("Email from sender {0} sent to the queue.", message.From);
+            logger.LogInformation(new EventId(0, "EMAIL_SENDOUT"), detail);
+
+            return emailTask;
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The system now uses the customized service to send emails. Whenever the system adds an email to the queue, a log entry with the <em>EMAIL_SENDOUT</em> event code is created.</p>
+<p>You can view the entry in the <a href="/documentation/developers-and-admins/configuration/event-log">Event log</a>, if you have the <code>XperienceEventLog</code> logging provider <a href="/documentation/developers-and-admins/development/logging">configured</a> to include the <code>Information</code> log level for the given event category (<code>Custom.CustomEmailService</code> in the example above).</p>
+
+</body>
+</html>

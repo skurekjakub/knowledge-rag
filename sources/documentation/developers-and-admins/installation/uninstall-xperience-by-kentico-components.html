@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Uninstall Xperience by Kentico components</title>
+</head>
+<body>
+<p>The Xperience <a href="/documentation/developers-and-admins/installation">installation process</a> installs several NuGet packages and <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/" target="_blank">.NET CLI</a> tools on your machine. See the following sections to learn how to uninstall each component:</p>
+<ul>
+<li>
+<a href="#xperience-project-templates">Xperience project templates NuGet package</a> (Kentico.Xperience.Templates)</li>
+<li>
+<a href="#xperience-project-database-manager">.NET CLI tooling for project database management</a> (Kentico.Xperience.DbManager)</li>
+<li><a href="#projects-created-from-templates">ASP.NET Core Web App projects created from the templates</a></li>
+</ul>
+<h2 id="xperience-project-templates">Xperience project templates</h2>
+<p>The NuGet package with Xperience project templates can be uninstalled by running:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Uninstall project templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet new uninstall Kentico.Xperience.Templates
+
+</code></pre>
+</div>
+
+<p>This removes the Xperience templates from the system, and they no longer appear in the list offered by the <em>dotnet new</em> command.</p>
+<h2 id="xperience-project-database-manager">Xperience project database manager</h2>
+<p>Uninstall the database manager tool by calling the following command from your project’s directory:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet tool uninstall Kentico.Xperience.DbManager
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>The database manager is installed <a href="https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools" target="_blank">locally</a> within each project created via the provided templates. If you’re removing the entire project, there’s no need to uninstall this component separately. </p>
+</div>
+
+<h2 id="projects-created-from-templates">Projects created from templates</h2>
+<p>The provided project templates create standard ASP.NET Core Web App project files. To remove individual web applications, simply delete the folder containing the project. The installation process doesn’t modify any configuration on the hosting machine.</p>
+
+</body>
+</html>

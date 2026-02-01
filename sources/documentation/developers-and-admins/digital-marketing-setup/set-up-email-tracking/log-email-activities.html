@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Log email activities</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>Unlike general email statistics, <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics#contact-activities-for-emails">email activities</a> are not anonymous, and provide information about the actions of individual email recipients. To ensure compliance with data protection regulations, email activities are <strong>not logged by default</strong>.</p>
+<p>Developers need to <a href="#implement-an-email-tracking-activity-evaluator">implement</a> logic that decides when it is possible to track email activities for specific contacts.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email tracking prerequisite</strong></p>
+<p>To log email activities, you must also have <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">Email tracking</a> properly configured for your application.</p>
+</div>
+
+<h2 id="implement-an-email-tracking-activity-evaluator">Implement an email tracking activity evaluator</h2>
+<p>To log email activities, you must create and register an <code>IEmailActivityTrackingEvaluator</code> service that decides when the logging is allowed for specific contacts and emails. The implementation depends on your project’s requirements, on the target audience of your emails, and the <a href="/documentation/developers-and-admins/data-protection">data protection</a> regulations you need to comply with.</p>
+<p>A common approach is to prepare one or more tracking <a href="/documentation/developers-and-admins/data-protection/consent-management">consents</a>, and only log activities for contacts who agree to be tracked.</p>
+<p>The following example demonstrates how to enable email activity logging based on a consent:</p>
+<ol type="1">
+<li>Open your Xperience solution in Visual Studio.</li>
+<li>Create a new class implementing the <code>IEmailActivityTrackingEvaluator</code> interface.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for best practices about adding custom code to your project.</li>
+</ul>
+</li>
+<li>Add the <code>IsTrackingAllowed</code> method.
+<ul>
+<li>Return a true or false value based on the provided <code>ContactInfo</code> and <code>EmailConfigurationInfo</code> arguments.</li>
+</ul>
+</li>
+<li>Register the implementation using the <code>RegisterImplementation</code> assembly attribute.</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>IEmailActivityTrackingEvaluator example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Registers the custom implementation of IEmailActivityTrackingEvaluator
+[assembly: RegisterImplementation(typeof(IEmailActivityTrackingEvaluator), typeof(CustomEmailActivityTrackingEvaluator))]
+
+public class CustomEmailActivityTrackingEvaluator : IEmailActivityTrackingEvaluator
+{
+    // Services required to evaluate consent agreements
+    private readonly IConsentAgreementService consentAgreementService;
+    private readonly IInfoProvider&lt;ConsentInfo&gt; consentInfoProvider;
+
+    public CustomEmailActivityTrackingEvaluator(IConsentAgreementService consentAgreementService, IInfoProvider&lt;ConsentInfo&gt; consentInfoProvider)
+    {
+        this.consentAgreementService = consentAgreementService;
+        this.consentInfoProvider = consentInfoProvider;
+    }
+
+    public async Task&lt;bool&gt; IsTrackingAllowed(ContactInfo contact, EmailConfigurationInfo emailConfiguration)
+    {
+        // Gets the 'TrackingConsent' consent
+        ConsentInfo consent = await consentInfoProvider.GetAsync("TrackingConsent");
+
+        // Returns a true value if the contact has given an agreement for the consent
+        return consent is not null &amp;&amp; consentAgreementService.IsAgreed(contact, consent);
+    }
+}
+</code></pre>
+</div>
+
+<p>Email activities are now only logged if the contact representing the recipient has given an agreement for the specified consent.</p>
+
+</body>
+</html>

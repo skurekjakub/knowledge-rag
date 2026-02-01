@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>File system providers</title>
+</head>
+<body>
+<p>File system providers introduce an abstraction layer over the underlying file system of the hosting machine. You can use different providers to access specific parts of the application’s file system and change the default locations of different types of files.</p>
+<p>Use the <code>CMS.IO</code> API and the following general process:</p>
+<ol type="1">
+<li><p>Open the Xperience solution in Visual Studio.</p></li>
+<li><p>Create a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom module class</a>.</p></li>
+<li>
+<p>Override the module’s <code>OnInit</code> method and perform the required <code>StorageProvider</code> modifications. See the following use cases:</p>
+<ol type="1">
+<li><a href="#change-content-file-paths-to-a-shared-storage">Change content file paths to a shared storage</a></li>
+<li><a href="#change-content-file-paths-to-a-different-disk-drive">Change content file paths to a different disk drive</a></li>
+</ol>
+</li>
+</ol>
+<h2 id="change-content-file-paths-to-a-shared-storage">Change content file paths to a shared storage</h2>
+<p>The system allows you to change default file paths to a shared storage directory on a specific server. This is important in environments with <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">multiple application instances</a>. For example, shared storage is a requirement for all <a href="/documentation/developers-and-admins/configuration/auto-scaling-support">scaled</a> Xperience deployments.</p>
+<ol type="1">
+<li>Edit the custom project holding your storage provider logic in Visual Studio (see the general instructions at the start of this page).</li>
+<li>Do the following in your module’s <code>OnInit</code> method:
+<ol type="1">
+<li>Create a new instance of the <code>StorageProvider</code> class (the <code>isSharedStorage</code> parameter of the <code>CreateFileSystemStorageProvider</code> method must be <code>true</code>).</li>
+<li>Set the target directory via the provider’s <code>CustomRootPath</code> property. The provider creates new files and folders relative to the given root.</li>
+<li>Map a directory from your project to the provider.</li>
+</ol>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.Base;
+using CMS.DataEngine;
+using CMS.IO;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(CustomInitializationModule))]
+
+public class CustomInitializationModule : Module
+{
+    // Module class constructor, the system registers the module under the name "CustomInit"
+    public CustomInitializationModule()
+        : base("CustomInit")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Creates a new StorageProvider instance for regular file systems (NTFS, VFAT)
+        var sharedMediaProvider = StorageProvider.CreateFileSystemStorageProvider(isSharedStorage : true);
+
+        // Specifies the target root directory. The provider creates the relative path of the mapped folders within the given directory.
+        sharedMediaProvider.CustomRootPath = @"\\Server\CustomMediaRoot";
+
+        // Maps a directory from your project to the provider
+        StorageHelper.MapStoragePath("~/assets/media/", sharedMediaProvider);
+    }
+}
+
+</code></pre>
+</div>
+
+<p>Every time the application requests or creates a file in the <strong>~/assets/media</strong> directory, the location specified in the <code>CustomRootPath</code> property is used instead. In this example, the target folder is <strong>\\Server\CustomMediaRoot\assets\media</strong>.</p>
+<p>Using this configuration, all application instances can access the shared storage (the default location for media libraries is <strong>~/assets/media/&lt;MediaLibraryName&gt;</strong>, for content item assets <strong>~/assets/contentitems</strong>).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Azure Blob and Amazon S3 cloud storage</strong></p>
+<p>Xperience also provides built-in support for mapping the contents of specific folders to <a href="https://azure.microsoft.com/en-us/services/storage/blobs/" target="_blank">Azure Blob</a> or <a href="https://aws.amazon.com/s3/" target="_blank">Amazon S3</a> cloud-based storage.</p>
+<p>For more information, see <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a> and <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>.</p>
+</div>
+
+<h2 id="change-content-file-paths-to-a-different-disk-drive">Change content file paths to a different disk drive</h2>
+<p>The <code>CMS.IO</code> API allows you to change default file paths. For example, you can store media files and assets on a different disk drive.</p>
+<ol type="1">
+<li><p>Edit the custom project holding your storage provider logic in Visual Studio (see the general instructions at the start of this page).</p></li>
+<li>
+<p>Do the following in your module’s OnInit method:</p>
+<ol type="1">
+<li>Create a new instance of the <code>StorageProvider</code> class.</li>
+<li>Specify the target directory via the <code>CustomRootPath</code> property of the provider. This sets the <strong>root</strong> of the target path – the provider creates the relative path of the mapped folders within the given root directory.</li>
+<li>Map a directory to the provider.</li>
+</ol>
+</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using CMS;
+using CMS.Base;
+using CMS.DataEngine;
+using CMS.IO;
+
+// Registers the custom module into the system
+[assembly: RegisterModule(typeof(CustomInitializationModule))]
+
+public class CustomInitializationModule : Module
+{
+    // Module class constructor, the system registers the module under the name "CustomInit"
+    public CustomInitializationModule()
+        : base("CustomInit")
+    {
+    }
+
+    // Contains initialization code that is executed when the application starts
+    protected override void OnInit()
+    {
+        base.OnInit();
+
+        // Creates a new StorageProvider instance for regular file systems (NTFS, VFAT)
+        var mediaProvider = StorageProvider.CreateFileSystemStorageProvider();
+
+        // Specifies the target root directory. The provider creates the relative path of the mapped folders within the given directory.
+        mediaProvider.CustomRootPath = @"D:\CustomMediaRoot";
+
+        // Maps a directory to the provider
+        StorageHelper.MapStoragePath("~/assets/media/", mediaProvider);
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The code ensures that every time the application requests or creates a file with the <strong>~/assets/media</strong> path, the location specified in the <code>CustomRootPath</code> property is used instead. In this example, the target folder is <strong>D:\CustomMediaRoot\assets\media</strong>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Azure Blob and Amazon S3 cloud storage</strong></p>
+<p>Xperience also provides built-in support for mapping the contents of specific folders to <a href="https://azure.microsoft.com/en-us/services/storage/blobs/" target="_blank">Azure Blob</a> or <a href="https://aws.amazon.com/s3/" target="_blank">Amazon S3</a> cloud-based storage.</p>
+<p>For more information, see <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob storage</a> and <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>.</p>
+</div>
+
+
+</body>
+</html>

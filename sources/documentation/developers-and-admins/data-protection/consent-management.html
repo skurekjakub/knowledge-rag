@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Consent management</title>
+</head>
+<body>
+<p>In Xperience, consents are records used to inform website visitors about the means of collecting and manipulating their personal data by the system, site administrators, marketers and anyone else who has access to said data, including third parties to whom this data is forwarded.</p>
+<p>You can use consents to comply with the requirements of the <a href="/documentation/developers-and-admins/data-protection/gdpr-compliance">GDPR</a> and other personal data regulations.</p>
+<p>Whenever any personal data of a visitor is obtained, it is necessary to have a consent agreement from the visitor to legally process this data. This includes <a href="/documentation/business-users/digital-marketing/contact-management">tracking of contacts</a> and their <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a> on the live site. Every consent agreement of a visitor is directly connected to a corresponding <a href="/documentation/business-users/digital-marketing/contact-management">contact</a>. Deleting contacts from the system therefore also causes deletion of the contact’s consent agreements.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Definition of consent</strong></p>
+<p>“‘Consent’ of the data subject means any freely given, specific, informed and unambiguous indication of the data subject’s wishes by which he or she, by a statement or by a clear affirmative action, signifies agreement to the processing of personal data relating to him or her.”</p>
+<p>(Source: <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679#d1e1489-1-1" target="_blank">GDPR Article 4</a>, Paragraph 11)</p>
+</div>
+
+<p>This page describes how to <a href="#create-consents">create consents</a>, view <a href="#view-consent-agreements">consent agreements</a>, and <a href="#view-archived-consents">view the older, archived versions of consent texts</a>. </p>
+<h2 id="create-consents">Create consents</h2>
+<ol type="1">
+<li><p>Open the <strong>Data protection</strong> application and switch to the <strong>Consents</strong> tab.</p></li>
+<li><p>Select <strong>New consent</strong>.</p></li>
+<li><p>Type a <strong>Consent name</strong> and a optionally a code name in the <strong>Identifiers</strong> section.</p></li>
+<li><p>Select <strong>Save</strong>.</p></li>
+<li>
+<p>On the <strong>Consent text</strong> tab, compose the content of the consent in the text areas:</p>
+<ul>
+<li>
+<strong>Short text</strong> – a brief explanation of the consent’s content for public users. The short text is shown to visitors when presenting an option to give consent agreements.</li>
+<li>
+<strong>Full text</strong> – contains the full content of the consent, including any required legal terminology. The full text can be made available upon request, for example through a dedicated privacy policy page.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong> to save the text.</p></li>
+</ol>
+<p>The system saves the consent. You can modify the consent at any time by selecting it on the <strong>Consents</strong> tab of the <strong>Data protection</strong> application.</p>
+<p>Learn how to include consents on your website in <a href="/documentation/developers-and-admins/data-protection/consent-development">Consent development</a>.</p>
+<h3 id="translate-consents-to-other-languages">Translate consents to other languages</h3>
+<p>If you have multiple <a href="/documentation/developers-and-admins/configuration/languages">languages</a> configured for your project, you can create different language variants of consent texts. </p>
+<p>Select the consent in the <strong>Data protection</strong> application and open the <strong>Consent text</strong> tab. Switch between language variants using the selector in the top left.</p>
+<p></p>
+<p>When switching to a language where the consent text is not yet translated, you can:</p>
+<ul>
+<li>
+<strong>Create empty consent text</strong> – write the text from scratch in the given language.</li>
+<li>
+<strong>Copy consent text from another language</strong> – select a language in which the consent text already exists, and use it as a starting point for the new language variant.</li>
+</ul>
+<p>Select <strong>Continue</strong>, add the translated texts, and <strong>Save</strong> the consent.</p>
+<p>Once the language variants are prepared, the texts are displayed according to the language in which visitors view the content. If a consent variant is not available in a language, the system attempts to display other variants of the consent text based the <strong>fallback settings</strong> of languages in your project (see <a href="/documentation/developers-and-admins/configuration/languages">Languages</a> to learn more).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Language variants and consent agreements</strong></p>
+<p>The purpose of consent language variants is to provide different short and full text content in individual languages. However, the system does not separate consent agreements based on language – a visitor has either given an agreement with the consent (in any language) or has not.</p>
+<p>Therefore, the text of <strong>all language variants must be legally equal</strong> and accurately cover the functionality and personal data processing associated with the consent.</p>
+</div>
+
+<h2 id="view-consent-agreements">View consent agreements</h2>
+<p>After you create consents and make it possible for visitors to give consent agreements on your website, you can view a list of agreements for individual consents:</p>
+<ol type="1">
+<li>Open the <strong>Data protection</strong> application and switch to the <strong>Consents</strong> tab.</li>
+<li>Select the consent from the listing of available consents.</li>
+<li>Switch to the <strong>Consent agreements</strong> tab.</li>
+</ol>
+<p>The tab displays a list of all visitors who have given an agreement for the selected consent. The list includes visitors who have given an agreement for an <a href="#view-archived-consents">older, archived version</a> of the consent, but not those who have revoked the consent at a later point.</p>
+<p>The visitor information is based on the <a href="/documentation/business-users/digital-marketing/contact-management">contact</a> data available in the system.</p>
+<h2 id="view-archived-consents">View archived consents</h2>
+<p>When a visitor gives a consent agreement, it is based on the exact text of the consent at the given time. However, consent texts may change at a later time.</p>
+<p>To keep track of the exact consent versions for which visitors have given agreements, automatic consent archiving is performed. When a consent’s text is modified and saved, the system checks whether the site’s contacts have given at least one agreement since the last update. If this is the case, an archived version of the previous consent text is created. Every archived consent is represented by a unique hash string, and contains all language variants created for the given consent.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Modifying consents</strong></p>
+<p>When making major changes to consent texts, the best practice is to create new consents rather than modifying existing consents.</p>
+</div>
+
+<p>To see the archived versions of a specific consent and all of its language variants:</p>
+<ol type="1">
+<li>Open the <strong>Data protection</strong> application and switch to the <strong>Consents</strong> tab.</li>
+<li>Select the consent from the listing of available consents.</li>
+<li>Switch to the <strong>Consent archive</strong> tab.</li>
+</ol>
+<p>The tab displays all archived versions of the selected consent for which at least one visitor has given an agreement. You can also view the short and full text of the consent language variants.</p>
+
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content item database structure</title>
+</head>
+<body>
+<p>This page introduces the database structure of various system entities used to manage content in Xperience.</p>
+<h2 id="content-items">Content items</h2>
+<p>Content items, managed via the <strong>Content hub</strong> application and the <code>IContentItemManager</code> <a href="/api/">management API</a>, are composed of the following entities:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Database table</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMS_ContentItem</p>
+</td>
+<td>
+<p>Stores system information about the content item.</p>
+<ul>
+<li>The item’s content type is stored by the <strong>ContentTypeId</strong> column.</li>
+<li>The <strong>ContentItemIsReusable</strong> flag determines whether the item can be linked across multiple channels (i.e., is a reusable content item managed via the <em>Content hub</em> application) or is tied to a specific channel (i.e., a <a href="#pages">page</a> or an <a href="#emails">email</a>).</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_ContentItemCommonData</p>
+</td>
+<td>
+<p>Stores content item properties and data of Page Builder widgets (for page content items) and <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schema</a> fields.</p>
+<p>The table stores a separate record for each <a href="/documentation/developers-and-admins/configuration/languages">language variant</a> of an item.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_ContentItemLanguageMetadata</p>
+</td>
+<td>
+<p>Contains data about the item displayed within the admin UI, such as the display name, creator, and last updated/modified date.</p>
+<p>The table stores a separate record for each language variant of an item.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><em>ContentItemData</em> tables</p>
+</td>
+<td>
+<p>Store <a href="/documentation/developers-and-admins/development/content-types">content type fields</a>. Created together with the corresponding content types.</p>
+<p>The tables use the following naming structure: <strong>&lt;ContentTypeNamespace&gt;.&lt;ContentTypeName&gt;</strong></p>
+<p>For example, a <em>DancingGoat.Coffee</em> content type has a table named <em>DancingGoat_Coffee</em>. The table’s columns correspond with the <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> defined for the content type.</p>
+<ul>
+<li>Records in the data tables are bound to content items via the <strong>CMS_ContentItemCommonData</strong> table.</li>
+<li>The table stores a separate record for each language variant of an item.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_ContentItemReference</p>
+</td>
+<td>
+<p>Stores references between items, enabling <a href="/guides/architecture/content-modeling/content-modeling-guide">content composition</a>.</p>
+</td>
+</tr>
+</table>
+
+<p>When managing content items in code, the API abstracts work with all these entities behind a conventional CRUD manager (<code>IContentItemManager</code>).</p>
+<p>Similarly, when consuming the data – to display on a website, for example – the content item query API merges all entities into a single record from which all data and meta information can be extracted.</p>
+<p>The following diagram illustrates the relationship between entities composing a single content item. Only the most important columns are highlighted.</p>
+<p></p>
+<h2 id="pages">Pages</h2>
+<p>Pages, managed via website channel applications and the <code>IWebPageManager</code> <a href="/api/">API</a>, extend the <a href="#content-items">content item structure</a> with additional entities that provide web-specific, contextual data and metadata.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Database table</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMS_Channel</p>
+</td>
+<td>
+<p>Unlike standalone content items, pages must be tied directly to website channels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_WebsiteChannel</p>
+</td>
+<td>
+<p>Stores data about the <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a> – main domain, primary language, default <a href="/documentation/developers-and-admins/data-protection/cookies">cookie level</a>, etc.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_WebPageItem</p>
+</td>
+<td>
+<p>Stores metadata about pages, such as the location and order in the page content tree (<strong>TreePath</strong> and <strong>Order</strong> columns).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_WebPageUrlPath</p>
+</td>
+<td>
+<p>Stores the relative URL path to pages.</p>
+<p>The table stores a separate record for each language variant of a page.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_WebPageAcl</p>
+</td>
+<td>
+<p>Stores information about content tree sections to which a specific set of <a href="/documentation/developers-and-admins/configuration/users/role-management/page-permission-management">page permissions</a> is applied.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_WebPageAclRole</p>
+</td>
+<td>
+<p>Stores information about which roles are present in which sets of page permissions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_WebPageAclRolePermission</p>
+</td>
+<td>
+<p>Stores specific page permissions granted to roles.</p>
+</td>
+</tr>
+</table>
+
+<p>The following diagram illustrates the relationship between entities composing a single page. Only the most important columns are highlighted.</p>
+<p></p>
+<h2 id="emails">Emails</h2>
+<p>Emails, managed via email channel applications, extend the <a href="#content-items">content item structure</a> with additional entities that provide email-specific, contextual data and metadata.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Database table</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMS_Channel</p>
+</td>
+<td>
+<p>Unlike standalone content items, emails must be tied directly to email channels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EmailLibrary_EmailChannel</p>
+</td>
+<td>
+<p>Stores data about the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a> – sending domain, language, etc.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EmailLibrary_EmailConfiguration</p>
+</td>
+<td>
+<p>Stores the configuration of individual emails (email name, assigned template, etc.).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>EmailLibrary_SendConfiguration</p>
+</td>
+<td>
+<p>Stores the sending configuration of individual regular emails (scheduled send date, etc.).</p>
+</td>
+</tr>
+</table>
+
+<p>The following diagram illustrates the relationship between entities composing a single email. Only the most important columns are highlighted.</p>
+<p></p>
+<h2 id="headless-items">Headless items</h2>
+<p>Headless items, managed via headless channel applications, extend the <a href="#content-items">content item structure</a> with additional entities that provide headless-specific, contextual data and metadata.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Database table</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CMS_Channel</p>
+</td>
+<td>
+<p>Unlike standalone content items, headless items must be tied directly to headless channels.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_HeadlessChannel</p>
+</td>
+<td>
+<p>Stores data about the <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a> – preview URL, primary language, etc.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>CMS_HeadlessItem</p>
+</td>
+<td>
+<p>Stores the configuration of individual headless items (headless item name, its headless channel ID, etc.).</p>
+</td>
+</tr>
+</table>
+
+<p>The following diagram illustrates the relationship between entities composing a single headless item. Only the most important columns are highlighted.</p>
+<p></p>
+
+</body>
+</html>

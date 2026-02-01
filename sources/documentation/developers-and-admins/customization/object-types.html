@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Object types</title>
+</head>
+<body>
+<p>Xperience relies on various entities persisted in the database for its functionality – users represented by <code>UserInfo</code> objects stored in the <code>CMS_User</code> table, digital marketing contacts represented by <code>ContactInfo</code> objects stored in the <code>OM_Contact</code> table, to name a few. The properties and behavior of such entities within the system is managed via <strong>object type</strong> <strong>registrations</strong>. An object type stores metadata that control how the system works with a given entity.</p>
+<p>Entities registered as object types can benefit from:</p>
+<ul>
+<li>Object-relational mapping (ORM) via <a href="/documentation/developers-and-admins/api/database-table-api">entity-provider classes</a> with <a href="/documentation/developers-and-admins/api/objectquery-api">fluent API</a>
+</li>
+<li>Configurable referential and parent-child relationships between objects with ensured referential integrity</li>
+<li>Configurable handling of object caching and cache dependencies</li>
+<li>
+<a href="/documentation/developers-and-admins/ci-cd/continuous-integration">Continuous Integration</a> and <a href="/documentation/developers-and-admins/ci-cd/continuous-deployment">Continuous Deployment</a>
+</li>
+<li>Automation and support for other actions and behavior according to the object type’s configuration</li>
+</ul>
+<p>The system enables you to model custom entities that leverage the aforementioned features. The process consists of the following steps:</p>
+<ol type="1">
+<li>
+<a href="#define-the-data-class">Define a data class</a> used by the ORM framework to map the database entity to an object.</li>
+<li>
+<a href="#generate-code-files">Generate code files</a> for the data class. The process generates an <a href="/documentation/developers-and-admins/api/database-table-api"><em>Info</em> class</a> that mirrors the database entity (used by the ORM framework) and contains the <strong>object type registration</strong>.</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">Configure the object type definition</a> stored within the <em>Info</em> class.</li>
+</ol>
+<h2 id="define-the-data-class">Define the data class</h2>
+<p>Data classes are managed from the <strong>Modules</strong> application in the Xperience administration. Each class must belong to a <strong>Module</strong> – a container that groups related data classes.</p>
+<h3 id="create-a-module">Create a module</h3>
+<p>Begin by creating a module:</p>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application.
+<ul>
+<li>The default listing shows only system modules that contain one or more <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">extendable system object types</a>. You cannot create new data classes under system modules.</li>
+</ul>
+</li>
+<li>Select <strong>New module</strong>.</li>
+<li>Fill in the <strong>Module name</strong> and <strong>Code name</strong> fields. Optionally, you can give the module a <strong>Description</strong>.
+<ul>
+<li>These fields mainly serve as metadata accessible from within object types to determine module association.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<h3 id="define-and-model-the-data-class">Define and model the data class</h3>
+<p>With the module created, you can now create new data class:</p>
+<ol type="1">
+<li>Select your module from the listing.</li>
+<li>Switch to the <strong>Classes</strong> tab and select <strong>New class</strong>.
+<ul>
+<li>The class models the object’s data structure for ORM and stores the object type definition.</li>
+</ul>
+</li>
+<li>Enter the class’s <strong>Class name</strong> and <strong>Code name</strong>.
+<ul>
+<li>The code name is also used to identify the object type registration in the system.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The system creates the data class and its corresponding database table. The database table name follows the <em>Namespace_Name</em> pattern. For example: <em>Acme_Office</em></p>
+<p>Continue by modeling the database entity:</p>
+<ol type="1">
+<li>Switch to the <strong>Database columns</strong> tab.</li>
+<li>Using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, model the object as required.
+<ul>
+<li>Each data class (database entity) is created with an <a href="https://docs.microsoft.com/en-us/sql/t-sql/statements/create-table-transact-sql-identity-property" target="_blank">identity column</a> that cannot be removed.</li>
+<li>Each added field creates a column in the corresponding database table.</li>
+<li>At this stage, you are only modeling the database entity. You cannot assign value editors (<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a>) to fields (in contrast with <a href="/documentation/developers-and-admins/development/content-types">content types</a>). This is done at a later stage when defining the object type’s editing interface.</li>
+</ul>
+</li>
+</ol>
+<h2 id="generate-code-files">Generate code files</h2>
+<p>With the entity modeled, the last step is to generate code files for the object type.</p>
+<ol type="1">
+<li>(Optional) Switch to the <strong>Code</strong> tab and assign columns as required. See <a href="#Generatecodefilesforsystemobjects-otcodegenconfig">Configure code generation for object types</a> for a description of each setting.
+<ul>
+<li>All the available settings only affect code generation and can be changed later in the generated code files (or by regenerating the class).</li>
+</ul>
+</li>
+<li>Generate the code files by running the <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">code generator</a> utility.
+<ul>
+<li>See <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a> for recommendations related to organizing custom code files.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong>Generate object type code files</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ dotnet run --no-build -- --kxp-codegen --type "Classes"
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The generated <strong>&lt;ObjectTypeName&gt;Info</strong> class contains the object type definition and system registration which consists of the following components:</p>
+<ul>
+<li>The unique identifier under which the object type is registered in the system is stored in the <code>OBJECT_TYPE</code> constant.</li>
+<li>The <code>RegisterObjectType</code> assembly attribute. Registers the object type and its implementing class into the system.</li>
+<li>An object of the <code>ObjectTypeInfo</code> type under the <code>TYPEINFO</code> member.
+<ul>
+<li>Defines the object type and its behavior in the system.</li>
+</ul>
+</li>
+</ul>
+<p>This concludes the necessary steps for object type creation. The type is now registered in the system and available to work with using the API.</p>
+<p>The created object type only contains the most basic type definition required to work with the object in the system. The object type can be further configured according to your requirements. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">Object type configuration</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>For a general overview of the API responsible for ORM and general database interaction, see <a href="/documentation/developers-and-admins/api/database-table-api">Database table API</a> and <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery API</a>.</p>
+</div>
+
+<p>See the next section to learn how to define editing forms for the object type and display them on pages in the administration interface.</p>
+<h3 id="configure-code-generation-for-data-classes"> Configure code generation for data classes</h3>
+<p>You can further configure code generation for object types under <strong>Modules</strong> → <em>select a module</em> → <strong>Classes</strong> → <em>edit a class</em> → <strong>Code</strong>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Setting</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Object type</p>
+</td>
+<td>
+<p>The identifier of the object type in the system. Must be unique within the Xperience instance. We recommend prefixing object types with a shared identifier. For example, system object types begin with the <code>CMS.</code> prefix (this prefix is reserved). </p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Display name column</p>
+</td>
+<td>
+<p>Stores a human-readable name of the object. Reflected in UIs that work with objects (e.g., in breadcrumbs, navigation, object listings). Depends mainly on the type of the used <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI page</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Code name column</p>
+</td>
+<td>
+<p>Stores the code name of each object. This column is used to identify the object when retrieving objects via their code name.</p>
+<p>If set, generated provider interfaces by default contain a <code>Get(string codename)</code> method.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>GUID column</p>
+</td>
+<td>
+<p>Stores the <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier" target="_blank">GUID</a> of each object. This column is used to identify the object when retrieving objects via GUIDs. If set, generated provider interfaces by default contain a <code>Get(Guid guid)</code> method.</p>
+<p>Only columns with the <em>GUID</em> <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> can be selected.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>“Last modified” column</p>
+</td>
+<td>
+<p>If set, can be automatically populated by the system when performing certain supported actions with objects of the given type, such as updates (calling <code>Set</code> on the corresponding provider).</p>
+<p>Only columns with the <em>DateTime</em> <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> can be selected.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Binary column</p>
+</td>
+<td>
+<p>Stores associated binary data.</p>
+<p>Only columns with the <em>Binary</em> <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> can be selected.</p>
+</td>
+</tr>
+</table>
+
+<p>Additionally, columns that can be used to uniquely identify individual records in the database (ID, Code name, GUID) have the <em>Use hashtable</em> option available. If the option is enabled, retrieved objects are cached under the corresponding identifier. For subsequent queries targeting previously retrieved records, the cached values are used, reducing database usage. However, note that enabling hashtable caching for data classes with a significant number of records that are often loaded by the system may result in a large increase in application memory usage. See <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration">Object type configuration</a>.</p>
+<h2 id="define-editing-forms">Define editing forms </h2>
+<p>Object types can have multiple editing forms, each shown in a different context as required. For example, creating new objects of a particular type can show a different set of form fields than the edit action, depending on user requirements.</p>
+<p>You can manage all editing forms for a given object type on its <strong>UI forms</strong> tab:</p>
+<ol type="1">
+<li>In the <strong>Modules</strong> application, edit a module and select a data class.</li>
+<li>Switch to the <strong>UI forms</strong> tab and select <strong>New UI form</strong>.</li>
+<li>Enter the <strong>UI form name</strong> and <strong>Code name</strong>.
+<ul>
+<li>UI forms with the <em>create</em> or <em>edit</em> code names get used by default on object create and edit pages respectively. See <a href="#display-editing-forms-on-ui-pages">Display editing forms on UI pages</a>.</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>With the UI form created, you now need to define its fields. Depending on the target use case, the form’s fields can contain all or a subset of the type’s database columns. Columns marked as <strong>Required</strong>, if not added to a form, use the default value configured on the <em>Database columns</em> tab.</p>
+<ol type="1">
+<li>Edit a created UI form and switch to the <strong>Fields</strong> tab.</li>
+<li>Select <strong>New field</strong>, the <strong>Database column</strong> selector opens. You now have two choices:
+<ol type="1">
+<li>Create a field that corresponds to one of the database columns defined for the object type. Submitted data is persisted in the selected column.</li>
+<li>Select <strong>New field without database column</strong> to create a field whose value is not persisted in the database. For example, fields of this kind can be used to modify an object’s create/update logic, see <a href="#process-submitted-ui-form-data">Process submitted UI form data</a>.</li>
+</ol>
+</li>
+<li>Using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, define all form fields according to your requirements.
+<ul>
+<li>You can <a href="/documentation/developers-and-admins/configuration/macro-expressions/macro-syntax">use macro expressions</a> to set the <strong>Default value</strong> of fields.</li>
+</ul>
+</li>
+<li>(Optional) Group fields into categories via <strong>New category</strong>. Categories contain all fields listed underneath them.</li>
+</ol>
+<p>The UI form is now created and can be displayed.</p>
+<h2 id="create-a-user-interface">Create a user interface</h2>
+<p>To create a user interface for your objects, leverage the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">user interface customization framework</a> exposed by the administration.</p>
+<p>The following sections only briefly cover the necessary steps and provide links to relevant pages.</p>
+<h3 id="create-object-type-listings">Create object type listings</h3>
+<p>To create a page that lists objects of a specific type, use the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template">Listing UI page template</a>.</p>
+<p></p>
+<h3 id="display-editing-forms-on-ui-pages">Display editing forms on UI pages</h3>
+<p>To display created UI forms in the administration interface, use the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">edit</a> or <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">create</a> UI page templates and assign the UI form’s name to the <code>UIFormName</code> property within the <code>ConfigurePage</code> method override.</p>
+<p>These pages ensure that submitted values get propagated into the corresponding database columns mapped to each UI form field. </p>
+<p>Values from fields without database columns can be acted upon when processing submitted data on the back end.</p>
+<h3 id="process-submitted-ui-form-data">Process submitted UI form data</h3>
+<p>You can modify the logic that creates and updates the corresponding object in the database based on the data submitted from <a href="#Objecttypes-EditingFormsDisplay">create and edit pages</a>.</p>
+<p>Within the UI pages that handle a particular object type, override the <code>FinalizeInfoObject</code> method.</p>
+<p>To get field values, use:</p>
+<ul>
+<li>
+<code>IFormFieldValueProvider.TryGet&lt;TType&gt;(string fieldName, out var fieldValue)</code> – returns the value of the given field as <code>TType</code>
+</li>
+</ul>
+<p>where <code>fieldName</code> is the name of the field.</p>
+<p>Access the object being created or edited via the <code>infoObject</code> parameter. You can also use <code>IFormFieldValueProvider</code> to read values from fields without database columns and use it, for example, for some conditional logic.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Object create and edit pages - FinalizeInfoObject example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+protected override Task FinalizeInfoObject(OfficeInfo infoObject, IFormFieldValueProvider fieldValueProvider, CancellationToken cancellationToken)
+{
+    // Updates the object based on form fields mapped to specific database columns
+    base.FinalizeInfoObject(infoObject, fieldValueProvider, cancellationToken);
+
+    // Reads the value from a field
+    fieldValueProvider.TryGet&lt;string&gt;("FormFieldWithoutDatabaseColumn", out var fieldValue);
+
+    // Further modifies a given value
+    infoObject.OfficeDisplayName += $"_{fieldValue}";
+
+    // The system validates and sets the object to the database
+    return Task.CompletedTask;
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

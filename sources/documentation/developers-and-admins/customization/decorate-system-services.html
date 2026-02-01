@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Decorate system services</title>
+</head>
+<body>
+<p>The <a href="https://refactoring.guru/design-patterns/decorator" target="_blank">decorator pattern</a> allows you to add new functionality to an existing object without altering its structure.</p>
+<p>In Xperience by Kentico, the decorator pattern is suitable for customization various services. Consider using decorators when:</p>
+<ul>
+<li>extending an existing implementation with new logic while maintaining the original behavior</li>
+<li>replacing the implementation of specific members, leaving others unchanged</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Fully custom implementations</strong></p>
+<p>If you wish to completely replace the implementation of a service class without reusing any of the logic, there is no point in using the decorator pattern. In this case, you can simply create and register your own implementation of the given interface.</p>
+</div>
+
+<h2 id="decorate-services-via-dependency-injection">Decorate services via dependency injection</h2>
+<p>Xperience service classes registered within the ASP.NET Core application’s Inversion of Control (IoC) container can be decorated by registering a new implementation of the same service (interface) with a constructor dependency on itself. The service container is capable of resolving the previous implementation of the service from within the new one, allowing you to add custom logic to the service’s members.</p>
+<p>The benefits of this approach are:</p>
+<ul>
+<li>the service maintains its behavior, but with added custom logic (e.g., additional logging)</li>
+<li>the new implementation gets used in place of the old one automatically across the system</li>
+<li>to revert back to the previous implementation, you only need to stop registering the new implementation into the container</li>
+<li>opens <code>sealed</code> and <code>internal</code> service implementations for modification</li>
+<li>the IoC container always resolves the <em>previous</em> implementation of a service (last registered relative to the implementation being resolved), allowing you to chain multiple decorators</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Registering multiple decorators for a service from the same assembly</strong></p>
+<p>Service registrations from within the same assembly are nondeterministic – the order of registration can be different every time the application starts. If you need to chain multiple decorators from within a single assembly, you can do so via a <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">custom code-only module</a> class. Override the module’s <code>OnPreInit</code> method, and call <code>Service.Use&lt;TService, TImplementation&gt;()</code> for each of your implementation in the order of dependency. This ensures deterministic ordering for the IoC container.</p>
+</div>
+
+<h3 id="example">Example</h3>
+<p>The following example demonstrates decoration via dependency injection:</p>
+<ol type="1">
+<li>
+<p>Create a new implementation of the desired service. This example modifies <code>IEmailService</code> to adjust the email queue priority for specific emails.</p>
+<ul>
+<li>For best practices about integrating custom code, see <a href="/documentation/developers-and-admins/customization/integrate-custom-code">Integrate custom code</a>.</li>
+</ul>
+</li>
+<li>
+<p>Inject the same service via a constructor dependency. When instantiating your service, the container resolves its previous implementation.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS.EmailEngine;
+
+ public class CustomEmailService : IEmailService
+ {
+     // Stores an instance of the default IEmailService implementation
+     private readonly IEmailService defaultEmailService;
+
+     // Resolves the previous implementation of the service using constructor DI
+     public CustomEmailService(IEmailService defaultEmailService)
+     {
+         this.defaultEmailService = defaultEmailService;
+     }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Implement the methods prescribed by the interface. To keep the original behavior, call the equivalent methods from the injected service within the corresponding method implementations. Add custom logic as required.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using System;
+ using System.Threading.Tasks;
+
+ using CMS;
+ using CMS.EmailEngine;
+
+ // Registers the custom implementation of IEmailService
+ [assembly: RegisterImplementation(typeof(IEmailService), typeof(Custom.CustomEmailService))]
+
+ namespace Custom
+ {
+     public class CustomEmailService : IEmailService
+     {
+         // Stores an instance of the default IEmailService implementation
+         private readonly IEmailService defaultEmailService;
+
+         // Resolves the previous implementation of the service using constructor DI
+         public CustomEmailService(IEmailService defaultEmailService)
+         {
+             this.defaultEmailService = defaultEmailService;
+         }
+
+         // Indicates whether processing of emails is configured
+         // Enables or disables parts of the admin UI that rely on email sending
+         public bool ProcessingConfigured
+         {
+             // Leaves the default email processing detection
+             // True if email queue services and an IEmailClient are registered on application start
+             get =&gt; defaultEmailService.ProcessingConfigured;
+         }
+
+         // Sends out email messages
+         public Task SendEmail(EmailMessage message)
+         {
+             // Sets the email priority to high if one of the recipients has a specific domain in their email address
+             if (message.Recipients.Contains("@important-domain.com", StringComparison.OrdinalIgnoreCase))
+             {
+                 message.Priority = EmailPriorityEnum.High;
+             }
+
+             // Adds the email message to the queue using the default email service
+             Task emailTask = defaultEmailService.SendEmail(message);
+
+             return emailTask;
+         }
+     }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Register the service implementation within the application’s IoC container via the <code>RegisterImplementation</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS;
+ using CMS.EmailEngine;
+
+ // Registers the custom implementation of IEmailService
+ [assembly: RegisterImplementation(typeof(IEmailService), typeof(CustomEmailService))]
+
+ public class CustomEmailService : IEmailService
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>The system now uses your service implementation in place of the previous one. The service’s core behavior remains unchanged, but it also executes the additional logic when used.</p>
+
+</body>
+</html>

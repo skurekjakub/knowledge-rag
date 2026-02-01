@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Extend widgets</title>
+</head>
+<body>
+<p>When developing <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Page Builder widgets</a>, you can extend an existing widget instead of creating a new one from scratch. The API provides a way to render a <strong>“nested”</strong> widget from the view code of another widget. An extended widget retains the full functionality of the original nested widget, but can introduce additions such as wrapping HTML code, new <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">configurable properties</a> and additional custom logic.</p>
+<p>Nesting is possible for widgets of any type, including the <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">default system widgets</a>, third-party widgets, or your own custom widgets. The only requirement is for the widget to be registered using the RegisterWidget assembly attribute (as described in <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">Widgets for Page Builder</a>).</p>
+<h2 id="creating-extended-widgets">Creating extended widgets</h2>
+<p>To create a widget that extends another widget via nesting:</p>
+<ol type="1">
+<li><p>Start by following the <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">standard widget development</a> instructions.</p></li>
+<li>
+<p>For widgets with <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">configurable properties</a>, choose one of the following approaches based on your requirements:</p>
+<ul>
+<li>Use the property model class of the nested widget for your extended widget (either during registration or in the widget’s custom view component).<br>
+– OR –</li>
+<li>Create a new property model class that <strong>inherits</strong> from the nested widget’s property model. You can then add any properties that you need for your extended widget.</li>
+</ul>
+</li>
+<li>
+<p>In the partial view of the extended widget, find the location where you want to display the content of the nested widget, and call the <code>Html.Kentico().RenderNestedWidgetAsync</code> extension method (from the <code>Kentico.PageBuilder.Web.Mvc</code> namespace) or its <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper</a> equivalent. The method takes the following parameters:</p>
+<ul>
+<li>
+<strong><code>identifier</code></strong>– the <em>string</em> identifier under which the nested widget was registered. For identifiers of the default system widgets, check <a href="/documentation/developers-and-admins/development/builders/page-builder/reference-default-page-builder-widgets">the system widget reference</a>.</li>
+<li>
+<strong><code>properties</code></strong>– object containing the properties of the nested widget. Use the ComponentViewModel&lt;TProperties&gt; model class to make the system automatically pass the <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties</a> to the widget view.</li>
+</ul>
+</li>
+</ol>
+<p>You now have a custom widget that provides the same content and functionality as the nested widget. Implement any required extended functionality, for example by adding HTML code before or after the nested widget.</p>
+<p>If the nested widget has configurable properties, they are also available for the extended widget within the Page Builder interface (along with any additional properties defined in an inherited property model class).</p>
+<h2 id="example">Example</h2>
+<p>The following example demonstrates how to use widget nesting to extend the system’s default <strong>Form</strong> widget. The sample extended widget adds an extra heading above the default form content, along with a custom property that allows editors to set the heading text.</p>
+<ol type="1">
+<li><p>Create a widget property model class in the <em>~/Components/Widgets/ExtendedFormWidget</em> folder, named <strong>ExtendedFormWidgetProperties.cs</strong>.</p></li>
+<li><p>Make the property model inherit from the <code>FormWidgetProperties</code> class (in the <code>Kentico.Forms.Web.Mvc.Wigets</code> namespace), which is the property model of the default form widget.</p></li>
+<li>
+<p>Define a string property representing the text of the additional heading.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Forms.Web.Mvc.Widgets;
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ public class ExtendedFormWidgetProperties : FormWidgetProperties
+ {
+     // Defines a property and sets its default value
+     // Assigns the default Kentico text input component, which allows users to enter
+     // a textual value for the property in the widget's configuration dialog
+     [TextInputComponent(Order = 0, Label = "Heading text")]
+     public string HeadingText { get; set; } = "Default";
+ }
+
+ </code></pre>
+</div>
+</li>
+<li><p>Create a partial view for the widget in the <em>~/Components/Widgets/ExtendedFormWidget</em> folder, named <strong>_ExtendedFormWidget.cshtml</strong>.</p></li>
+<li>
+<p>Call the <code>Html.Kentico().RenderNestedWidgetAsync</code> extension method to render the system’s default form widget.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @using Kentico.Content.Web.Mvc
+ @using Kentico.PageBuilder.Web.Mvc
+ @using Kentico.Web.Mvc
+
+ @model ComponentViewModel&lt;ExtendedFormWidgetProperties&gt;
+ @* Configurable heading added above the default form widget *@
+ &lt;h1&gt;@Model.Properties.HeadingText&lt;/h1&gt;
+
+ @* Renders the nested form widget *@
+ @await Html.Kentico().RenderNestedWidgetAsync(SystemComponentIdentifiers.FORM_WIDGET_IDENTIFIER, Model.Properties)
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Register the new widget into the system using the <code>RegisterWidget</code> assembly attribute. We recommend adding a dedicated file to your project’s <em>~/Components</em> folder for the purposes of component registration, for example named <strong>ComponentRegister.cs</strong>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ // Registers the 'Extended form' widget
+ [assembly: RegisterWidget("MySite.Widgets.ExtendedFormWidget",
+                           "Extended form",
+                           typeof(ExtendedFormWidgetProperties),
+                           customViewName: "~/Components/Widgets/ExtendedFormWidget/_ExtendedFormWidget.cshtml",
+                           IconClass = "icon-form")]
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>You now have a custom widget that works exactly like the default <em>Form</em> widget, but with an additional heading. The text of the heading can be configured in the Page Builder interface through a new property.</p>
+
+</body>
+</html>

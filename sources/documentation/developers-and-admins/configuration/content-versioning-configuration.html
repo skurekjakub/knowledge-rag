@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content versioning configuration</title>
+</head>
+<body>
+<p>When content versioning is <a href="#set-up-content-versioning">enabled</a>, Xperience by Kentico automatically stores previously published versions of <a href="/documentation/business-users/content-hub/content-items">reusable content items</a>, <a href="/documentation/business-users/website-content">pages</a>, and <a href="/documentation/business-users/headless-content">headless items</a>. Once content versioning is in use, storing newly published versions can be <a href="#suspend-versioning-in-custom-code">prevented</a> in contexts where it’s not desirable.</p>
+<h2 id="set-up-content-versioning">Set up content versioning</h2>
+
+<div>
+
+</div>
+<div>
+<p>Once enabled, content versioning starts tracking published versions. Only versions published after enabling it will be included in the version history.</p>
+</div>
+
+<ol type="1">
+<li><p>Open the <strong>Settings</strong> application.</p></li>
+<li><p>Select <strong>Content</strong> -&gt; <strong>Content versioning</strong>.</p></li>
+<li><p>Select the <strong>Enable content versioning</strong> setting.</p></li>
+<li>
+<p>Enter the <strong>Number of stored versions</strong>.</p>
+<ul>
+<li>The number of versions determines how many published versions of one language variant of an item the system stores.</li>
+<li>To track all versions that will be published, enter 0. However, we recommend considering whether you need all versions and how this affects your system’s performance.
+
+<div>
+
+</div>
+<div>
+Storing too many versions can be detrimental to the system’s performance. The optimal number of versions depends on your project and environment. We don’t recommend storing more versions than you need.
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Save</strong> the settings.</p>
+<p></p>
+</li>
+</ol>
+<h2 id="permissions">Permissions</h2>
+<p>The following table shows which permissions are needed for users to be able to <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">restore a previous version</a> of an item or view its <a href="/documentation/business-users/content-versioning#view-version-history">version history</a>.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Content</p>
+</td>
+<td>
+<p>Permissions related to content versioning</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Pages</p>
+</td>
+<td>
+<p>Users with permission to <em>Read</em> a page can view its <a href="/documentation/business-users/content-versioning#view-version-history">version history</a>. Users with permission to <em>Update</em> a page can <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">restore</a> its previous versions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Reusable content items</p>
+</td>
+<td>
+<p>Users with the <em>View</em> permission for a workspace in <a href="/documentation/business-users/content-hub">Content hub</a> can <a href="/documentation/business-users/content-versioning#view-version-history">view version history</a> for all items in that workspace. Users with <em>Update</em> permission for a workspace can <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">restore</a> previous versions of items in that workspace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Headless items</p>
+</td>
+<td>
+<p>Users with permission to <em>View</em> a headless channel application can <a href="/documentation/business-users/content-versioning#view-version-history">view version history</a> for all items in that channel. Users with <em>Update</em> permission for a headless channel application can <a href="/documentation/business-users/content-versioning#restore-previously-published-versions">restore</a> previous versions of items in this channel.</p>
+</td>
+</tr>
+</table>
+
+<p>An item can be restored when the item is in any <a href="/documentation/developers-and-admins/configuration/workflows">workflow step</a>. Users can restore a previous version of an item even when the item is in a step they don’t have permission for. The item is restored to the <em>Draft</em> step with the data from the selected version, and the item has to go through the regular workflow from the start.</p>
+<h2 id="suspend-versioning-in-custom-code">Suspend versioning in custom code</h2>
+<p>If you need to suspend content versioning in custom code (for example, in integration scenarios), you can do so by enclosing the code into a <code>using</code> statement with a declared <code>ContentItemVersionActionContext</code> instance and the <code>EnableStoreVersion</code> property set to <code>false</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.ContentEngine;
+using CMS.Websites;
+using CMS.Websites.Routing;
+
+...
+
+// Disables Versioning
+using (new ContentItemVersionActionContext { EnableStoreVersion = false })
+{
+    ...
+
+    await webPageManager.TryCreateDraft(pageId, languageName);
+
+    ...
+
+    // Page is published without creating a version in the version history
+    await webPageManager.TryPublish(pageId, languageName);
+
+}
+</code></pre>
+</div>
+
+
+</body>
+</html>

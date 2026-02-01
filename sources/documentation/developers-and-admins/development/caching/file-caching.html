@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>File caching</title>
+</head>
+<body>
+<p>Files represent a significant part of the data that browsers load when rendering web pages. The most common example of files are images loaded within the content of a website’s pages, or other types of page attachments.</p>
+<p>The system provides two types of file caching mechanisms:</p>
+<ul>
+<li><strong>Client-side</strong></li>
+<li><strong>Server-side</strong></li>
+</ul>
+<h2 id="client-side-file-caching">Client-side file caching</h2>
+<p>Client-side caching duplicates the data of previously requested files directly within browser applications or other clients (such as intermediate network caches). Client cache is the most efficient type of caching, because it allows browsers to access files without communicating with the web server. The system controls client caching by modifying the HTTP headers of file request responses.</p>
+<p>To configure client-side caching for files served by Xperience:</p>
+<ol type="1">
+<li><p>Open the <strong>Settings</strong> application in the Xperience administration interface.</p></li>
+<li><p>Select the <strong>System -&gt; Performance</strong> category.</p></li>
+<li>
+<p>Edit the settings in the <strong>Client caching</strong> category:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>
+Setting
+</p>
+</td>
+<td>
+<p>
+Description
+</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>
+Client cache (minutes)
+</p>
+</td>
+<td>
+<p>
+Sets the number of minutes for which clients consider cached files to be valid and up-to-date (i.e. the length of the client cache expiration time). Specifically, the setting determines how the server sets the <strong>Expires</strong> response header for file requests.
+</p>
+<p>
+The following values are possible:
+</p>
+<ul>
+<li>
+<p>
+<strong>0</strong> – cached files are always flagged as expired, so clients revalidate files on each request. Does NOT disable client caching for files.
+</p>
+</li>
+<li>
+<p>
+<strong>More than 0</strong> – until a cached file expires, clients load the file’s data from the cache without sending any requests to the server. Provides the best file performance, but may cause browsers to display outdated content (if cached files are modified before the expiration interval ends). This setting only applies to files that are managed by the Xperience application and served via the system’s HTTP handlers (<em>GetFile</em>, <em>GetResource</em>, <em>GetMedia</em>, etc.). Physical files stored on the file system may use a different client cache expiration time:
+</p>
+</li>
+<li>
+<p>
+Physical files served by Xperience through the <em>GetResource</em> handler use the <strong>CMSPhysicalFilesCacheMinutes</strong> appsetting key. The default value is one week.
+</p>
+</li>
+<li>
+<p>
+Files that are requested directly use the IIS client cache configuration.
+</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>
+Allow client cache revalidation
+</p>
+</td>
+<td>
+<p>
+If enabled, the server adds the <strong>must-revalidate</strong> directive to the <strong>Cache-control</strong> response header of file requests. Ensures that caching clients always perform revalidation when requesting expired files (most clients revalidate by default even without the <em>must-revalidate</em> directive).
+</p>
+<p>
+We only recommend disabling revalidation if you don’t need the site visitors to receive updated version of the content they have loaded before.
+</p>
+</td>
+</tr>
+</table>
+</li>
+<li><p><strong>Save</strong> the settings.</p></li>
+</ol>
+<p>Clients (browsers) store files in their cache after requesting them for the first time (with an expiration time specified by the settings). Once the file expires, the client sends a <em>revalidation</em> request to the server, which can have the following results:</p>
+<ul>
+<li>If the server contains a newer version of the file than the client cache, the revalidation fails and the server returns the full file (standard 200 HTTP response).</li>
+<li>If the file is unchanged, the server returns a 304 Not Modified response. The client cache keeps the file and refreshes the expiration time. The client and server only exchange HTTP header information, which is significantly faster than fully reloading files.</li>
+</ul>
+<h2 id="server-side-file-caching">Server-side file caching</h2>
+<p>When a client requests an image or other file, Xperience stores the file’s data in the application memory.</p>
+<ul>
+<li>For files stored in the <strong>database</strong>, the cache holds the entire file, including binary data.</li>
+<li>For files stored in the <strong>file system</strong>, the cache stores only the main file records. Binary data is streamed directly from the file system.</li>
+</ul>
+<p>The system can then serve subsequent requests for the file without needing to access the database or file system.</p>
+<p>To set how long the server-side cache retains files:</p>
+<ol type="1">
+<li>Open the <strong>Settings</strong> application.</li>
+<li>Select the <strong>System -&gt; Performance</strong> category.</li>
+<li>Enter the number of minutes into the <strong>Cache files (minutes)</strong> setting. We recommend a value between 1 and 60 minutes (depending on the size of the files used on your website and the server’s available memory).</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>Files stay in the cache for the specified number of minutes.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong></p>
+<ul>
+<li>File caching cannot cause the website to display outdated content in most scenarios. The cache automatically removes files when they are modified.</li>
+<li>If your project uses external file storage (such as <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/azure-blob-storage">Azure Blob Storage</a> or <a href="/documentation/developers-and-admins/api/files-api-and-cms-io/file-system-providers/amazon-s3">Amazon S3</a>), you need to clear the cache manually after making changes to files or wait for the cache to expire. The automatic clearing of the server-side file cache does not work for files in external storage.</li>
+</ul>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>If your website stores large files in the database, you can limit caching of files that exceed a certain size. Specify the threshold by typing a number of kilobytes into the <strong>Maximum file size to cache</strong> setting. Files larger than the specified value are only cached for 1 minute, regardless of the <em>Cache files (minutes)</em> setting.</p>
+</div>
+
+
+</body>
+</html>

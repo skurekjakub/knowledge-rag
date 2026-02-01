@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>AIRA configuration</title>
+</head>
+<body>
+<p>AIRA is an AI-powered agent that can increase the productivity of content editors, marketers and copywriters by offering <a href="/documentation/business-users/aira#aira-in-product-guidance">in-product guidance</a> and automating content-related tasks with the use of various AI-backed <a href="/documentation/business-users/aira">features</a>.</p>
+<h2 id="privacy-and-data-protection">Privacy and data protection</h2>
+<p>All data processed by AIRA is commercially protected.</p>
+<p>Neither Kentico nor the underlying AI models store or log raw customer data inputs, prompts, or responses generated when using AIRA features. All data is discarded after each interaction with AIRA and is not used to train the underlying models. To learn more, see the privacy guarantees provided by Microsoft Azure for <a href="https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy?tabs=azure-portal" target="_blank">Azure OpenAI model privacy</a> and <a href="https://learn.microsoft.com/en-us/legal/cognitive-services/computer-vision/imageanalysis-data-privacy-security" target="_blank">Azure Image analysis privacy</a>.</p>
+<h2 id="aira-credit-balance">AIRA credit balance</h2>
+<p>To view your AIRA credit balance:</p>
+<ol type="1">
+<li>Open the <strong>AIRA</strong> application.</li>
+<li>On the <strong>Overview</strong> tab, you can see the amount of credits you have available and information about the next credit renewal.</li>
+</ol>
+<p>To increase your credit balance, select the <em>Get more credits</em> button and fill out the request form.</p>
+
+<div>
+
+</div>
+<div>
+<p>To learn more about AIRA Pricing, see <a href="https://www.kentico.com/platform/aira-pricing-usage-policies" target="_blank">https://www.kentico.com/platform/aira-pricing-usage-policies</a></p>
+</div>
+
+<h2 id="manage-aira-features">Manage AIRA features</h2>
+<p>All <a href="/documentation/business-users/aira">AIRA features</a> are active by default. However, you can turn specific AIRA features off, should your project require it.</p>
+<ol type="1">
+<li>Open the <strong>AIRA</strong> application.</li>
+<li>Switch to the <strong>Feature settings</strong> tab.</li>
+<li>Deselect the AIRA features you don’t want users to use in the project.</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p></p>
+<h2 id="disable-aira-globally">Disable AIRA globally</h2>
+<p>To globally disable all <a href="/documentation/business-users/aira">AIRA features</a>, including <a href="/documentation/business-users/aira#aira-in-product-guidance">in-product guidance</a> in your project:</p>
+<ol type="1">
+<li>Open your Xperience project.</li>
+<li>In the <em>appsettings.json</em> file, add a new configuration key: <code>"CMSEnableAira": false</code>.</li>
+<li>Save your project.</li>
+</ol>
+<p>All AIRA features are now disabled in your project.</p>
+
+<div>
+
+</div>
+<div>
+<p>To enable AIRA globally again, change the value of <code>"CMSEnableAira"</code> to <code>"CMSEnableAira": true</code>.</p>
+</div>
+
+<h2 id="configure-aira-content-generation">Configure AIRA content generation</h2>
+<p>You can adjust the behavior of specific AIRA features by configuring the following settings:</p>
+<ol type="1">
+<li>Open the <strong>AIRA</strong> application.</li>
+<li>Switch to the <strong>Content generation</strong> tab.</li>
+<li>Select the <strong>AIRA</strong> category and configure the settings:
+<ul>
+<li>
+<strong>Excluded content types</strong> – allows you to simplify the selection of content sources when <a href="/documentation/business-users/aira#generate-email-content">generating content for email fields</a>. Items of the specified content types (for reusable content) will not be offered. For example, we recommend excluding content types that only store image content without text.</li>
+<li>
+<strong>Tone of voice guidelines</strong> – allows you to describe your organization’s tone of voice guidelines (professional, simple, humorous, etc.). AIRA will use this tone when generating content for email fields or when <a href="/documentation/business-users/aira#aira-translations">translating content</a>. If not specified, AIRA uses a neutral tone.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the settings.</li>
+</ol>
+<p>The settings apply globally for all content types and fields that support the AIRA features across the system.</p>
+<h2 id="configure-aira-translations">Configure AIRA translations</h2>
+<p>You can adjust the behavior of <a href="/documentation/business-users/aira#aira-translations">AIRA translations</a>, which is used for the <a href="/documentation/business-users/content-hub/content-items#translate-content-items">translation of content items</a> and <a href="/documentation/business-users/website-content/translate-pages">translation of pages</a>. To configure AIRA translations:</p>
+<ol type="1">
+<li>Open the <strong>AIRA</strong> application.</li>
+<li>Switch to the <strong>Translations</strong> tab.</li>
+<li>Select the data types allowed for translations.
+<ul>
+<li>Allows you to choose the field <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data types</a> you want translated (e.g., <em>Long text</em>, <em>Text</em>, <em>Rich text (HTML)</em>, etc.).</li>
+</ul>
+</li>
+<li>Specify instructions for translations.
+<ul>
+<li>Allows you to add custom instructions for how your content should be translated by AIRA, for example, brand terminology, formatting rules, words to leave untranslated, etc.<br>
+</li>
+</ul>
+</li>
+<li>Set whether to use tone-of-voice guidelines for translations.</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>The AIRA translations are now configured.</p>
+<h3 id="configure-translation-of-specific-fields">Configure translation of specific fields</h3>
+<p>All content type fields of the data types allowed for translations are automatically enabled for translation. To specify which content type fields you want to translate:</p>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>Select a content type.</li>
+<li>On the <strong>Fields</strong> tab, select which <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> you want to configure the translation for.</li>
+<li>Expand a field and scroll down to the <strong>AIRA features</strong> section.</li>
+<li>Select or clear the <strong>Include field in translation</strong> checkbox.
+<ul>
+<li>The checkbox is only available if the <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">data type</a> of the field is <a href="#configure-aira-translations">allowed to be translated</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+<p>You have successfully configured translation for a specific field.</p>
+<h3 id="configure-translation-of-page-builder-component-properties">Configure translation of Page Builder component properties</h3>
+<p>You can specify which properties of <a href="/documentation/developers-and-admins/development/builders/page-builder#page-builder-components">Page Builder components</a> (widget, section, etc.) you want to exclude from translation using the <code>ExcludeFromAiraTranslation</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.PageBuilder.Web.Mvc;
+
+public class TextWidgetProperties : IWidgetProperties
+{
+    [ExcludeFromAiraTranslation]
+    public string Text { get; set; } = string.Empty;
+}
+
+</code></pre>
+</div>
+
+<h2 id="add-aira-features-to-your-content-types">Add AIRA features to your content types</h2>
+<p>Some <a href="/documentation/business-users/aira">AIRA features</a> need to be manually enabled for individual fields of your <a href="/documentation/developers-and-admins/development/content-types">content types</a>:</p>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>Select a content type.
+
+<div>
+
+</div>
+<div>
+AIRA features are currently not supported in <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a>.
+</div>
+</li>
+<li>On the <strong>Fields</strong> tab, select which <a href="/documentation/developers-and-admins/customization/field-editor">fields</a> will have AIRA features. You can enable AIRA features for fields:
+<ul>
+<li>With the <strong>Text</strong>, <strong>Long text</strong>, <strong>Rich text (HTML)</strong>, or <strong>Taxonomy</strong> data type.</li>
+<li>Using the <strong>Rich text editor</strong>, <strong>Text area</strong>, <strong>Text input</strong>, or <strong>Tag selector</strong> form component.</li>
+</ul>
+</li>
+<li>Expand a field and scroll down to the <strong>AIRA features</strong> section.</li>
+<li>Select <strong>Add AIRA feature</strong> and choose the feature you want to enable:
+<ul>
+<li><p><strong>Generate image description during mass upload</strong> – generates an SEO-friendly description of an image based on its content during <a href="/documentation/business-users/content-hub/content-item-assets#mass-asset-upload">mass upload</a>.</p></li>
+<li><p><strong>Automatically assign tags to images during mass upload</strong> – automatically assigns tags from the defined <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomy group</a> based on the image content during <a href="/documentation/business-users/content-hub/content-item-assets#mass-asset-upload">mass upload</a>.</p></li>
+<li>
+<p><strong>Generate email content</strong> – generates email content based on reusable content items stored in the <a href="/documentation/business-users/content-hub">Content hub</a>, external content specified by web URLs, or a custom description. You can globally <a href="#configure-aira-content-generation">configure</a> which content types are available as content sources.</p>
+
+<div>
+
+</div>
+<div>
+For fields using the <em>Rich text editor</em> form component, the <em>Generate email content</em> feature also automatically enables <a href="/documentation/business-users/aira#rich-text-editor-refinements">rich text editor refinements</a>.
+</div>
+</li>
+<li>
+<p><strong>Generate email subject based on email content</strong> – generates email subject suggestions based on the content of other fields. Use the feature for the <em>EmailSubject</em> system field of email content types.</p>
+<ol type="1">
+<li>Select <strong>Continue</strong>.</li>
+<li>Choose which fields of the content type will serve as the content source. Supported field data types are <em>Text</em>, <em>Long text</em>, <em>Rich text (HTML)</em> or <em>Content items</em>. The same data types are supported when loading content from the fields of linked content items. The maximum length of the total source content is 10 000 characters (if exceeded, a warning is displayed to the user and content over the limit is truncated).</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+</li>
+<li><p><strong>Rich text editor refinements</strong> – supported for text fields using the <em>Rich text editor</em> form component. Allows editors to select text and refine it in place using predefined options (make text shorter, improve writing and grammar, etc.), or apply a custom prompt and send it to AIRA for refinement.</p></li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the field editor.</li>
+</ol>
+<p>The selected AIRA feature is now enabled for the given field.</p>
+<p></p>
+<p>Repeat the process for all fields and content types where you wish to enable the AIRA features.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Use AIRA features outside of content types</strong></p>
+<p>AIRA features are not restricted to content types in the <em>Content types</em> application. You can use the same process to enable AIRA features in other field editors, for example for the fields of a <a href="/documentation/developers-and-admins/customization/object-types">custom object type</a> in the <em>Modules</em> application.</p>
+<p>However, keep in mind that the <em>Generate email content</em> and <em>Generate email subject based on email content</em> features optimize the AIRA prompts to generate email content. Results may be inaccurate if you attempt to generate other types of content.</p>
+</div>
+
+<h2 id="rich-text-refinements-in-page-builder-and-email-builder">Rich text refinements in Page Builder and Email Builder</h2>
+<p>In Page Builder and Email Builder, the rich text editor can appear directly on the respective builder tabs as an <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/rich-text-inline-editors">inline editor</a> or in the configuration dialog for component properties.</p>
+<p><a href="/documentation/business-users/aira#rich-text-editor-refinements">Rich text editor refinements</a> are automatically enabled for the rich text inline editor. Refinements in the property configuration dialog need to be <a href="#enable-rich-text-refinements-in-property-configuration-dialog">enabled</a> by developers.</p>
+<h3 id="enable-rich-text-refinements-in-property-configuration-dialog">Enable rich text refinements in property configuration dialog</h3>
+<p>To enable rich text refinements in the configuration dialog, apply the <code>FormComponentConfiguration</code> attribute with <code>AiraTextRefinementConfigurator</code> as the configurator type to component properties that use the rich text editor as their editing component.</p>
+<p>The example below shows how to enable text refinements for a Page Builder widget property:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>MyWidgetProperties.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+using Kentico.PageBuilder.Web.Mvc;
+
+public class MyWidgetProperties : IWidgetProperties
+{
+    
+    [RichTextEditorComponent]
+    // Enables AIRA rich text refinements for the rich text editor editing component
+    [FormComponentConfiguration(typeof(AiraTextRefinementConfigurator))]
+    public string RichText { get; set; }
+}
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

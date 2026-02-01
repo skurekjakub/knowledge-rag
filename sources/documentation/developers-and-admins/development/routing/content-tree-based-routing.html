@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Content tree-based routing</title>
+</head>
+<body>
+<p>With content tree-based routing, the system generates and matches page URLs based on their position in the website’s <a href="/documentation/business-users/website-content">content tree</a>. You don’t need to perform any manual route mapping and configuration. All routing logic is handled for you by the system. </p>
+<p>This method of routing is not a full replacement of the standard ASP.NET routing model. Instead, it augments the routing pipeline, handling requests targeting the site’s pages. You can still set up <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/set-up-content-tree-based-routing#combine-content-tree-based-and-asp.net-routing">additional routes</a> for your application.</p>
+<p>This simplified diagram models request handling when using content tree-based routing:</p>
+<p></p>
+<p>Incoming requests are matched against a general route and their target URL compared to system URLs and <a href="/documentation/business-users/website-content/manage-page-urls#edit-vanity-urls-of-pages">vanity URLs</a> of existing pages. If there is a match with a route in the system (system or vanity URL), the system takes over the routing logic. Otherwise, the request continues matching against routes registered further down the routing table using conventional ASP.NET routing.</p>
+<p>Once the request is taken over by Xperience, all routing happens automatically. You need to supply a controller, view model and view for each <a href="/documentation/developers-and-admins/development/content-types">content type</a> to provide the desired processing logic and output formatting.</p>
+<h2 id="page-url-generation">Page URL generation</h2>
+<p>The system automatically generates URLs only for pages that have the <em>Include in routing</em> option set in their <a href="/documentation/developers-and-admins/development/content-types">content type</a> definition.</p>
+<p>A page system URL is generated when:</p>
+<ul>
+<li>a new page is created</li>
+<li>the <a href="/documentation/business-users/website-content/manage-page-urls">URL slug</a> of an existing page is updated</li>
+</ul>
+<p>The overall system URL is determined by the page’s location in the site’s content tree:</p>
+<ul>
+<li>The system takes all of the page’s ancestors up to the site’s root (‘/’):
+<ul>
+<li>If an ancestor has the <em>Include in routing</em> option set for its content type, it contributes a segment to the page’s resulting URL. All other ancestors are skipped.</li>
+<li>By default, the segment is formed from the page’s title converted to a URL-sanitized string.</li>
+</ul>
+</li>
+</ul>
+<p>The following diagram illustrates how URLs are generated based on a page’s position in the content tree and the configuration of its ancestors:</p>
+<p></p>
+<p>The <em>Articles</em> section holds a collection of articles (<em>Article 1</em> and <em>Article 2</em>). All pages are based on content types that have the <em>Include in routing</em> option set. As a result, both articles also contain their parent page segment (<em>Articles</em>) in their URL.</p>
+<p>The <em>Landing pages</em> section holds a collection of landing pages (<em>Page 1</em> and <em>Page 2</em>). Only the landing pages are based on a content type with the <em>Include in routing</em> option set. As a result, the URLs of both landing pages do not include their parent.</p>
+<h3 id="multilingual-urls">Multilingual URLs</h3>
+<p>If you have multiple <a href="/documentation/developers-and-admins/configuration/languages">languages</a> set up in your project, the settings of individual languages affect system URL generation in the following way:</p>
+<ul>
+<li>For pages that are in the <a href="/documentation/developers-and-admins/configuration/website-channel-management">primary language of a website channel</a>, URLs are not modified.
+<ul>
+<li>For example, if English is set as the primary language of the website channel, the URLs of pages in <em>English</em> will be in the <code>~/page</code> format.</li>
+</ul>
+</li>
+<li>For pages in a non-primary language, the language’s <strong>Code name</strong> is inserted into the URL path after the site’s root (‘/’).
+<ul>
+<li>For example, if English is set as the primary language of the website channel, the URLs of pages in <em>Spanish</em> will be in the <code>~/es/page</code> format.</li>
+<li>Vanity URLs of pages in a non-primary language DO NOT include the language’s <em>Code name</em>.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/business-users/website-content/manage-page-urls#edit-vanity-urls-of-pages">Vanity URLs</a> and the configurations of <a href="/documentation/business-users/website-content/manage-page-urls#select-the-canonical-url-of-pages">canonical URLs</a> are completely separate for each language.
+<ul>
+<li>Regardless of the primary language of the website channel, the vanity URLs of pages in <em>Spanish</em> will be in the <code>~/spanishVanityPath</code> format and in <em>English</em> it will be in the <code>~/englishVanityPath</code> format.</li>
+</ul>
+</li>
+</ul>
+<h2 id="handling-of-unpublished-and-deleted-pages">Handling of unpublished and deleted pages</h2>
+<p>When unpublishing or deleting a page, you can select how the requests for the page will be handled. Requests can be <a href="/documentation/business-users/website-content/edit-and-publish-pages#redirects-from-unpublished-and-deleted-pages">redirected</a> to another page, or content in a fallback language can be served if available. Once a system URL is generated for a page, the URL persists until the corresponding page is deleted without a redirect.</p>
+<p>If a request targets an unpublished or a deleted page without a redirect and without a fallback language variant, the system responds with the <a href="https://en.wikipedia.org/wiki/HTTP_404" target="_blank">HTTP 404 (Not Found)</a> status and the request does not continue matching against other routes. This is to prevent accidentally matching requests intended to be handled by Xperience against other loosely constrained routes registered further down the routing table. You can use conventional <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling" target="_blank">404 error handling</a> for such cases.</p>
+<h2 id="configure-your-project-to-use-content-tree-based-routing">Configure your project to use content tree-based routing</h2>
+<p> To start using content tree-based routing in your project:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/enable-content-tree-based-routing">Enable content tree-based routing</a>.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/set-up-content-tree-based-routing">Set up the routing environment</a>.</li>
+</ol>
+
+</body>
+</html>

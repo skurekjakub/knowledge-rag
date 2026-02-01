@@ -1,0 +1,660 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - Tag Helpers</title>
+</head>
+<body>
+<p>This page serves as a reference of all <a href="https://docs.microsoft.com/en-US/aspnet/core/mvc/views/tag-helpers" target="_blank">ASP.NET Core Tag Helpers</a> provided by the Xperience API.</p>
+<h2 id="add-tag-helpers-to-views">Add Tag Helpers to views</h2>
+<p>You can add individual Tag Helpers to your views via the <code>@addTagHelper</code> directive. Specify the fully qualified name of the Tag Helper class and the name of the assembly where it is located (both provided in the corresponding sections below). Alternatively, you can use the ‘*’ wildcard to include all Tag Helpers matching a specified pattern.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@* Adds all Tag Helpers from the Kentico.Content.Web.Mvc assembly to the view *@
+@addTagHelper *, Kentico.Content.Web.Mvc
+
+@* Adds the form zone Tag Helper to the view *@
+@addTagHelper Kentico.Content.Web.Mvc.FormZoneTagHelper, Kentico.Content.Web.Mvc
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>Add the Tag Helpers in relevant <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/layout#importing-shared-directives" target="_blank">_ViewImports.cshtml</a> files to make them available in all related views automatically. </p>
+</div>
+
+<h2 id="attribute-tag-helpers-images">Attribute Tag Helpers – Images</h2>
+<p>To simplify the work with content item images when developing your website (e.g., when implementing <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Responsive_images" target="_blank">responsive images</a>), you can use the following attribute Tag Helpers that target attributes of the <code>&lt;img&gt;</code> tag and the <code>&lt;source&gt;</code> tag inside a <code>&lt;picture&gt;</code> element.</p>
+<p><strong>Fully qualified name:</strong></p>
+<ul>
+<li>Kentico.Content.Web.Mvc.ContentItemAssetImageTagHelper</li>
+<li>Kentico.Content.Web.Mvc.ContentItemAssetPictureSourceTagHelper</li>
+</ul>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>The Tag Helpers provide the following attributes:</p>
+<ul>
+<li>
+<code>kxp-img</code>
+<ul>
+<li>Renders markup of the <code>src</code> (inside of <code>&lt;img&gt;</code>) or <code>srcset</code> (inside of <code>&lt;source&gt;</code>) attributes with the image URL as their value.</li>
+<li>Accepts a <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-content-items#retrieve-assets">ContentItemAsset</a> object.
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @addTagHelper Kentico.Content.Web.Mvc.ContentItemAssetImageTagHelper, Kentico.Content.Web.Mvc
+
+  &lt;img kxp-img="@Model.ContentItemAsset" ... /&gt;
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<code>kxp-img-dimensions</code>
+<ul>
+<li>Renders markup of the <code>width</code> and <code>height</code> attributes with the image dimensions as their values. If used in conjunction with <code>kxp-img-variant</code>, the variant’s dimensions are used instead.</li>
+<li>Requires concurrent usage of <code>kxp-img</code>.
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @addTagHelper Kentico.Content.Web.Mvc.ContentItemAssetImageTagHelper, Kentico.Content.Web.Mvc
+
+  &lt;img kxp-img="@Model.ContentItemAsset" kxp-img-dimensions ... /&gt;
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<code>kxp-img-variant</code>
+<ul>
+<li>Specifies which <a href="/documentation/developers-and-admins/development/content-types#configure-image-variants">image variant</a> is rendered in <code>kxp-img</code>.</li>
+<li>Accepts the code name identifier of the image variant.</li>
+<li>Requires concurrent usage of <code>kxp-img</code>.
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  @addTagHelper Kentico.Content.Web.Mvc.ContentItemAssetImageTagHelper, Kentico.Content.Web.Mvc.ContentItemAssetPictureSourceTagHelper, Kentico.Content.Web.Mvc
+
+  @* Works well with both scaled and smart crop image variants *@
+  &lt;img kxp-img="@Model.ContentItemAsset" kxp-img-dimensions kxp-img-variant="variantCodeName" ... /&gt;
+
+  @* Best used with smart-crop variants to address art direction scenarios *@
+  &lt;picture&gt;
+      &lt;source media="(min-width: 1024px)" kxp-img="@Model.ContentItemAsset" kxp-img-dimensions kxp-img-variant="variantCodeName1" ... /&gt;
+      &lt;source media="(min-width: 600px)" kxp-img="@Model.ContentItemAsset" kxp-img-dimensions kxp-img-variant="variantCodeName2" ... /&gt;
+      &lt;img kxp-img="@Model.ContentItemAsset" kxp-img-dimensions ... /&gt;
+  &lt;/picture&gt;
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Currently, there is no attribute Tag Helper in the Xperience API that supports rendering of <code>srcset</code> inside of the <code>&lt;img&gt;</code> tag. To achieve this, you must either construct the <code>srcset</code> attribute manually or implement a custom attribute Tag Helper in your project.</p>
+</div>
+
+<h2 id="tag-helpers-page-builder">Tag Helpers – Page Builder</h2>
+<h3 id="page-builder-scripts">Page Builder scripts</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.PageBuilderScriptsTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Renders markup that includes scripts required by the <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Page Builder</a> feature. Serves as an alternative to the <code>HtmlHelper.Kentico().PageBuilderScriptsAsync</code> extension method.</p>
+<p>The Tag Helper includes scripts used in the system’s editing interface, as well as those of individual Page Builder components (<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline property editors</a>). See the linked documentation to learn how to correctly add custom scripts for your own components.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.PageBuilderScriptsTagHelper, Kentico.Content.Web.Mvc
+
+&lt;page-builder-scripts /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="page-builder-styles">Page Builder styles</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.PageBuilderStylesTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Renders markup that includes style sheets required by the <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Page Builder</a> feature. Serves as an alternative to the <code>HtmlHelper.Kentico().PageBuilderStyles</code> extension method.</p>
+<p>The Tag Helper includes style sheets used in the system’s editing interface, as well as those of individual Page Builder components (<a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widgets</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">sections</a>, <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/inline-editors-for-widget-properties">inline property editors</a>). See the linked documentation to learn how to correctly add custom style sheets for your own components.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.PageBuilderStylesTagHelper, Kentico.Content.Web.Mvc
+
+&lt;page-builder-styles /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="editable-area">Editable area</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.EditableAreaTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Marks a location where a Page Builder <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable area</a> is to be rendered when editing the page via the administration interface. Can be used as an alternative to the <code>HtmlHelper.Kentico().EditableAreaAsync</code> extension method.</p>
+<p>The helper has the following required attributes:</p>
+<ul>
+<li>
+<code>area-identifier</code> – identifier of the area unique within the context of the given page.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.EditableAreaTagHelper, Kentico.Content.Web.Mvc
+
+&lt;editable-area area-identifier="areaSimple" /&gt;
+
+</code></pre>
+</div>
+
+<p>Optionally, you can pass an <code>EditableAreaOptions</code> object via the <code>area-options</code> attribute to further configure the area. See <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">Create pages with editable areas</a> for details.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.EditableAreaTagHelper, Kentico.Content.Web.Mvc
+@using Kentico.PageBuilder.Web.Mvc
+
+@{
+    var options = new EditableAreaOptions
+    {
+        AllowedWidgets = new[] { "LearningKit.Widgets.NumberWidget",
+                                 "LearningKit.Widgets.SomeOtherWidget" },
+        AllowedSections = AllowedComponents.ALL
+    };
+}
+
+&lt;editable-area area-identifier="areaConfigured" area-options="options" /&gt;
+
+</code></pre>
+</div>
+
+<p>Alternatively, you can pass each property of the <code>EditableAreaOptions</code> object as an individual attribute:</p>
+<ul>
+<li>
+<code>area-options-allowed-sections</code> – a list of <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">section</a> identifiers that can be added to the area. If left empty, all sections are allowed.</li>
+<li>
+<code>area-options-allowed-widgets</code> – a list of <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widget</a> identifiers that can be added to the area. If left empty, all widgets are allowed.</li>
+<li>
+<code>area-options-default-section-identifier</code> – identifier of the default section for the area.</li>
+<li>
+<code>allow-widget-output-cache</code> – indicates whether the output of individual widgets placed into the area can be <a href="/documentation/developers-and-admins/development/caching/output-caching">cached</a>. This value is combined with the <em>AllowCache</em> property of widgets (specified during <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widget registration</a>) to determine whether output caching is enabled for each widget instance contained within the area. The default value is <em>false</em>.</li>
+<li>
+<code>widget-output-cache-expires-on</code> – a <em>DateTimeOffset</em> value that sets the absolute expiration date for cached content.</li>
+<li>
+<code>widget-output-cache-expires-after</code> – a <em>TimeSpan</em> value that sets the length of time from the first request time to cache the contents.</li>
+<li>
+<code>widget-output-cache-expires-sliding</code> – a <em>TimeSpan</em> value that defines a sliding window of expiration for the cached content. Content not accessed within the specified time frame gets evicted.</li>
+</ul>
+<p>Note that if you both pass the options object and specify some parameters directly via attributes, the parameters specified via attributes take precedence (i.e., override the corresponding properties of the options object).</p>
+<h4 id="cache-configuration-examples">Cache configuration examples</h4>
+<p>The caching configuration options are modeled after and behave identically to the <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/cache-tag-helper" target="_blank">Cache tag helper</a> provided by ASP.NET Core:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@* widget-output-cache-expires-on *@
+@* Sets the cached entry to expire on 5:02 PM on January 29, 2025. If the specified date is in the past, nothing gets cached. *@
+&lt;editable-area area-identifier="editableArea" area-widget-output-cache="true" widget-output-cache-expires-on="@new DateTime(2025,1,29,17,02,0)" /&gt;
+
+@* widget-output-cache-expires-after *@
+@* Contents are evicted after five minutes and cached again on subsequent requests. *@
+&lt;editable-area area-identifier="editableArea" area-widget-output-cache="true" widget-output-cache-expires-after="@TimeSpan.FromSeconds(300)" /&gt;
+
+@* widget-output-cache-expires-sliding *@
+@* Cached content is evicted if not accessed again within 120 seconds of the initial request. *@
+&lt;editable-area area-identifier="editableArea" area-widget-output-cache="true" widget-output-cache-expires-sliding="@TimeSpan.FromSeconds(120)" /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="widget-zone">Widget zone</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.WidgetZoneTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Marks a location where widgets can be placed within a <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Page Builder section</a>. Serves as an alternative to the <code>HtmlHelper.Kentico().WidgetZoneAsync</code> extension method.</p>
+<p>Every section must contain at least one widget zone – sections without widget zones are not supported.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.WidgetZoneTagHelper, Kentico.Content.Web.Mvc
+
+&lt;widget-zone /&gt;
+
+</code></pre>
+</div>
+
+<p>The helper also has the following optional attributes:</p>
+<ul>
+<li>
+<code>zone-name</code>  – identifier of the zone used when changing the type of the zone in the Page Builder.</li>
+<li>
+<code>allowed-widgets</code>  – a list of <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">widget</a> identifiers that can be added to the zone. If left empty, all widgets are allowed.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@{
+    var widgetsWhitelist = new[] { Kentico.Content.Web.Mvc.SystemComponentIdentifiers.FORM_WIDGET_IDENTIFIER,
+                                   "LearningKit.Widgets.NumberWidget",
+                                   "LearningKit.Widgets.SomeOtherWidget" };
+}
+
+&lt;widget-zone zone-name="main-zone" allowed-widgets="widgetsWhitelist" /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="page-data">Page data</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.WidgetZoneTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Renders an invisible form field that includes contextual information about the page. Necessary when developing components that use <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">POST actions</a>. Serves as an alternative to the <code>HtmlHelper.Kentico().PageData</code> extension method.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.PageDataTagHelper, Kentico.Content.Web.Mvc
+
+&lt;form asp-controller="Controller" asp-action="HandlePost" id="form"&gt;
+
+    ...
+
+    &lt;page-data /&gt;
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<h3 id="component-properties-data">Component properties data</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.ComponentPropertiesDataTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Used to persist properties of the currently rendered component for POST actions. Server as an alternative to the <code>HtmlHelper.Kentico().ComponentPropertiesData</code>  extension method. </p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.ComponentPropertiesDataTagHelper, Kentico.Content.Web.Mvc
+
+&lt;form asp-controller="Controller" asp-action="HandlePost" id="form"&gt;
+
+    ...
+
+    &lt;component-properties-data /&gt;
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<h3 id="stand-alone-widget">Stand-alone widget</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.StandaloneWidgetTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Renders a specified widget directly. Serves as an alternative to the <code>HtmlHelper.Kentico().RenderStandaloneWidgetAsync</code>  extension method. See <a href="/documentation/developers-and-admins/development/builders/page-builder/render-widgets-in-code">Render widgets in code</a>.</p>
+<p>The helper has the following attributes:</p>
+<ul>
+<li>
+<code>widget-type-identifier</code> – the <code>string</code> identifier under which the widget was registered.</li>
+<li>(Optional) <code>widget-properties</code> – <code>IWidgetProperties</code> object representing the widget’s <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/widget-properties">properties</a>. Create an instance of the appropriate property model class and set any required values.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using System.Collections.Generic
+
+@addTagHelper Kentico.Content.Web.Mvc.StandaloneWidgetTagHelper, Kentico.Content.Web.Mvc
+@using Kentico.Forms.Web.Mvc.Widgets
+@using Kentico.Content.Web.Mvc
+@using Kentico.Xperience.Admin.Base.Forms
+
+@{
+    // Prepares properties for the Form widget 
+    var widgetProperties = new FormWidgetProperties()
+    {
+        SelectedForm = new List&lt;ObjectRelatedItem&gt;() { new ObjectRelatedItem { ObjectCodeName = "FormCodeName" } } 
+    };
+}
+
+@* Renders the system's default Form widget *@
+&lt;standalone-widget widget-type-identifier="@SystemComponentIdentifiers.FORM_WIDGET_IDENTIFIER" widget-properties="widgetProperties" /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="nested-widget">Nested widget</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.NestedWidgetTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Renders a widget nested inside another widget. Serves as an alternative to the <code>HtmlHelper.Kentico().RenderNestedWidgetAsync</code>  extension method. See <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder/extend-widgets">Extend widgets</a>.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.NestedWidgetTagHelper, Kentico.Content.Web.Mvc
+
+@* In this example, the extended widget uses an extended FormWidgetProperties class *@
+@model ComponentViewModel&lt;ExtendedFormWidgetProperties&gt;
+@* Renders the system's default Form widget as the nested widget *@
+&lt;nested-widget widget-type-identifier="@SystemComponentIdentifiers.FORM_WIDGET_IDENTIFIER" widget-properties="Model.Properties" /&gt;
+
+</code></pre>
+</div>
+
+<h2 id="tag-helpers-form-builder">Tag Helpers – Form Builder</h2>
+<h3 id="form-zone">Form zone</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Content.Web.Mvc.FormZoneTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Content.Web.Mvc</p>
+<p>Marks a location where form components can be placed within a form section. Serves as an alternative to the <code>HtmlHelper.Kentico().FormZoneAsync</code>  extension method.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.FormZoneTagHelper, Kentico.Content.Web.Mvc
+
+&lt;form-zone /&gt;
+
+</code></pre>
+</div>
+
+<p>The helper also has the following optional attributes:</p>
+<ul>
+<li>
+<code>zone-name</code> – identifier of the zone used when changing the type of the zone in the Page Builder.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;form-zone zone-name="main-zone" /&gt;
+
+</code></pre>
+</div>
+
+<h2 id="tag-helpers-caching">Tag Helpers – Caching</h2>
+<h3 id="cache-dependency">Cache dependency</h3>
+<p><strong>Fully qualified name:</strong> Kentico.Web.Mvc.Caching.CacheDependencyTagHelper</p>
+<p><strong>Assembly name:</strong> Kentico.Web.Mvc</p>
+<p>Allows for specification of dependency cache keys within the <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/cache-tag-helper" target="_blank">Cache tag helper</a> element. See <a href="/documentation/developers-and-admins/development/caching/output-caching">Output caching</a> and <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">Cache dependencies</a>.</p>
+<p>The helper has the following attributes:</p>
+<ul>
+<li>
+<code>cache-keys</code> – an array of <a href="/documentation/developers-and-admins/development/caching/cache-dependencies">cache dependency dummy keys</a>.</li>
+<li>
+<code>enabled</code> – indicates whether the dependencies get injected. Enabled by default.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Web.Mvc.Caching.CacheDependencyTagHelper, Kentico.Web.Mvc
+
+@{
+    var userCacheKeys = new[] { "cms.user|all" };
+    var enabled = false;
+}
+&lt;cache enabled="@enabled"&gt;
+    @* Clears the cached data whenever a user object is modified *@
+    &lt;cache-dependency cache-keys="@userCacheKeys" enabled="@enabled" /&gt;
+
+    Time: @DateTime.Now
+&lt;/cache&gt;
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

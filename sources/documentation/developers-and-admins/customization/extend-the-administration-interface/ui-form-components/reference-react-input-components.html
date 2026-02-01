@@ -1,0 +1,717 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Reference - React input components</title>
+</head>
+<body>
+<p>This page provides an overview of input components from the <code>@kentico/xperience-admin-components</code> package that can be used to define editing interfaces for <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">admin UI form components</a>.</p>
+<ul>
+<li><a href="#checkbox">Checkbox</a></li>
+<li><a href="#input">Input</a></li>
+<li><a href="#anchor-referencereactinputcomponents-selectcomponent-select">Select</a></li>
+<li><a href="#radiogroup">RadioGroup</a></li>
+<li><a href="#richtexteditor">RichTextEditor</a></li>
+<li><a href="#textarea">Textarea</a></li>
+</ul>
+<h2 id="checkbox">Checkbox</h2>
+<p><strong>onChange event Type:</strong> React.ChangeEventHandler&lt;HTMLInputElement&gt;</p>
+<p>A binary state input.</p>
+<p>The checkbox component has the following configurable properties:</p>
+<ul>
+<li><a href="#ReferenceReactinputcomponents-checkboxLabel">label</a></li>
+<li><a href="#ReferenceReactinputcomponents-checkboxSize">size</a></li>
+<li><a href="#ReferenceReactinputcomponents-checkboxChecked">checked</a></li>
+<li><a href="#ReferenceReactinputcomponents-checkboxIndetermined">indetermined</a></li>
+<li><a href="#ReferenceReactinputcomponents-checkboxTooltipText">tooltipText</a></li>
+<li><a href="#ReferenceReactinputcomponents-checkboxOnChange">onChange</a></li>
+<li><a href="#ReferenceReactinputcomponents-checkboxInherited">Inherited properties</a></li>
+</ul>
+<h3 id="label"> label</h3>
+<p><strong>Type:</strong> label?: string </p>
+<p>Sets the label for the checkbox.</p>
+<p></p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox } from "@kentico/xperience-admin-components";
+
+&lt;Checkbox label="I'm a checkbox!" /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="size"> size</h3>
+<p><strong>Type:</strong> size?: CheckboxSize </p>
+<p>Sets the size of the checkbox to one of three sizes defined by the <code>CheckboxSize</code> enum. Defaults to <code>CheckboxSize.M</code> if not set.</p>
+<p></p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Value</p>
+</td>
+<td colspan="1">
+<p>Example</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>CheckboxSize.S</p>
+</td>
+<td colspan="1">
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox, CheckboxSize } from "@kentico/xperience-admin-components";
+
+&lt;Checkbox label="Small checkbox" size={CheckboxSize.S} /&gt;
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>CheckboxSize.M</p>
+</td>
+<td colspan="1">
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox, CheckboxSize } from "@kentico/xperience-admin-components";
+
+&lt;Checkbox label="Medium checkbox" size={CheckboxSize.M} /&gt;
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>CheckboxSize.L</p>
+</td>
+<td colspan="1">
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox, CheckboxSize } from "@kentico/xperience-admin-components";
+
+&lt;Checkbox label="Large checkbox" size={CheckboxSize.L} /&gt;
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h3 id="checked"> checked</h3>
+<p><strong>Type:</strong> checked?: boolean</p>
+<p>Indicates a checked state. Defaults to <em>false</em>.</p>
+<p></p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox } from "@kentico/xperience-admin-components"; 
+
+&lt;Checkbox label="Label" checked /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="indetermined"> indetermined</h3>
+<p><strong>Type:</strong> indetermined?: boolean</p>
+<p>Indicates an indeterminate state. Defaults to <em>false</em>.</p>
+<p></p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox } from "@kentico/xperience-admin-components"; 
+
+&lt;Checkbox label="Label" indetermined /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="tooltiptext"> tooltipText</h3>
+<p><strong>Type:</strong> tooltipText?: string</p>
+<p>Sets the tooltip for the checkbox.</p>
+<p></p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox } from "@kentico/xperience-admin-components"; 
+
+&lt;Checkbox label="I'm a checkbox!" tooltipText="With a tooltip!" /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="onchange"> onChange</h3>
+<p><strong>Type:</strong> onChange?: (event: React.ChangeEvent&lt;HTMLInputElement&gt;, checked: boolean) =&gt; void;</p>
+<p>Allows the consumer to bind an <em>onChange</em> event handler.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { Checkbox } from "@kentico/xperience-admin-components";  
+
+&lt;Checkbox label="Label" onChange={() =&gt; window.alert("Clicked!")} /&gt;
+
+</code></pre>
+</div>
+
+<h3 id="inherited-properties"> Inherited properties</h3>
+<p>The component also inherits the following properties from <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement" target="_blank">HTMLInputElement</a>.</p>
+<ul>
+<li>name</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onclick" target="_blank">onClick</a></li>
+<li>required</li>
+<li>disabled</li>
+<li>readOnly</li>
+<li>tabIndex</li>
+</ul>
+<h2 id="input">Input</h2>
+<p><strong>onChange event Type:</strong> React.ChangeEventHandler&lt;HTMLInputElement&gt;</p>
+<p>Conventional text input element.</p>
+<p>The input component has the following configurable properties:</p>
+<ul>
+<li><a href="#ReferenceReactinputcomponents-inputLabel">label</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputInvalid">invalid</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputValue">value</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputType">type</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputValidationMessage">validationMessage</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputActionElement">actionElement</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputExplanationText">explanationText</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputLabelDisabledTooltip">labelDisabledTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputLabelIcon">labelIcon</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputLabelIconTooltip">labelIconTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputMarkAsRequired">markAsRequired</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputInputRef">inputRef</a></li>
+<li><a href="#ReferenceReactinputcomponents-inputInheritedProperties">Inherited properties</a></li>
+</ul>
+<h3 id="label-1"> label</h3>
+<p><strong>Type:</strong> label?: string</p>
+<p>Element label.</p>
+<h3 id="invalid"> invalid</h3>
+<p><strong>Type:</strong> invalid?: boolean</p>
+<p>Displays the specified validation message and changes element style to indicate incorrect input.</p>
+<h3 id="value"> value</h3>
+<p><strong>Type:</strong> value?: string | number</p>
+<p>Sets the value of the input.</p>
+<h3 id="type"> type</h3>
+<p><strong>Type:</strong> type?: ‘text’ | ‘password’ | ‘email’ | ‘number’</p>
+<p>Sets the <a href="https://www.w3schools.com/html/html_form_input_types.asp" target="_blank">HTML5 input type</a>. </p>
+<h3 id="validationmessage"> validationMessage</h3>
+<p><strong>Type:</strong> validationMessage?: string</p>
+<p>Sets the validation message displayed when the component contains invalid input.</p>
+<h3 id="actionelement"> actionElement</h3>
+<p><strong>Type:</strong> actionElement?: React.ReactNode</p>
+<p>Specifies an element rendered inside the input.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+actionElement={&lt;Icon name={ open ? 'xp-chevron-up' : 'xp-chevron-down'} /&gt;}
+
+</code></pre>
+</div>
+
+<h3 id="explanationtext"> explanationText</h3>
+<p><strong>Type:</strong> explanationText?: string</p>
+<p>Sets text displayed directly under the input. Used to clarify input requirements to users.</p>
+<h3 id="labeldisabledtooltip"> labelDisabledTooltip</h3>
+<p><strong>Type:</strong> labelDisabledTooltip?: string</p>
+<p>Sets label text used when the input is disabled.</p>
+<h3 id="labelicon"> labelIcon</h3>
+<p><strong>Type:</strong> labelIcon?: IconName</p>
+<p>Sets the icon rendered next to the label.</p>
+<h3 id="labelicontooltip"> labelIconTooltip</h3>
+<p><strong>Type:</strong> labelIconTooltip?: string</p>
+<p>Sets the tooltip text of the icon rendered next to the label.</p>
+<h3 id="markasrequired"> markAsRequired</h3>
+<p><strong>Type:</strong> markAsRequired?: boolean</p>
+<p>Indicates if the input is required. If true, renders a small red asterisk in front of the component label text.</p>
+<h3 id="inputref"> inputRef</h3>
+<p><strong>Type:</strong> inputRef?: RefObject&lt;HTMLInputElement&gt;</p>
+<p>Text input <a href="https://reactjs.org/docs/refs-and-the-dom.html" target="_blank">ref</a>.</p>
+<h3 id="inherited-properties-1"> Inherited properties</h3>
+<p>The component also inherits the following properties from <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement" target="_blank">HTMLInputElement</a>.</p>
+<ul>
+<li>onChange</li>
+<li>disabled</li>
+<li>readOnly</li>
+<li>name</li>
+<li>onClick</li>
+<li>onKeyPress</li>
+<li>min</li>
+<li>max</li>
+<li>id</li>
+<li>placeholder</li>
+<li>tabIndex</li>
+<li>onBlur</li>
+</ul>
+<h2 id="select"> Select</h2>
+<p><strong>onChange event Type:</strong> string</p>
+<p>Drop-down menu. The element defines its options by its children.</p>
+<p>The selector component has the following properties:</p>
+<ul>
+<li><a href="#ReferenceReactinputcomponents-selectLabel">label</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectInvalid">invalid</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectValue">value</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectMaxContentHeight">maxContentHeight</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectOnChange">onChange</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectValidationMessage">validationMessage</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectExplanationText">explanationText</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectLabelDisabledTooltip">labelDisabledTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectLabelIcon">labelIcon</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectLabelIconTooltip">labelIconTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectMarkAsRequired">markAsRequired</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectInputRef">inputRef</a></li>
+<li><a href="#ReferenceReactinputcomponents-selectInheritedProperties">Inherited properties</a></li>
+</ul>
+<h3 id="label-2"> label</h3>
+<p><strong>Type:</strong> label?: string</p>
+<p>Element label.</p>
+<h3 id="invalid-1"> invalid</h3>
+<p><strong>Type:</strong> invalid?: boolean</p>
+<p>Displays the specified validation message and changes element style to indicate incorrect input.</p>
+<h3 id="value-1"> value</h3>
+<p><strong>Type:</strong> value?: string | number</p>
+<p>Sets the value of the input.</p>
+<h3 id="maxcontentheight"> maxContentHeight</h3>
+<p><strong>Type:</strong> maxContentHeight?: string</p>
+<h3 id="onchange-1"> onChange</h3>
+<p><strong>Type:</strong> (value?: string) =&gt; void</p>
+<p>Allows the consumer to bind an <em>onChange</em> event handler.</p>
+<h3 id="validationmessage-1"> validationMessage</h3>
+<p><strong>Type:</strong> validationMessage?: string</p>
+<p>Sets the validation message displayed when the component contains invalid input.</p>
+<h3 id="explanationtext-1"> explanationText</h3>
+<p><strong>Type:</strong> explanationText?: string</p>
+<p>Sets text displayed directly under the input. Used to clarify input requirements to users.</p>
+<h3 id="labeldisabledtooltip-1"> labelDisabledTooltip</h3>
+<p><strong>Type:</strong> labelDisabledTooltip?: string</p>
+<p>Sets label text used when the input is disabled.</p>
+<h3 id="labelicon-1"> labelIcon</h3>
+<p><strong>Type:</strong> labelIcon?: IconName</p>
+<p>Sets the icon rendered next to the label.</p>
+<h3 id="labelicontooltip-1"> labelIconTooltip</h3>
+<p><strong>Type:</strong> labelIconTooltip?: string</p>
+<p>Sets the tooltip text of the icon rendered next to the label.</p>
+<h3 id="markasrequired-1"> markAsRequired</h3>
+<p><strong>Type:</strong> markAsRequired?: boolean</p>
+<p>Indicates if the input is required. If true, renders a small red asterisk in front of the component label text.</p>
+<h3 id="inputref-1"> inputRef</h3>
+<p><strong>Type:</strong> inputRef?: RefObject&lt;HTMLInputElement&gt;</p>
+<p>Text input <a href="https://reactjs.org/docs/refs-and-the-dom.html" target="_blank">ref</a>.</p>
+<h3 id="inherited-properties-2"> Inherited properties</h3>
+<p>The component also inherits the following properties from <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement" target="_blank">HTMLInputElement</a>.</p>
+<ul>
+<li>disabled</li>
+<li>readOnly</li>
+<li>name</li>
+<li>onClick</li>
+<li>onKeyPress</li>
+<li>min</li>
+<li>max</li>
+<li>id</li>
+<li>placeholder</li>
+<li>tabIndex</li>
+<li>onBlur Use a custom property to send a collection of options from the back end to the client. For example:</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Linq;
+using System.Threading.Tasks;
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class DropDownOption 
+{
+    public string Value { get; set; }
+    public string Text { get; set; }
+}
+
+public class MyComponentClientProperties : FormComponentClientProperties&lt;string&gt;
+{
+    public IEnumerable&lt;DropDownOption&gt; Options { get; set; }
+}
+
+public class MyFormComponent : FormComponent&lt;MyComponentClientProperties, string&gt;
+{
+    protected override Task ConfigureClientProperties(MyComponentClientProperties clientProperties)
+    {   
+        clientProperties.Options = UserInfo.Provider.Get()
+                                .GetEnumerableTypedResult()
+                                .Select(user =&gt; new DropDownOption()
+        {
+            Value = user.UserID.ToString(),
+            Text = user.UserName
+        });          
+
+        return base.ConfigureClientProperties(clientProperties);     
+    }
+}
+
+</code></pre>
+</div>
+
+<p>On the client, map the collection to <code>MenuItem</code> components passed as children to the selector. This ensures a consistent appearance.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { MenuItem, Select } from '@kentico/xperience-admin-components';
+import { FormComponentProps } from '@kentico/xperience-admin-base';
+
+export interface DropDownOption{
+    value: string;
+    text: string;
+}
+
+export interface MyFormComponentProps extends FormComponentProps {
+    options : DropDownOption[];
+}
+
+export const MyFormComponent = (props: MyFormComponentProps) =&gt; {
+
+    return (
+        &lt;Select onChange={(val) =&gt; props.onChange?.(val)}&gt;
+            {props.options?.map((item, index) =&gt; {
+                return &lt;MenuItem
+                    primaryLabel={item.text}
+                    value={item.value}
+                    key={index}
+                /&gt;;
+            })}
+        &lt;/Select&gt;
+    );
+}
+
+</code></pre>
+</div>
+
+<h2 id="radiogroup">RadioGroup</h2>
+<p><strong>onChange event Type:</strong> string</p>
+<p>Radio button group selector. Allows single selection. Uses RadioButton components for selectable options.</p>
+<p>The component has the following properties:</p>
+<ul>
+<li><a href="#ReferenceReactinputcomponents-rgLabel">label</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgInvalid">invalid</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgValue">value</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgSize">size</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgDisabled">disabled</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgChildren">children</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgOnChange">onChange</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgValidationMessage">validationMessage</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgExplanationText">explanationText</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgLabelDisabledTooltip">labelDisabledTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgLabelIcon">labelIcon</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgLabelIconTooltip">labelIconTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-rgMarkAsRequired">markAsRequired</a></li>
+</ul>
+<h3 id="label-3"> label</h3>
+<p><strong>Type:</strong> label: string</p>
+<p>Element label.</p>
+<h3 id="invalid-2"> invalid</h3>
+<p><strong>Type:</strong> invalid?: boolean</p>
+<p>Displays the specified validation message and changes element style to indicate incorrect input.</p>
+<h3 id="value-2"> value</h3>
+<p><strong>Type:</strong> value?: string</p>
+<p>Sets the value of the input.</p>
+<h3 id="size-1"> size</h3>
+<p><strong>Type:</strong> size?: RadioGroupSize</p>
+<p>Sets the option size.</p>
+<h3 id="disabled"> disabled</h3>
+<p><strong>Type:</strong> disabled?: boolean</p>
+<p>Indicates disabled status.</p>
+<h3 id="onchange-2"> onChange</h3>
+<p><strong>Type:</strong> onChange?: (value: string) =&gt; void</p>
+<p>Occurrs when the component state changes. <code>value</code> contains <code>RadioButton.value</code> of the current selection.</p>
+<h3 id="children"> children</h3>
+<p><strong>Type:</strong> children: React.ReactNode</p>
+<p>A collection of <code>RadioButton</code> components representing selectable options.</p>
+<h3 id="validationmessage-2"> validationMessage</h3>
+<p><strong>Type:</strong> validationMessage?: string</p>
+<p>Sets the validation message displayed when the component contains invalid input.</p>
+<h3 id="explanationtext-2"> explanationText</h3>
+<p><strong>Type:</strong> explanationText?: string</p>
+<p>Sets text displayed directly under the input. Used to clarify input requirements to users.</p>
+<h3 id="labeldisabledtooltip-2"> labelDisabledTooltip</h3>
+<p><strong>Type:</strong> labelDisabledTooltip?: string</p>
+<p>Sets label text used when the input is disabled.</p>
+<h3 id="labelicon-2"> labelIcon</h3>
+<p><strong>Type:</strong> labelIcon?: IconName</p>
+<p>Sets the icon rendered next to the label.</p>
+<h3 id="labelicontooltip-2"> labelIconTooltip</h3>
+<p><strong>Type:</strong> labelIconTooltip?: string</p>
+<p>Sets the tooltip text of the icon rendered next to the label.</p>
+<h3 id="markasrequired-2"> markAsRequired</h3>
+<p><strong>Type:</strong> markAsRequired?: boolean</p>
+<p>Indicates if the input is required. If true, renders a small red asterisk in front of the component label text.</p>
+<p>Use a custom property to send a collection of options from the back end. See the <a href="#ReferenceReactinputcomponents-SelectComponent">select component</a> for an example.</p>
+<p>On the client, pass the collection of options as children using the <code>RadioButton</code> component.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { RadioButton, RadioGroup } from '@kentico/xperience-admin-components';
+
+export const MyFormComponent = (props: MyFormComponentProps) =&gt; {
+
+    return (
+        &lt;RadioGroup label='Choose' onChange={(val) =&gt; props.onChange?.(val)}&gt;
+            &lt;RadioButton value='Cat'&gt; Cat &lt;/RadioButton&gt;
+            &lt;RadioButton value='Dog'&gt; Dog &lt;/RadioButton&gt;
+        &lt;/RadioGroup&gt;
+    );
+}
+
+</code></pre>
+</div>
+
+<h2 id="richtexteditor">RichTextEditor</h2>
+<p><strong>onChange event Type:</strong> string</p>
+<p><a href="/documentation/business-users/rich-text-editor">Rich text editor</a> built using Froala WYSIWYG.</p>
+<h2 id="textarea">Textarea</h2>
+<p><strong>onChange event Type:</strong> React.ChangeEventHandler&lt;HTMLTextAreaElement&gt;</p>
+<p>A text area.</p>
+<p>The selector component has the following properties:</p>
+<ul>
+<li><a href="#ReferenceReactinputcomponents-areaLabel">label</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaValue">value</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaInvalid">invalid</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaValidationMessage">validationMessage</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaMinRows">minRows</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaMaxRows">maxRows</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaExplanationText">explanationText</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaLabelDisabledTooltip">labelDisabledTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaLabelIcon">labelIcon</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaLabelIconTooltip">labelIconTooltip</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaMarkAsRequired">markAsRequired</a></li>
+<li><a href="#ReferenceReactinputcomponents-areaTextAreaRef">textAreaRef</a></li>
+</ul>
+<h3 id="label-4"> label</h3>
+<p><strong>Type:</strong> label?: string</p>
+<p>Element label.</p>
+<h3 id="value-3"> value</h3>
+<p><strong>Type:</strong> value?: string</p>
+<p>Sets the value of the input.</p>
+<h3 id="invalid-3"> invalid</h3>
+<p><strong>Type:</strong> invalid?: boolean</p>
+<p>Displays the specified validation message and changes element style to indicate incorrect input.</p>
+<h3 id="validationmessage-3"> validationMessage</h3>
+<p><strong>Type:</strong> validationMessage?: string</p>
+<p>Sets the validation message displayed when the component contains invalid input.</p>
+<h3 id="minrows"> minRows</h3>
+<p><strong>Type:</strong> minRows?: number</p>
+<p>Specifies the visible height of a text area, in lines.</p>
+<h3 id="maxrows"> maxRows</h3>
+<p><strong>Type:</strong> maxRows?: number</p>
+<p>Specifies the visible height of a text area, in lines.</p>
+<h3 id="explanationtext-3"> explanationText</h3>
+<p><strong>Type:</strong> explanationText?: string</p>
+<p>Sets text displayed directly under the input. Used to clarify input requirements to users.</p>
+<h3 id="labeldisabledtooltip-3"> labelDisabledTooltip</h3>
+<p><strong>Type:</strong> labelDisabledTooltip?: string</p>
+<p>Sets label text used when the input is disabled.</p>
+<h3 id="labelicon-3"> labelIcon</h3>
+<p><strong>Type:</strong> labelIcon?: IconName</p>
+<p>Sets the icon rendered next to the label.</p>
+<h3 id="labelicontooltip-3"> labelIconTooltip</h3>
+<p><strong>Type:</strong> labelIconTooltip?: string</p>
+<p>Sets the tooltip text of the icon rendered next to the label.</p>
+<h3 id="markasrequired-3"> markAsRequired</h3>
+<p><strong>Type:</strong> markAsRequired?: boolean</p>
+<p>Indicates if the input is required. If true, renders a small red asterisk in front of the component label text.</p>
+<h3 id="textarearef"> textAreaRef</h3>
+<p><strong>Type:</strong> textAreaRef?: RefObject&lt;HTMLTextAreaElement&gt;</p>
+<p>Text area input <a href="https://reactjs.org/docs/refs-and-the-dom.html" target="_blank">ref</a>.</p>
+<h3 id="inherited-properties-3">Inherited properties</h3>
+<p>The component also inherits the following properties from <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement" target="_blank">HTMLTextAreaElement</a>.</p>
+<ul>
+<li>onChange</li>
+<li>disabled</li>
+<li>readOnly</li>
+<li>name</li>
+<li>onClick</li>
+<li>onKeyPress</li>
+<li>id</li>
+<li>placeholder</li>
+</ul>
+
+</body>
+</html>

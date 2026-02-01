@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Section properties</title>
+</head>
+<body>
+<p>When developing <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Page Builder sections</a>, you can define properties that allow content editors to adjust the appearance or behavior of the sections in the administration interface. Users then interact with the section properties through section configuration dialogs.</p>
+<p>Use the following process to develop properties for a section:</p>
+<ol type="1">
+<li><a href="#create-property-models">Create a model class that defines the section properties</a></li>
+<li><a href="#define-the-configuration-dialog">Define the configuration dialog to allow content editors to modify the properties</a></li>
+<li><a href="#handle-properties-in-section-code">Handle the properties in the section’s code</a></li>
+</ol>
+<p>See the <a href="#example---develop-a-section-with-a-configurable-property">Example</a> on this page for a scenario with full code samples.</p>
+<h2 id="create-property-models">Create property models</h2>
+<p>The properties of a section must be defined within a model class that implements the <code>ISectionProperties</code> interface (available in the <code>Kentico.PageBuilder.Web.Mvc</code> namespace).</p>
+<p>Specify each section property by creating a corresponding property in the model class. You can also set default values for the properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public class CustomSectionProperties : ISectionProperties
+{
+    // Defines a property and sets its default value
+    public string Color{ get; set; } = "#FFF";
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>You can use the <code>Newtonsoft.Json.JsonIgnore</code> attribute to exclude dynamically computed section properties from database serialization.</p>
+</div>
+
+<p>We recommend storing section property models in a dedicated <em>&lt;SectionName&gt;</em> folder together with other files required by the section.</p>
+<h2 id="define-the-configuration-dialog">Define the configuration dialog</h2>
+<p>The configuration dialog is a simple way to allow content editors to set values for section properties. In the property model class, you need to define editing form components for section properties which you want to make editable in the configuration dialog. You can use the system’s <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">default form components</a> or develop <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form components</a>.</p>
+<ol type="1">
+<li><p>Edit the section’s property model class in your live site project.</p></li>
+<li>
+<p>Define the visual interface of the configuration dialog by assigning appropriate <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a> to the configuration properties.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Setting an editing component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ [TextInputComponent(Order = 0, Label = "Color")]
+ public string Color { get; set; } = "#FFF";
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Users can now click the <strong>Configure</strong> () icon when <a href="/documentation/business-users/website-content/widgets-and-page-builder">working with sections in the administration interface</a>. This opens the section properties dialog, and the configured property values affect the appearance and functionality of the section on the live site.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom editing components with links to content items</strong></p>
+<p>If you decorate any section property with a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">custom form component</a> that allows users to add links to content items (other than the default <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a> and <a href="/documentation/business-users/rich-text-editor">rich text editor</a> ), you need to create a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-reference-extractors">custom reference extractor</a> in order to enable <a href="/documentation/business-users/content-hub/content-items#track-usage-of-content-items">usage tracking</a> in the property.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced property options</strong></p>
+<p>You can add dynamic <a href="/documentation/developers-and-admins/development/builders/builder-component-properties-visibility-and-validation">visibility conditions and validation</a> that restrict how and when properties are displayed in the section configuration dialog.</p>
+</div>
+
+<h2 id="handle-properties-in-section-code">Handle properties in section code</h2>
+<p>In order for properties to have an effect on a section’s appearance or functionality, you need to retrieve the property values and adjust the section’s output code or logic correspondingly. The required steps depend on the development approach used to create the section (see <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Sections for Page Builder</a> for more information).</p>
+<h3 id="basic-sections">Basic sections</h3>
+<p>For basic sections that consist only of a partial view file and a properties class, handle the property values in the section’s partial view.</p>
+<p>The view must use the generic <code>ComponentViewModel&lt;TPropertyModel&gt;</code> class as its model, with the appropriate property model class as the generic type parameter. The system ensures that the property values configured for the currently processed section are passed to the view. Retrieve the property values from the model’s Properties  member, which returns an object of the specified property model class.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.WidgetZoneTagHelper, Kentico.Content.Web.Mvc
+
+@using Kentico.PageBuilder.Web.Mvc
+
+@model ComponentViewModel&lt;CustomSectionProperties&gt;
+
+@* Shows a sample section with a background color specified in the section's configuration dialog *@
+&lt;div style="background-color: @Model.Properties.Color;"&gt;
+    @* Renders a widget zone via the widget-zone Tag Helper *@
+    &lt;widget-zone /&gt;
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h3 id="sections-based-on-a-view-component">Sections based on a view component</h3>
+<p>To work with properties in your section view components, the component’s <code>Invoke</code> or <code>InvokeAsync</code> method signature must declare the <code>ComponentViewModel&lt;TPropertiesType&gt;</code> parameter, with the appropriate property model class as the generic type.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// The signature of a view component's InvokeAsync method for sections with custom properties
+public Task&lt;IViewComponentResult&gt; InvokeAsync(ComponentViewModel&lt;CustomSectionProperties&gt; sectionProperties)
+
+</code></pre>
+</div>
+
+<p>The section’s properties are accessible via the <code>Properties</code> property of the <code>ComponentViewModel</code> parameter. The method returns an object of the specified property model class. The object’s property values are loaded from the current configuration of the processed section.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Gets the value of a section property from within a component's Invoke method
+var propertyValue = sectionProperties.Properties.BackgroundColor;
+
+</code></pre>
+</div>
+
+<p>You can then adjust the flow of your code based on the values of individual section properties, or pass them to the section’s view using an appropriate view model.</p>
+
+<div>
+
+</div>
+<div>
+<p>Do not directly pass the property model to your section views. We strongly recommend creating a separate view model class, which you can then use to pass data to the section view.</p>
+</div>
+
+<h2 id="access-section-properties-in-post-actions">Access section properties in POST actions</h2>
+<p>Basic POST requests do not by default contain section properties data. To access the properties of a section during POST actions (in the controller class handling POST requests), you first need to include the properties into the data submitted by the corresponding HTML form in the section’s output. Call the <code>Html.Kentico().ComponentPropertiesData</code> extension method (or its <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper</a> equivalent) within the given form tag in your section view.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Content.Web.Mvc
+
+...
+
+&lt;form asp-controller="SectionPostController" asp-action="HandlePost" method="post"&gt;
+    ...
+
+    @Html.Kentico().ComponentPropertiesData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden field that persists the section’s current properties configuration.</p>
+<p>On the server, access the section’s properties in the corresponding controller class via the <code>IPageBuilderComponentPropertiesRetriever</code> service and its <code>Retrieve&lt;TSectionProperties&gt;</code> method. Specify the section’s properties class as  the method’s generic parameter: </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Controller class handling the request</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// Contains an instance of the IPageBuilderComponentPropertiesRetriever service (e.g., obtained via dependency injection)
+private readonly IPageBuilderComponentPropertiesRetriever componentPropertiesRetriever;
+
+// Gets the properties of the section as a strongly typed object 
+MySectionProperties properties = componentPropertiesRetriever.Retrieve&lt;MySectionProperties&gt;();
+
+</code></pre>
+</div>
+
+<h2 id="example---develop-a-section-with-a-configurable-property">Example - Develop a section with a configurable property</h2>
+<p>The following section will guide you through a step-by-step process of developing a simple <a href="/documentation/developers-and-admins/development/builders/page-builder/sections-for-page-builder">Page Builder section</a> with a configurable property.</p>
+<p>When finished, the section is displayed with a color background of your choice. The color is set via a section property and can be modified through a section configuration dialog. The color can be specified in any text format that is accepted by the <a href="https://www.w3schools.com/cssref/pr_background-color.asp" target="_blank">CSS background-color property</a> (e.g. a HEX or RGB value).</p>
+<h3 id="property-model">Property model</h3>
+<p>Create a properties model <strong>CustomSectionProperties.cs</strong> in the <em>~/Components/PageBuilder/Sections/CustomSection</em> folder:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.PageBuilder.Web.Mvc;
+
+public class CustomSectionProperties : ISectionProperties
+{
+    // Defines a property and sets its default value
+    // Assigns the default Xperience text input component, which allows users to enter
+    // a string value for the property in the section's configuration dialog
+    [TextInputComponent(Order = 0, Label = "Color")]
+    public string Color { get; set; } = "#FFF";
+}
+
+</code></pre>
+</div>
+
+<h3 id="partial-view">Partial view</h3>
+<p>Create a partial view <strong>_CustomSection.cshtml</strong> in the <em>~/Components/PageBuilder/Sections/CustomSection</em> folder:</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@addTagHelper Kentico.Content.Web.Mvc.WidgetZoneTagHelper, Kentico.Content.Web.Mvc
+
+@using Kentico.PageBuilder.Web.Mvc
+
+@model ComponentViewModel&lt;CustomSectionProperties&gt;
+
+@* Shows a sample section with a background color specified in the section's configuration dialog *@
+&lt;div style="background-color: @Model.Properties.Color;"&gt;
+    @* Renders a widget zone via the widget-zone Tag Helper *@
+    &lt;widget-zone /&gt;
+&lt;/div&gt;
+
+</code></pre>
+</div>
+
+<h3 id="section-registration">Section registration</h3>
+<p>Register the section into the system using the <code>RegisterSection</code> assembly attribute. We recommend adding a dedicated code file to your project for the purposes of component registration, for example named <strong>ComponentRegister.cs</strong>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+[assembly: RegisterSection("MyCompany.Sections.CustomSection",
+                           "Custom section",
+                           typeof(CustomSectionProperties),
+                           customViewName: "~/Components/PageBuilder/Sections/CustomSection/_CustomSection.cshtml",
+                           IconClass = "icon-square")]
+
+</code></pre>
+</div>
+
+
+</body>
+</html>

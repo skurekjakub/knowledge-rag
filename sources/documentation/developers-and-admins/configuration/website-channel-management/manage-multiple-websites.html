@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Manage multiple websites</title>
+</head>
+<body>
+<p>Having multiple website channels within a single Xperience by Kentico application offers several benefits. Firstly, it allows you to target diverse audience segments with tailored content and designs, improving user engagement and conversion rates. Secondly, it facilitates efficient content management by centralizing all web properties in one system, streamlining updates and reducing maintenance overhead.</p>
+<p>This page provides best practices for <strong>organizing the code of multiple channels within one Xperience project</strong>.</p>
+<p>The required level of code separation depends on the <a href="/guides/architecture/content-modeling/content-modeling-guide">content model</a> used by the website channels. Most of the recommendations assume that each website channel uses an (almost) completely separate content model, i.e. a different set of <a href="/documentation/developers-and-admins/development/content-types">content types</a> for each website channel. However, if you have multiple website channels with identical content models, code separation may not be needed at all, and you can develop a standard single project without any issues.</p>
+<p>To implement multiple website channels:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/configuration/website-channel-management">Create and configure your website channels</a> in the administration interface.</li>
+<li>Set up separation of code files in your projects for the channels according to the recommendations below.</li>
+<li>Configure a <a href="/documentation/developers-and-admins/configuration/administration-domain-configuration">dedicated domain for the administration</a> (separate from your website channel domains).</li>
+</ol>
+<h2 id="content-types">Content types</h2>
+<p>Use a unique namespace in the code name of <a href="/documentation/developers-and-admins/development/content-types">content types</a> related to a specific website channel. This prevents conflicts when implementing various features related to content types.</p>
+<h2 id="razor-class-libraries">Razor class libraries</h2>
+<p>Use <a href="https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class" target="_blank">Razor class libraries</a> (RCLs) to separate code for individual website channels. Also consider implementing a separate RCL to store code files that are shared between projects.</p>
+<p>For example, the Visual Studio solution could contain the following projects:</p>
+<ul>
+<li>AcmeWebsite – RCL for the “Acme” website channel</li>
+<li>DancingGoatWebsite – RCL for the “Dancing Goat” website channel</li>
+<li>Shared – optional RCL for resources shared between the website channels (e.g., Page Builder components)</li>
+<li>Xperience – the main web application project containing startup code, general system data, and configuration. For example:
+<ul>
+<li>Startup and general system configuration (could be based on the Xperience <em>Boilerplate</em> <a href="/documentation/developers-and-admins/installation">project template</a>)</li>
+<li>Page Builder scripts and styles and their bundling configuration</li>
+<li>Binary data of <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a>
+</li>
+</ul>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>It is recommended to store related code files into <a href="https://medium.com/c2-group/simplifying-projects-with-a-folder-by-feature-structure-3a13cff2d28c" target="_blank">feature folders</a> within the corresponding class libraries.</p>
+</div>
+
+<h2 id="controllers">Controllers</h2>
+<ul>
+<li>Store controllers in a separate RCL for each website channel.</li>
+<li>For controllers used within <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing">content tree-based routing</a>, register the controllers for a specific content type and website channel in the <code>RegisterWebPageRoute</code> attribute. This prevents route conflicts between different website channels.</li>
+<li>For controllers served by the default MVC routing (i.e., <code>{controller}/{action}</code>), ensure separation by adding website channel prefixes to the controller names when needed.</li>
+</ul>
+<h2 id="views">Views</h2>
+<ul>
+<li>Depending how and where your views are used, we recommend storing them in:
+<ul>
+<li>Website channel RCL – views used for the pages or components on a specific website channel.</li>
+<li>Shared RCL – common views used and referenced across multiple website channels (e.g., error handling pages).</li>
+</ul>
+</li>
+<li>To avoid conflicts, always include a “channel name” or “common” folder in the view path. For example: <em>&lt;Feature&gt;/Views/AcmeWebsite/View.cshtml</em>
+</li>
+<li>If a view is found in both an RCL and the main web application, the view in the web application takes precedence.</li>
+<li>We recommend always using the full path to views (e.g., in controller action results).</li>
+</ul>
+<h2 id="view-components">View components</h2>
+<ul>
+<li>Separate view components by using unique namespaces for each website channel.</li>
+</ul>
+<h2 id="static-files">Static files</h2>
+<p>Separate static assets for each website channel:</p>
+<ul>
+<li>Store static files (stylesheets, fonts, logos, favicon) for each website channel in the corresponding RCL, e.g., <em>&lt;AcmeWebsite project&gt;/assets</em>
+</li>
+<li>You can add a <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/static-files?view=aspnetcore-7.0#static-web-asset-base-path" target="_blank">static web asset base path</a> to the RCL to simplify asset paths: <code>&lt;StaticWebAssetBasePath&gt;/AcmeWebsite&lt;/StaticWebAssetBasePath&gt;</code>
+</li>
+</ul>
+<h2 id="page-builder">Page Builder</h2>
+<p><a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> components can be shared, depending on the implementation.</p>
+<h3 id="widgets-and-sections">Widgets and sections</h3>
+<ul>
+<li>We recommend storing the code of general components in a shared location. Components specific to a website channel can be stored in the corresponding RCL.</li>
+<li>Restrict widgets and sections using the <code>AllowedWidgets</code> and <code>AllowedSections</code> parameters of the <code>EditableAreaOptions</code> object when <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">defining editable areas</a> on pages.</li>
+</ul>
+<h3 id="page-templates">Page templates</h3>
+<ul>
+<li>Store <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">page templates</a> for each website in the corresponding RCL, e.g., <em>&lt;AcmeWebsite project&gt;/PageTemplates</em>.</li>
+<li>Scope page templates to certain content types using the <code>ContentTypeNames</code> parameter of the <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder">registration attribute</a>. If you need more granular scoping, you can use <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-filtering">page template filtering</a>.</li>
+</ul>
+<h3 id="static-files-of-page-builder-components">Static files of Page Builder components</h3>
+<ul>
+<li>Scripts and styles of Page Builder components must be stored in the main web application to satisfy the <em>/wwwroot/PageBuilder/Admin</em> and <em>/wwwroot/PageBuilder/Public</em> location conventions for <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">bundling and minification</a>.</li>
+<li>Avoid self-invoking functions when writing component scripts. The scripts are bundled and added together for all pages with Page Builder, so self-invoking may trigger functions from unrelated components or website channels. Instead, call your JavaScript API directly from the markup of individual Page Builder components.</li>
+</ul>
+
+</body>
+</html>

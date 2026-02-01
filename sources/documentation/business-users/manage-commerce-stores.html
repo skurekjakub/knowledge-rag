@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Manage commerce stores</title>
+</head>
+<body>
+<p>The digital commerce feature provides you with simple online stores where you can sell physical or digital products. It offers the essential tools, data structure, and actions needed to manage your shop and process orders.</p>
+<h2 id="manage-products">Manage products</h2>
+<p>Due to the customizability of the Xperience by Kentico commerce feature, how you manage products depends on the implementation of your <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">product catalog</a>.</p>
+<p>The following image shows a <strong>sample</strong> listing of products hosted in the content hub from the Dancing Goat sample site:</p>
+<p></p>
+<h2 id="manage-customers">Manage customers</h2>
+<p>The <strong>Customers</strong> application allows you to view customer details, and track orders made by customers.</p>
+<ol type="1">
+<li>Navigate to the <strong>Customers</strong> application.</li>
+<li>Select a customer to view their details.
+<ul>
+<li>On the <strong>Addresses</strong> tab, you can view and manage customer addresses.</li>
+<li>On the <strong>Orders</strong> tab, you can view a list of orders made by the customer.</li>
+</ul>
+</li>
+</ol>
+<h2 id="manage-orders">Manage orders</h2>
+<p>The <strong>Orders</strong> application allows users to list orders, view order details, change order statuses, and finalize orders.</p>
+<h3 id="view-details-of-orders">View details of orders</h3>
+<ol type="1">
+<li>Navigate to the <strong>Orders</strong> application.</li>
+<li>Find and select the order you want to modify.
+<ul>
+<li>You can use the search interface or sort orders by status.</li>
+<li>On the <strong>Overview</strong> tab, you can view basic order info and customer details.</li>
+</ul>
+</li>
+<li>Navigate to the <strong>Ordered items</strong> tab to view a list of products in the order.</li>
+</ol>
+<p></p>
+<h3 id="view-orders-from-specific-customers">View orders from specific customers</h3>
+<ol type="1">
+<li>Navigate to the <strong>Customers</strong> application.</li>
+<li>Select a customer whose orders you want to view.</li>
+<li>Navigate to the <strong>Orders</strong> tab to view a list of orders created by the selected customer.</li>
+</ol>
+<p></p>
+<h3 id="change-order-status">Change order status</h3>
+<ol type="1">
+<li>Navigate to the <strong>Orders</strong> application.</li>
+<li>Find and select the order you want to modify.
+<ul>
+<li>You can use the search interface or sort orders by status.</li>
+</ul>
+</li>
+<li>Select <strong>Update order status</strong>.</li>
+<li>Select the new status to which you want to move the order and <strong>Confirm</strong> the changes.
+<ul>
+<li>Depending on your <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses#configure-notifications-for-order-statuses">commerce configuration</a>, selected users may receive a notification that a new order was moved to the new status. Note that if you skip statuses (e.g., move an order from the initial to the final status while skipping all other statuses), the notification is only sent for the status to which you move the order, not for the intermediate statuses.</li>
+</ul>
+</li>
+</ol>
+<p></p>
+<p>You can now see the order in the listing with the new status.</p>
+<h2 id="manage-promotions">Manage promotions</h2>
+<p>The <strong>Promotions</strong> application allows you to create and manage discounts for your store. Promotions can apply discounts to individual products or entire orders.</p>
+<h3 id="promotion-types">Promotion types</h3>
+<p>Your development team configures the available promotion types for your store. Common types include:</p>
+<ul>
+<li>
+<strong>Catalog discounts</strong> – Apply discounts to individual products (e.g., 10% off all coffees, $5 off selected items)</li>
+<li>
+<strong>Order discounts</strong> – Apply discounts to the entire order (e.g., 15% off orders above $100)</li>
+</ul>
+<p>When multiple promotions could apply to the same product or order, the system automatically selects the promotion that provides the best discount for the customer. For more details, see <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions#discount-applicability-and-priority">Discount applicability and priority</a>.</p>
+<h3 id="create-a-promotion">Create a promotion</h3>
+<ol type="1">
+<li>Open the <strong>Promotions</strong> application.</li>
+<li>Select the promotion type in the left tab.</li>
+<li>Select <strong>Create promotion</strong>.</li>
+<li>Fill in the promotion details:
+<ul>
+<li>Enter a <strong>Display name</strong> for the promotion.</li>
+<li>Select a <strong>Promotion type</strong> – choose from available promotion rules configured by your development team.</li>
+<li>Configure the <strong>promotion rule settings</strong> based on the selected type (e.g., discount percentage, target products, eligibility rules).</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> the promotion.</li>
+<li>Select <strong>Schedule activation</strong>.</li>
+<li>Set the <strong>Active from</strong> and <strong>Active to</strong> dates to define when the promotion is available. Promotions are automatically activated and deactivated based on these dates.</li>
+</ol>
+<p></p>
+<p>The promotion is automatically applied to eligible products or orders during checkout based on the configured rules.</p>
+<h3 id="edit-a-promotion">Edit a promotion</h3>
+<ol type="1">
+<li>Open the <strong>Promotions</strong> application.</li>
+<li>Select the promotion you want to edit.</li>
+<li>Update the promotion settings as needed.</li>
+<li>
+<strong>Save</strong> your changes.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>Changes to promotions take effect immediately for new price calculations (for products, shopping carts, and orders). Orders that have already been placed are not affected by promotion changes.</p>
+</div>
+
+<h3 id="promotion-statuses">Promotion statuses</h3>
+<p>Promotions display a status indicator to help you track their state:</p>
+<ul>
+<li>
+<strong>Scheduled</strong> – The promotion is configured but not yet active. It will automatically activate when the <strong>Active from</strong> date arrives.</li>
+<li>
+<strong>Active</strong> – The promotion is currently running and being applied to eligible products or orders.</li>
+<li>
+<strong>Deactivated</strong> – The promotion is not active. You can reactivate it by setting new activation dates.</li>
+</ul>
+<p></p>
+<p>The status automatically updates based on the <strong>Active from</strong> and <strong>Active to</strong> dates you configure via <strong>Change duration</strong> when editing the promotion.</p>
+<h3 id="use-coupon-codes-with-promotions">Use coupon codes with promotions</h3>
+<p>Coupon codes (also called discount codes or promo codes) allow you to control which customers receive a discount. Instead of automatically applying a promotion to all eligible customers, you can require customers to enter a specific code during checkout.</p>
+<h4 id="add-a-coupon-code-to-a-promotion">Add a coupon code to a promotion</h4>
+<p>When creating or editing a promotion:</p>
+<ol type="1">
+<li>In the <strong>Redemption method</strong> field, select <strong>Generic discount code</strong>.</li>
+<li>Enter your desired code in the <strong>Discount code</strong> field (e.g., <em>WELCOME20</em>, <em>SUMMER50</em>).</li>
+<li>Configure the rest of the promotion as usual (discount amount, activation dates, rules).</li>
+<li>
+<strong>Save</strong> the promotion.</li>
+</ol>
+<p>The promotion now requires customers to enter the matching discount code to receive the discount.</p>
+
+<div>
+
+</div>
+<div>
+<p>Discount codes are <strong>case-insensitive</strong>. Customers can enter <em>welcome20</em>, <em>WELCOME20</em>, or <em>Welcome20</em> and all variations will work.</p>
+</div>
+
+<h3 id="delete-a-promotion">Delete a promotion</h3>
+<ol type="1">
+<li>Open the <strong>Promotions</strong> application.</li>
+<li>Select the promotion you want to delete.</li>
+<li>Select <strong>Delete</strong> and confirm the action.</li>
+</ol>
+
+</body>
+</html>

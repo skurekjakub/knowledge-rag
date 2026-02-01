@@ -1,0 +1,1281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Listing UI page template</title>
+</head>
+<body>
+<p>Listing pages facilitate <a href="/documentation/developers-and-admins/customization/object-types">object type</a> (<em>*Info</em> class) listing.</p>
+<p></p>
+<p>All listing pages must inherit from the <code>ListingPage</code> base class. Override the <code>ObjectType</code> property to specify which objects are listed.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base;
+
+public class UserObjectListing : ListingPage
+{
+    // Set to the object type of the object you wish to have listed
+    protected override string ObjectType =&gt; UserInfo.OBJECT_TYPE;
+}
+</code></pre>
+</div>
+
+<p>The bulk of listing page configuration is done within an override of the <code>ConfigurePage</code> method.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ConfigurePage method override</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base;
+
+public class UserObjectListing : ListingPage
+{
+    // ...
+    
+    public override Task ConfigurePage()
+    {
+        // Listing page configuration code...
+    }
+}
+</code></pre>
+</div>
+
+<h2 id="format-displayed-data">Format displayed data</h2>
+<p>The listing page displays items of the selected object type in a grid-like structure, one item per line, and one <a href="/documentation/developers-and-admins/customization/field-editor">field</a> (database column) per column.</p>
+<p>Specify the displayed item properties within an override of the <code>ConfigurePage</code> method. Call the <code>AddColumn</code> method on <code>PageConfiguration.ColumnConfigurations</code> and provide the name of the database column to be displayed.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - adding object properties (database columns) to the grid</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public override Task ConfigurePage()
+{
+    // Adds the specified columns to the grid and sets their caption
+    PageConfiguration.ColumnConfigurations
+                // Adds data from the 'UserName', 'FirstName', and 'Email' columns of the 'CMS_User' table
+                .AddColumn(nameof(UserInfo.UserName), "User name")
+                .AddColumn(nameof(UserInfo.FirstName), "First name")
+                .AddColumn(nameof(UserInfo.Email), "Email");
+}
+</code></pre>
+</div>
+
+<p>You can further configure each column by supplying the following optional parameters to the <code>AddColumn</code> method:</p>
+<ul>
+<li><p><strong>Caption</strong> – sets a custom caption for the column heading. Defaults to the column name if not set.</p></li>
+<li><p><strong>Sortable</strong> – indicates whether the column can be used to sort the listing.</p></li>
+<li><p><strong>DefaultSortDirection</strong> – a <code>SortTypeEnum</code> value that determines the default order for properties in the column.</p></li>
+<li>
+<p><strong>Formatter</strong> – sets the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.string.format" target="_blank">formatter</a> to use for the column values.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  .AddColumn(nameof(UserInfo.UserCreated), formatter: (value, _) =&gt; String.Format("{0:MMMM dd, yyyy}", Convert.ToDateTime(value)))
+  </code></pre>
+</div>
+</li>
+<li><p><strong>Visible</strong> – default visibility state of the column. For hidden columns, the data is obtained from the server but hidden.</p></li>
+<li><p><strong>Searchable</strong> – indicates whether column values are searchable via a search box above the listing. If no columns are set as searchable, the search dialog is hidden.</p></li>
+<li><p><strong>Localizable</strong> – persisted values have localization macros resolved.</p></li>
+<li><p><strong>Tooltip</strong> – sets the tooltip for the column.</p></li>
+</ul>
+<h2 id="add-row-actions">Add row actions</h2>
+<p>The listing template allows you to assign a page command that gets invoked when users select a row in the listing.</p>
+<p>A typical use case for this is opening an item’s view or edit page (e.g., for users, contacts). For this purpose, the system provides the <code>PageConfiguration.AddEditRowAction&lt;TInfoEditPage&gt;</code> extension method. The method generates a link to an <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">edit page</a> for each item (by ensuring the corresponding object’s ID in the URL). Specify the <code>System.Type</code> of the corresponding edit layout page as the method’s generic parameter.</p>
+<p>See the <em>Page URLs and routing</em> section on <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> for more information about generating URL structures for admin pages.</p>
+<h2 id="add-header-and-item-actions">Add header and item actions</h2>
+<p>The listing page allows you to add actions (<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">page commands</a>) to the page header (displayed to the left of the search box) and to each item in the grid (displayed in the <strong>Actions</strong> column).</p>
+<p>Add actions to the listing by calling the following methods on either <code>PageConfiguration.HeaderActions</code> or <code>PageConfiguration.TableActions</code>:</p>
+<ul>
+<li>
+<p><code>AddDeleteAction</code> – adds a delete action to individual items in the list. The base class provides a <code>Delete</code> page command that deletes items based on an object’s ID.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Delete page command provided by the ListingPage base class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+  [PageCommand]
+  public override Task&lt;ICommandResponse&lt;RowActionResult&gt;&gt; Delete(int id) =&gt; base.Delete(id);
+  </code></pre>
+</div>
+</li>
+<li><p><code>AddLink&lt;TPage&gt;</code> – adds a link to a specified page in the admin UI. Supply the <code>System.Type</code> of the target page as the method’s generic parameter.</p></li>
+<li><p><code>AddCommand</code> – adds a page command to the page header or an item’s <em>Actions</em> column.</p></li>
+</ul>
+<h3 id="raise-a-confirmation-prompt">Raise a confirmation prompt</h3>
+<p>You can optionally display a confirmation dialog when users select an action or link. Call the <code>AddCommandWithConfirmation</code> or <code>AddLinkWithConfirmation&lt;TPage&gt;</code> methods.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Raise a confirmation prompt on command invocation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="15-16"><code>
+public override Task ConfigurePage()
+{
+    PageConfiguration
+        .TableActions
+            .AddCommandWithConfirmation
+                (
+                    new AddCommandParameters(commandName: nameof(DoSomething), label: "Title")
+                    {
+                        Icon = Icons.ArrowsCrooked,
+                        Title = "Text of the tooltip.",
+                        // Providing these properties raises a confirmation dialog
+                        // when a user invokes the corresponding action
+                        ConfirmationParameters = new ConfirmationWithContentParameters
+                        {
+                            Confirmation = "What do you want to do?",
+                            ConfirmationButton = "This, please",
+                        }
+                    });
+}
+</code></pre>
+</div>
+
+<p>When users invoke the action, they are prompted with the following confirmation.</p>
+<p></p>
+<p>Additionally, the dialog can also display a form that allows users to submit data to the corresponding command handler. For example, this can be a multiple-choice selector that determines how the back end processes the action.</p>
+<p></p>
+<p>The form must be defined within a dedicated model class and annotated with <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a>. <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">Validation rules</a> are also supported. The class must be annotated with <code>CommandConfirmationModel</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Model defining the confirmation form</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+[CommandConfirmationModel]
+public class ConfirmationDialogFormModel
+{
+    [RequiredValidationRule]
+    [RadioGroupComponent(Inline = false, Order = 1,
+                         Options = $"option1;Option 1\r\noption2;Option 2\r\n")]
+    public string ChooseOne { get; set; } = "option1";
+}
+</code></pre>
+</div>
+
+<p>Specify the model class as a parameter within <code>AddCommandWithConfirmation</code>. The other parameters of the method are identical to <code>AddCommand</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Raise a confirmation prompt on command invocation</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="18"><code>
+public override Task ConfigurePage()
+{
+    PageConfiguration
+        .TableActions
+            .AddCommandWithConfirmation
+                (
+                    new AddCommandParameters(commandName: nameof(DoSomething), label: "Title")
+                    {
+                        Icon = Icons.ArrowsCrooked,
+                        Title = "Text of the tooltip.",
+                        // Providing these properties raises a confirmation dialog
+                        // when a user invokes the corresponding action
+                        ConfirmationParameters = new ConfirmationWithContentParameters
+                        {
+                            Confirmation = "What do you want to do?",
+                            ConfirmationButton = "This, please",
+                            // Setting the confirmation model displays a dialog with form
+                            confirmationModel: typeof(ConfirmationDialogFormModel)
+                        }
+                    });
+}
+</code></pre>
+</div>
+
+<p>The corresponding command handler method must expect the form model in its signature. The system automatically binds the form received from the client to the corresponding parameter.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Action command handler</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+[PageCommand]
+public async Task&lt;ICommandResponse&lt;RowActionResult&gt;&gt; ActionWithFormConfirmation(ConfirmationDialogFormModel model)
+{
+    // Decide what to do based on the received form data...
+
+    return ResponseFrom(new RowActionResult(reload: true))
+                 .AddSuccessMessage($"You have selected {model.ChooseOne}");
+}
+</code></pre>
+</div>
+
+<h3 id="actionstateevaluator">actionStateEvaluator</h3>
+<p>Some methods optionally take an <code>Action</code> delegate that allows you to programmatically disable or modify the commands they add for items meeting your specified criteria.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - disable the delete action for specific users</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+.AddDeleteAction(
+    new AddDeleteActionParameters(commandName: nameof(Delete))
+    {
+        ActionStateEvaluator = DisableDeleteForSpecificUsers,
+    });
+
+// ...
+
+// Disables the delete action for the default global administrator and public users
+private Task DisableDeleteForSpecificUsers(ActionConfiguration actionConfiguration, IDataContainer rowData, CancellationToken cancellationToken)
+{
+    if (!actionConfiguration.Disabled)
+    {
+        var userName = Convert.ToString(rowData[nameof(UserInfo.UserName)]);
+
+        if (String.Equals(userName, UserInfoProvider.AdministratorUserName, StringComparison.OrdinalIgnoreCase) ||
+            String.Equals(userName, UserInfoProvider.PublicUserName, StringComparison.OrdinalIgnoreCase))
+        {
+            actionConfiguration.Disabled = true;
+        }
+    }
+    return Task.CompletedTask;
+}
+</code></pre>
+</div>
+
+<h2 id="add-header-subcaption">Add header subcaption</h2>
+<p>You can render arbitrary React components next to the listing page caption via <code>PageConfiguration.SubcaptionComponent</code>.</p>
+<p></p>
+<p>The following example demonstrates the required configuration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Add a subcaption component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public override Task ConfigurePage()
+{
+    PageConfiguration.SubcaptionComponent = new MySubcaption
+    {
+        ComponentProperties = new MySubcaptionProperties
+        {
+            Label = "...",
+            TooltipText = "..."
+        },
+    };
+}
+</code></pre>
+</div>
+
+<p>Where <code>MySubcaption</code> describes the component to render and is defined as follows:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System.Threading.Tasks;
+using Kentico.Xperience.Admin.Base;
+
+// Classes defining subcaption components must inherit from `SubcaptionComponentBase`.
+// The two generics derscribe classes encapsulating the target component's properties on the back-end 
+// and in the client application. See their definitions below.
+public class MySubcaption : SubcaptionComponentBase&lt;MySubcaptionProperties, MySubcaptionClientProperties&gt;
+{
+    // The full name of the React component to render as the subcaption.
+    // This example targets a custom `MySubcaptionComponent` in the web-admin module.
+    // You can also use default Xperience components. For example: '@kentico/xperience-admin-components/TextWithLabel'
+    public override string ComponentName =&gt; "@acme/web-admin/MySubcaptionComponent";
+
+    // Populates the properties used to instantiate the React component on the client
+    // Property names must correspond to the properties of the client component
+    protected override Task ConfigureComponentClientProperties(MySubcaptionClientProperties componentClientProperties)
+    {
+        componentClientProperties.Label = ComponentProperties.Label;
+        componentClientProperties.TooltipText = ComponentProperties.TooltipText;
+
+        return base.ConfigureComponentClientProperties(componentClientProperties);
+    }
+}
+
+// Encapsulates the properties of the subcaption component's back-end definition.
+// Populated via `PageConfiguration.SubcaptionComponent`. Mapped to 'MySubcaptionClientProperties' 
+// within the subcaption class ('MySubcaption' in this example).
+public class MySubcaptionProperties
+{
+    public string Label { get; set; }
+    public string TooltipText { get; set; }
+}
+
+// Encapsulates properties sent to the client. Used when instantiating the targeted React component.
+public class MySubcaptionClientProperties
+{
+    public string Label { get; set; }
+    public string TooltipText { get; set; }
+}
+</code></pre>
+</div>
+
+<h2 id="add-mass-actions">Add mass actions</h2>
+<p>The listing page template allows you to add actions executed upon a collection of items selected from the listing.</p>
+<p></p>
+<p>Mass actions appear at the top of the listing – immediately below the search bar – when users select at least one listed item.</p>
+<p><a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-commands">Page commands</a> that implement mass actions must use the following signature:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Mass action method signature</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public async Task&lt;ICommandResponse&lt;MassActionResult&gt;&gt; MassActionCommand(IEnumerable&lt;int&gt; identifiers, CancellationToken cancellationToken)
+</code></pre>
+</div>
+
+<p>where <code>IEnumerable&lt;int&gt; identifiers</code> is a collection of object type IDs identifying the items selected by the user. Use conventional <a href="/documentation/developers-and-admins/api/database-table-api">provider APIs</a> to work with these objects.</p>
+<p>Add mass actions using the following methods on <code>PageConfiguration.MassActions</code>:</p>
+<ul>
+<li>
+<code>AddCommand</code> – adds a command to execute.</li>
+<li>
+<code>AddCommandWithConfirmation</code> – adds a command with execution approved via a <a href="#raise-a-confirmation-prompt">confirmation prompt</a>.</li>
+<li>
+<code>AddActionWithCustomComponent</code> – adds an action that is <a href="#add-actions-handled-by-a-react-component">handled by a custom React component</a>.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Note that the <code>actionStateEvaluator</code> parameter offered by these methods is not supported by mass actions.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register mass actions</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public override async Task ConfigurePage()
+{
+    PageConfiguration
+        .MassActions
+            .AddCommandWithConfirmation
+            (
+                label: "Title",
+                command: nameof(MyMassActionPageCommand),
+                icon: Icons.ArrowsCrooked,
+                // Providing these properties raises a confirmation
+                // dialog when users invoke the added action
+                confirmation: "Confirmation title",
+                confirmationButton: "Confirm"
+            );
+}
+</code></pre>
+</div>
+
+<h2 id="add-actions-handled-by-a-react-component">Add actions handled by a React component</h2>
+<p>For advanced action scenarios, you can use a custom React component to handle:</p>
+<ul>
+<li>
+<a href="#add-header-and-item-actions">Item and header actions</a> (<code>PageConfiguration.TableActions</code>, and <code>PageConfiguration.HeaderActions</code>)</li>
+<li>
+<a href="#add-mass-actions">Mass actions</a> (<code>PageConfiguration.MassActions</code>)</li>
+</ul>
+<p>on listing templates.</p>
+<p>Start by preparing the React component’s front end (e.g., a <em>.tsx</em> file). The name of the component must end with the <em>Component</em> suffix, e.g., <em>@acme/web-admin/CustomActionComponent</em>. Ensure that the component is <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development#export-custom-react-components">exported</a> in your custom admin module’s <strong>entry.tsx</strong> file.</p>
+<p>In addition, you also need to create the following back-end classes for each action component:</p>
+<ul>
+<li>Component class inheriting from <code>ActionComponent&lt;TProperties, TClientProperties&gt;</code>.
+<ul>
+<li>Override the <code>ClientComponentName</code> property, and set the value to the name of the corresponding front-end component. The <em>Component</em> suffix is automatically added to this name when loading the component.</li>
+<li>Override the <code>ConfigureClientProperties</code> method to populate the component’s client properties (typically from the value of the corresponding back-end properties class).</li>
+</ul>
+</li>
+<li>Back-end properties class implementing <code>IActionComponentProperties</code>.</li>
+<li>Client properties class implementing <code>IActionComponentClientProperties</code>.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Custom action component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public sealed class CustomActionComponent : ActionComponent&lt;CustomActionProperties, CustomActionClientProperties&gt;
+{
+    // The name of the front-end type implementing the action component without the "Component" suffix,
+    // which is automatically added to this name.
+    public override string ClientComponentName =&gt; "@acme/web-admin/CustomAction";
+    
+    protected override Task ConfigureClientProperties(CustomActionClientProperties clientProperties)
+    {
+        clientProperties.MyProperty = Properties.MyProperty;
+        // ...
+
+        return base.ConfigureClientProperties(clientProperties);
+    }
+}
+</code></pre>
+</div>
+
+<p>To add the action in the listing template configuration, call <code>AddActionWithCustomComponent</code> on the appropriate action collection (e.g., <code>TableActions</code> or <code>MassActions</code>).</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Permissions and custom component actions</strong></p>
+<p>If you wish to implement <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks">permission checks</a> for actions handled by a custom component, we recommend setting the <code>AddActionWithCustomComponent</code> method’s <code>disabled</code> parameter (see the example below). You can also <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks#propagate-permission-information-to-client-ui-templates">propagate permission information</a> to your component via members of the client properties class.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Register a mass action with a custom component</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+private readonly IUIPermissionEvaluator uiPermissionEvaluator;
+
+// ...
+
+public override Task ConfigurePage()
+{
+    bool userHasPermission = await UserHasUpdatePermission();
+
+    PageConfiguration.MassActions.AddActionWithCustomComponent(
+        clientComponent: new CustomActionComponent() 
+        {
+            Properties = new CustomActionProperties()
+            {
+                MyProperty = "MyValue"
+            }
+        },
+        label: "Title",
+        icon: Icons.PaperPlane,
+        disabled: !userHasPermission
+    );
+}
+
+private async Task&lt;bool&gt; UserHasUpdatePermission()
+{
+    return (await uiPermissionEvaluator.Evaluate(SystemPermissions.UPDATE)).Succeeded;
+}
+</code></pre>
+</div>
+
+<h2 id="add-react-components-to-cells">Add React components to cells</h2>
+<p>The listing template supports loading React components inside dedicated columns within the grid via the <code>AddComponentColumn</code> extension method of the <code>PageConfiguration.ColumnConfigurations</code> object.</p>
+<p>The method takes identical parameters as <a href="#format-displayed-data">AddColumn</a>, with the following additions:</p>
+<ul>
+<li>
+<strong>string componentKey</strong> – the name of the React component to be displayed. Provide a full name in the <em>{orgName}/{projectName}/component</em> format, as specified when you <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">set up your custom admin JS module</a>. Make sure the component is exported (visible to other modules). For example: <em>@acme/web-admin-custom/MyComponent</em>.<br>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Component naming</strong></p>
+When loading the component, the client application suffixes the provided value with <code>TableCellComponent</code>. For the provided example, the client React component must be named <code>MyComponentTableCellComponent</code>.
+</div>
+</li>
+<li>
+<strong>bool loadedExternally</strong> – indicates whether data present in the column is loaded externally (not a property of the <em>*Info</em> object being listed). For example, via a separate <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery call</a> from a different object.</li>
+<li>
+<strong>Func&lt;object, IDataContainer, object&gt; modelRetriever</strong> – a function that provides the props for the front-end component to be displayed. The component props data must be wrapped in a dedicated class (for serialization and transfer to the client admin application).
+<ul>
+<li>
+<strong>object</strong> – the localized (if localizable) and formatted (if a formatter was provided) value of the column to be listed. Empty if the <code>loadedExternally</code> flag is <code>true</code>.</li>
+<li>
+<strong>IDataContainer</strong> – contains the entire database record of the object being listed (as <code>IDataContainer</code>). Column values can be accessed using indexer notation.</li>
+</ul>
+</li>
+</ul>
+<p>The system instantiates the selected component for each row, with the passed props.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+protected override string ObjectType =&gt; UserInfo.OBJECT_TYPE;
+
+// ...
+
+PageConfiguration.ColumnConfigurations
+    // Adds a column displaying a React component with data loaded from UserInfo
+    .AddComponentColumn(
+        "assignedRoles",
+
+        // Sets the name of the component to render
+        // When loading the component, the client application automatically suffixes
+        // the component name with 'TableCellComponent'. For this example, the React
+        // component must be named 'MyComponentTableCellComponent'.
+        "@orgName/projectName/MyComponent",
+
+        // Sets column caption
+        "Roles",
+
+        modelRetriever: (formattedColumnValue, rowData) =&gt;
+        {
+            // 'formattedColumnValue' contains the localized (if localizable) and
+            // formatted (if a formatter was provided) value of the column
+            // specified in 'columnName.'
+            // Empty if the loadedExternally flag is set to 'true'
+
+            // 'rowData' contains the entire user record
+            // from the database (as 'IDataContainer').
+            // Column values can be accessed using indexer notation.
+            var userID = (int)rowData[nameof(UserInfo.UserID)];
+
+            // Fetches roles assigned to individual users using external logic
+            // (omitted for brevity).
+            var userRoles = GetRoles(userID);
+
+            // Instantiates a DTO consisting of props for the displayed component
+            return new ReactComponentToDisplayProps
+            {
+                prop1 = userRoles.ToString(),
+                prop2 = ...
+            };
+        },
+
+        // Column data will not be fetched as part of the
+        // ObjectQuery retrieving other UserInfo object data
+        loadedExternally: true,
+        sortable: false);
+</code></pre>
+</div>
+
+<h2 id="add-callouts">Add callouts</h2>
+<p>Callouts are information messages that can be displayed above the listing grid.</p>
+<p></p>
+<p>You can add a callout via <code>PageConfiguration.Callouts</code>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - adding a callout</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public override Task ConfigurePage()
+{
+    PageConfiguration.Callouts = new List&lt;CalloutConfiguration&gt;()
+    {
+        new CalloutConfiguration
+        {
+            Headline = "Callout headline",
+            Content = "Callout text",
+            Type = CalloutType.QuickTip,
+            Placement = CalloutPlacement.OnDesk
+        }
+    };
+}
+</code></pre>
+</div>
+
+<p>Where <code>CalloutType</code> determines the style of the callout:</p>
+<ul>
+<li>
+<strong>QuickTip</strong> – a light blue unobtrusive design intended for general information messages</li>
+<li>
+<strong>FriendlyWarning</strong> – tinted yellow, designed to attract user attention</li>
+</ul>
+<p>And <code>CalloutPlacement</code> determines the callout element width:</p>
+<ul>
+<li>
+<strong>OnDesk</strong> – half-page width</li>
+<li>
+<strong>OnPaper</strong> – full-page width</li>
+</ul>
+<h2 id="modify-loaded-data">Modify loaded data</h2>
+<p>You can modify the query that retrieves objects for display in the grid via <code>PageConfiguration.QueryModifiers</code> and the <code>AddModifier</code> method. The query uses the system’s ObjectQuery API to retrieve the table data. See <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery API</a> to learn more about the feature and available parameterization options.</p>
+<p>Modifiers can be useful if you wish to, for example, filter listed objects based on other parameters present in the URL. See the <em>Page URLs and routing</em> section on <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a> for more information about routing, the page URL hierarchy, and passing parameters via page URLs.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Binds a site ID parameter provided by a parent page in the hierarchy
+[PageParameter(typeof(IntPageModelBinder))]
+public int SiteId { get; set; }
+
+...
+
+public override Task ConfigurePage()
+{
+    PageConfiguration.QueryModifiers
+        .AddModifier((query, _) =&gt;
+        {
+            // Filters displayed objects by the 'SiteID' parameter
+            return query.WhereEquals(nameof(SiteDomainAliasInfo.SiteID), SiteId);
+        });
+}
+</code></pre>
+</div>
+
+<h2 id="add-a-listing-filter">Add a listing filter</h2>
+<p>Listing pages often contain a large number of objects. Filters allow users to limit which objects are displayed according to specified criteria.</p>
+<p>You can implement filters for both your own custom listing pages and the default listing pages in the Xperience administration UI.</p>
+<h3 id="create-the-filter-model">Create the filter model</h3>
+<ol type="1">
+<li><p>Add a model class to your <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">custom admin project</a> with properties representing individual inputs in the filter.</p></li>
+<li><p>Define the filter UI by assigning <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">Editing components</a> to the properties (like when preparing <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-pages-with-forms">model-based edit pages</a>).</p></li>
+<li>
+<p>Decorate the filter properties with the <code>FilterCondition</code> attribute (available in the <code>Kentico.Xperience.Admin.Base.Filters</code> namespace). The attribute has the following parameters:</p>
+<ul>
+<li><p><code>BuilderType</code> – a type implementing <code>IWhereConditionBuilder</code>, which generates the where condition applied to the listing for the given property. See <a href="#create-filter-condition-builders">Create filter condition builders</a> below for more information.</p></li>
+<li>
+<p><code>ColumnName</code> – the column name passed to the <code>IWhereConditionBuilder</code> implementation assigned to the property. Specify a column of the <a href="/documentation/developers-and-admins/customization/object-types">object type</a> displayed in the listing, e.g., using the <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/nameof" target="_blank">nameof</a> expression.</p>
+
+<div>
+
+</div>
+<div>
+<p>Both attribute parameters are <strong>optional</strong>.</p>
+<p>If you omit <code>BuilderType</code>, a basic equality condition builder is used. The condition is fulfilled if the specified column is equal to the filter property’s value.</p>
+<p>If <code>ColumnName</code> is omitted, the name of the property in the model class is used as the column name.</p>
+<p>Properties without the <code>FilterCondition</code> attribute automatically generate a basic equality condition (same behavior as when using the attribute with both parameters omitted).</p>
+</div>
+</li>
+</ul>
+</li>
+<li>
+<p>(Optional) You can also decorate properties in the filter model class with the following attributes:</p>
+<ul>
+<li>
+<code>FilterLabel</code> – sets the text of the property’s “filter summary chip”, which appears in the <em>Applied filters</em> section above the listing. If not added, the filter summary text falls back to the <em>Label</em> of the property’s assigned editing component, or the name of the property itself if required. Intended for properties decorated with the <em>FilterCondition</em> attribute.</li>
+<li>
+<code>FilterIgnore</code> – ensures that the property’s value does not affect the resulting filter condition. Intended for properties that are not decorated with the <em>FilterCondition</em> attribute. For example, if you wish to display a property that modifies the filter form using <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility conditions</a>, but does not affect the filtering itself.</li>
+</ul>
+</li>
+</ol>
+<p>When the filter is applied, the conditions are generated for all properties in the model class and combined using the SQL AND operator. The resulting listing displays only items that fulfill all of the conditions.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Filter model example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System.Collections.Generic;
+
+using CMS.Membership;
+
+using Kentico.Xperience.Admin.Base.Filters;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class UserListFilterModel
+{
+    // Text input that filters listed users based on their email address
+    [TextInputComponent(Label = "User email", Order = 0)]
+    [FilterCondition(BuilderType = typeof(ContainsTextConditionBuilder), ColumnName = nameof(UserInfo.Email))]
+    [FilterLabel("Email")]
+    public string UserEmail { get; set; }
+
+    // Drop-down selector that filters the listing to show only active or inactive user accounts
+    [DropDownComponent(
+        Label = "User status",
+        Placeholder = "Any",
+        Options = "true;Active\r\nfalse;Inactive",
+        Order = 1)]
+    [FilterCondition(BuilderType = typeof(IsTrueConditionBuilder), ColumnName = nameof(UserInfo.UserEnabled))]
+    [FilterLabel("Status")]
+    public string UserEnabled { get; set; }
+}
+</code></pre>
+</div>
+
+<h3 id="create-filter-condition-builders">Create filter condition builders</h3>
+<p>To define filtering conditions, prepare classes that implement <code>IWhereConditionBuilder</code> (available in the <code>Kentico.Xperience.Admin.Base.Filters</code> namespace). Define the <code>Build</code> method and return an <code>IWhereCondition</code> object (available in the <code>CMS.DataEngine</code> namespace).</p>
+<p>Recommendations for implementing the <code>Build</code> method:</p>
+<ul>
+<li>Always return an instance of the <code>WhereCondition</code> class (except when throwing exceptions for invalid error states). If you do not wish to affect the filtering condition, return a new (empty) <code>WhereCondition</code> object rather than <code>null</code>.</li>
+<li>Use the predefined where condition methods available in the <a href="/documentation/developers-and-admins/api/objectquery-api">ObjectQuery API</a> to build your conditions.</li>
+<li>The <code>value</code> parameter is passed as an <code>object</code>, so perform appropriate type-testing and casting operations.</li>
+<li>Consider performance when creating and assigning where condition builders to listings with a large number of items. For example, a <code>WhereStartsWith</code> condition provides better performance than <code>WhereContains</code>.</li>
+<li>To avoid security vulnerabilities, never use the <code>value</code> parameter to directly pass SQL query text to the where condition.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Contains text IWhereConditionBuilder example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Threading.Tasks;
+
+using CMS.DataEngine;
+
+using Kentico.Xperience.Admin.Base.Filters;
+
+public class ContainsTextConditionBuilder : IWhereConditionBuilder
+{
+    public Task&lt;IWhereCondition&gt; Build(string columnName, object value)
+    {
+        if (string.IsNullOrEmpty(columnName))
+        {
+            throw new ArgumentException($"{nameof(columnName)} cannot be a null or an empty string.");
+        }
+
+        // Creates a new where condition
+        var whereCondition = new WhereCondition();
+
+        if (value is null || value is not string )
+        {
+            // Returns an empty condition if a valid value is not specified
+            return Task.FromResult&lt;IWhereCondition&gt;(whereCondition);
+        }
+
+        // Adds a where condition returning only items that contain the value in the specified column
+        whereCondition.WhereContains(columnName, (string)value);
+
+        return Task.FromResult&lt;IWhereCondition&gt;(whereCondition);
+    }
+}
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Is true IWhereConditionBuilder example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using System;
+using System.Threading.Tasks;
+
+using CMS.DataEngine;
+
+using Kentico.Xperience.Admin.Base.Filters;
+
+public class IsTrueConditionBuilder : IWhereConditionBuilder
+{
+    public Task&lt;IWhereCondition&gt; Build(string columnName, object value)
+    {
+        if (string.IsNullOrEmpty(columnName))
+        {
+            throw new ArgumentException($"{nameof(columnName)} cannot be a null or an empty string.");
+        }
+
+        // Creates a new where condition
+        var whereCondition = new WhereCondition();
+
+        if (value is null || value is not string userEnabled)
+        {
+            // Returns an empty condition if a valid filtering option is not selected
+            return Task.FromResult&lt;IWhereCondition&gt;(whereCondition);
+        }
+
+        if (userEnabled.Equals("true", StringComparison.InvariantCultureIgnoreCase))
+        {
+            // Adds a where condition returning only enabled user accounts
+            whereCondition.WhereTrue(columnName);
+        }
+
+        if (userEnabled.Equals("false", StringComparison.InvariantCultureIgnoreCase))
+        {
+            // Adds a where condition returning only users that are not enabled
+            whereCondition.WhereFalse(columnName);
+        }
+
+        return Task.FromResult&lt;IWhereCondition&gt;(whereCondition);
+    }
+}
+</code></pre>
+</div>
+
+<h3 id="assign-filters-to-listing-pages">Assign filters to listing pages</h3>
+<p>To add a filter to your own custom listing pages, assign an instance of your <a href="#create-the-filter-model">filter model</a> class to the UI page’s <code>PageConfiguration.FilterFormModel</code> property.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Assign a filter</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+public override Task ConfigurePage()
+{
+    ...
+
+    // Assigns a listing filter model
+    PageConfiguration.FilterFormModel = new UserListFilterModel();
+}
+</code></pre>
+</div>
+
+<p>If you wish to add a filter to an existing listing page in the Xperience administration, set the <code>FilterFormModel</code> property through a <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">UI page extender</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Assign a filter through an extender</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+[assembly: PageExtender(typeof(UserListExtender))]
+
+public class UserListExtender : PageExtender&lt;UserList&gt;
+{
+    // Configures the listing template on which UserList is based
+    public override Task ConfigurePage()
+    {
+        var configuration = Page.PageConfiguration;
+
+        // Assigns a listing filter model
+        configuration.FilterFormModel = new UserListFilterModel();
+
+        return base.ConfigurePage();
+    }
+}
+</code></pre>
+</div>
+
+<h2 id="reference---pageconfiguration-property">Reference - PageConfiguration property</h2>
+<p>The following table provides a reference of template configuration options available for listing pages via the <code>PageConfiguration</code> property.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Property</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Caption</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>The page’s title.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>SubcaptionComponent</p>
+</td>
+<td>
+<p>ISubcaptionComponent</p>
+</td>
+<td>
+<p>A component rendered next to the listing page caption. See <a href="#add-header-subcaption">Add header subcaption</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Callouts</p>
+</td>
+<td>
+<p>List&lt;CalloutConfiguration&gt;</p>
+</td>
+<td>
+<p>Configures an optional message box element that can be displayed above the listing. See <a href="#add-callouts">Add callouts</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>ColumnConfigurations</p>
+</td>
+<td>
+<p>IList&lt;ColumnConfiguration&gt;</p>
+</td>
+<td>
+<p>See <a href="#format-displayed-data">Format displayed data</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>FilterFormModel</p>
+</td>
+<td>
+<p>object</p>
+</td>
+<td>
+<p>An instance of the model class that defines the filter UI for the listing. See <a href="#add-a-listing-filter">Add a listing filter</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>HeaderActions</p>
+</td>
+<td>
+<p>IList&lt;ActionConfiguration&gt;</p>
+</td>
+<td>
+<p>Actions available from the table header. See <a href="#add-header-and-item-actions">Add header and item actions</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MassActions</p>
+</td>
+<td>
+<p>IList&lt;ActionConfiguration&gt;</p>
+</td>
+<td>
+<p>Actions available when selecting more than one item in the listing. See <a href="#add-mass-actions">Add mass actions</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>MaxVisibleRowActions</p>
+</td>
+<td>
+<p>int</p>
+</td>
+<td>
+<p>Determines the maximum number of <a href="#add-header-and-item-actions">table actions</a> displayed for each item. Additional actions are hidden behind an expandable menu.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>PageSizes</p>
+</td>
+<td>
+<p>IEnumerable&lt;int&gt;</p>
+</td>
+<td>
+<p>Available page sizes for the listing.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>QueryModifiers</p>
+</td>
+<td>
+<p>IList&lt;QueryModifier&gt;</p>
+</td>
+<td>
+<p>Collection of modifications to the displayed data. See <a href="#modify-loaded-data">Modify loaded data</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>RowAction</p>
+</td>
+<td>
+<p>ActionConfiguration</p>
+</td>
+<td>
+<p>Action that occurs when a user clicks on a row in the listing.</p>
+<p>Set via the <code>AddEditRowAction</code> method. See <a href="#add-row-actions">Add row actions</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>RowActionIconPlaceholders</p>
+</td>
+<td>
+<p>int?</p>
+</td>
+<td>
+<p>Can be used to customize the width of the listing’s <em>Actions</em> column by overriding the number of action icon placeholders.</p>
+<p>By default this property is <em>null</em>, which means that the width of the <em>Actions</em> column is calculated based on the number of registered actions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>TableActions</p>
+</td>
+<td>
+<p>IList&lt;ActionConfiguration&gt;</p>
+</td>
+<td>
+<p>Actions available for each item in the listing. See <a href="#add-header-and-item-actions">Add header and item actions</a>.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="register-listing-pages">Register listing pages</h2>
+<p>Listing pages need to specify the <code>TemplateNames.LISTING</code> client template during <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">registration</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example listing page registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre data-line="8"><code>
+using Kentico.Xperience.Admin.Base;
+
+[assembly: UIPage(
+    parentType: typeof(UsersApplication),
+    slug: "list",
+    uiPageType: typeof(UserObjectListing),
+    name: "Users",
+    templateName: TemplateNames.LISTING,
+    order: 0)]
+</code></pre>
+</div>
+
+<h2 id="client-template-listing">Client template – LISTING</h2>
+<p>Listing pages must use the <code>LISTING</code> client template.</p>
+<p>The template contains the following default page commands:</p>
+<ul>
+<li>
+<strong>LoadData</strong> – refreshes the data on the page.</li>
+<li>
+<strong>Delete</strong> – deletes the item with the specified <code>int</code> identifier.</li>
+</ul>
+
+</body>
+</html>

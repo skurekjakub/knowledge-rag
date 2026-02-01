@@ -1,0 +1,1462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Example - Offices management application</title>
+</head>
+<body>
+<p>This page contains step-by-step instructions showing how to implement a custom application for the Xperience administration, which allows management of manage offices. When working with the application, users:</p>
+<ul>
+<li>Create new office objects</li>
+<li>Assign users registered in the system as workers</li>
+<li>Create listings of open positions for individual offices</li>
+</ul>
+<p>Developers can then <a href="/documentation/developers-and-admins/development/content-retrieval#retrieve-general-object-data">display the modeled data</a> on the website, for example when building the site’s company overview or hiring sections.</p>
+<p>The implementation makes use of custom <a href="/documentation/developers-and-admins/customization/object-types">object types</a> to define required database entities and the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface">admin UI customization framework</a> to build an editing interface for administration users. For this reason, you should already be familiar with these concepts (though relevant links are provided throughout the text).</p>
+<p>This page is separated into multiple sections, each building upon the functionality implemented previously:</p>
+<ol type="1">
+<li><a href="#ExampleOfficesmanagementapplication-ClassLibrary">Prepare a class library for administration-related customizations</a></li>
+<li>Define the custom Office object type and build a basic editing interface
+<ol type="1">
+<li><a href="#define-the-office-object-type">Define the Office object type</a></li>
+<li><a href="#build-a-basic-editing-interface-for-the-office-object-type">Build a basic editing interface for the Office object type</a></li>
+</ol>
+</li>
+<li><a href="#ExampleOfficesmanagementapplication-ChildClass">Add the option to define open positions for individual offices via a child object type</a></li>
+<li><a href="#ExampleOfficesmanagementapplication-BindingClass">Link users registered in the system to individual offices via a binding object type</a></li>
+</ol>
+<h2 id="prepare-a-class-library-for-administration-related-customizations"> Prepare a class library for administration-related customizations</h2>
+<p>We recommend storing all administration interface-related customizations in a dedicated class library project. This approach brings benefits such as separability for <a href="/documentation/developers-and-admins/deployment/deploy-to-private-cloud/deploy-without-the-administration">specific types of deployments</a>. </p>
+<ol type="1">
+<li>
+<p>Create a <a href="/documentation/developers-and-admins/customization/integrate-custom-code">new class library project</a> in your Xperience solution.</p>
+<ul>
+<li>The example on this page uses a fictitious <em>Acme</em> company to ensure the uniqueness of various object identifiers and namespace declarations.</li>
+<li>For example, name the class library: <em>Acme.Web.Admin</em>
+</li>
+</ul>
+</li>
+<li><p>Add the <strong>Kentico.Xperience.Admin</strong> package to the project.</p></li>
+<li>
+<p><a href="/documentation/developers-and-admins/customization/integrate-custom-code#enable-class-discovery">Enable class discovery</a> for the assembly via the <code>AssemblyDiscoverable</code> attribute. </p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>AssemblyAttributes.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using CMS;
+
+ [assembly:AssemblyDiscoverable]
+ </code></pre>
+</div>
+</li>
+<li><p>Reference the project from your main Xperience project.</p></li>
+</ol>
+<h2 id="define-the-office-object-type">Define the Office object type</h2>
+<h3 id="create-a-new-module-to-host-the-office-object-type">Create a new module to host the Office object type</h3>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application.</li>
+<li>Select <strong>New module</strong> and fill in:
+<ol type="1">
+<li>
+<strong>Module name</strong>: Acme</li>
+<li>
+<strong>Identifiers → Code name</strong>: AcmeModule</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<h3 id="create-and-model-the-office-object-type">Create and model the Office object type</h3>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application and select the <strong>Acme</strong> module from the listing.</li>
+<li>Switch to the <strong>Classes</strong> tab and select <strong>New class</strong>.</li>
+<li>Enter the following values:
+<ol type="1">
+<li>
+<strong>Class name</strong>: Office</li>
+<li>
+<strong>Code name</strong>
+<ol type="1">
+<li>
+<strong>Namespace</strong>: Acme</li>
+<li>
+<strong>Name</strong>: Office</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>The system creates the data class and its corresponding database table: <em>Acme_Office</em></p>
+<p>Continue by modeling the database entity:</p>
+<ol type="1">
+<li>Switch to the <strong>Database columns</strong> tab of the <strong>Office</strong> class (available after the class is created).</li>
+<li>Using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, add the following fields:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Field name</strong>: OfficeType</li>
+<li>
+<strong>Data type</strong>: Integer number</li>
+<li>
+<strong>Required</strong>: No (unselected)</li>
+<li>
+<strong>Default value</strong>: 0</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Field name</strong>: OfficeDisplayName</li>
+<li>
+<strong>Data type</strong>: Text</li>
+<li>
+<strong>Required</strong>: Yes (checked)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<h3 id="generate-code-files-for-the-office-object-type">Generate code files for the Office object type</h3>
+<ol type="1">
+<li><p>Shut down the application.</p></li>
+<li>
+<p>Run the following command from the root directory of your project. When prompted for confirmation, press <code>Y</code>:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build -- --kxp-codegen --type "Classes" --include "Acme.*"
+
+ </code></pre>
+</div>
+</li>
+<li><p>Move the generated code files for classes with the <code>Acme</code> namespace from the <em>Classes\Acme\Office</em> directory under your project’s root to the custom class library. Alternatively, you can use the <code>--location</code> <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">parameter</a> to set a custom path that targets the class library. Make sure the classes do not remain under your main web project, otherwise you will encounter errors when working with the office object types.</p></li>
+<li><p>Relaunch the site using <code>dotnet run</code>.</p></li>
+</ol>
+<p>With the code files created, the last step required to prepare the object type is to define the <em>create</em> and <em>edit</em> UI forms that enable basic manipulation of office objects via custom admin UI pages.</p>
+<h3 id="define-the-create-ui-form">Define the create UI form</h3>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application, edit the <strong>Acme</strong> module and select the <strong>Office</strong> class.</li>
+<li>Switch to the <strong>UI forms</strong> tab and select <strong>New UI form</strong>.</li>
+<li>Enter the following values:
+<ol type="1">
+<li>
+<strong>UI form name</strong>: Office create</li>
+<li>
+<strong>Identifiers → Code name</strong>: create</li>
+</ol>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>With the UI form created, define its fields:</p>
+<ol type="1">
+<li>Switch to the <strong>Fields</strong> tab.</li>
+<li>Add the following fields using the field editor:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeDisplayName</li>
+<li>
+<strong>Field caption</strong>: Office name</li>
+<li>
+<strong>Form component:</strong> Text input</li>
+<li>
+<strong>Watermark:</strong> Office name</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeType</li>
+<li>
+<strong>Field caption</strong>: Office type</li>
+<li>
+<strong>Form component</strong>: Number input</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<h3 id="define-the-edit-ui-form">Define the edit UI form</h3>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application, edit the <strong>Acme</strong> module and select the <strong>Office</strong> class.</li>
+<li>Switch to the <strong>UI forms</strong> tab and select <strong>New UI form</strong>.</li>
+<li>Enter the following values:
+<ol type="1">
+<li>
+<strong>UI form name</strong>: Office edit</li>
+<li>
+<strong>Identifiers → Code name</strong>: edit</li>
+</ol>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>With the UI form created, define its fields:</p>
+<ol type="1">
+<li>Switch to the <strong>Fields</strong> tab.</li>
+<li>Add the following fields using the field editor:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeDisplayName</li>
+<li>
+<strong>Field caption</strong>: Office name</li>
+<li>
+<strong>Form component:</strong> Text input</li>
+<li>
+<strong>Watermark:</strong> Office name</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeType</li>
+<li>
+<strong>Field caption</strong>: Office type</li>
+<li>
+<strong>Form component</strong>: Number input</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<p>This concludes the basic configuration of the Office object type. The next step details how to build a simple application for the administration interface where users can create and edit Office objects.</p>
+<h2 id="build-a-basic-editing-interface-for-the-office-object-type">Build a basic editing interface for the Office object type</h2>
+<p>This section covers the implementation of the <strong>Office management</strong> application for the admin UI.</p>
+<h3 id="application-page">Application page</h3>
+<p>The <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-application-pages">application page</a> serves as an entry point to the application. It contains the application registration and also registers a custom category under which the application is displayed in the administration.</p>
+<ol type="1">
+<li>Create a new folder structure in the custom class library: <em>UIPages/OfficeManagement</em>
+<ul>
+<li>The <em>UIPages</em> folder groups all custom UI page implementations</li>
+<li>The <em>OfficeManagement</em> folder groups all implementations that belong to the OfficeManagement application</li>
+</ul>
+</li>
+<li>Under the <em>OfficeManagement</em> folder, create a new class <strong>OfficeManagementApplication.cs</strong> and copy the following code:</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office management application page - OfficeManagementApplication.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+
+using Acme.Web.Admin.UIPages.OfficeManagement;
+
+// Registers a new category for custom admin UI applications
+[assembly: UICategory(
+    codeName: OfficeManagementApplication.CUSTOM_CATEGORY, 
+    name: "Custom applications", 
+    icon: Icons.CustomElement, 
+    order: 400)]
+
+// Registers a new application under the 'Custom applications' category
+[assembly: UIApplication(
+    identifier: OfficeManagementApplication.IDENTIFIER, 
+    type: typeof(OfficeManagementApplication), 
+    slug: "officeManagment",
+    name: "Office management", 
+    category: OfficeManagementApplication.CUSTOM_CATEGORY,
+    icon: Icons.Apple, 
+    templateName: TemplateNames.SECTION_LAYOUT)]
+
+namespace Acme.Web.Admin.UIPages.OfficeManagement
+{
+    // 'ApplicationPage' base class ensures automatic redirection to the first child page of 'OfficeManagementApplication'
+    // The ApplicationPage itself is never actually accessed and only serves as an entry point
+    public class OfficeManagementApplication : ApplicationPage
+    {
+        // Unique identifier of the application
+        public const string IDENTIFIER = "Acme.Web.Application.OfficeManagement";
+
+        public const string CUSTOM_CATEGORY = "acme.web.admin.category";
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="office-listing">Office listing</h3>
+<p>The listing page displays all existing offices. The page is based on the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/listing-ui-page-template">listing UI page template</a> provided by the API. To add the listing page:</p>
+<ol type="1">
+<li>Under the <em>OfficeManagement</em> folder, create a new class <strong>OfficeListing.cs</strong> and copy the following code:</li>
+</ol>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office listing page - OfficeListing.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Threading.Tasks;
+
+using Kentico.Xperience.Admin.Base;
+
+using AcmeModule;
+using Acme.Web.Admin.UIPages.OfficeManagement;
+
+// Registers the page into the system under 'OfficeManagementApplication'
+[assembly: UIPage(
+    parentType: typeof(OfficeManagementApplication), 
+    slug: "list", 
+    uiPageType: typeof(OfficeListing), 
+    name: "Offices", 
+    templateName: TemplateNames.LISTING, 
+    order: UIPageOrder.First)]
+
+namespace Acme.Web.Admin.UIPages.OfficeManagement
+{
+    public class OfficeListing : ListingPage
+    {
+        // Sets the object type to list
+        // The code generated for the Office object type atomatically contains the referenced property
+        protected override string ObjectType =&gt; OfficeInfo.OBJECT_TYPE;
+
+        // Configures the listing page
+        public override Task ConfigurePage()
+        {            
+            PageConfiguration.HeaderActions.AddLink&lt;OfficeCreate&gt;("New office");              
+
+            PageConfiguration.ColumnConfigurations.AddColumn(nameof(OfficeInfo.OfficeDisplayName), "Office name");     
+
+            // Generates URLs with appropriate object identifiers
+            PageConfiguration.AddEditRowAction&lt;OfficeEdit&gt;();
+
+            return base.ConfigurePage();
+        }
+    }
+}
+
+</code></pre>
+</div>
+
+<h3 id="create-page">Create page</h3>
+<p>The create page enables users to create new office objects. The page is based on the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">create UI page template</a> provided by the API. To add the create page:</p>
+<p>Under the <em>OfficeManagement</em> folder, create a new class <strong>OfficeCreate.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office create page - OfficeCreate.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.Forms;
+
+using AcmeModule;
+using Acme.Web.Admin.UIPages.OfficeManagement;
+
+// Registers the page into the system under 'OfficeListing'
+[assembly: UIPage(
+    parentType: typeof(OfficeListing), 
+    slug: "create", 
+    uiPageType: typeof(OfficeCreate), 
+    name: "OfficeCreate", 
+    templateName: TemplateNames.EDIT, 
+    order: 200)]
+
+namespace Acme.Web.Admin.UIPages.OfficeManagement
+{
+    public class OfficeCreate : CreatePage&lt;OfficeInfo, OfficeEditSection&gt;
+    {
+        public OfficeCreate(IFormComponentMapper mapper, IFormDataBinder binder, IPageLinkGenerator generator)
+            : base(mapper, binder, generator)
+        {
+        }
+    }
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Reserved UI form code names</strong></p>
+<p>The create page automatically uses the UI form with the <strong>create</strong> code name, which you added for the <em>Office</em> class. In other scenarios where you do not follow the <em>create</em> code name convention for the UI form, you would need to override the <code>ConfigurePage</code> method and set the code name into the <code>PageConfiguration.UIFormName</code> property.</p>
+</div>
+
+<h3 id="edit-page">Edit page</h3>
+<p>The create page enables users to create new office objects. The page is based on the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">edit UI page template</a> provided by the API. To add the create page:</p>
+<ol type="1">
+<li><p>Create a new folder under <em>OfficeManagement</em> called <em>OfficeEdit</em>.</p></li>
+<li>
+<p>Under the <em>OfficeEdit</em> folder, create a new class <strong>OfficeEditSection.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office edit section</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.Xperience.Admin.Base;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ [assembly: UIPage(
+     parentType: typeof(OfficeListing), 
+     slug: PageParameterConstants.PARAMETERIZED_SLUG, 
+     uiPageType: typeof(OfficeEditSection), 
+     name: "Edit section for office objects", 
+     templateName: TemplateNames.SECTION_LAYOUT, 
+     order: 300)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ { 
+     // Provides a URL slug with the identifier of the selected office object
+     public class OfficeEditSection : EditSectionPage&lt;OfficeInfo&gt;
+     {
+     }
+ }
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Under the <em>OfficeEdit</em> folder, create a new class <strong>OfficeEdit.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office edit page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using Kentico.Xperience.Admin.Base;
+ using Kentico.Xperience.Admin.Base.Forms;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ // Registers the page under the 'edit section' of the office object
+ // Ensures the identifier of an office object in the URL 
+ [assembly: UIPage(
+     parentType: typeof(OfficeEditSection), 
+     slug: "edit", 
+     uiPageType: typeof(OfficeEdit), 
+     name: "Edit an office", 
+     templateName: TemplateNames.EDIT, 
+     order: UIPageOrder.First)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ {
+     public class OfficeEdit : InfoEditPage&lt;OfficeInfo&gt;
+     {
+         public OfficeEdit(IFormComponentMapper formComponentMapper, IFormDataBinder formDataBinder) 
+             : base(formComponentMapper, formDataBinder)
+         {
+         }
+
+         // Consumes the identifier provided by the parent page
+         // Identifies the Office instance to edit
+         [PageParameter(typeof(IntPageModelBinder))]
+         public override int ObjectId { get; set; }
+
+     }
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Reserved UI form code names</strong></p>
+The edit page automatically uses the UI form with the <strong>edit</strong> code name, which you added for the <em>Office</em> class. In other scenarios where you do not follow the <em>edit</em> code name convention for the UI form, you would need to override the <code>ConfigurePage</code> method and set the code name into the <code>PageConfiguration.UIFormName</code> property.
+</div>
+</li>
+</ol>
+<h3 id="final-page-hierarchy">Final page hierarchy</h3>
+<p>The following diagram shows the final UI page hierarchy of the <strong>Office management</strong> application:</p>
+<p></p>
+<p>The application, when accessed and populated with sample data, displays the following:</p>
+<p></p>
+<p></p>
+<h2 id="add-a-child-class-tracking-open-job-positions">Add a child class tracking open job positions</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisites</strong></p>
+<p>This example extends the Office management application created in the following sections:</p>
+<ol type="1">
+<li><a href="#define-the-office-object-type">Define the Office object type</a></li>
+<li><a href="#build-a-basic-editing-interface-for-the-office-object-type">Build a basic editing interface for the Office object type</a></li>
+</ol>
+</div>
+
+<p>In this section, we extend the Office management application with the ability to create and list <em>job openings</em> available for specific offices. Similar to Office objects, job openings are represented by a custom <strong>OfficeJob</strong> object type that has a <a href="/documentation/developers-and-admins/customization/object-types/object-type-configuration/model-object-type-relationships">parent-child relationship</a> with a specific office.</p>
+<h3 id="create-the-officejob-object-type">Create the OfficeJob object type</h3>
+<ol type="1">
+<li>Edit the <strong>Acme</strong> module in the <strong>Modules</strong> application.</li>
+<li>Switch the <strong>Classes</strong> tab and select <strong>New class</strong>.</li>
+<li>Fill in the following values:
+<ol type="1">
+<li>
+<strong>Class name</strong>: Office job opening</li>
+<li>
+<strong>Code name</strong>
+<ul>
+<li>
+<strong>Namespace</strong>: Acme</li>
+<li>
+<strong>Name</strong>: OfficeJob</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The system creates the data class and its corresponding database table: <em>Acme_OfficeJob</em></p>
+<p>Continue by modeling the database entity:</p>
+<ol type="1">
+<li>Switch to the <strong>Database columns</strong> tab of the <strong>OfficeJob</strong> class (available after the class is created).</li>
+<li>Using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, add the following fields:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Field name</strong>: OfficeJobDisplayName</li>
+<li>
+<strong>Data type</strong>: Text</li>
+<li>
+<strong>Required</strong>: Yes (checked)</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Field name</strong>: OfficeJobOpeningCount</li>
+<li>
+<strong>Data type</strong>: Integer number</li>
+<li>
+<strong>Required</strong>: Yes (checked)</li>
+</ul>
+</li>
+<li>Field 3:
+<ul>
+<li>
+<strong>Field name</strong>: OfficeJobParentID</li>
+<li>
+<strong>Data type</strong>: Integer number</li>
+<li>
+<strong>Required</strong>: Yes (checked)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<h3 id="generate-code-files-for-the-office-job-object-type">Generate code files for the Office job object type</h3>
+<ol type="1">
+<li><p>Shut down the application.</p></li>
+<li>
+<p>Run the following command from the root directory of your project. When prompted for confirmation, press <code>Y</code>:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build -- --kxp-codegen --type "Classes" --include "Acme.OfficeJob"
+
+ </code></pre>
+</div>
+</li>
+<li><p>Move the code files generated for the <strong>OfficeJob</strong> object type from the <em>Classes\Acme\Office</em> directory under your project’s root to the custom class library. Alternatively, you can use the <code>--location</code> <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">parameter</a> to set a custom path that targets the class library housing the Office management application. Make sure the classes do not remain under your main web project, otherwise you will encounter errors when working with the office job object types.</p></li>
+</ol>
+<h3 id="set-the-officejob-object-type-as-a-child-of-the-office-object-type">Set the OfficeJob object type as a child of the Office object type</h3>
+<ol type="1">
+<li><p>Edit <strong>OfficeJobInfo.generated.cs</strong>.</p></li>
+<li><p>Navigate to the <code>TYPEINFO</code> field in the class’s code.</p></li>
+<li>
+<p>Set the parent-related parameters of the <code>ObjectTypeInfo</code> constructor (the last two parameters):</p>
+<ul>
+<li><p>parentIdColumn: <code>"OfficeJobParentID"</code></p></li>
+<li>
+<p>parentObjectType: <code>OfficeInfo.OBJECT_TYPE</code></p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>OfficeJobInfo object type info constructor</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public static ObjectTypeInfo TYPEINFO = new ObjectTypeInfo(
+      providerType: typeof(OfficeJobInfoProvider), 
+      objectType: OBJECT_TYPE, 
+      objectClassName: "Acme.OfficeJob", 
+      idColumn: "OfficeJobID", 
+      timeStampColumn: null, 
+      guidColumn: null, 
+      codeNameColumn: null, 
+      displayNameColumn: "OfficeJobDisplayName", 
+      binaryColumn: null,
+      parentIDColumn: "OfficeJobParentID", 
+      parentObjectType: OfficeInfo.OBJECT_TYPE)
+  {
+      TouchCacheDependencies = true,
+  };
+
+  </code></pre>
+</div>
+</li>
+</ul>
+</li>
+<li><p>Save the change and <strong>Rebuild</strong> the solution.</p></li>
+<li><p>Relaunch the site using <code>dotnet run</code>.</p></li>
+</ol>
+<p>The <strong>OfficeJob</strong> object type is now registered as a child of the <strong>Office</strong> object type.</p>
+<h3 id="define-the-ui-forms-for-the-officejob-object-type">Define the UI forms for the OfficeJob object type</h3>
+<h4 id="new-job-opening">New job opening</h4>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application, edit the <strong>Acme</strong> module and select the <strong>OfficeJob</strong> class.</li>
+<li>Switch to the <strong>UI forms</strong> tab and select <strong>New UI form</strong>.</li>
+<li>Enter the following values:
+<ol type="1">
+<li>
+<strong>UI form name</strong>: New job opening</li>
+<li>
+<strong>Identifiers → Code name</strong>: opening</li>
+</ol>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>With the UI form created, define its fields:</p>
+<ol type="1">
+<li>Switch to the <strong>Fields</strong> tab.</li>
+<li>Add the following fields using the field editor:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Database column</strong>: New field without database column</li>
+<li>
+<strong>Field name</strong>: OfficeSelect</li>
+<li>
+<strong>Data type:</strong> Text</li>
+<li>
+<strong>Field caption:</strong> For office</li>
+<li>
+<strong>Form component</strong>: Dropdown selector</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeJobDisplayName</li>
+<li>
+<strong>Field caption:</strong> Job title</li>
+<li>
+<strong>Form component</strong>: Text input</li>
+</ul>
+</li>
+<li>Field 3:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeJobOpeningCount</li>
+<li>
+<strong>Field caption:</strong> Number of openings</li>
+<li>
+<strong>Form component</strong>: Number input</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<h4 id="office-job-edit">Office job edit</h4>
+<ol type="1">
+<li>Open the <strong>Modules</strong> application, edit the <strong>Acme</strong> module and select the <strong>Office job opening</strong> class.</li>
+<li>Switch to the <strong>UI forms</strong> tab and select <strong>New UI form</strong>.</li>
+<li>Enter the following values:
+<ol type="1">
+<li>
+<strong>UI form name</strong>: Office job edit</li>
+<li>
+<strong>Identifiers → Code name</strong>: edit</li>
+</ol>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p>With the UI form created, define its fields:</p>
+<ol type="1">
+<li>Switch to the <strong>Fields</strong> tab.</li>
+<li>Add the following fields using the field editor:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeJobDisplayName</li>
+<li>
+<strong>Field caption</strong>: Job title</li>
+<li>
+<strong>Form component</strong>: Text input</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Database column</strong>: OfficeJobOpeningCount</li>
+<li>
+<strong>Field caption</strong>: Number of openings</li>
+<li>
+<strong>Form component</strong>: Number input</li>
+</ul>
+</li>
+<li>Field 3:
+<ul>
+<li>
+<strong>Database column</strong>: New field without database column</li>
+<li>
+<strong>Field name</strong>: OfficeSelect</li>
+<li>
+<strong>Data type</strong>: Text</li>
+<li>
+<strong>Field caption</strong>: For office</li>
+<li>
+<strong>Form component</strong>: Dropdown selector</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<h3 id="build-an-editing-interface-for-open-positions">Build an editing interface for open positions</h3>
+<p>The editing interface for the job listing consists of a listing of all open positions and a corresponding editing interface that allows users to create and edit postions.</p>
+<h4 id="open-position-listing">Open position listing</h4>
+<ol type="1">
+<li><p>Create a new folder under <em>UIPages\OfficeManagement</em> called <em>OpenPositions</em>.</p></li>
+<li>
+<p>Under the <em>OpenPositions</em> folder, create a new class <strong>OpenPositionListing.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Listing of open positions - OpenPositionListing.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using System.Threading.Tasks;
+
+ using Kentico.Xperience.Admin.Base;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ [assembly: UIPage(
+     parentType: typeof(OfficeManagementApplication), 
+     slug: "openpositions", 
+     uiPageType: typeof(OpenPositionListing), 
+     name: "Open positions", 
+     templateName: TemplateNames.LISTING, 
+     order: 300)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ {
+     public class OpenPositionListing : ListingPage
+     {
+         protected override string ObjectType =&gt; OfficeJobInfo.OBJECT_TYPE;
+
+         public override Task ConfigurePage()
+         {
+             PageConfiguration.HeaderActions.AddLink&lt;OpenPositionCreate&gt;("New open position");
+
+             PageConfiguration.ColumnConfigurations.AddColumn(nameof(OfficeJobInfo.OfficeJobDisplayName), "Position")
+                                                   .AddColumn(nameof(OfficeJobInfo.OfficeJobOpeningCount), "Number of slots")
+                                                   .AddColumn(nameof(OfficeInfo.OfficeDisplayName), "Office");
+
+             PageConfiguration.TableActions.AddDeleteAction(nameof(Delete));
+
+             PageConfiguration.QueryModifiers
+                                 .AddModifier(query =&gt; query
+                                      .Source(source =&gt; source.Join&lt;OfficeInfo&gt;(nameof(OfficeJobInfo.OfficeJobParentID), nameof(OfficeInfo.OfficeID)))
+                                  );
+
+             PageConfiguration.AddEditRowAction&lt;OpenPositionEdit&gt;();
+
+             return base.ConfigurePage();
+         }
+
+         [PageCommand]
+         public override Task&lt;ICommandResponse&lt;RowActionResult&gt;&gt; Delete(int id) =&gt; base.Delete(id);
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h4 id="open-position-create-page">Open position create page</h4>
+<p>The create page enables users to create new job opening objects. The page is based on the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates/edit-ui-page-template">edit UI page template</a> provided by the API. To add the create page:</p>
+<ol type="1">
+<li>
+<p>Under the <em>OpenPositions</em> folder, create a new class <strong>OpenPositionCreate.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create a new open position - OpenPositionCreate.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using System;
+ using System.Collections.Generic;
+ using System.Linq;
+ using System.Threading;
+ using System.Threading.Tasks;
+
+ using Kentico.Xperience.Admin.Base;
+ using Kentico.Xperience.Admin.Base.Forms;
+ using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ // Registers the page into the system under 'OpenPositionListing'
+ [assembly: UIPage(
+     parentType: typeof(OpenPositionListing), 
+     slug: "create", 
+     uiPageType: typeof(OpenPositionCreate), 
+     name: "Open position create", 
+     templateName: TemplateNames.EDIT, 
+     order: UIPageOrder.First)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ {
+     public class OpenPositionCreate : CreatePage&lt;OfficeJobInfo, OpenPositionEdit&gt;
+     {
+         private readonly IOfficeInfoProvider officeInfoProvider;
+
+         public OpenPositionCreate(IFormComponentMapper formComponentMapper,
+                                   IFormDataBinder formDataBinder,
+                                   IPageLinkGenerator pageLinkGenerator,
+                                   IOfficeInfoProvider officeInfoProvider)
+             : base(formComponentMapper, formDataBinder, pageLinkGenerator)
+         {
+             this.officeInfoProvider = officeInfoProvider;
+         }
+
+         public override Task ConfigurePage()
+         {
+             // Assigns the 'New job opening' UI form to the page
+             PageConfiguration.UIFormName = "opening";
+
+             return base.ConfigurePage();
+         }
+
+         // Populates the 'OfficeSelect' UI form field of the 'New job opening' UI form with existing offices
+         protected override async Task&lt;ICollection&lt;IFormItem&gt;&gt; GetFormItems()
+         {
+             var items = await base.GetFormItems();
+
+             var officeSelector = items.OfType&lt;IFormComponent&gt;()
+                                       .FirstOrDefault(i =&gt; i.Name == "OfficeSelect") as DropDownComponent;
+
+             officeSelector.Properties.DataProviderType = typeof(OfficesDropdownOptionsProvider);
+
+             return items;
+         }
+
+         protected override Task FinalizeInfoObject(OfficeJobInfo infoObject, IFormFieldValueProvider fieldValueProvider, CancellationToken cancellationToken)
+         {
+             base.FinalizeInfoObject(infoObject, fieldValueProvider, cancellationToken);
+
+             fieldValueProvider.TryGet&lt;string&gt;("OfficeSelect", out var value);
+             infoObject.OfficeJobParentID = Int32.Parse(value);
+
+             return Task.CompletedTask;
+         }
+
+         protected override Task&lt;ICommandResponse&gt; GetSubmitSuccessResponse(OfficeJobInfo savedInfoObject, ICollection&lt;IFormItem&gt; items)
+         {
+             string navigationUrl = pageLinkGenerator.GetPath&lt;OpenPositionListing&gt;();
+
+             return Task.FromResult((ICommandResponse)NavigateTo(navigationUrl)
+                           .AddSuccessMessage("Position created."));
+         }
+     }
+
+     // Provides dropdown options for the UI form selector
+     public class OfficesDropdownOptionsProvider : IDropDownOptionsProvider
+     {
+         private readonly IOfficeInfoProvider officeInfoProvider;
+
+         public OfficesDropdownOptionsProvider(IOfficeInfoProvider officeInfoProvider)
+         {
+             this.officeInfoProvider = officeInfoProvider;
+         }
+
+         public async Task&lt;IEnumerable&lt;DropDownOptionItem&gt;&gt; GetOptionItems()
+         {
+             return (await officeInfoProvider.Get().GetEnumerableTypedResultAsync())
+                                                     .OrderBy(x =&gt; x.OfficeDisplayName)
+                                                     .Select(x =&gt; new DropDownOptionItem() 
+                                                                 {
+                                                                     Value = x.OfficeID.ToString(),
+                                                                     Text = x.OfficeDisplayName 
+                                                                 }
+                                                     );
+         }
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h4 id="open-positions-edit-page">Open positions edit page</h4>
+<p>The edit page enables users to edit job opening objects. To add the edit page:</p>
+<ol type="1">
+<li><p>Create a new folder under <em>OpenPositions</em> called <em>OpenPositionsEdit</em>.</p></li>
+<li>
+<p>Under the <em>OpenPositionsEdit</em> folder, create a new class <strong>OpenPositionEditSection.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office edit section</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ [assembly: UIPage(
+     parentType: typeof(OpenPositionListing), 
+     slug: PageParameterConstants.PARAMETERIZED_SLUG, 
+     uiPageType: typeof(OpenPositionEditSection), 
+     name: "Open position edit section", 
+     templateName: TemplateNames.SECTION_LAYOUT, 
+     order: 600)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ {
+     public class OpenPositionEditSection : EditSectionPage&lt;OfficeJobInfo&gt;
+     {
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Under the <em>OpenPositionsEdit</em> folder, create a new class <strong>OpenPositionEdit.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Office edit page</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+ using System.Threading.Tasks;
+ using System.Collections.Generic;
+ using System.Linq;
+
+ using Kentico.Xperience.Admin.Base;
+ using Kentico.Xperience.Admin.Base.Forms;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ [assembly: UIPage(
+     parentType: typeof(OpenPositionEditSection), 
+     slug: "edit", 
+     uiPageType: typeof(OpenPositionEdit), 
+     name: "Edit position", 
+     templateName: TemplateNames.EDIT, 
+     order: UIPageOrder.First)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ {
+     public class OpenPositionEdit : InfoEditPage&lt;OfficeJobInfo&gt;
+     {
+         private readonly IOfficeInfoProvider officeInfoProvider;
+
+         public OpenPositionEdit(IFormComponentMapper formComponentMapper,
+                                 IFormDataBinder formDataBinder,
+                                 IOfficeInfoProvider officeInfoProvider) 
+             : base(formComponentMapper, formDataBinder)
+         {
+             this.officeInfoProvider = officeInfoProvider;
+         }
+
+         [PageParameter(typeof(IntPageModelBinder), typeof(OpenPositionEditSection))]
+         public override int ObjectId { get; set; }
+
+         protected override async Task&lt;ICollection&lt;IFormItem&gt;&gt; GetFormItems()
+         {
+             var items = await base.GetFormItems();
+             await SetOffice(items);
+
+             return items;
+         }
+
+         protected override Task FinalizeInfoObject(OfficeJobInfo infoObject, IFormFieldValueProvider fieldValueProvider, CancellationToken cancellationToken)
+         {
+             base.FinalizeInfoObject(infoObject, fieldValueProvider, cancellationToken);
+
+             fieldValueProvider.TryGet&lt;string&gt;("OfficeSelect", out var value);
+             infoObject.OfficeJobParentID = Int32.Parse(value);
+
+             return Task.CompletedTask;
+         }
+
+         private async Task SetOffice(ICollection&lt;IFormItem&gt; items)
+         {
+             var officeSelectField = items.OfType&lt;IFormComponent&gt;()
+                                                 .FirstOrDefault(i =&gt; i.Name == "OfficeSelect") as DropDownComponent;
+
+             // Reuses 'OfficesDropdownOptionsProvider' from the 'OpenPositionCreate' UI page
+             officeSelectField.Properties.DataProviderType = typeof(OfficesDropdownOptionsProvider);
+
+             var infoObject = await GetInfoObject();
+
+             officeSelectField.SetValue(infoObject.OfficeJobParentID.ToString());
+         }
+     }
+ }
+ </code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Reserved UI form code names</strong></p>
+The edit page automatically uses the UI form with the <strong>edit</strong> code name, which you added for the <em>OfficeJob</em> class. In other scenarios where you do not follow the <em>edit</em> code name convention for the UI form, you would need to override the <code>ConfigurePage</code> method and set the code name into the <code>PageConfiguration.UIFormName</code> property.
+</div>
+</li>
+</ol>
+<p>This completes the editing interface for the OfficeJob object type.</p>
+<h3 id="final-page-hierarchy-of-the-office-management-application">Final page hierarchy of the Office management application</h3>
+<p>The following diagram shows the final UI page hierarchy of the <strong>Office management</strong> application:</p>
+<p></p>
+<p>The application, when accessed on the <em>Open positions</em> page and populated with sample data, displays the following:</p>
+<p></p>
+<p></p>
+<h2 id="assign-users-from-the-system-to-offices-via-a-binding-object-type">Assign users from the system to offices via a binding object type</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisites</strong></p>
+<p>This example extends the Office management application created in the following sections:</p>
+<ol type="1">
+<li><a href="#define-the-office-object-type">Define the Office object type</a></li>
+<li><a href="#build-a-basic-editing-interface-for-the-office-object-type">Build a basic editing interface for the Office object type</a></li>
+</ol>
+</div>
+
+<p>The following example demonstrates how to create a binding class, including an editing interface. The sample binding class allows the creation of relationships between offices and <a href="/documentation/developers-and-admins/configuration/users/user-management">users</a>. Each relationship indicates that a user is an employee of a given office.</p>
+<h3 id="create-and-model-the-binding-object-type">Create and model the binding object type</h3>
+<ol type="1">
+<li>Edit the <strong>Acme</strong> module in the <strong>Modules</strong> application.</li>
+<li>Switch the <strong>Classes</strong> tab and select <strong>New class</strong>.</li>
+<li>Fill in the following values:
+<ol type="1">
+<li>
+<strong>Class name</strong>: Office user binding</li>
+<li>
+<strong>Identifiers → Code name</strong>
+<ul>
+<li>
+<strong>Namespace:</strong> Acme</li>
+<li>
+<strong>Name:</strong> OfficeUser</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<strong>Save</strong> the changes.</li>
+</ol>
+<p>The system creates the data class and its corresponding database table: <em>Acme_OfficeUser</em></p>
+<p>Continue by modeling the database entity:</p>
+<ol type="1">
+<li>Switch to the <strong>Database columns</strong> tab of the <strong>Office user binding</strong> class (available after the class is created).</li>
+<li>Using the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>, add the following fields:
+<ul>
+<li>Field 1:
+<ul>
+<li>
+<strong>Field name</strong>: OfficeID</li>
+<li>
+<strong>Data type</strong>: Integer number</li>
+<li>
+<strong>Required</strong>: yes (checked)</li>
+<li>
+<strong>Reference to</strong>: ObjectType.acme_office</li>
+<li>
+<strong>Reference type</strong>: Binding</li>
+</ul>
+</li>
+<li>Field 2:
+<ul>
+<li>
+<strong>Field name</strong>: AssignedUserID</li>
+<li>
+<strong>Data type</strong>: Integer number</li>
+<li>
+<strong>Required</strong>: yes (checked)</li>
+<li>
+<strong>Reference to</strong>: User</li>
+<li>
+<strong>Reference type</strong>: Binding</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>Save</strong> your changes after each field.</li>
+</ol>
+<h3 id="generate-code-files-for-the-office-user-object-type">Generate code files for the Office-user object type</h3>
+<p>Generate the code required for the binding class’s API (including the type information):</p>
+<ol type="1">
+<li><p>Shut down the application.</p></li>
+<li>
+<p>Run the following command from the root directory of your project. When prompted for confirmation, press <code>Y</code>:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet run --no-build -- --kxp-codegen --type "Classes" --include "Acme.OfficeUser"
+
+ </code></pre>
+</div>
+</li>
+<li><p>Move the code files generated for the <strong>OfficeUser</strong> object type from the <em>Classes\Acme\Office</em> directory under your project’s root to the custom class library. Alternatively, you can use the <code>--location</code> <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">parameter</a> to set a custom path that targets the class library housing the Office management application. Make sure the classes do not remain under your main web project, otherwise you will encounter errors when working with office-user binding object type.</p></li>
+</ol>
+<h3 id="set-the-officeuser-object-type-as-a-binding">Set the OfficeUser object type as a binding</h3>
+<ol type="1">
+<li><p>Edit <strong>OfficeUserInfo.generated.cs</strong>.</p></li>
+<li><p>Navigate to the <code>TYPEINFO</code> field in the class’s code.</p></li>
+<li>
+<p>Add the <code>IsBinding</code> property to the initializer of the new <code>ObjectTypeInfo</code> object and set the value to <code>true</code>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ public static ObjectTypeInfo TYPEINFO = new ObjectTypeInfo(
+     providerType: typeof(OfficeUserInfoProvider), 
+     objectType: OBJECT_TYPE, 
+     objectClassName: "Acme.OfficeUser", 
+     idColumn: "OfficeUserID", 
+     timeStampColumn: null, 
+     guidColumn: null, 
+     codeNameColumn: null, 
+     displayNameColumn: null, 
+     binaryColumn: null,
+     parentIDColumn: "OfficeID", 
+     parentObjectType: "acme.office")
+ {
+     IsBinding = true,
+     TouchCacheDependencies = true,
+     DependsOn = new List&lt;ObjectDependency&gt;() 
+     {
+         new ObjectDependency("AssignedUserID", "cms.user", ObjectDependencyEnum.Binding), 
+     },
+ };
+
+ </code></pre>
+</div>
+</li>
+<li><p>Save the change and <strong>Rebuild</strong> the solution.</p></li>
+<li><p>Relaunch the site using <code>dotnet run</code>.</p></li>
+</ol>
+<p>The <strong>OfficeUser</strong> object type is now configured as a binding between the <strong>Office</strong> and <strong>User</strong> object types.</p>
+<h3 id="add-foreign-key-constraints-for-the-database-table">Add foreign key constraints for the database table</h3>
+<p>The system does not provide automatic management of foreign keys on the database level. You need to manually set the added foreign key columns as foreign keys in the corresponding database tables. This is not required to ensure the correct functionality of foreign key columns. However, it is recommended to leverage the performance and data consistency advantages of foreign key constraints.</p>
+<p>In this example, create foreign keys for the <strong>OfficeID</strong> and <strong>UserID</strong> columns in the <strong>Acme_OfficeUser</strong> table. Add relationships with the corresponding columns in the <strong>Acme_Office</strong> and <strong>CMS_User</strong> tables respectively. You can either use SQL Server Management Studio or execute an SQL script. See <a href="https://learn.microsoft.com/en-us/sql/relational-databases/tables/create-foreign-key-relationships" target="_blank">Create Foreign Key Relationships</a> for more information.</p>
+<h3 id="build-a-user-interface-for-the-office-user-binding">Build a user interface for the office-user binding</h3>
+<p>The following code samples show how to create a new page in the Office management application that allows users to assign workers to offices.</p>
+<ol type="1">
+<li><p>Create a new folder under <em>OfficeEdit</em> called <em>OfficeRelationships</em>.</p></li>
+<li>
+<p>Under the <em>OfficeRelationships</em> folder, create a new class <strong>OfficeWorkers.cs</strong> and copy the following code:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>OfficeWorkers.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using CMS.Membership;
+
+ using Kentico.Xperience.Admin.Base;
+
+ using AcmeModule;
+ using Acme.Web.Admin.UIPages.OfficeManagement;
+
+ // Registers the page under the 'edit section' of the office object
+ // Ensures the identifier of an office object in the URL
+ [assembly: UIPage(
+     parentType: typeof(OfficeEditSection),
+     slug: "workerslisting",
+     uiPageType: typeof(OfficeWorkers),
+     name: "Assigned workers",
+     templateName: TemplateNames.BINDING,
+     order: 200)]
+
+ namespace Acme.Web.Admin.UIPages.OfficeManagement
+ {
+     // Lists all users assigned to the curently edited office and allows users to be added or removed
+     public class OfficeWorkers : InfoBindingPage&lt;OfficeUserInfo, UserInfo&gt;
+     {
+         // Configures the ID of the edited binding object
+         [PageParameter(typeof(IntPageModelBinder))]
+         public override int EditedObjectId { get; set; }
+
+         // Returns the name of the property that is used as the source in the binding object type
+         protected override string SourceBindingColumn =&gt; nameof(OfficeUserInfo.OfficeID);
+
+         // Returns the name of the property that is used as the target in the binding object type
+         protected override string TargetBindingColumn =&gt; nameof(OfficeUserInfo.AssignedUserID);
+
+         // Configures the listing of workers assigned to the office
+         public override async Task ConfigurePage()
+         {
+             // Configures captions of pages and buttons
+             PageConfiguration.ExistingBindingsListing.Caption = "Users assigned as workers";
+             PageConfiguration.BindingSidePanelListing.Caption = "Add users as workers";
+             PageConfiguration.AddBindingButtonText = "Add workers";
+             PageConfiguration.SaveBindingsButtonText = "Confirm";
+
+             // Adds a callout with information on top of the page
+             PageConfiguration.ExistingBindingsListing.Callouts.Add(
+                 new CalloutConfiguration
+                 {
+                     Type = CalloutType.QuickTip,
+                     ContentAsHtml = true,
+                     Headline = "This is a binding page",
+                     Content = "Removing items from this page will not delete any users from the database."
+                 }
+             );
+
+             // Configures columns displayed in the listing of existing bindings
+             PageConfiguration.ExistingBindingsListing.ColumnConfigurations
+                 .AddColumn(nameof(UserInfo.UserName), "User name", searchable: true, defaultSortDirection: SortTypeEnum.Asc);
+
+             PageConfiguration.ExistingBindingsListing.QueryModifiers.AddModifier((objectQuery) =&gt; 
+             {
+                 // Add a query modifier if necessary
+
+                 return objectQuery;
+             });
+
+             // Configures columns displayed in the listing of available object
+             PageConfiguration.BindingSidePanelListing.ColumnConfigurations
+                 .AddColumn(nameof(UserInfo.UserName), "User name", searchable: true, defaultSortDirection: SortTypeEnum.Asc);
+
+             PageConfiguration.BindingSidePanelListing.QueryModifiers.AddModifier((objectQuery) =&gt;
+             {
+                 // Add a query modifier if necessary
+
+                 return objectQuery;
+             });
+
+             await base.ConfigurePage();
+         }
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h3 id="final-page-hierarchy-of-the-office-management-application-1">Final page hierarchy of the Office management application</h3>
+<p>The following diagram shows the final UI page hierarchy of the <strong>Office management</strong> application:</p>
+<p></p>
+<p>The application, when accessed on the <em>Assigned workers</em> page and populated with sample data, displays the following:</p>
+<p></p>
+
+</body>
+</html>

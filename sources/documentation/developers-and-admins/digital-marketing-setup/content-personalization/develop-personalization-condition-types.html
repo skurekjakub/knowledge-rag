@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Develop personalization condition types</title>
+</head>
+<body>
+<p>After <a href="/documentation/developers-and-admins/development/builders/page-builder/widgets-for-page-builder">developing widgets</a> for Page Builder, you can enable content editors to personalize individual widgets. To set up personalization, you need to create the types of conditions based on which the widgets will be personalized.</p>
+<p>The condition types may be of any kind or form, for example <em>Current visitor belongs to contact group X</em>, <em>Current visitor has recently bought product X</em>, or <em>Current date is between X and Y</em>. You can allow content editors to further adjust the conditions of specific widget variants by preparing properties and configuration dialogs for your condition types.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contact tracking</strong></p>
+<p>We recommend setting up <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration">tracking of contacts</a> on your website. The tracking is required for most types of conditions that utilize Xperience digital marketing features and data.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Example of condition type development</strong></p>
+<p>For a full code sample of a personalization condition type, see <a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/example-personalization-condition-type">Example - Personalization condition type</a>.</p>
+</div>
+
+<h2 id="create-condition-types">Create condition types</h2>
+<p>Conditions types are designed as global components and therefore must be registered in the your project’s application root (not in an <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Area</a>). Registering condition types in Areas may lead to unexpected behavior.</p>
+<p>To define a new personalization condition type:</p>
+<ol type="1">
+<li><p>Open your Xperience project in Visual Studio.</p></li>
+<li>
+<p>Create a class that represents and evaluates the condition type.</p>
+<ul>
+<li>Place the condition type class into a component folder together with any other related files, for example <strong>~/Components/PageBuilder/PersonalizationConditions/&lt;condition type name&gt;</strong>.</li>
+<li>The condition type class needs to:
+<ul>
+<li>Inherit from the <code>ConditionType</code> base class (available in the <code>Kentico.PageBuilder.Web.Mvc.Personalization</code> namespace).</li>
+<li>Override the <code>Evaluate</code> method, which determines whether the condition is met.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Specify additional properties in the class, representing options that content editors can configure for conditions of the given type.</p>
+
+<div>
+
+</div>
+<div>
+<p>By default, the <code>ConditionType</code> base class contains the <code>VariantName</code> property that represents the name of the personalization variant. The base class implementation ensures that the value of the property is automatically displayed in the configuration dialog of personalization conditions. However, you can override the <code>VariantName</code> property if you wish to change the behavior or look of the property in the configuration dialog.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>When transferring data to and from the configuration dialog, the system serializes objects of the condition type class into JSON format (using the <em>Newtonsoft.Json</em> library).</p>
+<p>You can use the <code>Newtonsoft.Json.JsonIgnore</code> attribute to exclude properties from the serialized data (for example dynamically computed properties).</p>
+</div>
+</li>
+<li>
+<p>Define the visual interface of the condition type’s configuration dialog:</p>
+<ul>
+<li>Decorate the specified properties using desired <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a>.</li>
+<li>The attribute assigns and configures a form component, which is used as the input element for the given property.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Decorating condition type properties</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ // Assigns the default Xperience text input component to the property
+ // Allows users to enter a text value for the given property in the configuration dialog
+ [TextInputComponent(Order = 0, Label = "Consent code name")]
+ public string ConsentCodeName { get; set; }
+
+ </code></pre>
+</div>
+</li>
+<li><p><a href="#register-condition-types">Register</a> the condition type.</p></li>
+</ol>
+<p><a href="/documentation/developers-and-admins/digital-marketing-setup/content-personalization/example-personalization-condition-type">See a full example</a> that demonstrates how to develop a basic condition type.</p>
+<p>Conditions of the given type work according to your implementation of the <code>Evaluate</code> method. The configuration dialog is generated automatically based on the editing components assigned to the class’s properties.</p>
+<h3 id="implement-custom-configuration-dialogs">Implement custom configuration dialogs</h3>
+<p>Custom configuration dialogs for personalization condition types are based on MVC architecture, composed of Model, View, and Controller elements. These elements define a configuration form which allows users to submit values for the condition type’s properties. By taking full control over the implementation, you can make the configuration dialog look and behave exactly as you need.</p>
+<p>Place the configuration dialog classes into the condition type’s component folder, for example <code>~/Components/PageBuilder/PersonalizationConditions/&lt;condition type name&gt;</code>.</p>
+<h4 id="model">Model</h4>
+<p>Create a model class containing the properties that you need to transfer to and from the configuration dialog’s view.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.ComponentModel.DataAnnotations;
+
+namespace MyProject.Components.PageBuilder.PersonalizationConditions.HasGivenConsent
+{
+    public class HasGivenConsentViewModel
+    {
+        [Required]
+        [Display(Name = "Consent code name")]
+        public string ConsentCodeName { get; set; }
+    }
+}
+
+</code></pre>
+</div>
+
+<h4 id="partial-view">Partial view</h4>
+<p>Create a partial view for the configuration dialog’s interface. The view needs to contain a form element that posts data to the validation action of the controller.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@model MyProject.Components.PageBuilder.PersonalizationConditions.HasGivenConsent.HasGivenConsentViewModel
+
+&lt;form asp-controller="HasGivenConsent" asp-action="Validate"&gt;
+    &lt;label asp-for="ConsentCodeName"&gt;&lt;/label&gt;
+    &lt;br /&gt;
+    &lt;input asp-for="ConsentCodeName" /&gt;
+    &lt;br /&gt;
+    &lt;span asp-validation-for="ConsentCodeName"&gt;&lt;/span&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<h4 id="controller">Controller</h4>
+<p>Create a controller class. The controller needs to inherit from the <code>ConditionTypeController</code> class (available in the <code>Kentico.PageBuilder.Web.Mvc</code>namespace), with the condition type class as a generic parameter. The controller must contain the following actions:</p>
+<ul>
+<li><p><code>Index()</code> – POST action displaying the configuration form. The action must return the form’s HTML content, typically a partial view. To display values of the condition type parameters when editing the form, you need to get the parameters and set them when creating the view model object.</p></li>
+<li>
+<p><code>Validate(&lt;model&gt;)</code> – POST action that receives the model of the configuration dialog as its parameter. Validate the model, and if successful, create an instance of the condition type class and serialize its data into JSON format by returning a new instance of the <code>ConditionTypeValidationResult</code> object. Upon unsuccessful validation or if any other error occurs, display the configuration dialog partial view with an appropriate error message.</p>
+
+<div>
+
+</div>
+<div>
+<p>The <code>VariantName</code> property that represents the name of the personalization variant is implemented in the <code>ConditionType</code> base class by default. Make sure this property has a set value before you return the data.</p>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  public class HasGivenConsentController : ConditionTypeController&lt;HasGivenConsentConditionType&gt;
+  {
+      // Displays the configuration dialog
+      [HttpPost]
+      public ActionResult Index()
+      {
+          // Gets the condition's current configuration as an instance of the condition type class
+          var conditionType = GetParameters();
+
+          // Creates a view model object
+          var viewModel = new HasGivenConsentViewModel
+          {
+              // Sets the consent code name obtained from the condition type parameters
+              ConsentCodeName = conditionType.ConsentCodeName
+          };
+
+          // Displays the configuration dialog's view
+          return PartialView("~/Components/PageBuilder/PersonalizationConditions/HasGivenConsent/_HasGivenConsentConfiguration.cshtml", viewModel);
+      }
+
+      // Submits the condition type parameters
+      [HttpPost]
+      public ActionResult Validate(HasGivenConsentViewModel model)
+      {
+          // Validates the model
+          if (!ModelState.IsValid)
+          {
+              return PartialView("~/Components/PageBuilder/PersonalizationConditions/HasGivenConsent/_HasGivenConsentConfiguration.cshtml", model);
+          }
+
+          // Creates an object of the condition type class
+          var parameters = new HasGivenConsentConditionType
+          {
+              ConsentCodeName = model.ConsentCodeName,
+          };
+
+          // Serializes the condition's configuration into JSON format and returns the data
+          return new ConditionTypeValidationResult(parameters);
+      }
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<h2 id="register-condition-types">Register condition types</h2>
+<p>Register the condition type by adding an assembly attribute to the condition type class. Specify the following required attribute parameters:</p>
+<ul>
+<li>
+<em>Identifier</em> – the unique identifier of the condition type. We recommend using a unique prefix in your condition type identifiers to prevent conflicts when deploying condition types to other projects, for example matching your company’s name.</li>
+<li>
+<em>Class type</em> – the type (<code>System.Type</code>) of the condition type class.</li>
+<li>
+<em>Display name</em> – the name displayed in the condition type selector when personalizing widgets in the Xperience administration interface.</li>
+<li>
+<strong>(Required for condition types with a custom configuration dialog)</strong> <em>Controller type</em> – the type (<code>System.Type</code>) of the controller class used to display the configuration dialog.</li>
+</ul>
+<p>Additionally, you can specify the following optional attribute parameters:</p>
+<ul>
+<li>
+<code>Description</code> – the description of the condition type displayed as a tooltip.</li>
+<li>
+<code>IconClass</code> – the <a href="https://devnet.kentico.com/docs/icon-list/index.html" target="_blank">font icon class</a> displayed in the condition type selector.</li>
+<li>
+<code>Hint</code> – the text displayed as a hint above the condition type’s configuration dialog.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Register a condition type with a custom dialog</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.PageBuilder.Web.Mvc.Personalization;
+
+[assembly: RegisterPersonalizationConditionType(
+    identifier: "MyProject.Personalization.HasGivenConsentConditionTypeCustom",
+    type: typeof(HasGivenConsentConditionTypeCustom),
+    name: "Has given consent agreement (custom)",
+    ControllerType = typeof(HasGivenConsentController),
+    Description = "Evaluates whether the contact has given an agreement with a specified consent declaration.",
+    IconClass = "icon-clipboard-checklist",
+    Hint = "Enter the code name of a consent. The condition is fulfilled for visitors who have given an agreement with the given consent.")]
+
+</code></pre>
+</div>
+
+<p>Once the condition type is registered, editors can select it when <a href="/documentation/business-users/digital-marketing/widget-personalization">personalizing widgets</a> in a website channel application within the Xperience administration.</p>
+
+</body>
+</html>

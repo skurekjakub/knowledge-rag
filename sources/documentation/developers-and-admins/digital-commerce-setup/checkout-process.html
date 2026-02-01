@@ -1,0 +1,363 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Checkout process</title>
+</head>
+<body>
+<p>Most of the checkout process for <a href="/documentation/developers-and-admins/digital-commerce-setup">digital commerce</a> needs to be implemented by developers. This is because checkout requirements (e.g., payment methods, shipping options, tax handling, order confirmation) can vary greatly between projects. The commerce feature provides the core building blocks, but it is up to the development team to customize the checkout process to match the specific needs of the shop.</p>
+<p>To implement a checkout process in your commerce solution, you need to handle the following steps:</p>
+<ol type="1">
+<li><a href="#manage-shopping-cart-data">Store products in the shopping cart</a></li>
+<li><a href="#manage-the-current-shopping-cart">Retrieve the current shopping cart</a></li>
+<li><a href="#create-orders-from-shopping-carts">Create a new order from the shopping cart</a></li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Commerce object types</strong></p>
+<ul>
+<li>Certain objects (Shopping cart, Order, Order address, Order item, Customer, Customer address) are considered live-site data and are not supported by the <a href="/documentation/developers-and-admins/ci-cd">CI/CD</a> feature</li>
+<li>Configuration objects (Order statuses, Shipping methods, Payment methods) support <a href="/documentation/developers-and-admins/ci-cd">CI/CD</a> and can be deployed across environments</li>
+<li>All objects can be <a href="/documentation/developers-and-admins/customization/object-types/extend-system-object-types">extended</a> by adding custom fields</li>
+</ul>
+</div>
+
+<h2 id="manage-shopping-cart-data">Manage shopping cart data</h2>
+<p>Shopping carts are represented by <code>ShoppingCartInfo</code> objects in the API. The actual content of a shopping cart is stored in the <code>ShoppingCartData</code> string property. You are responsible for implementing the <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">data model</a> and serialization logic for the shopping cart content.</p>
+<p>A typical implementation (as in the <a href="/documentation/developers-and-admins/installation#available-project-templates">Dancing Goat</a> project template) uses a <code>ShoppingCartDataModel</code> to represent the cart, containing a collection of <code>ShoppingCartDataItem</code> objects for each product in the cart. This example uses a <code>ProductIdentifier</code> to represent the item and a <code>Quantity</code> property for the amount, but your actual implementation may need to reflect the <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">content model</a> of your product catalog:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ShoppingCartDataItem.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Represents an item in the shopping cart data model.
+/// &lt;/summary&gt;
+public class ShoppingCartDataItem
+{
+    /// &lt;summary&gt;
+    /// Identifier holding content item identifier and variant identifier if applicable.
+    /// &lt;/summary&gt;
+    public ProductIdentifier ProductIdentifier { get; set; } = new();
+
+    /// &lt;summary&gt;
+    /// Quantity of the item in shopping cart.
+    /// &lt;/summary&gt;
+    public int Quantity { get; set; }
+}</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ShoppingCartDataModel.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Model for shopping cart data stored in ShoppingCartInfo.ShoppingCartData.
+/// &lt;/summary&gt;
+public class ShoppingCartDataModel
+{
+    /// &lt;summary&gt;
+    /// Items inside the shopping cart.
+    /// &lt;/summary&gt;
+    public ICollection&lt;ShoppingCartDataItem&gt; Items { get; set; } = new List&lt;ShoppingCartDataItem&gt;();
+
+    /// &lt;summary&gt;
+    /// Coupon codes entered by the customer.
+    /// &lt;/summary&gt;
+    public ICollection&lt;string&gt; CouponCodes { get; set; } = new List&lt;string&gt;();
+}</code></pre>
+</div>
+
+<p>To store and retrieve the shopping cart data model from the <code>ShoppingCartInfo</code> object, you can implement custom extension methods. You can use a data model and persistence method that fits your requirements; the following example uses JSON serialization for simplicity, but you can use any approach that suits your project.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ShoppingCartDataModelExtensions.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>/// &lt;summary&gt;
+/// Extension methods for serializing/deserializing shopping cart data.
+/// &lt;/summary&gt;
+public static class ShoppingCartDataModelExtensions
+{
+    /// &lt;summary&gt;
+    /// Deserializes the shopping cart data model from the shopping cart object.
+    /// &lt;/summary&gt;
+    public static ShoppingCartDataModel GetShoppingCartDataModel(this ShoppingCartInfo shoppingCart)
+    {
+        if (string.IsNullOrEmpty(shoppingCart?.ShoppingCartData))
+        {
+            return new ShoppingCartDataModel();
+        }
+
+        return JsonSerializer.Deserialize&lt;ShoppingCartDataModel&gt;(shoppingCart.ShoppingCartData)
+            ?? new ShoppingCartDataModel();
+    }
+
+    /// &lt;summary&gt;
+    /// Serializes the shopping cart data model and stores it in the shopping cart object.
+    /// &lt;/summary&gt;
+    public static void StoreShoppingCartDataModel(this ShoppingCartInfo shoppingCart, ShoppingCartDataModel shoppingCartData)
+    {
+        shoppingCart.ShoppingCartData = JsonSerializer.Serialize(shoppingCartData);
+    }
+}</code></pre>
+</div>
+
+<p>To update the shopping cart (add, update, or remove items), you can use logic similar to the following. Note that the logic assumes <a href="/documentation/developers-and-admins/digital-commerce-setup/model-product-catalog">products stored in the content hub</a>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Update item quantity in shopping cart</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Updates the quantity of an item in the shopping cart.
+    /// &lt;/summary&gt;
+    public async Task UpdateItemQuantity(int contentItemId, int quantity, bool setAbsolute = false, CancellationToken cancellationToken = default)
+    {
+        var cart = await _shoppingCartRetriever.Get(cancellationToken);
+        if (cart == null)
+        {
+            return;
+        }
+
+        var cartData = cart.GetShoppingCartDataModel();
+
+        var item = cartData.Items.FirstOrDefault(x =&gt; x.ProductIdentifier.Identifier == contentItemId);
+
+        if (item != null)
+        {
+            item.Quantity = setAbsolute ? quantity : Math.Max(0, item.Quantity + quantity);
+
+            if (item.Quantity == 0)
+            {
+                cartData.Items.Remove(item);
+            }
+        }
+        else if (quantity &gt; 0)
+        {
+            cartData.Items.Add(new ShoppingCartDataItem
+            {
+                ProductIdentifier = new ProductIdentifier { Identifier = contentItemId },
+                Quantity = quantity
+            });
+        }
+
+        cart.StoreShoppingCartDataModel(cartData);
+        cart.Update();
+    }</code></pre>
+</div>
+
+<p>This approach allows you to flexibly manage the shopping cart’s contents and persist them as a serialized string in the database.</p>
+<h3 id="configure-shopping-cart-behavior">Configure shopping cart behavior</h3>
+<p>You can configure the expiration time of shopping carts. The value is used as the expiration time of the shopping cart cookie as well as the time after which any shopping cart is deleted. The default value is 1 day.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Note</strong>: The <a href="/documentation/developers-and-admins/customization/scheduled-tasks">scheduled task</a> that deletes shopping carts older than the specified value is executed once per day. Using values of less than 1 day has no effect.</p>
+</div>
+
+<p>To configure the shopping cart expiration set the <code>Expiration</code> property on <code>ShoppingCartOptions</code>:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Program.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Commerce;
+
+// ...
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// ...
+
+builder.Services.Configure&lt;ShoppingCartOptions&gt;(
+    // Sets the expiration time of shopping carts to 30 days
+    options =&gt; options.Expiration = TimeSpan.FromDays(30)
+);
+</code></pre>
+</div>
+
+<h3 id="manage-the-current-shopping-cart">Manage the current shopping cart</h3>
+<p>The current shopping cart is managed using the <code>ICurrentShoppingCart*</code> services, available in the <code>Kentico.Commerce.Web.Mvc</code> namespace. These services provide methods to retrieve, create, and delete shopping carts for the current user session.</p>
+<ul>
+<li>For anonymous users, the shopping cart identifier is stored in a browser cookie.</li>
+<li>For signed-in <a href="/documentation/business-users/members">members</a>, the shopping cart is associated with the member account, ensuring that the cart content is consistent across devices and sessions.</li>
+</ul>
+<p>The actual shopping cart data is persisted in the database. This allows members to access their cart from any device after signing in. You can also <a href="#configure-shopping-cart-behavior">configure</a> the expiration period after which abandoned shopping carts are deleted.</p>
+<p>To work with the current user’s shopping cart, use the following services:</p>
+<ul>
+<li>
+<code>ICurrentShoppingCartRetriever</code> – use the <code>Get</code> method to retrieve the <code>ShoppingCartInfo</code> object for the current user. Returns <code>null</code> if no cart exists.</li>
+<li>
+<code>ICurrentShoppingCartCreator</code> – use the <code>Create</code> method to create a new <code>ShoppingCartInfo</code> object and store its identifier (in a cookie for anonymous users or linked to the member for signed-in users).</li>
+<li>
+<code>ICurrentShoppingCartDiscardHandler</code> – use the <code>Discard</code> method to delete the current user’s shopping cart from the database and remove the identifier.</li>
+<li>
+<code>ICurrentShoppingCartMemberSignInHandler</code> – use the <code>MemberSignIn</code> method to handle the transition from anonymous to member cart during sign-in. If both an anonymous and a member cart exist, the member cart is deleted and the anonymous cart is assigned to the member.</li>
+</ul>
+<p>The default behavior of these services can be customized by overriding the respective service implementations in your project.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Managing the current shopping cart</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    /// &lt;summary&gt;
+    /// Gets the current shopping cart or creates a new one if it doesn't exist
+    /// using &lt;see cref="ICurrentShoppingCartRetriever"/&gt; and &lt;see cref="ICurrentShoppingCartCreator"/&gt;.
+    /// &lt;/summary&gt;
+    public async Task&lt;ShoppingCartInfo&gt; GetOrCreateCart(CancellationToken cancellationToken = default)
+    {
+        var cart = await _shoppingCartRetriever.Get(cancellationToken);
+        cart ??= await _shoppingCartCreator.Create(cancellationToken);
+        return cart;
+    }</code></pre>
+</div>
+
+<h2 id="create-orders-from-shopping-carts">Create orders from shopping carts</h2>
+<p>Use the <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/order-creation">order creation service</a> (<code>IOrderCreationService</code>) and <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation service</a> (<code>IPriceCalculationService</code>) to create orders from shopping cart data. These services automate the complete order creation workflow:</p>
+<ul>
+<li>
+<strong>Customer and address management</strong> – Creates or retrieves customer records and addresses</li>
+<li>
+<strong>Price calculation</strong> – Calculates order totals, taxes, shipping costs, and <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">catalog discounts</a>
+</li>
+<li>
+<strong>Order persistence</strong> – Creates order, order item, and order address records in a database transaction</li>
+<li>
+<strong>Notifications</strong> – Sends order confirmation notifications</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>Before creating orders, ensure that <a href="/documentation/developers-and-admins/digital-commerce-setup/shipping-and-payment-methods">shipping methods, payment methods</a>, and <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses">order statuses</a> are configured in the system.</p>
+</div>
+
+<p>For implementation details, customization options, and code examples, see:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/order-creation">Implement order creation</a> – Complete guide to using <code>IOrderCreationService</code>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">Implement price calculation</a> – Guide to configuring <code>IPriceCalculationService</code>
+</li>
+</ul>
+<h2 id="automatically-change-status-of-orders">Automatically change status of orders</h2>
+<p>If you have an external system that performs actions that can affect the status of your orders (e.g., shipping company, payment provider), you can automatically update the order status by changing the <code>OrderOrderStatusID</code> property of the <code>OrderInfo</code> object.</p>
+<p>The following example showcases a sample code that receives a confirmation of payment from a payment provider and automatically updates the respective order to reflect this change. You would typically call this code in the callback handler of your third-party payment provider integration. When changing order statuses via the API, the <a href="/documentation/developers-and-admins/digital-commerce-setup/configure-order-statuses#configure-notifications-for-order-statuses">notifications</a> are sent as usual.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Change status of an order</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>    private readonly IInfoProvider&lt;OrderInfo&gt; _orderInfoProvider;
+    private readonly IInfoProvider&lt;OrderStatusInfo&gt; _orderStatusInfoProvider;
+
+    public OrderStatusExamples(
+        IInfoProvider&lt;OrderInfo&gt; orderInfoProvider,
+        IInfoProvider&lt;OrderStatusInfo&gt; orderStatusInfoProvider)
+    {
+        _orderInfoProvider = orderInfoProvider;
+        _orderStatusInfoProvider = orderStatusInfoProvider;
+    }
+
+    /// &lt;summary&gt;
+    /// Changes the status of an order. Typically called from a payment provider callback.
+    /// &lt;/summary&gt;
+    public async Task ChangeOrderStatus(int orderId, string newStatusCodeName, CancellationToken cancellationToken = default)
+    {
+        // Retrieves the order data
+        var order = await _orderInfoProvider.GetAsync(orderId, cancellationToken);
+
+        // Retrieves data of the new order status
+        var newOrderStatus = await _orderStatusInfoProvider.GetAsync(newStatusCodeName, cancellationToken);
+
+        // Sets the new status to the order data
+        order.OrderOrderStatusID = newOrderStatus.OrderStatusID;
+
+        // Saves the changes of the order data
+        await _orderInfoProvider.SetAsync(order, cancellationToken);
+    }</code></pre>
+</div>
+
+
+</body>
+</html>

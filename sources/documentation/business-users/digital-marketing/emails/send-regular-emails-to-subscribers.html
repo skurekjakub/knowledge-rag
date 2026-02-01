@@ -1,0 +1,358 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Send regular emails to subscribers</title>
+</head>
+<body>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email license requirements</strong></p>
+<p>The license tier required for email features depends on the size of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channels</a> that you use:</p>
+<ul>
+<li>Email microchannels – available for all license tiers</li>
+<li>Standard size email channels – require the <strong>Advanced</strong> license tier</li>
+</ul>
+<p>To learn more, see the description of the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management#create-and-configure-email-channels">Channel size</a> property for email channels.</p>
+</div>
+
+<p>Emails can be one of the most effective ways to promote your business or keep in touch with existing contacts.</p>
+<p>Xperience by Kentico allows you to create and send regular emails to groups of subscribed recipients.</p>
+<ol type="1">
+<li><a href="#set-up-a-subscription-process">Set up a subscription process to build recipient lists</a></li>
+<li><a href="#send-regular-emails">Create and send emails</a></li>
+</ol>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>To send regular emails to subscribers, developers and administrators need to set up and configure the following:</p>
+<ul>
+<li>One or more <a href="/documentation/developers-and-admins/configuration/email-configuration">email clients</a> for sending emails (for example an SMTP server or SendGrid integration)</li>
+<li>The <a href="/documentation/developers-and-admins/digital-marketing-setup/enable-email-subscriptions#enable-the-email-marketing-feature">email marketing feature</a>, which adds handling of subscription and unsubscription requests</li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Email channels</a></li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Content types</a> for emails</li>
+<li>Email templates – you can use two different types of templates for regular emails:
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Macro-based email templates</a> (edited directly in the administration)</li>
+<li>
+<a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder templates</a> (prepared and registered by developers as Razor components within the project’s code)</li>
+</ul>
+</li>
+</ul>
+<h2 id="set-up-a-subscription-process">Set up a subscription process</h2>
+<ol type="1">
+<li><a href="#prepare-subscription-pages">Prepare subscription pages</a></li>
+<li><a href="#create-recipient-lists">Create recipient lists</a></li>
+<li><a href="#add-a-subscription-form">Add a subscription form</a></li>
+<li>(Optional) <a href="#create-contact-groups-for-recipient-filtering">Create contact groups for recipient filtering</a>
+</li>
+</ol>
+<h3 id="prepare-subscription-pages">Prepare subscription pages</h3>
+<p>Start by adding the following subscription-related <a href="/documentation/business-users/website-content">pages</a> to your website:</p>
+<ul>
+<li><p>“Thank you” page – displayed to users after they confirm their email subscription by clicking on a double opt-in link.</p></li>
+<li>
+<p>“Goodbye” page – displayed to users if they choose to stop receiving your emails by clicking an unsubscribe link.</p>
+
+<div>
+
+</div>
+<div>
+<p>Contact your site’s developers if you need help setting up <a href="/documentation/developers-and-admins/development/content-types">content types</a> for the pages, or ensuring that the content is displayed correctly on the website.</p>
+</div>
+</li>
+</ul>
+<p>Add suitable content to the pages, depending on your site’s branding and audience.</p>
+<h3 id="create-recipient-lists">Create recipient lists</h3>
+<p>Contacts who decide to subscribe and receive your emails are stored within <strong>recipient lists</strong>. When sending out regular emails, marketers choose the target audience by selecting a recipient list.</p>
+<p>You can either use a single recipient list for all email communication, or create multiple lists for different newsletters or email groups (each with its own separate subscription and unsubscription process). If you prefer to share a single recipient list for multiple types of email communication, you can use <a href="#create-contact-groups-for-recipient-filtering">contact groups to filter recipients</a> when sending regular emails.</p>
+<p>To add a recipient list:</p>
+<ol type="1">
+<li>Open the <strong>Recipient lists</strong> application.</li>
+<li>Select <strong>New recipient list</strong>.</li>
+<li>Enter appropriate names and optionally a <em>Description</em>.</li>
+<li>Select the <strong>Thank you page</strong> and <strong>Goodbye page</strong> in the <strong>Approval</strong> and <strong>Unsubscribe settings</strong> sections (see <a href="#prepare-subscription-pages">Prepare subscription pages</a>).</li>
+<li>(Optional) Enable the <strong>Send (un)subscription confirmation</strong> options.
+<ol type="1">
+<li>Create suitable <a href="/documentation/business-users/digital-marketing/emails">emails</a> with the <strong>Confirmation</strong> purpose.</li>
+<li>Select the emails in the recipient list’s <strong>Approval</strong> and/or <strong>Unsubscribe settings</strong> sections.</li>
+</ol>
+</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p></p>
+<p>The recipient list is now ready to collect subscribers. Continue by adding a subscription form to your website.</p>
+<h3 id="add-a-subscription-form">Add a subscription form</h3>
+<p>To allow people to join your recipient lists, you need to prepare a subscription form with an autoresponder email:</p>
+<ol type="1">
+<li>Create a suitable <a href="/documentation/business-users/digital-marketing/emails">email</a> with the <strong>Form autoresponder</strong> purpose.
+<ul>
+<li>The email must use a <a href="/documentation/developers-and-admins/development/content-types">content type</a> that provides one or more <strong>Rich text editor</strong> fields.</li>
+</ul>
+</li>
+<li>Edit the email in the <strong>Content</strong> view mode, and add a double opt-in link:
+<ol type="1">
+<li><p>Place the cursor in an appropriate location within a rich text field in the email content.</p></li>
+<li><p>Select <strong>Insert Double Opt-In Link</strong> () on the editor toolbar.</p></li>
+<li><p>Enter the <strong>Link text</strong>.</p></li>
+<li><p><strong>Select a recipient list</strong> – choose the <a href="#create-recipient-lists">recipient list</a> where you want to add contacts after they subscribe.</p></li>
+<li><p>Select <strong>Insert</strong>.<br>
+</p></li>
+<li>
+<p><strong>Save</strong> and <strong>Publish</strong> the email.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Edit double opt-in links</strong></p>
+<p>You can change the text and recipient list set for double opt-in links at any time. Select the highlighted link in the email content editor, adjust the values, and select <strong>Update</strong>.</p>
+</div>
+</li>
+</ol>
+</li>
+<li>
+<a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms">Create a form</a>.
+<ol type="1">
+<li>Make sure the form contains a field that allows users to submit their email address. The autoresponder can only be enabled if a form field is mapped to the <strong>Email</strong> contact attribute in the <strong>Form Builder</strong>.</li>
+<li>Open <strong>Autoresponder</strong> in the form’s options panel.</li>
+<li>In the <strong>Select email</strong> option, pick the autoresponder email containing a double opt-in link.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+You can also send the autoresponder as part of a more complex <a href="/documentation/business-users/digital-marketing/automation">automation process</a>.
+</div>
+
+<ol start="4" type="1">
+<li>Select <strong>Save</strong>.</li>
+</ol>
+</li>
+<li>Place the form onto one of your website’s pages:
+<ul>
+<li>For pages where <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder</a> is enabled, you can <a href="/documentation/business-users/digital-marketing/forms/display-forms-on-pages">add the form</a> using the <strong>Form</strong> widget.</li>
+<li>To add the subscription form to a fixed part of your website, such as the shared footer, contact your project’s developers to <a href="/documentation/developers-and-admins/development/builders/page-builder/render-widgets-in-code">render the form as a stand-alone widget</a>.</li>
+</ul>
+</li>
+</ol>
+<p>Visitors can now use the form to subscribe to emails. The subscription process consists of the following steps:</p>
+<ol type="1">
+<li>A website visitor provides their email address and submits the form.</li>
+<li>The form sends an autoresponder email with a double opt-in link.</li>
+<li>The recipient clicks the link.</li>
+<li>The contact representing the visitor is added to the selected <a href="#create-recipient-lists">recipient list</a>.</li>
+<li>The “Thank you” page selected for the recipient list is displayed to the user.</li>
+<li>If the recipient list has subscription confirmations enabled, the user also receives the selected confirmation email informing them about the subscription.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>If you plan to use <a href="/documentation/business-users/digital-marketing/automation">automation processes</a> that send emails based on recipient lists, ensure that the process includes all necessary steps, such as double opt-in confirmations, before it is enabled. Automation processes are not a suitable approach for ongoing or indefinite email campaigns, as the process cannot be extended once a contact completes the sequence.</p>
+</div>
+
+<h3 id="create-contact-groups-for-recipient-filtering">Create contact groups for recipient filtering</h3>
+<p>When <a href="#send-regular-emails">sending regular emails</a>, you can filter the recipients from your selected recipient list using <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a>. This allows you to target specific audience segments without creating and maintaining separate recipient lists.</p>
+<ol type="1">
+<li>
+<a href="/documentation/business-users/digital-marketing/contact-groups#set-up-dynamic-contact-groups">Add contact groups</a> with appropriate conditions.</li>
+<li>Set the <strong>Send only to recipients from contact groups</strong> and/or <strong>Exclude recipients from contact groups</strong> properties before you send your <a href="#create-regular-emails">regular emails</a>.</li>
+</ol>
+<p>For example, you could use a recipient list together with contact groups in the following scenario:</p>
+<ul>
+<li>Maintain a single recipient list containing all contacts who have done business with your company and subscribed to email communication.</li>
+<li>Segment these contacts into contact groups based on criteria, such as engagement level, purchase history, or generated revenue (e.g., using <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-activities/custom-activities">custom activities</a>).</li>
+<li>Send separate versions of promotional emails about new products or services, with targeted content for each group of contacts.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Avoid email duplication</strong></p>
+<p>Be careful when setting up your contact group conditions. If you send different versions of the same email based on contact groups, a single contact may receive multiple copies if they fulfill the conditions of multiple groups. The system does <strong>not perform frequency capping</strong> to limit how many emails contacts receive over a given time period.</p>
+<p><strong>Coordinate email sendout</strong></p>
+<p>When sending separate variants of the same email to recipients from different contact groups, you can coordinate the delivery by scheduling the mailout at the same time in the future. Use the <strong>Schedule for later</strong> option in the <strong>Review and send</strong> dialog.</p>
+<p><strong>Unsubscription when using a shared recipient list</strong></p>
+<p>If you use a shared recipient list for different types of email communication, any recipients who <a href="#unsubscription">unsubscribe</a> will stop receiving all emails that you send via the given recipient list. This may or may not be desired behavior. Depending on your mailing requirements, you need to maintain and use an appropriate number of recipient lists.</p>
+</div>
+
+<h2 id="send-regular-emails">Send regular emails</h2>
+<p>Once you have established a <a href="#set-up-a-subscription-process">subscription process</a> on your website, you can start sending emails to contacts in your recipient lists.</p>
+<h3 id="prepare-email-templates">Prepare email templates</h3>
+<p>Start by creating an email template. You can use two different types of templates for regular emails:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/email-templates">Macro-based email templates</a> (edited directly in the administration)</li>
+<li>
+<a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder templates</a> (prepared and registered by developers as Razor components within the project’s code)</li>
+</ul>
+<p>Email templates for regular emails typically need to contain an unsubscribe link. For macro-based templates, place an <code>{%unsubscribeurl%}</code> placeholder into the template’s <strong>Source code</strong>.</p>
+<ul>
+<li>Position the placeholder into the <code>href</code> attribute of a suitable link tag, for example within the footer of your email template.</li>
+<li>The placeholder resolves into an unsubscribe URL based on the unsubscribe settings of the <a href="#create-recipient-lists">recipient list</a> to which the resulting emails are sent.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>HTML</span>
+</div>
+<strong>Unsubscribe link example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;p&gt;
+    If you'd rather not receive future emails, &lt;a href="{%unsubscribeurl%}"&gt;unsubscribe here&lt;/a&gt;.
+&lt;/p&gt;
+
+</code></pre>
+</div>
+
+<p>To learn how to add unsubscribe links to Email Builder templates, see <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#regular-email-unsubscription-links">Regular email unsubscription links</a>.</p>
+<p>Make sure the email template is allowed for the content types that you plan to use for your regular emails.</p>
+<h3 id="create-regular-emails">Create regular emails</h3>
+<p>Repeat the following steps for every email “issue” that you wish to send out:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Cloning emails</strong></p>
+<p>If you already have one or more existing emails, you can save time by <strong>Cloning</strong> (<span></span>) an email in the list within an email channel. This creates a new email with the content and settings of the original, which you can then change as required.</p>
+</div>
+
+<ol type="1">
+<li>Create an <a href="/documentation/business-users/digital-marketing/emails">email</a>.
+<ul>
+<li>Set the <strong>Email purpose</strong> to <em>Regular</em>.</li>
+<li>Select a <strong>Template</strong> containing an unsubscribe link.</li>
+</ul>
+</li>
+<li>Prepare the email’s content:
+<ul>
+<li>You can fill in the email’s subject, preview text and other content fields in the <strong>Content</strong> view mode.</li>
+<li>If using an Email Builder template, you can compose the email’s content using configurable components in the <strong>Email Builder</strong> view mode. For detailed information, see <a href="/documentation/business-users/digital-marketing/emails/create-emails-in-email-builder">Create emails in Email Builder</a>.</li>
+</ul>
+</li>
+<li>Once the content is ready, select the <strong>Continue</strong> button (or <strong>Properties</strong> in the option panel on the right).</li>
+<li>Select a <strong>Sender</strong> (senders are predefined for the <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>).</li>
+<li>In the <strong>Send to</strong> property, choose the <a href="#create-recipient-lists">recipient list</a> to which you want to send the email.</li>
+<li>(Optional) Configure additional recipient filtering based on <a href="/documentation/business-users/digital-marketing/contact-groups">contact groups</a>:
+<ul>
+<li>
+<strong>Send only to recipients from contact groups</strong> – limits email delivery to contacts who belong to at least one of the selected groups (in addition to belonging to the target recipient list).</li>
+<li>
+<strong>Exclude recipients from contact groups</strong> – prevents email delivery to contacts who belong to any of the selected groups (even if they belong to the target recipient list and <em>Send only to</em> contact groups).<br>
+</li>
+</ul>
+</li>
+<li>Select <strong>Save</strong>.</li>
+<li>If the email’s content type is under <a href="/documentation/developers-and-admins/configuration/workflows">workflow</a>, you need to go through the workflow’s steps before the email becomes ready to be sent. Users who belong to roles with full control for the given workflow can directly send the email from any step.
+<ul>
+<li>When you move the email to a custom workflow step with <a href="/documentation/developers-and-admins/configuration/workflows#workflow-notifications">workflow notifications</a> enabled, you can enter a comment about your action. The comment will be included in the notification email.<br>
+</li>
+</ul>
+</li>
+<li>To send the email, select <strong>Review and send</strong>. For emails under workflow, select <strong>Change workflow step</strong> and choose the <strong>Schedule / Send</strong> step.</li>
+<li>Choose one of the options:
+<ul>
+<li>
+<strong>Schedule for later</strong> – choose a date and time in the future when the system will send the email.</li>
+<li><strong>Send now</strong></li>
+</ul>
+</li>
+<li>Select <strong>Send</strong>.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p><strong>Publishing linked content items</strong></p>
+<p>If the email has fields linking to reusable content items or pages, you need to select <strong>Continue</strong> instead of <em>Send</em>. The cascade publishing dialog opens, showing all linked items that are currently not published. You can select any of the listed items to <strong>immediately</strong> publish them.</p>
+<p>Carefully consider which items are ready to be published. If you cannot publish linked items immediately, you can open (<span></span>) each of them in a new tab and individually <a href="/documentation/business-users/content-hub/content-items#scheduled-publishing">schedule</a> items to be published just before the email’s sendout time.</p>
+<p><strong>Note</strong>: The system cannot always publish all items at the exact scheduled time. If many items are scheduled to publish at once, some of them may be published with a short delay. To ensure that all linked content is ready before an email is sent, schedule linked items to publish at a slightly earlier time. This extra time is called a buffer period. The length of the buffer period depends on the total number of items scheduled to publish – 100 items may take several seconds, thousands of items may take a few minutes.</p>
+</div>
+
+<p>When an email is scheduled to be sent in the future, it becomes read-only and editing is not possible. If you need to make further changes, you have the following options:</p>
+<ul>
+<li>Select <strong>Edit email</strong> in the upper right corner of the view to cancel the scheduled sendout and re-enable editing of the email content and properties.</li>
+<li>If you only wish to adjust the sending date and time, expand the drop-down in the upper right corner and select <strong>Reschedule</strong>. The <em>Reschedule</em> dialog allows you to adjust the date and time, or <strong>Cancel the scheduled sendout</strong> completely.</li>
+</ul>
+<p></p>
+<p>When you send the email or the scheduled date and time is reached, the system sends the email to all contacts in the selected recipient list. Once the sending starts, the email’s editing interface becomes read-only and you can no longer make any changes to the content or properties.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Email statistics</strong></p>
+<p>Remember to review and evaluate the <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">statistics</a> tracked for sent emails, such as the number of delivered and opened emails or clicked links. Use the results to identify content that works best for your audience and optimize subsequent emails.</p>
+</div>
+
+<h3 id="bounced-email-tracking">Bounced email tracking</h3>
+
+<div>
+
+</div>
+<div>
+<p>Bounced email tracking only works if it is configured for your application. Contact your site’s developers or see <a href="/documentation/developers-and-admins/digital-marketing-setup/set-up-email-tracking">Set up email tracking</a>.</p>
+</div>
+
+<p>When an email cannot be delivered successfully, an automatic reply informing about the problem is returned (<a href="https://en.wikipedia.org/wiki/Bounce_message" target="_blank">bounced</a>) back to the sender or another designated address. Xperience by Kentico tracks bounced emails and identifies addresses that do not correctly receive emails.</p>
+<p>You can see the <strong>Delivery rate</strong> for individual regular emails by viewing the <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">email statistics</a>. The delivery rate is calculated by subtracting the bounce count from the total number of sent emails.</p>
+<p>If an email address reaches the allowed limit for temporary delivery problems (soft bounces) or if a permanent delivery problem is encountered (a hard bounce), the given contact switches to the <strong>Bounced</strong> status and is excluded when sending further emails. This helps keep your <a href="#create-recipient-lists">recipient lists</a> healthy and protects your sender reputation.</p>
+<p>You can check the bounce status for recipients (contacts) in several locations within the administration interface:</p>
+<ul>
+<li>
+<strong>Contact management</strong> – in the contact listing, as well as the profile of individual contacts</li>
+<li>
+<strong>Recipient lists</strong> – in the <em>Overview</em> and <em>Recipients</em> listing of specific recipient lists</li>
+</ul>
+<p>If necessary, marketers can <strong>Reset bounces</strong> for individual contacts from the <strong>Email marketing</strong> section of the contact’s profile in the <strong>Contact management</strong> application.</p>
+<p></p>
+<h3 id="unsubscription">Unsubscription</h3>
+<p>Recipients of regular emails can choose to stop receiving your emails. The unsubscription process consists of the following steps:</p>
+<ol type="1">
+<li>A recipient clicks an unsubscribe link in the email content.</li>
+<li>The “Goodbye” page selected for the recipient list is displayed to the user.</li>
+<li>If the recipient list has unsubscription confirmations enabled, the user also receives the selected confirmation email informing them about the unsubscription.</li>
+</ol>
+<p>The given contact switches to the <strong>Unsubscribed</strong> email status in the <a href="#create-recipient-lists">recipient list</a> to which the email was sent. Marketers can still see the contact when viewing the recipient list in the administration, but the contact is no longer included when sending further emails to the recipient list.</p>
+<p>You can review the unsubscribe rate and exact number of unsubscriptions in the <a href="/documentation/business-users/digital-marketing/emails/track-email-statistics">statistics</a> of individual regular emails.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>One-click unsubscribe support</strong></p>
+<p>All emails with the <em>Regular</em> purpose support one-click unsubscribe (based on <a href="https://tools.ietf.org/html/rfc2369" target="_blank">RFC 2369</a> and <a href="https://tools.ietf.org/html/rfc8058" target="_blank">RFC 8058</a>).</p>
+<p>The system automatically includes the following headers when sending regular emails:</p>
+<ul>
+<li>
+<code>List-Unsubscribe-Post</code>: <em>List-Unsubscribe=One-Click</em>
+</li>
+<li>
+<code>List-Unsubscribe</code>: <em>&lt;unsubscribe URL with the Service domain of the given <a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">email channel</a>&gt;</em>
+</li>
+</ul>
+<p>If a recipient uses one-click unsubscribe, the resulting request is handled in the same way as a standard unsubscribe link in email content.</p>
+</div>
+
+
+</body>
+</html>

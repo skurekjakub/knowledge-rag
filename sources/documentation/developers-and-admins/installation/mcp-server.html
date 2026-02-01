@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Documentation MCP server</title>
+</head>
+<body>
+<p>The Xperience by Kentico Documentation MCP Server allows AI agents to securely access complete and up-to-date documentation, including guides and API examples. The MCP server provides guidance for all areas of Xperience by Kentico, for example <a href="/documentation/business-users/content-hub">content management</a>, <a href="/documentation/developers-and-admins/digital-marketing-setup">digital marketing</a>, or <a href="/documentation/developers-and-admins/digital-commerce-setup">digital commerce</a>, directly within your integrated development environment (IDE).</p>
+<p>The MCP server is built on the <a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol (MCP)</a>, an open standard that lets clients dynamically discover and query external data sources in real time. The server provides accurate, context-aware responses by combining semantic search with high-quality content retrieval from the official documentation in markdown format. Since the server syncs continuously with the published documentation, you’ll always get the most recent information and implementation details available.</p>
+<h2 id="install-the-mcp-server">Install the MCP server</h2>
+<p>The MCP server supports quick installation across multiple IDEs. Choose your preferred client below for a streamlined setup:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Development environment</p>
+</td>
+<td>
+<p>Installation</p>
+</td>
+<td>
+<p>Documentation</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>VS Code</p>
+</td>
+<td>
+<p><a href="https://vscode.dev/redirect/mcp/install?name=kentico-docs-mcp&amp;config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fdocs.kentico.com%2Fmcp%22%7D" target="_blank">Install in VS Code</a></p>
+</td>
+<td>
+<p><a href="https://code.visualstudio.com/docs/copilot/customization/mcp-servers" target="_blank">VS Code MCP Official Guide</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Visual Studio</p>
+</td>
+<td>
+<p>Manual configuration required by adding a new tool in <em>Select tools</em> in the Copilot chat window.</p>
+<p><strong>Required parameters:</strong><br>
+<em>Type</em>: HTTP/SSE<br>
+<em>URL</em>: “https://docs.kentico.com/mcp”</p>
+</td>
+<td>
+<p><a href="https://learn.microsoft.com/en-us/visualstudio/ide/mcp-servers" target="_blank">Visual Studio MCP Official Guide</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Claude Desktop</p>
+</td>
+<td>
+<p>Manual configuration required.</p>
+<p>For the URL, use https://docs.kentico.com/mcp.</p>
+</td>
+<td>
+<p><a href="https://modelcontextprotocol.io/docs/develop/connect-remote-servers" target="_blank">Claude Desktop Remote MCP Guide</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Cursor IDE</p>
+</td>
+<td>
+<p><a href="cursor://anysphere.cursor-deeplink/mcp/install?name=kentico-docs-mcp&amp;config=eyAiY29tbWFuZCI6ICJucHgiLCAiYXJncyI6IFsiLXkiLCAibWNwLXJlbW90ZSIsICJodHRwczovL2RvY3Mua2VudGljby5jb20vbWNwIl0gfQ==" target="_blank">Install in Cursor</a></p>
+</td>
+<td>
+<p><a href="https://cursor.com/docs/context/mcp" target="_blank">Cursor MCP Official Guide</a></p>
+</td>
+</tr>
+</table>
+
+<h3 id="add-the-mcp-server-to-vs-code">Add the MCP server to VS Code</h3>
+<p>Before adding the MCP server to your VS Code, make sure you have set up the <a href="https://code.visualstudio.com/docs/copilot/setup" target="_blank">GitHub Copilot</a> and <a href="#install-the-mcp-server">installed</a> the MCP server.</p>
+<ol type="1">
+<li>Open GitHub Copilot in VS Code and <a href="https://code.visualstudio.com/docs/copilot/chat/chat-agent-mode" target="_blank">switch to Agent mode</a>.</li>
+<li>
+<strong>Select</strong> <em>Configure Tools</em> in the right bottom corner of the chat window, next to the Send button.</li>
+<li>
+<strong>Check</strong> the box next to the <em>MCP Server: kentico-docs-mcp</em>.</li>
+<li>Confirm by selecting the <strong>OK</strong> button above the list.</li>
+</ol>
+<p>The agent should now be able to use the <a href="#mcp-server-tools">MCP server tools</a> to complete your query.</p>
+<h2 id="the-xperience-by-kentico-mcp-server-endpoint">The Xperience by Kentico MCP server endpoint</h2>
+<p>The Xperience by Kentico MCP Server is accessible to any IDE, agent, or tool that supports the Model Context Protocol (MCP). Any compatible client can connect to the following remote MCP endpoint: <em>https://docs.kentico.com/mcp</em>.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>Example JSON configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+{
+  "kentico-docs-mcp": {
+    "type": "http",
+    "url": "https://docs.kentico.com/mcp"
+  }
+}
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>This URL is intended for use within a compliant MCP client via <a href="https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http" target="_blank">Streamable HTTP</a>, such as the recommended clients listed in the <a href="#install-the-mcp-server">installation</a> section. It does not support direct access from a web browser and may return a <em>405 Method Not Allowed</em> error if accessed manually.</p>
+</div>
+
+<p>If your client doesn’t support native remote MCP servers or if you prefer local configuration, you can use <a href="https://www.npmjs.com/package/mcp-remote" target="_blank">mcp-remote</a> as a proxy. Configure MCP servers in <code>.mcp.json</code> at your project root.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>mcp-remote example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  "mcpServers": {
+    "remote-example": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://docs.kentico.com/mcp"
+      ]
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h2 id="mcp-server-tools">MCP server tools</h2>
+<p>In the context of the MCP server, tools are individual capabilities that the MCP server exposes to connected clients (for example GitHub Copilot, Claude, or Cursor). Each tool performs a specific function, such as searching or fetching, and can be called programmatically by the client when it needs information from the server.</p>
+<p>The MCP server currently provides two tools that let AI agents access official Kentico documentation:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Tool name</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Parameters</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>kentico_docs_search</p>
+</td>
+<td>
+<p>Performs hybrid (vector + semantic + text-based) search against Xperience by Kentico official documentation</p>
+</td>
+<td>
+<p>question (string): The question to search for in the documentation</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>kentico_docs_fetch</p>
+</td>
+<td>
+<p>Downloads and converts Kentico documentation HTML content to markdown format</p>
+</td>
+<td>
+<p>url (string): URL of the Kentico documentation page to read (must be from docs.kentico.com)</p>
+</td>
+</tr>
+</table>
+
+<h3 id="example-prompts">Example prompts</h3>
+<p>Your AI assistant should automatically use these tools for Xperience by Kentico-related topics. With both search and fetch capabilities, you can get quick answers or comprehensive deep dives. To ensure that it always consults the official documentation, you can add phrases like <em>search Kentico docs</em>, <em>use XbyK docs</em>, <em>fetch full Xperience docs</em>. For example:</p>
+<ul>
+<li>“How do I create a custom page type in Xperience by Kentico? Search Kentico docs.”</li>
+<li>“Are you sure this is the right way to implement custom form components in Xperience by Kentico? Search Kentico docs and fetch full doc.”</li>
+<li>“Get me the full step-by-step tutorial for setting up multi-site management. Search Kentico docs and deep dive.”</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>If the MCP Server isn’t responding as expected or the tools don’t appear in your environment, the following guidance can help resolve common issues quickly.</p>
+<h3 id="ensure-ai-clients-use-mcp-tools">Ensure AI clients use MCP tools</h3>
+<p>Some AI clients, such as Claude or GitHub Copilot, may not automatically use MCP tools when answering Kentico-related queries. To improve reliability, you can define a system prompt that explicitly tells the client to use the Xperience by Kentico MCP tools.</p>
+<p>Here’s an example of a Cursor rule (a system prompt) that will cause the LLM to utilize <em>kentico-docs-mcp</em> more frequently:</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Example system prompt (Cursor rule)</strong></p>
+<p>## Querying Xperience by Kentico Documentation</p>
+<p>You have access to MCP tools called `kentico_docs_search` and `kentico_docs_fetch`. These tools allow you to search through and fetch Kentico’s latest official documentation, and that information might be more detailed or newer than what’s in your training data set.</p>
+<p>When handling questions around Xperience by Kentico, content management, digital marketing features, commerce functionality, custom development, page builders, form builders, email marketing, or any other Kentico-specific topics. Please use these tools for research purposes when dealing with specific/narrowly defined questions that may occur.</p>
+</div>
+
+<h3 id="common-issues">Common Issues</h3>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Issue</p>
+</td>
+<td>
+<p>Solution</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Connection errors</p>
+</td>
+<td>
+<p>Verify your network connection and that the server URL is correctly entered</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>No results returned</p>
+</td>
+<td>
+<p>Try rephrasing your query with more specific Xperience by Kentico terms</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Tool not appearing in VS Code</p>
+</td>
+<td>
+<p>Restart VS Code or check that the MCP extension is properly installed</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>HTTP status 405</p>
+</td>
+<td>
+<p>Method not allowed happens when a browser tries to connect to the endpoint. Try using the MCP Server through VS Code GitHub Copilot or MCP Inspector instead.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Fetch tool returns error</p>
+</td>
+<td>
+<p>Ensure the URL is from <em>docs.kentico.com</em> domain only</p>
+</td>
+</tr>
+</table>
+
+
+</body>
+</html>

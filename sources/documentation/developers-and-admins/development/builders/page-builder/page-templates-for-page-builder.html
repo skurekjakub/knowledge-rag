@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page templates for Page Builder</title>
+</head>
+<body>
+<p>Page templates allow content editors to assign MVC views to individual pages without developer assistance.</p>
+<p>Templates make it easy to choose and switch between page layouts, so they are suitable for creating pages with a predesigned or repeating structure, such as articles or landing pages. Developers define the layout of these pages by preparing page templates in the code and content editors then create new landing pages based on these templates.</p>
+<p>Page templates can also be used for creating pages with <a href="/guides/architecture/content-modeling/content-modeling-guide/store-content">structured content</a> (without Page Builder editable areas). Useful, for example, if you have multiple possible layouts for product or article pages, and want to allow content editors to choose a suitable layout for each individual page.</p>
+<p><strong>Example page template use cases</strong>:</p>
+<ul>
+<li>Creating pages that have a similar structure or content, such as articles or landing pages.</li>
+<li>Defining the Page Builder content once, then reusing it for other pages. For example, with the content reordered or modified for the new page.</li>
+<li>Using different JavaScript, CSS, or <em>_Layout.cshtml</em> files for the pages of the same content type (and the structured content or Page Builder content defined in it).</li>
+<li>Using pages with no content, just Page Builder sections that can be of a different layout for each page template.</li>
+</ul>
+<h2 id="page-template-types">Page template types</h2>
+<ul>
+<li><p><strong>Default page templates</strong> are defined in the code of your Xperience project. Default page templates specify the layout of a page without page content.</p></li>
+<li>
+<p><strong>Preset page templates</strong> are created from a page that was created using a <em>default page template</em>. If the page contains <a href="/documentation/business-users/website-content/widgets-and-page-builder">Page Builder content</a>, such as widgets and sections, the preset template will contain a snapshot of this content on top of the layout defined in the default page template.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Preset page templates do not store structured content</strong></p>
+<p>If the page is using structured content (the data stored in the fields of the page), this content is not saved when saving a page as a preset template.</p>
+</div>
+</li>
+</ul>
+<p>Developers define the page layout in form of <strong>default</strong> page templates. Content creators then create a page from a default page template, or define <strong>preset</strong> page templates that inherit the layout from the default page templates. See <a href="#enable-content-editors-to-create-pages-based-on-page-templates">Enable content editors to create pages based on page templates</a>.</p>
+<h2 id="enable-content-editors-to-create-pages-based-on-page-templates">Enable content editors to create pages based on page templates</h2>
+<p>To enable content editors to create pages based on page templates, you need to complete the following steps:</p>
+<ol type="1">
+<li><a href="#create-pages-that-support-page-templates">Create a content type that supports page templates</a></li>
+<li><a href="#implement-page-templates">Implement the page template</a></li>
+<li><a href="#register-page-templates">Register the page template within the system</a></li>
+<li>Scope page templates using one of the following approaches:
+<ul>
+<li>(Recommended) <code>ContentTypeNames</code> parameter of the <a href="#register-page-templates">registration attribute</a>
+</li>
+<li><a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-filtering">Page template filtering</a></li>
+</ul>
+</li>
+</ol>
+<h2 id="create-pages-that-support-page-templates">Create pages that support page templates</h2>
+<p>To use page templates on your pages, you need to create and configure suitable content types and adjust the corresponding logic.</p>
+<p>Start by preparing a content type for your template-based pages:</p>
+<ol type="1">
+<li>Open the <strong>Content types</strong> application.</li>
+<li>
+<a href="/documentation/developers-and-admins/development/content-types">Create a content type</a> with the <em>Include in routing</em> option enabled.</li>
+<li>Open a command line and <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generate the content type’s code file</a> so that you can work with the content type in your project.</li>
+<li>Open your project in Visual Studio and enable the <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> for the content type.</li>
+</ol>
+<p>Continue by modifying your <a href="/documentation/developers-and-admins/development/routing/content-tree-based-routing/set-up-content-tree-based-routing">routing implementation</a>. The action methods handling your routes need to return a <code>TemplateResult</code> object. Optionally, you may pass a custom model to the <code>TemplateResult</code> constructor to provide the template view with desired <a href="#custom-model">custom data</a>. The model can be any <code>Object</code>. The router automatically provides information about the page to be rendered when handling the request.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Handling page templates</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+public ActionResult Index()
+{
+    // Custom processing logic
+
+    // Leverages information provided by the router when serving the request
+    // to retrieve the corresponding page. No need to specify the page to render.
+    return new TemplateResult();
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p>When developing pages that use page templates, you do NOT need to create a view for the page itself. Instead, the output of the page is based on the view of the selected template.</p>
+</div>
+
+<p>The next step now is to <a href="#implement-page-templates">implement</a> the page template and <a href="#register-page-templates">register</a> it in the system. Content editors can then select a page template, depending on the selected content type or predefined <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-filtering">page template filters</a>. If only one template is available for a given page, it is selected automatically.</p>
+<h2 id="implement-page-templates">Implement page templates</h2>
+<p>On a basic technical level, page templates are HTML pages. The main step in the development of a page template is to create a full-page <strong>view</strong> that defines the page’s layout. </p>
+<p>You can also develop <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">page templates with properties</a>, which allow content editors to customize the template appearance in the administration interface. For templates with configurable properties, you need to create an additional model class that represents the properties and passes their values to the view component. See <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">Page template properties</a> to learn more.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Areas</strong></p>
+<p>Page templates are designed to be used in the global scope and their code files must be placed in the application root of your project (not in an <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/areas" target="_blank">Area</a>). Creating page templates in Areas may lead to unexpected behavior.</p>
+</div>
+
+<p>Use the following process to develop a page template:</p>
+<ol type="1">
+<li>Create a view with code that defines the output of the page template according to general <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/overview" target="_blank">MVC best practices</a>.
+<ol type="1">
+<li>
+<p>The output must be a full HTML page, so the view must include the following:</p>
+<ul>
+<li>Full HTML markup, including the <em>html, head</em> and <em>body</em> elements</li>
+<li>Links to all necessary resources, such as stylesheets and scripts</li>
+<li>Links to <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas#load-page-builder-scripts-and-styles">Page Builder scripts and styles</a>
+</li>
+</ul>
+</li>
+<li><p>Use layouts with the template view for any shared output code (based on your requirements, you can use your site’s main layout, a dedicated layout for page templates, etc.).</p></li>
+<li><p>If your templates contain any Page Builder <a href="/documentation/developers-and-admins/development/builders/page-builder/create-pages-with-editable-areas">editable areas</a> and you wish to allow editors to transfer Page Builder content (widget and section configuration) between various templates, create templates with matching editable area identifiers. Consider this mainly for projects with multiple page templates for a single <a href="/documentation/developers-and-admins/development/content-types">content type</a> (e.g., blog post, article, landing page). When switching templates, the system detects editable areas with matching identifiers and transfers all Page Builder content between them. If there is no match on the target template, all Page Builder content gets discarded.</p></li>
+<li><p>We recommend storing page template views in the <em>~/PageTemplates</em> folder, and using a view name that matches the <strong>identifier</strong> <a href="#register-page-templates">assigned to the template</a> prefixed with the underscore (‘<code>_</code>’) character.</p></li>
+</ol>
+</li>
+<li>Register the page template into the system. See <a href="#register-page-templates">Register page templates</a>.</li>
+</ol>
+<p>With this approach, the template’s view is automatically displayed using logic provided by the Xperience API.</p>
+<p>The values of any <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">properties</a> defined for the template can be accessed in the view by using <code>TemplateViewModel&lt;TPropertiesType&gt;</code> as the model. The properties are then available via the model’s <code>Properties</code> member.</p>
+<p>You can also use the <code>Page</code> property of <code>TemplateViewModel</code> to access the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the page where the template is displayed.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Content.Web.Mvc.PageBuilder
+
+@model TemplateViewModel&lt;CustomTemplateProperties&gt;
+
+@{
+    int customNumber = Model.Properties.Number;     
+    int webPageId = Model.Page.WebPageItemID;
+    int languageId = Model.Page.LanguageID
+    string languageName = Model.Page.LanguageName;
+    int contentTypeId = Model.Page.ContentTypeID;
+    string contentTypeName = Model.Page.ContentTypeName;
+    int channelId = Model.Page.WebsiteChannelID;
+    string channelName = Model.Page.WebsiteChannelName;
+}
+
+&lt;html&gt;
+&lt;head&gt;
+    ...
+
+    &lt;page-builder-styles /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    ...    
+
+    &lt;page-builder-scripts /&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Advanced page template example</strong></p>
+<p>See the <a href="/guides/development/page-builder/create-versatile-templates-part-1">Create versatile page templates</a> guide for a detailed step-by-step walkthrough showing how to create a complex page template, including handling of <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">template properties</a> and page fields.</p>
+</div>
+
+<h3 id="add-custom-functionality">Add custom functionality</h3>
+<p>The basic implementation of a page template consists of only a view file (and possibly a properties class). You may need additional functionality, for example if you need to:</p>
+<ul>
+<li>respond to the configuration of the template’s properties</li>
+<li>perform interactions based on the page where the template is rendered</li>
+<li>work with custom data</li>
+<li>execute general business logic not suitable for views (e.g., database operations)</li>
+</ul>
+<p>There are multiple ways how you can achieve your desired custom functionality:</p>
+<ul>
+<li><p>If you just need to access your custom data within a template, utilize the <a href="#custom-model">custom model</a> approach.</p></li>
+<li>
+<p>If you need to execute custom logic within the template, separate your logic into a dedicated <a href="#service-class">service class</a> and then inject it directly into the template’s view.</p>
+
+<div>
+
+</div>
+<div>
+<p>Injecting a service into a view is generally considered a bad practice. Therefore do so only if it is really necessary. In case you just need to access your custom data within the view, use the <a href="#custom-model">custom model</a> approach instead.</p>
+</div>
+</li>
+<li><p>If you have reusable rendering logic, make use of <a href="#view-component">view components</a>.</p></li>
+</ul>
+<h4 id="custom-model">Custom model</h4>
+<p>You can provide a page template with your custom data by passing the data as a model to the <code>TemplateResult</code> constructor. You may then use this data within the page template as you need.</p>
+<p>To implement a custom model for a page template:</p>
+<ol type="1">
+<li><p>Prepare your data and create the custom model. The model can be any <code>Object</code>.</p></li>
+<li>
+<p>Pass the model to the <code>TemplateResult</code> constructor within the action method handling the given route.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Create model and pass it to TemplateResult</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ public ActionResult Index()
+ {
+     // Custom processing logic
+
+     // Create the model. The model can be any object.
+     var model = new CustomModel();
+
+     // Pass the model to the TemplateResult
+     return new TemplateResult(model);
+ }
+
+ </code></pre>
+</div>
+</li>
+<li><p>The template’s properties (if implemented) are stored in the template’s model (<code>TemplateViewModel&lt;TPropertiesType&gt;</code>), available via the <code>Properties</code> member.</p></li>
+<li>
+<p>Access your custom data via the <code>GetTemplateModel&lt;T&gt;</code> method of the model and use it as you need. </p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong>Access the model within the view</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @using Kentico.Content.Web.Mvc.PageBuilder
+
+ @model TemplateViewModel
+
+ @{
+     var viewModel = Model.GetTemplateModel&lt;CustomModel&gt;();
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h4 id="service-class">Service class</h4>
+<p>Separate your logic into a dedicated service class when you need to reflect the context of its page or execute general business logic not suitable for views (e.g., database operations). You can then <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/dependency-injection" target="_blank">inject</a> the service to the template’s view and call your code as required.</p>
+<p>To implement a service class for a page template:</p>
+<ol type="1">
+<li>
+<p>Create the service class for your page template.</p>
+<ul>
+<li>We recommend storing the service class in the <em>~/PageTemplates/&lt;TemplateName&gt;</em> directory together with other files required by the page template. For reusable code shared across components, you can create a <em>~/PageTemplates/Shared</em> directory.</li>
+</ul>
+</li>
+<li>
+<p>Implement required logic within the service class. For example, you may wish to react to the fields of the page where the template is rendered.</p>
+<ul>
+<li>The the ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the current page can be accessed via the <code>TemplateViewModel.Page</code> property. You can use this data to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page</a> and access its content fields.</li>
+<li>The template’s properties (if implemented) are stored in the template’s model (<code>TemplateViewModel&lt;TPropertiesType&gt;</code>), available via the <code>Properties</code> member.</li>
+</ul>
+</li>
+<li><p>Register the service within the application’s service container.</p></li>
+<li>
+<p>Inject the service into the template’s view file using the <code>@inject</code> directive.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ @inject Mysite.MyTemplateService templateService
+
+ </code></pre>
+</div>
+</li>
+<li><p>Call the service as required.</p></li>
+</ol>
+<h4 id="view-component">View component</h4>
+<p><a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-components" target="_blank">View components</a> can be used when you have reusable rendering logic that needs to interact with the application’s business layer.</p>
+<p>To implement a view component for a page template:</p>
+<ol type="1">
+<li>Create a view component and its partial view.
+<ul>
+<li>We recommend storing view components related to the page template in the <em>~/PageTemplates/&lt;TemplateName&gt;</em> directory together with other related files. For reusable code shared across components, you can create a <em>~/PageTemplates/Shared</em> directory.</li>
+</ul>
+</li>
+<li>Implement the component’s <code>InvokeAsync</code> method. You can pass any required parameters from the template’s view.
+<ul>
+<li>The ID, <a href="/documentation/developers-and-admins/configuration/languages">language</a>, <a href="/documentation/developers-and-admins/development/content-types">content type</a> and <a href="/documentation/developers-and-admins/configuration/website-channel-management">channel</a> information of the current page can be accessed via the <code>TemplateViewModel.Page</code> property. You can use this data to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page</a> and access its content fields.</li>
+<li>The template’s properties (if implemented) are stored in the template’s model (<code>TemplateViewModel&lt;TPropertiesType&gt;</code>), available via the <code>Properties</code> member.</li>
+</ul>
+</li>
+<li>Invoke the component from within the template’s view.</li>
+</ol>
+<h3 id="handle-post-actions">Handle POST actions</h3>
+<p>If your page template needs to communicate with the server using POST actions, create a custom controller class containing the required methods and logic. We recommend storing the class in the <em>~/PageTemplates/&lt;TemplateName&gt;</em> folder together with other files required by the page template.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Endpoint security</strong></p>
+<p>Consider whether the endpoints you design should only be accessible from the admin UI (edit mode of the website channel applications). See <a href="/documentation/developers-and-admins/customization/secure-custom-endpoints">Secure custom endpoints</a> for more information.</p>
+</div>
+
+<p>Data of the current page rendered using the page template is by default not accessible in controller actions that handle POST requests. Such requests do not contain sufficient information to identify the page from which they originate. </p>
+<p>To access page data in POST actions, you need to include information about the current page into the data submitted by the corresponding form in the page template’s output – call the <code>Html.Kentico().PageData</code> extension method (or the method’s <a href="/documentation/developers-and-admins/development/reference-tag-helpers">Tag Helper alternative</a>) within the given form tag in your page template view.</p>
+
+<div>
+<div>
+<div>
+<span>cshtml</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+@using Kentico.Web.Mvc
+@using Kentico.PageBuilder.Web.Mvc
+
+&lt;form asp-controller="TemplateController" asp-action="HandlePost" id="form"&gt;
+
+    ...
+
+    @Html.Kentico().PageData()
+
+    &lt;input type="submit" value="Submit" /&gt;
+&lt;/form&gt;
+
+</code></pre>
+</div>
+
+<p>The method renders a hidden form field that persists information about the current page. The page data can be retrieved via the <code>IWebPageDataContextRetriever</code> service and <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">content item API</a> in the corresponding controller action.</p>
+<p>Obtain an instance of the <code>IWebPageDataContextRetriever</code> service (using dependency injection) and call its <code>Retrieve</code> method. The returned object’s <code>WebPage</code> property contains basic information about the current page, which you can use to <a href="/documentation/developers-and-admins/development/content-retrieval/retrieve-page-content">retrieve the page object</a>.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+// An instance of IWebPageDataContextRetriever (e.g., obtained via dependency injection)
+private readonly IWebPageDataContextRetriever retriever;
+
+// Access the current page data
+var page = retriever.Retrieve().WebPage;
+
+// Access the properties of the page object     
+int webPageId = page.WebPageItemID;
+int languageId = page.LanguageID
+string languageName = page.LanguageName;
+int contentTypeId = page.ContentTypeID;
+string contentTypeName = page.ContentTypeName;
+int channelId = page.WebsiteChannelID;
+string channelName = page.WebsiteChannelName; 
+
+</code></pre>
+</div>
+
+<h2 id="register-page-templates">Register page templates</h2>
+<p>Every page template needs to be registered into the system to be available. Register templates using the <code>RegisterPageTemplate</code>  assembly attribute (available in the <code>Kentico.PageBuilder.Web.Mvc.PageTemplates</code> namespace).</p>
+<p>If a page template does not require any additional services or view components, we recommend adding the registration attributes to a dedicated code file. This keeps your registrations organized. For example, you can create a file named <strong>PageTemplateRegister.cs</strong> in your project’s <em>~/PageTemplates</em> folder and use it to register page templates.</p>
+<p>When registering a page template, specify the following attribute parameters:</p>
+<ul>
+<li><p><code>Identifier</code> – the unique identifier of the template. We recommend using a unique prefix in your template identifiers to prevent conflicts when deploying templates to other projects, for example matching your company’s name.</p></li>
+<li><p><code>Name</code> – the name used to identify the template when displayed in the administration interface.</p></li>
+<li><p><code>PropertiesType</code>  – only required for <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-properties">templates with properties</a> . Specifies the <code>System.Type</code> of the template’s property model class.</p></li>
+<li>
+<p><code>CustomViewName</code> – specifies the name and location of the view that defines the template’s output. If not set, the system searches for a corresponding <em>_&lt;Identifier&gt;.cshtml</em> view in the <em>~/Views/Shared/PageTemplates</em> folder (any period characters ‘.’ in the identifier are replaced by underscores ‘_’).</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Template registration example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  [assembly: RegisterPageTemplate("CompanyName.MyTemplate", "My template", typeof(CustomTemplateProperties), "~/PageTemplates/_MyTemplate.cshtml")]
+
+  </code></pre>
+</div>
+</li>
+</ul>
+<p>You can also set the following optional properties:</p>
+<ul>
+<li>
+<p><code>ContentTypeNames</code> – a list of content type identifiers for which a page template is available. If not specified, a page template is available for all content types.</p>
+<ul>
+<li>If you do not specify content types for templates using this parameter, you need to implement <a href="/documentation/developers-and-admins/development/builders/page-builder/page-templates-for-page-builder/page-template-filtering">page template filtering</a>.</li>
+</ul>
+</li>
+<li><p><code>Description</code>  – the description of the template displayed as a tooltip.</p></li>
+<li>
+<p><code>IconClass</code>  – the font icon class of the icon displayed as a thumbnail when selecting templates. </p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Administration font icons</strong></p>
+<p>Page templates use the administration font icons set (‘<em>xp-</em>’ prefix). To see a list of all icons available for page templates, navigate to the icon picker in <strong>Content types</strong> application → select a content type → <strong>General</strong> tab → <strong>Icon</strong> field.</p>
+</div>
+</li>
+</ul>
+<h2 id="add-scripts-and-styles-for-page-templates">Add scripts and styles for page templates</h2>
+<p>When adding JavaScript and CSS styles required by your page templates, we recommend placing script and stylesheet files into sub-folders under:</p>
+<ul>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Public/PageTemplates/&lt;PageTemplate&gt;</em></strong> – scripts and styles intended for the live site.</li>
+<li>
+<strong><em>~/wwwroot/PageBuilder/Admin/PageTemplates/&lt;PageTemplate&gt;</em></strong> – scripts and styles intended for the administration interface (when working with the page template in the Page Builder editing interface).</li>
+</ul>
+<p>You can use sub-folders that match the identifiers of individual templates, or a <em>Shared</em> sub-folder for assets used by multiple templates. Note that this recommendation only applies when using the default configuration of the bundling support provided by Xperience and may be different for your project. See <a href="/documentation/developers-and-admins/development/builders/bundle-static-assets-of-builder-components">Bundle static assets of builder components</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>CSS notes</strong></p>
+<ul>
+<li>Only use the specified directories to add <strong>basic styles</strong> that are required for the template to render correctly. Any <strong>site-specific styles</strong> that finalize the live site design of the template should be handled separately within the given site’s main stylesheet.</li>
+<li>To avoid potential conflicts between styles from other third-party components, we recommend adding a unique prefix to your CSS classes and identifiers (for example <code>#CompanyName-mid-column</code>), or similar measures to ensure their uniqueness.</li>
+</ul>
+</div>
+
+
+</body>
+</html>

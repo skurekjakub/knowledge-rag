@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Contact management</title>
+</head>
+<body>
+<p>Contact management is a digital marketing tool that provides a centralized overview of all people who access content through your channels. Within Xperience by Kentico, visitors are represented by <strong>Contacts</strong>.</p>
+<p>The system gathers information about all visitors including anonymous ones, and <a href="/documentation/business-users/digital-marketing/contact-activities">tracks the activities</a> that contacts perform through your channels. <strong>On websites</strong>, contacts are identified by a cookie, and the system automatically gathers data based on the actions and input of the associated visitors.</p>
+<p>You can use the data collected for contacts to analyze client behavior, optimize content, identify potential buyers and perform other marketing‑related actions. In Xperience, <a href="/documentation/business-users/digital-marketing/customer-journeys">customer journeys</a> allow you to define key stages, representing the sequence of steps a contact must complete to achieve a successful conversion, and set conditions for their progression through these steps.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Contacts and channels</strong></p>
+<p>Contacts are global and shared across all content <a href="/documentation/developers-and-admins/configuration/website-channel-management">channels</a>. For example, if you use your Xperience application to run two websites, send messages through an email channel, and deliver content to an external application through a headless channel, visitors and email recipients from all channels will belong to the same pool of contacts.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Default cookie level or consent requirements</strong></p>
+<p>The contact tracking functionality in Xperience by Kentico only works for website channels with the <a href="/documentation/developers-and-admins/data-protection/cookies">Default cookie level</a> set to <em>Visitor</em> or <em>All</em>, or for visitors who give tracking consent and increase their cookie level. For more information, see <a href="/documentation/developers-and-admins/data-protection/consent-development">Consent development</a>.</p>
+</div>
+
+<h2 id="manage-contacts">Manage contacts</h2>
+<p>Use the <strong>Contact management</strong> application in the Xperience administration to view and manage your contacts. A list of contacts is available on the <strong>Contacts</strong> tab.</p>
+<p></p>
+<p>Information about contacts is stored in attributes, such as the name, email address, contact details, physical address, etc. To see an overview of all available information about a contact, select the contact in the list. This opens the contact’s profile.</p>
+<p></p>
+<p>Marketers do not need to manually enter the attribute values for contacts. The system automatically collects and updates the data of each contact based on the information provided by the corresponding visitor. However, you can edit the attributes of contacts if required:</p>
+<ol type="1">
+<li>Select the contact in the list.</li>
+<li>In the <strong>Personal details</strong> section of the contact profile, select <strong>Edit</strong>.</li>
+<li>Enter the required values.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<h3 id="delete-contacts">Delete contacts</h3>
+<p>You can manually remove contacts by selecting the <strong>Delete</strong> () action in the list.</p>
+<p>The system can also be configured to <a href="/documentation/developers-and-admins/digital-marketing-setup/contact-configuration/delete-inactive-contacts">automatically delete contacts</a> who have not performed any activities over a specified number of days.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Consequences of deleting contacts</strong></p>
+<p>Deleting contacts also removes any associated data, notably <a href="/documentation/developers-and-admins/data-protection/consent-management">consent agreements</a>, logged <a href="/documentation/business-users/digital-marketing/contact-activities">activities</a> and <a href="/documentation/business-users/digital-marketing/customer-journeys">customer journey</a> conversions.</p>
+<p>Only delete contacts if you are sure this data will not be needed in the future. Consent agreements in particular may be required to maintain compliance with data protection laws.</p>
+</div>
+
+<h2 id="contact-merging">Contact merging</h2>
+<p>In some cases, multiple contacts in your system may actually represent a single real‑world person. Automatic merging gets rid of duplicates by combining several contacts into a single one.</p>
+<p>The system automatically merges contacts that clearly represent the same person. This means that the system always <strong>merges contacts with the same email address</strong>.</p>
+<p>Automatic merging can occur when new contacts are created or when the data of existing contacts is updated. The merging is only triggered by live site actions such as a form submissions. Creating contacts or editing them via the administration or the API <strong>does not trigger</strong> automatic merging.</p>
+<p>After the system merges contacts, the result is a single contact referred to as a <em>parent</em>.</p>
+<h3 id="automatic-merge-collisions">Automatic merge collisions</h3>
+<p>When contact attribute collisions occur during automatic merges, the system uses the values of the child contact. If a collision is detected between the attributes of child contacts, and the parent contact does not contain a value in the given field, the priority of the values is undetermined – the system uses the values of the first contact loaded from the database.</p>
+<h3 id="contact-email-collisions">Contact email collisions</h3>
+<p>Because a contact’s email address is its main identifier in Xperience, the system does not allow the email to be changed based on data submitted by users. This can happen in the following ways:</p>
+<ul>
+<li><a href="/documentation/business-users/digital-marketing/forms/create-and-edit-forms#map-form-submission-to-contact-attributes">Form submissions</a></li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/headless-tracking#log-activities">Headless tracking Data input activities</a></li>
+<li><a href="/documentation/developers-and-admins/digital-marketing-setup/cross-site-tracking#data-input">Cross-site tracking Data input activities</a></li>
+</ul>
+<p>If the contact associated with a user already has an email address stored in Xperience, and it doesn’t match the newly submitted email value, all related activities and field updates are performed for a different contact. Either an existing contact that matches the submitted email value is used, or a new contact is created. In these cases, the user’s associated contact remains unchanged, but any subsequent actions, such as <a href="/documentation/business-users/digital-marketing/automation">automation processes</a>, are performed for the “other” contact that matches the submitted email address.</p>
+
+</body>
+</html>

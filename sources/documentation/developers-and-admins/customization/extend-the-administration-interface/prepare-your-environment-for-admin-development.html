@@ -1,0 +1,816 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Prepare your environment for admin development</title>
+</head>
+<body>
+<p>This page provides information about the requirements and configuration necessary to get started customizing the Xperience administration interface. Find information about:</p>
+<ul>
+<li><a href="#requirements">Requirements</a></li>
+<li>
+<a href="#client-development-boilerplate">Client development boilerplate</a>
+<ul>
+<li><a href="#naming-conventions">Naming conventions</a></li>
+<li><a href="#boilerplate-project-overview">Boilerplate project overview</a></li>
+<li><a href="#add-the-boilerplate-to-an-xperience-project">Add the boilerplate to an Xperience project</a></li>
+<li><a href="#choose-how-to-serve-client-scripts">Choose how to serve client scripts</a></li>
+<li><a href="#export-custom-react-components">Export custom React components</a></li>
+<li><a href="#keep-client-packages-up-to-date">Keep client packages up-to-date</a></li>
+<li><a href="#rename-the-boilerplate-project">Rename the boilerplate project</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>Depending on the scope of your planned customizations, you need some or all of the following components installed on your machine.</p>
+<p>To make changes to existing applications and pages (via <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-extenders">page extenders</a>), or add new <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">pages</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-application-pages">applications</a> based on <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/reference-ui-page-templates">existing templates</a>, you will only be making changes to the administration back end. For this, you need:</p>
+<ul>
+<li>A development environment with support for .NET (such as <a href="https://visualstudio.microsoft.com/" target="_blank">Visual Studio</a>)</li>
+</ul>
+<p>If the default set of components is insufficient and you need custom <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI page templates</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form components</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validation rules</a>, and other components for your planned customizations, you will be developing JavaScript modules that plug into the front-end React application. For this, you also need: </p>
+<ul>
+<li>A supported <a href="/documentation/developers-and-admins/installation/system-requirements#task-specific-requirements">Node.js</a> version</li>
+<li>A compatible package manager of your choice</li>
+<li>An editor for JavaScript development with TypeScript support (such as <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a>)</li>
+<li>
+<a href="#client-development-boilerplate">Boilerplate project</a> for the development of client JavaScript modules</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI customization model overview</a> for details about the structure of the admin UI customization framework and an overview of its extension points.</p>
+</div>
+
+<h2 id="client-development-boilerplate">Client development boilerplate</h2>
+<p>Xperience provides a boilerplate project to help you get started writing custom client components for the admin UI. We recommend using the boilerplate to bootstrap your environment. However, using the project is not required. If you are familiar with the way the admin UI consumes custom modules, you can set up a custom process.</p>
+<p>The boilerplate project is available as a .NET template as part of the <a href="/documentation/developers-and-admins/development/website-development-basics/configure-new-projects/xperience-by-kentico-nuget-packages">Kentico.Xperience.Templates package</a>. To install it, run the following command in a suitable directory:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+dotnet new kentico-xperience-admin-sample -n &lt;project_name&gt;
+
+</code></pre>
+</div>
+
+<p>The project includes:</p>
+<ul>
+<li>a template for developing JavaScript modules for the admin UI with minimum required dependencies and configuration</li>
+<li>a .NET class library project to store back end code and embed the client module</li>
+<li>examples demonstrating customization options</li>
+</ul>
+<p>For more information about the contents of the boilerplate project and its default configuration, see <a href="#boilerplate-project-overview">Boilerplate project overview</a>.</p>
+<h3 id="naming-conventions">Naming conventions</h3>
+<p>JavaScript client modules are registered into the system based on naming conventions that use the <strong>organization name</strong> and <strong>project name</strong>. These values can be seen referenced in multiple places throughout the project.</p>
+<ul>
+<li>In <em>webpack.config.js</em> in the client JS module template</li>
+<li>In the <em>.csproj</em> file of the class library containing back-end customizations</li>
+<li>In the <em>Module.cs</em> class file where the client module is registered via <code>RegisterClientModule</code>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p>The current version of the boilerplate package comes with hardcoded organization and project names (using a fictional <strong>Acme</strong> organization and the <strong>Web.Admin</strong> project name). See <a href="#rename-the-boilerplate-project">Rename the boilerplate project</a> to learn what needs to be changed when renaming the project.</p>
+</div>
+
+<p>These conventions ensure uniqueness when sharing client modules with other Xperience projects.</p>
+<h3 id="boilerplate-project-overview">Boilerplate project overview</h3>
+<p>The boilerplate project is made up of two main parts:</p>
+<ol type="1">
+<li><a href="#node.js-project-overview">a Node.js project for developing JavaScript modules</a></li>
+<li><a href="#net-class-library-overview">a .NET class library project</a></li>
+</ol>
+<h4 id="node.js-project-overview">Node.js project overview</h4>
+<p>The project comes with all required dependencies and recommended configuration, allowing you to immediately start development. The following table highlights important files:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>File</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>package.json</p>
+</td>
+<td>
+<p>Contains module metadata and dependencies. By default, the package depends on:</p>
+<ul>
+<li>
+<em>@kentico/xperience-admin-base</em> – contains templates, hooks, and low level components</li>
+<li>
+<em>@kentico/xperience-admin-components</em> – UI components used to build the administration. Use components from this package if you want to maintain the look and feel of the system in your custom code.</li>
+<li>
+<em>@kentico/xperience-webpack-config</em> – basic webpack configuration required to build admin UI modules</li>
+<li>
+<a href="https://reactjs.org/" target="_blank">React</a> – library for building client UIs</li>
+<li>
+<a href="https://babeljs.io/" target="_blank">Babel</a> – transpiles JavaScript for compatibility with older browsers</li>
+<li>
+<a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a> – typing support and compile-time type checking for JavaScript</li>
+<li>
+<a href="https://webpack.js.org/" target="_blank">webpack</a> – module bundler</li>
+</ul>
+<p>Additionally, the file contains a <a href="https://www.npmjs.com/package/browserslist" target="_blank">browserlist</a> configuration for Babel. The configuration mimicks the one used when building <em>@kentico/xperience</em> packages. It was chosen with relatively robust backwards compatibility in mind, given that Xperience packages and their dependencies make use of some of the newest features from the ECMAScript specification.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>webpack.config.js</p>
+</td>
+<td colspan="1">
+<p>A configuration for the webpack module bundler. </p>
+<p>Depends on <em>@kentico/xperience-webpack-config</em> which provides basic webpack configuration required to correctly build modules for the admin UI.</p>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>Webpack dynamic imports not supported</strong></p>
+<p>Dynamic imports (<code>import()</code>), often used with Webpack for <a href="https://webpack.js.org/guides/code-splitting/#dynamic-imports" target="_blank">code splitting</a>, are <strong>not supported</strong> within custom client modules. The way Xperience discovers and loads these custom modules at runtime is incompatible with code split via dynamic imports.</p>
+<p>Using dynamic imports in your custom module’s code may result in parts of your customization failing to load or other unexpected runtime errors within the administration interface. Ensure that your Webpack configuration and custom JavaScript/TypeScript code <strong>do not</strong> use the <code>import()</code> syntax for splitting parts of your module. All necessary code for your module should be included in the main bundle produced by Webpack during the build process.</p>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>tsconfig.json</p>
+</td>
+<td colspan="1">
+<p>Provides baseline <a href="https://www.typescriptlang.org/docs/handbook/tsconfig-json.html" target="_blank">TypeScript configuration</a> for the module.</p>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>babel.config.json</p>
+</td>
+<td colspan="1">
+<p>Babel configuration file. Takes the pool of target browsers from package.json.</p>
+</td>
+</tr>
+</table>
+
+<h4 id="net-class-library-overview">.NET class library overview</h4>
+<p>The class library primarily serves as an entry point for client customizations. Client modules need to be registered before they can be used, which occurs in the following files:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>File</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>project’s csproj file</p>
+</td>
+<td>
+<p>Contains directives that set</p>
+<ul>
+<li>the <code>organizationName</code> and <code>projectName</code> of the client module</li>
+<li>path to the output of the compiled javascript files</li>
+</ul>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;PropertyGroup&gt;
+    &lt;AdminOrgName&gt;organizationName&lt;/AdminOrgName&gt;
+&lt;/PropertyGroup&gt;
+
+&lt;ItemGroup&gt;
+    &lt;!-- Output folder of the client build process --&gt;
+    &lt;AdminClientPath Include="Client\dist\**"&gt;
+        &lt;ProjectName&gt;projectName&lt;/ProjectName&gt;
+    &lt;/AdminClientPath&gt;
+&lt;/ItemGroup&gt;
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td colspan="1">
+<p>Module.cs</p>
+</td>
+<td colspan="1">
+<p>Contains <a href="/documentation/developers-and-admins/customization/run-code-on-application-startup">application startup code</a> used to register the client module via </p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+RegisterClientModule("organizationName", "projectName");
+
+</code></pre>
+</div>
+</div>
+<p>available from the base <code>AdminModule</code> class.</p>
+</td>
+</tr>
+</table>
+
+<p>Other files included in the class library demonstrate customization options available for the admin UI. See <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/admin-ui-customization-model-overview">Admin UI customization model overview</a>.</p>
+<h3 id="add-the-boilerplate-to-an-xperience-project">Add the boilerplate to an Xperience project</h3>
+<p>Before you can start using the boilerplate to develop client code, you need to add it to your Xperience project:</p>
+<ol type="1">
+<li>
+<p>Install the boilerplate project next to your Xperience project’s folder. Requires the <em>Kentico.Xperience.Templates</em> package to be <a href="/documentation/developers-and-admins/installation">installed</a>.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ dotnet new kentico-xperience-admin-sample -n &lt;project_name&gt;
+
+ </code></pre>
+</div>
+
+<p></p>
+</li>
+<li><p>Extract the contents next to your Xperience project’s folder.</p></li>
+<li>
+<p>Reference the boilerplate project from your Xperience project. </p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ cd xperience\project\location
+ dotnet add reference ..\Acme.Web.Admin\Acme.Web.Admin.csproj
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Install all dependencies for client-side development using your package manager and build the package.</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ # Switches to the directory containing boilerplate client module code
+ cd ..\Acme.Web.Admin\Client
+ npm install
+ npm run build
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Configure the client module in the Xperience web application.</p>
+<ol type="1">
+<li><p>Open <em>appsettings.json</em> of your Xperience project.</p></li>
+<li>
+<p>Add the module and configure your preferred way of <a href="#choose-how-to-serve-client-scripts">handling client scripts</a> under <code>CMSAdminClientModuleSettings.</code>  </p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ "CMSAdminClientModuleSettings": {
+     // Add the module name in the &lt;orgName&gt;-&lt;projectName&gt; format separated by hyphens 
+     "acme-web-admin": {
+         "Mode": ""
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+</li>
+<li><p>Build the web application project.</p></li>
+</ol>
+<p>Your environment is now ready for the development of admin UI JavaScript modules.</p>
+<h3 id="choose-how-to-serve-client-scripts">Choose how to serve client scripts</h3>
+<p>The admin UI customization framework supports multiple methods of accessing client scripts. You set which method to use when configuring the module:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Method</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Proxy</p>
+</td>
+<td>
+<p>The Xperience web application requests client modules from a webpack dev server that runs parallel to the Xperience application.</p>
+<p>Changes to client code are immediately integrated and don’t require a restart or rebuild of the web application. </p>
+<p>Before you start developing, the webpack server needs to be manually started by running</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+npm run start
+
+</code></pre>
+</div>
+</div>
+<p>from the root of the module folder (where <em>package.json</em> is located).</p>
+<p><br>
+When configuring the module in your Xperience application, supply the following parameters:</p>
+<ul>
+<li><p>Mode: <code>Proxy</code></p></li>
+<li>
+<p>Port: the port number matching the one set for the webpack server in <em>webpack.config.js</em> (provided with the boilerplate project).</p>
+<div>
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>webpack.config.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  devServer: {
+      port: 3009,
+  }
+
+  </code></pre>
+</div>
+</div>
+</li>
+<li><p>UseSSL: set to true if your local development environment uses HTTPS. <em>False</em> by default. Note that the webpack instance serving your client scripts needs to be <a href="https://webpack.js.org/configuration/dev-server/#devserverhttps" target="_blank">configured to use SSL</a> as well.</p></li>
+</ul>
+<p><strong>Example appsettings.json module configuration</strong></p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json - Proxy mode configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAdminClientModuleSettings": {
+    "orgName-projectName": {
+        // In Proxy mode, client scripts are built separately and requests for them are proxied to the webpack server
+        "Mode": "Proxy",
+        // The port number needs to match the port set for the webpack server in webpack.config.js
+        "Port": 3009   
+    }
+}
+
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<p>Embedded</p>
+</td>
+<td>
+<p>Client scripts are stored in an assembly as embedded resources. This is the default method when no mode is explicitly configured for the module.</p>
+<p>The system looks for embedded modules in the directory specified by the <code>AdminClientPath</code> <em>.csproj</em> element.  </p>
+<div>
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>.csproj of the class library holding customizations</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+&lt;PropertyGroup&gt;
+&lt;TargetFramework&gt;&lt;!-- framework_version --&gt;&lt;/TargetFramework&gt;
+&lt;AdminOrgName&gt;acme&lt;/AdminOrgName&gt;
+&lt;/PropertyGroup&gt;
+
+&lt;ItemGroup&gt;
+&lt;AdminClientPath Include="Client\dist\**"&gt;
+    &lt;ProjectName&gt;web-admin&lt;/ProjectName&gt;
+&lt;/AdminClientPath&gt;
+&lt;/ItemGroup&gt;
+
+</code></pre>
+</div>
+</div>
+<p>For changes made to client code to be reflected, you need to:</p>
+<ol type="1">
+<li>
+<p>Build the client code using</p>
+<div>
+<div>
+<pre><code>
+
+ npm run build
+
+ </code></pre>
+</div>
+</div>
+</li>
+<li><p>Build the Xperience web application (to update the embedded resources).</p></li>
+</ol>
+<p>The following diagram summarizes the behavior of <em>Embedded</em> mode:</p>
+<p></p>
+<p>When configuring the module in your Xperience application, supply the following parameters:</p>
+<ul>
+<li>Mode: <code>Embedded</code>
+</li>
+</ul>
+<p><strong>Example appsettings.json module configuration</strong></p>
+<div>
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json - Embedded mode configuration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+"CMSAdminClientModuleSettings": {
+    "orgName-projectName": {
+        // In Embedded mode, client scripts are stored in an assembly as embedded resources.
+        // Mainly intended for deployment scenarios.
+        "Mode": "Embedded"
+    }
+}
+
+</code></pre>
+</div>
+</div>
+<div>
+<div>
+
+</div>
+<div>
+<p><strong>Tips</strong></p>
+<ul>
+<li>Use the <code>Proxy</code> mode when developing customizations and then switch to the <code>Embedded</code> mode for final, deployment-ready builds.</li>
+<li>You can use <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-5.0" target="_blank">environment-specific</a> configuration files to configure the modes for different environments.</li>
+</ul>
+</div>
+</div>
+</td>
+</tr>
+</table>
+
+<h3 id="export-custom-react-components">Export custom React components</h3>
+<p>You must export all components that you want to make available from the main Xperience admin UI application via the custom module’s <strong>entry.tsx</strong> file. This primarily includes all components covered in the customization section, such as <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages">UI pages</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">UI form components</a>, <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-validation-rules">validation</a> and <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/ui-form-component-visibility-conditions">visibility</a> rules.</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>Exporting custom components</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+// Exposes components from the module.
+// The export must declare the full path to the given component file.
+export * from './custom-layout/CustomLayoutTemplate';
+export * from './form-components/ColorSelectorFormComponent';
+</code></pre>
+</div>
+
+<h3 id="keep-client-packages-up-to-date">Keep client packages up-to-date</h3>
+<p>When <a href="/documentation/developers-and-admins/installation/update-xperience-by-kentico-projects">updating your Xperience project</a>, remember to also update the dependencies of your admin UI client project – <em>@kentico/xperience-admin-base</em>, <em>@kentico/xperience-admin-components</em>, <em>@kentico/xperience-webpack-config</em>, etc.</p>
+<p>Use the <a href="https://docs.npmjs.com/cli/v9/commands/npm-update" target="_blank">npm-update</a> command:</p>
+
+<div>
+<div>
+<div>
+<span>CMD</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+# Switches to the directory containing boilerplate client module code
+cd ..\Acme.Web.Admin\Client
+npm update
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Custom dependencies</strong></p>
+<p>In admin UI client projects, you may use any dependencies required for your functionality, except those managed by the application itself and shared across system and custom modules. The most important of these is the <strong>React</strong> dependency, which must match the version used by the application. For the required React version, see <a href="/documentation/developers-and-admins/installation/system-requirements#task-specific-requirements">System requirements</a>.</p>
+</div>
+
+<h3 id="rename-the-boilerplate-project">Rename the boilerplate project</h3>
+<p>The admin UI customization framework relies on naming conventions to register JavaScript modules. All modules follow the <strong>organizationName.projectName</strong> naming pattern.</p>
+<p>You can set these parameters when creating the boilerplate project. This way the project is created and configured with the correct values.</p>
+<p>However, you can always rename the project at a later point by changing specific configuration files and folder names. This guide assumes the following values used during boilerplate creation:</p>
+<ul>
+<li>orgName: Acme</li>
+<li>projectName: Web.Admin</li>
+</ul>
+<h4 id="client-code">Client code</h4>
+<p>All files referenced in this section are located under <em>~/Acme.Web.Admin/Client</em>.</p>
+<ol type="1">
+<li>
+<p>Change the <code>orgName</code> and <code>projectName</code> settings in Xperience’s webpack configuration under <em>~/webpack.config.js</em>. This changes the name of the resulting module built by webpack:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong>webpack.config.js</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ const baseConfig = (webpackConfigEnvc, argv) =&gt; {
+     return baseWebpackConfig({
+         // Change the orgName to your desired value
+         orgName: "acme",
+         // Change the projectName to your desired value
+         projectName: "web-admin",
+         webpackConfigEnv: webpackConfigEnv,
+         argv: argv
+     });
+ };
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>(Optional) Change the name of the JavaScript module in <em>package.json</em>:</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>package.json</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ {
+     name: "acme-web-admin",
+     ...
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<h4 id="back-end-code">Back end code</h4>
+<ol type="1">
+<li>
+<p>Edit the <em>.csproj</em> file of your class library project under <em>~/Acme.Web.Admin</em> and change the following configuration:</p>
+
+<div>
+<div>
+<div>
+<span>XML</span>
+</div>
+<strong>Acme.Web.Admin.csproj</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ &lt;PropertyGroup&gt;
+   &lt;TargetFramework&gt;&lt;!-- framework_version --&gt;&lt;/TargetFramework&gt;
+   &lt;!-- Change the organization name --&gt;
+   &lt;AdminOrgName&gt;acme&lt;/AdminOrgName&gt;
+ &lt;/PropertyGroup&gt;
+
+ &lt;ItemGroup&gt;
+   &lt;AdminClientPath Include="Client\dist\**"&gt;
+     &lt;!-- Change the project name --&gt;
+     &lt;ProjectName&gt;web-admin&lt;/ProjectName&gt;
+   &lt;/AdminClientPath&gt;
+ &lt;/ItemGroup&gt;
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p>Edit <em>~/Acme.Web.Admin/Module.cs</em> and change:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Module.cs</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ public class Module : AdminModule
+ {
+     // (Optional) Change the name of the custom module
+     public Module()
+         : base("Acme.Web.Admin")
+     {
+     }
+
+     protected override void OnInit()
+     {
+         base.OnInit();
+
+         // Change the organization name and project name in the client scripts registration
+         RegisterClientModule("acme", "web-admin");
+     }
+ }
+
+ </code></pre>
+</div>
+</li>
+</ol>
+
+</body>
+</html>

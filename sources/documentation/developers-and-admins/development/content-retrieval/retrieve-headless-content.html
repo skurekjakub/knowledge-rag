@@ -1,0 +1,967 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Retrieve headless content</title>
+</head>
+<body>
+<p>Every <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a> in Xperience by Kentico provides a <a href="https://graphql.org/learn/serving-over-http/" target="_blank">GraphQL API endpoint</a>, which allows you to retrieve content using HTTP requests and the JSON data format. Such headless content can be displayed or otherwise consumed by various types of applications, services or websites (e.g., mobile apps, external websites, single-page applications running within Xperience, etc.).</p>
+<p>Before you can retrieve content using the headless API, you need to:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/configuration/headless-channel-management">Set up headless channels</a>.</li>
+<li>Define <a href="/documentation/developers-and-admins/development/content-types">content types</a> for headless content.</li>
+<li>Add the required content by creating <a href="/documentation/business-users/headless-content">headless content items</a>.</li>
+</ol>
+<p>Once your headless channels are configured and the content is ready, you can:</p>
+<ol type="1">
+<li>
+<a href="#prepare-graphql-queries">Explore the GraphQL schema and prepare queries for the desired content</a>.</li>
+<li>
+<a href="#retrieve-headless-channel-content">Retrieve the content from your consuming applications or services by sending requests to the headless channel API endpoint</a>.</li>
+</ol>
+<h2 id="prepare-graphql-queries">Prepare GraphQL queries</h2>
+<p>Refer to the official <a href="https://graphql.org/learn/queries/" target="_blank">GraphQL documentation</a> to learn the general principles of queries.</p>
+<p>Xperience generates a GraphQL schema for every <a href="/documentation/developers-and-admins/configuration/headless-channel-management">headless channel</a>, which includes:</p>
+<ul>
+<li>Query fields and types for all headless content types assigned to the channel.</li>
+<li>Types for all reusable content types that are linked through the fields of the content types included in the schema.</li>
+<li>Unions for any fields of the content types included in the schema that can contain linked items of multiple content types.</li>
+<li>Interfaces for any <a href="/documentation/developers-and-admins/development/content-types/reusable-field-schemas">reusable field schemas</a> assigned to the included content types.</li>
+<li>Scalar types for all data types used by the fields of the included content types.</li>
+<li>Input types with the <code>Filter</code> and <code>Sorter</code> suffixes for all included content types and scalars.</li>
+<li>Additional system types, e.g., representing fields containing linked media files, assets or pages.</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><a href="/documentation/developers-and-admins/customization/field-editor/data-type-management#register-custom-data-types">Custom data types</a> are not available in the GraphQL API for headless channels. Only the built-in scalar types can be used in content types provided through the API. Any custom data types will not be included in the GraphQL schema and cannot be queried via the API.</p>
+</div>
+
+<p>The schema is <strong>automatically updated</strong> when you add/remove content types for headless channels or adjust their fields.</p>
+<p>Only content retrieval is supported. The schema of headless channels does not include any GraphQL mutations for adding or modifying content.</p>
+<p>To inspect the GraphQL schema of a headless channel, access the given channel’s API endpoint, e.g.:<br>
+<em>https://example.com/graphql/09114e33-7578-4152-af81-62677bcca740</em></p>
+
+<div>
+
+</div>
+<div>
+<p>To learn how to find or configure a headless channel’s API endpoint, see <a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channel management</a>.</p>
+</div>
+
+<p>There are several ways to explore the GraphQL schema and craft queries:</p>
+
+<div>
+
+</div>
+<div>
+<p>You need to have the <code>AllowIntrospection</code> option enabled for your application to explore the GraphQL schema.</p>
+</div>
+
+<ul>
+<li><p><a href="https://graphql.org/learn/introspection/" target="_blank">Introspection</a> – you can query the <code>__schema</code> field to retrieve information about the GraphQL schema and see available queries.</p></li>
+<li>
+<p><a href="https://chillicream.com/docs/nitro" target="_blank">Banana Cake Pop</a> (now known as <em>Nitro</em>) – a developer IDE that allows you to explore the schema using a graphical user interface, as well as create and run queries to see the results immediately. You can <a href="https://chillicream.com/products/nitro/" target="_blank">download the desktop app</a> or access the tool in a browser by adding <em>/ui</em> to your Xperience application’s GraphQL endpoint path. The tool’s default URL path is <em>/graphql/ui</em>, but can be customized via the <code>GraphQlEndpointPath</code> <a href="/documentation/developers-and-admins/configuration/headless-channel-management#configure-the-headless-api">configuration key</a>.</p>
+<p></p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Banana Cake Pop (Nitro) configuration</strong></p>
+<p>In the <em>Connection Settings</em> of the IDE, make sure of the following:</p>
+<ul>
+<li>
+<em>Schema Endpoint</em> is set to the full URL of the channel’s API endpoint.</li>
+<li>
+<em>Authorization</em> is configured correctly with a valid <a href="#authentication">API key</a>.</li>
+</ul>
+</div>
+</li>
+</ul>
+<h3 id="basic-querying">Basic querying</h3>
+<p>The GraphQL schema contains the following <strong>query fields</strong> and <strong>types</strong> for each headless <a href="/documentation/developers-and-admins/development/content-types">content type</a> assigned to the given channel:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Query field</p>
+</td>
+<td>
+<p>Type</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><code>&lt;contentTypeShortCodeName&gt;</code></p>
+</td>
+<td>
+<p><code>&lt;ContentTypeShortCodeName&gt;</code></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><code>&lt;contentTypeShortCodeName&gt;Collection</code></p>
+</td>
+<td>
+<p><code>_&lt;ContentTypeShortCodeName&gt;Collection</code></p>
+</td>
+</tr>
+</table>
+
+<p>Individual item types have fields matching the fields of the given content type in Xperience. Each <em>Collection</em> type contains an <code>items</code> sub-field, which allows you to access an array of the retrieved items.</p>
+<p>The following query retrieves all headless items of the <em>Acme.Product</em> content type, loading the data in the <code>name</code> and <code>price</code> fields:</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      name
+      price
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<p>Each item type also has the additional <code>_system</code> field(of the <code>_System</code> type) with general sub-fields like <code>id</code> and <code>contentType</code>. </p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      _system {
+        id
+        contentType
+      }
+      name
+      price
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<p>To retrieve a specific item, use one of the following approaches:</p>
+<ul>
+<li><p>Query a field storing a collection of items and <a href="#filtering">filter</a> the specific item using the <code>where</code> argument.</p></li>
+<li>
+<p>Query a single item field and set the <code>id</code> argument to the required content item’s GUID. This approach is suitable when you can populate the id argument using data retrieved by a previous query.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  {
+    acmeProduct(id: "7aa56aa6-1d6f-4a3e-8f54-38e4ee3e4a62") {
+      name
+      price
+    }
+  }
+
+  </code></pre>
+</div>
+</li>
+</ul>
+
+<div>
+
+</div>
+<div>
+<p><strong>Content restrictions for headless channels</strong></p>
+<p>Headless content does <strong>not</strong> include <a href="/documentation/business-users/content-hub/content-items#secure-content-items">secured content items</a> that have the <strong>Requires authentication</strong> flag enabled. </p>
+</div>
+
+<h4 id="retrieval-of-latest-or-published-headless-content">Retrieval of latest or published headless content</h4>
+<p>Based on your needs, you may want to retrieve headless content in different workflow states. For example, to enable content editors to preview the headless content before they publish it, retrieve the content in its latest edited version. Alternatively, when retrieving headless content for your production environment, you typically want to retrieve only published versions of items.</p>
+<p>To choose which version (latest or published) of headless content will be retrieved from Xperience, <a href="#authentication">authenticate</a> your requests with an API key using the corresponding <a href="/documentation/developers-and-admins/configuration/headless-channel-management#access-types-of-api-keys">access type</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>When retrieving the latest version of headless items, <a href="#linked-items">linked items</a> are also retrieved in their latest edited version.</p>
+<p>Similarly, when retrieving published items, only published linked items are retrieved.</p>
+</div>
+
+<h4 id="languages">Languages</h4>
+<p>When querying item or collection fields, you can control which <a href="/documentation/developers-and-admins/configuration/languages">language</a> variant is returned by setting the following arguments:</p>
+<ul>
+<li>
+<code>languageName</code> – the code name of the language in which you want to retrieve the content item.</li>
+<li>
+<code>useLanguageFallbacks</code> – indicates whether the closest language variant available in the <a href="/documentation/developers-and-admins/configuration/languages">fallback chain</a> is retrieved if the item is not available in the requested language.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection(languageName: "es", useLanguageFallbacks: true) {
+    items {
+      name
+      price
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h4 id="workspaces">Workspaces</h4>
+<p>When querying item or collection fields, you currently cannot control which <a href="/documentation/developers-and-admins/configuration/users/role-management/workspaces">workspace</a> the content is retrieved from.</p>
+<h4 id="linked-items">Linked items</h4>
+<p>Headless items may contain fields that link to other reusable content items or headless items. All linked content types are represented in the GraphQL schema according to the same rules <a href="#basic-querying">described above</a>, with both single item and collection types. This includes content types that are linked recursively through the fields of other linked types.</p>
+<p>When querying deeply nested linked items (e.g., recursively linked content), GraphQL enforces a maximum depth limit. By default, the limit is set to 5. You can customize it via the <code>MaxFieldCycleDepth</code> <a href="/documentation/developers-and-admins/configuration/headless-channel-management#configure-the-headless-api">configuration key</a>.</p>
+<p>The following query retrieves headless items of the <em>Acme.Product</em> content type, with additional linked content items stored in the <code>reviews</code> field:</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      name
+      price
+      reviews {
+        items {
+          reviewText
+          reviewStars
+        }
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<p>When retrieving items from a field where it is possible to select multiple content types, the items are returned as a <a href="https://graphql.com/learn/interfaces-and-unions/#introducing-unions" target="_blank">GraphQL Union</a>. Unions can be queried using <a href="https://graphql.com/learn/interfaces-and-unions/#querying-with-unions" target="_blank">inline fragments</a> to target each content type individually. The following query retrieves headless items of the <em>Acme.Product</em> content type, with the additional linked content items of two content types (<em>Acme.Coffee</em> and <em>Acme.GrinderPage</em>) stored in the <code>productItems</code> field:</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+query {
+  acmeProductCollection {
+    items {
+      name
+      productItems {
+        items {
+          ... on AcmeCoffee {
+            _system {
+              contentType
+            }
+            coffeeName
+            coffeeDescription
+            coffeeTastes {
+              name
+              title
+            }
+          }
+          ... on AcmeGrinderPage {
+            _system {
+              url
+              contentType
+            }
+            grinderPageTitle
+            grinderPageSummary
+            grinderPageText
+            grinderPagePublishDate
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+</div>
+
+<h4 id="linked-pages">Linked pages</h4>
+<p>There are two options to link to <a href="/documentation/business-users/website-content">website channel pages</a> in headless channels:</p>
+<ul>
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#page-selector">Page selector</a> fields
+<ul>
+<li>Fields that link to pages using the <em>Page selector</em> form component and the <em>Pages</em> data type in Xperience. Such fields are represented as a <code>[_WebPage!]</code> array in the GraphQL schema.</li>
+<li>The <code>_WebPage</code> type exposes the <code>url</code> field, which stores the <strong>absolute</strong> <a href="/documentation/business-users/website-content/manage-page-urls#select-the-canonical-url-of-pages">canonical URL</a> of the given page containing the main domain of the related <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</li>
+<li>You cannot use the <code>_WebPage</code> objects to access the fields of the page content type itself. If you wish to associate other data with the linked page, create a reusable <a href="/documentation/developers-and-admins/development/content-types">content type</a> representing page links with a <em>Pages</em> field for selecting the target page, and additional fields for any required data (e.g., a name or title for the link).</li>
+<li>This approach is recommended when you want to link to pages regardless of their content type and only need URLs of the pages, e.g., when building navigation.</li>
+</ul>
+</li>
+<li>
+<a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">Combined content selector</a> fields
+<ul>
+<li>Fields that link to pages using the <em>Combined content selector</em> form component and the <em>Page and reusable items</em> data type in Xperience. Such field are represented as a <a href="https://graphql.com/learn/interfaces-and-unions/#introducing-unions" target="_blank">GraphQL Union</a> when selection of multiple content types is allowed. Otherwise, an array of web page objects is used.</li>
+<li>The <code>_system</code> field exposes the <code>url</code> property, which stores the <strong>absolute</strong> <a href="/documentation/business-users/website-content/manage-page-urls#select-the-canonical-url-of-pages">canonical URL</a> of the given page containing the main domain of the related <a href="/documentation/developers-and-admins/configuration/website-channel-management">website channel</a>.</li>
+<li>Web page objects retrieved from <em>Combined content selector</em> fields expose all fields of the content type itself.</li>
+<li>This approach is recommended when you want to retrieve web page data of certain content types. If you want to retrieve pages of multiple content types, you need to handle each content type individually using <a href="https://graphql.com/learn/interfaces-and-unions/#querying-with-unions" target="_blank">inline fragments</a>.</li>
+</ul>
+</li>
+</ul>
+<p>In the following query example, a <em>Navigation item</em> headless content type has a <code>linkedPage</code> field linking to a website channel page using the <strong>Page selector</strong>. The title is provided by the headless content type.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>Page selector</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeNavigationItemCollection {
+    items {
+      navigationItemTitle
+      linkedPage {
+        url
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<p>In the following query example, an <em>Article page</em> content type has a <code>linkedPages</code> field linking to website channel pages using the <strong>Combined content selector</strong>. The title, summary and content of the article is also retrieved from web pages.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>Combined content selector</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeArticlePageCollection {
+    items {
+      linkedPages {
+        items {
+          _system {
+            url
+          }
+          articleTitle
+          articleSummary
+          articleText
+        }
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Pages linked in rich text fields</strong></p>
+<p>If a page is linked within the content of a <a href="/documentation/business-users/rich-text-editor">rich text field</a> in Xperience and this field is queried by the headless API, the returned data contains a link with an <strong>absolute</strong> <a href="/documentation/business-users/website-content/manage-page-urls#select-the-canonical-url-of-pages">canonical URL</a> containing the domain under which the headless channel endpoint was accessed.</p>
+</div>
+
+<h4 id="fields-referencing-reusable-field-schemas">Fields referencing reusable field schemas</h4>
+<p>For content type fields that link to content items of multiple content types via reusable field schemas (using the <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components#combined-content-selector">combined content selector</a>), you can only directly access the properties of the reusable field schema (represented as an interface in the GraphQL schema). To access the properties of the underlying concrete content types, use <a href="https://graphql.org/learn/queries/#inline-fragments" target="_blank">inline fragments</a>.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      name
+      price
+      promotions {
+        items {
+          productTitle,
+          productDescription
+
+          ... on AcmeGrinder {
+              grinderText
+          }
+        }
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h4 id="assets">Assets</h4>
+<p>Content types in Xperience may have fields that store or link to file assets (images, videos, documents, etc.).</p>
+<ul>
+<li>
+<strong>Content item asset</strong> fields of reusable content types storing <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a> are represented by the <code>_ContentItemAsset</code> type in the GraphQL schema.
+<ul>
+<li>
+<strong>Note:</strong> retrieval of <a href="/documentation/business-users/content-hub/content-item-assets#image-variants">image variants</a> is currently not supported.</li>
+</ul>
+</li>
+<li>
+<strong>Media files</strong> fields of any content type linking to one or more <a href="/documentation/business-users/media-libraries/manage-media-files">media library files</a> are represented as an <code>[_Asset!]</code> array in the GraphQL schema.
+<ul>
+<li>
+<strong>Note:</strong> Media libraries have been sunset and will be removed in the future.</li>
+</ul>
+</li>
+</ul>
+<p>The <code>_ContentItemAsset</code> and <code>_Asset</code> types expose various fields with the file’s metadata. The <code>path</code> field stores the <strong>relative URL path</strong>, which you can use to link or display the file.</p>
+<p>In the following query example, a linked <em>Promotion</em> content type has a <code>promotionTeaserImage</code> asset field.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      name
+      price
+      promotions {
+        items {
+          promotionArticleTitle 
+          promotionTeaserImage {
+            # Relative URL path to the asset.
+            path
+
+            # Width and height of the asset in pixels. Null for non-image assets.
+            width
+            height
+          }
+        }
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Assets linked in rich text fields</strong></p>
+<p>If an image or other file is linked within the content of a <a href="/documentation/business-users/rich-text-editor">rich text field</a> in Xperience and this field is queried by the headless API, the returned data contains an <strong>absolute file URL</strong> containing the domain under which the headless channel endpoint was accessed.</p>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Content item assets in latest versions</strong></p>
+<p>Retrieved URLs of content item assets in their <a href="#retrieval-of-latest-or-published-headless-content">latest version</a>, both relative and absolute, are valid only for 10 minutes. If you want to access a content item asset after this limit, you need to retrieve the asset again.</p>
+</div>
+
+<h4 id="taxonomies">Taxonomies</h4>
+<p>Content types in Xperience may have fields that store tags related to the content in <a href="/documentation/developers-and-admins/configuration/taxonomies">taxonomy fields</a>.</p>
+<p><strong>Taxonomy</strong> fields of content types storing <a href="/documentation/developers-and-admins/configuration/taxonomies">tags</a> are represented by the <code>_Tag</code> type in the GraphQL schema. The <code>_Tag</code> type exposes the following properties for each tag:</p>
+<ul>
+<li>
+<strong>name</strong> – the code name of the tag.</li>
+<li>
+<strong>title</strong> – the display name of the tag.</li>
+<li>
+<strong>description</strong> – a brief description of the tag.</li>
+</ul>
+<p>In the following query example, a <em>Product</em> content type has a <code>productCategory</code> taxonomy field.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      name
+      price
+      productCategory {
+        name
+        title
+        description
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h4 id="time-fields">Time fields</h4>
+<p>The values of <em>Date and time</em> fields (represented by the <code>DateTime</code> scalar type) are always retrieved in the time zone of the server where the application is running. If required, you can convert to a different time zone in the code of your client application.</p>
+<h4 id="smart-folder-fields">Smart folder fields</h4>
+<p>Fields with the <em>Smart folder</em> data type are currently not supported when retrieving content for headless channels.</p>
+<h3 id="filtering">Filtering</h3>
+<p>The GraphQL schema automatically includes input types with the <code>Filter</code> suffix for all included content types. These filters allow you to limit which items are returned when you query a <code>*Collection</code> field. Access the filters by adding the <code>where</code> argument to any collection field in your query.</p>
+<p>The collection filters have fields matching the fields of the corresponding content type. These filter fields use scalar filter types with sub-fields representing comparison operations suitable for the given data type. For example: <code>contains</code>, <code>eq</code> (equals), <code>nstartsWith</code> (does not start with) for<code>_TextFilter</code>.</p>
+<p>Each <code>where</code> argument can only filter over a single scalar field (combined AND/OR filters are not supported).</p>
+<p>You can combine filtering with <a href="#sorting">sorting</a> arguments.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>Acme.Product items whose name contains hammer</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection(where: { name: { contains: "hammer"}}) {
+    items {
+      name
+      price
+    }    
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>Acme.Product items whose price is greater than 50</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection(where: { price: { gt: 50}}) {
+    items {
+      name
+      price
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>All Acme.Product items, with linked review items that have 3 or more stars</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection {
+    items {
+      name
+      price
+      reviews(where: { reviewStars: {gte: 3}}) {
+        items {
+          reviewText
+          reviewStars
+        }
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<p>You can also filter collections based on <a href="#taxonomies">taxonomy fields</a> using the following operations:</p>
+<ul>
+<li>
+<strong>containsAny</strong> – retrieves items that contain any of the specified tags or contain child tags of any of the specified tags.</li>
+<li>
+<strong>containsAll</strong> – retrieves items that contain all of the specified tags or contain child tags of all of the specified tags.</li>
+</ul>
+<p>In the following examples, <code>productCategory</code> is a taxonomy field (of type <code>_Tag</code>).</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>All Acme.Product items that are tagged as ‘Electronics’ or ‘Tool’</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection (where: {productCategory: {containsAny: [ "Electronics", "Tool" ]}}) {
+    items {
+      name
+      price
+      productCategory {
+        name
+        title
+        description
+      }
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h3 id="sorting">Sorting</h3>
+<p>The GraphQL schema automatically includes input types with the <code>Sorter</code> suffix for all included content types. These sorters allow you to control the order in which items are returned when you query a <code>*Collection</code> field. Access the sorters by adding the <code>sort</code> argument to any collection field in your query.</p>
+<p>The collection sorters have fields matching the fields of the corresponding content type. You can set the sorter fields to either the <code>ASC</code> (ascending) or <code>DESC</code> (descending) values from the <code>_Sorter</code> enum type.</p>
+<p>You can combine sorting with <a href="#filtering">filtering</a> arguments.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>Acme.Product items sorted by price in descending order</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection(sort: { price: DESC }) {
+    items {
+      name
+      price
+    }
+  }
+}
+
+</code></pre>
+</div>
+
+<h3 id="pagination">Pagination</h3>
+<p>Pagination allows you to retrieve content items in smaller, more manageable segments. To control pagination, add the following arguments when you query a <code>*Collection</code> field:</p>
+<ul>
+<li>
+<code>skip</code> – the index (0-based) of the item from which the retrieved segment starts. For example, if skip is 5, the segment starts from the 6th item.</li>
+<li>
+<code>take</code> – how many items are retrieved in the segment, starting from the index set by <em>skip</em> (or the first item if <em>skip</em> is not specified). The maximum <em>take</em> value is 100.</li>
+</ul>
+<p>Every collection type has the <code>totalCount</code> field, which returns the total number of retrieved items regardless of pagination applied by the <code>skip</code> and/or <code>take</code> arguments.</p>
+<p>You can combine pagination with <a href="#sorting">sorting</a> and <a href="#filtering">filtering</a> arguments.</p>
+
+<div>
+<div>
+<div>
+<span>GraphQL</span>
+</div>
+<strong>Retrieves the first page of 10 Acme.Product items</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  acmeProductCollection(skip: 0, take: 10) {
+    items {
+      name
+      price
+    }
+    totalCount
+  }
+}
+
+</code></pre>
+</div>
+
+<h2 id="retrieve-headless-channel-content">Retrieve headless channel content</h2>
+<p>To retrieve headless channel content from your applications or services, send requests to the API endpoint of the appropriate headless channel, for example:<br>
+<em>https://example.com/graphql/09114e33-7578-4152-af81-62677bcca740</em></p>
+<p>To learn how to find or configure a headless channel’s API endpoint, see <a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channel management</a>.</p>
+<p>A standard GraphQL POST request has the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type" target="_blank">Content-Type</a> header set to <strong>application/json</strong>, and includes a JSON-encoded body containing a <a href="#prepare-graphql-queries">GraphQL query</a>.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>JSON request format</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  'query': ...
+}
+
+</code></pre>
+</div>
+
+<h3 id="authentication">Authentication</h3>
+<p>GraphQL API endpoints require all requests to have the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization" target="_blank">Authorization</a> header containing a <strong>valid and enabled API key</strong> for the given headless channel (see <a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channel management</a> for more information about API keys).</p>
+
+<div>
+<div>
+<div>
+<span>Text</span>
+</div>
+<strong>HTTP Authorization header</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+Authorization: Bearer &lt;ApiKey&gt;
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Authorizaton header security recommendations</strong></p>
+<p>If you set the <em>Authorization</em> header directly when sending requests from a client API on a public web page, it can be seen by anyone. To ensure the security of your API keys, we recommend that you use a backend proxy server to add the <em>Authorization</em> header and forward the requests to the GraphQL API endpoint.</p>
+</div>
+
+<h3 id="cross-origin-resource-sharing">Cross-origin resource sharing</h3>
+<p>For requests originating from the client-side code of web applications, you need to ensure <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank">Cross-Origin Resource Sharing (CORS)</a>.</p>
+<p>To configure allowed origins:</p>
+<ol type="1">
+<li><p>Open the <strong>Settings</strong> application in the Xperience administration.</p></li>
+<li><p>Navigate to the <strong>Content → Headless</strong> category.</p></li>
+<li>
+<p>Fill in <strong>Allowed origins</strong>. You can enter the following values:</p>
+<ul>
+<li>Domain names from which content retrieval requests will be sent, separated by semicolons. For example: <em>www.example.com;sampleapp.net</em>
+</li>
+<li>The * wildcard, which means that headless API endpoints can be accessed by any origin. Some system configurations may not accept responses that allow all origins.</li>
+</ul>
+</li>
+<li><p>Select <strong>Save</strong>.</p></li>
+</ol>
+<p>Headless API endpoints now accept requests from the specified domains.</p>
+<p>If you wish to configure different allowed origins for specific application environments (local development, QA, production, etc.), you can use the <code>CMSHeadless:CorsAllowedOrigins</code> key in your application’s configuration file (<em>appsettings.json</em> by default) or the <code>HeadlessOptions.CorsAllowedOrigins</code> option in your project’s startup file (<em>Program.cs</em>). See <a href="/documentation/developers-and-admins/configuration/headless-channel-management">Headless channel management</a> to learn more about configuring the headless API. However, keep in mind that the <strong>Allowed origins</strong> setting in Xperience overrides CORS allowed origin values set in your application’s configuration file or startup options.</p>
+<p>Additionally, the <code>CorsAllowedHeaders</code> key or option allows you to restrict which HTTP headers are allowed for headless content retrieval requests (in addition to <a href="https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_request_header" target="_blank">CORS-safelisted request headers</a>). Separate the HTTP header names using semicolons. If not set, all headers are allowed by default.</p>
+
+<div>
+<div>
+<div>
+<span>JSON</span>
+</div>
+<strong>appsettings.json example</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+{
+  ...
+
+  "CMSHeadless": {
+    "CorsAllowedOrigins" : "www.example.com;sampleapp.net",
+    "CorsAllowedHeaders": "Authorization;Cache-Control"
+    ...
+  }
+}
+
+</code></pre>
+</div>
+
+<p>When you send a request from a web application to a different domain, the user agent automatically includes the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin" target="_blank">Origin</a> HTTP header. If the domain name of the origin is allowed by your configuration, Xperience returns a response with the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin" target="_blank">Access-Control-Allow-Origin</a> header (set to either the origin domain or the * wildcard). The request is successful and the consuming application receives the requested data in the response’s payload.</p>
+<p>If you do not set any allowed origins, headless API endpoints do not include the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin" target="_blank">Access-Control-Allow-Origin</a> header in responses, which may lead to failed requests. You can use an empty value if you wish to handle HTTP headers manually.</p>
+<p>When sending responses to <a href="https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request" target="_blank">Preflight requests</a>, the system includes the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers" target="_blank">Access-Control-Allow-Headers</a> header with a value containing the header names specified in the <code>CorsAllowedHeaders</code> option, or all header names sent in <a href="http://Access-Control-Request-Headers" target="_blank">Access-Control-Request-Headers</a> if the option is not set.</p>
+
+</body>
+</html>

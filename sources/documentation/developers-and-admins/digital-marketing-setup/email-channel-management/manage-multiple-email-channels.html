@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Manage multiple email channels</title>
+</head>
+<body>
+<p>Having multiple email channels within a single Xperience by Kentico application provides flexibility in how you communicate with your audiences. You can use different sending domains for each channel, which makes it easier to tailor communication to specific regions, brands, or customer segments. Multiple channels also let you distribute different language variants of emails, which a single channel doesn’t support.</p>
+<p>This page provides best practices for <strong>organizing the code of multiple email channels within one Xperience project</strong>.</p>
+<p>The required level of code separation depends on the <a href="/guides/architecture/content-modeling/content-modeling-guide">content model</a> each channel uses. In most cases, you’ll want to treat them as independent, with separate <a href="/documentation/developers-and-admins/development/content-types">content types</a> and <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a> for each channel. However, if your email channels share an identical content model, you can often treat them as a single channel and reuse your code without any issues.</p>
+<p>To implement multiple email channels:</p>
+<ol type="1">
+<li>
+<a href="/documentation/developers-and-admins/digital-marketing-setup/email-channel-management">Create and configure your email channels</a> in the administration interface.</li>
+<li>Organize the project structure and content types according to the recommendations below.</li>
+</ol>
+<h2 id="content-types">Content types</h2>
+<p>Use a unique namespace in the code name of <a href="/documentation/developers-and-admins/development/content-types">content types</a> related to a specific email channel. This prevents conflicts when implementing various features related to content types.</p>
+<h3 id="generated-email-model-classes">Generated email model classes</h3>
+<p>For smaller projects, you may store your <a href="/documentation/developers-and-admins/api/generate-code-files-for-system-objects">generated email model classes</a> directly in the main Xperience project.</p>
+<p>For larger solutions, where Email Builder components may be placed in dedicated <a href="https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class" target="_blank">Razor class libraries</a> (RCLs), the model classes must also be available to those RCLs. In this case, we recommend storing your generated email classes in a dedicated <em>Class library</em> project for all generated model classes and reference it from the main Xperience project as well as from any Email Builder RCLs.</p>
+<h2 id="email-builder">Email Builder</h2>
+<p>Use <a href="https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class" target="_blank">Razor class libraries</a> (RCLs) to organize the code of your <a href="/documentation/developers-and-admins/development/builders/email-builder">Email Builder</a> components if you plan to create a large number of Email Builder components. For smaller projects you can store your components directly within the main Xperience project. Your components can be shared depending on your implementation.</p>
+<p>We recommend structuring your solution with separate projects for each channel, as well as an optional shared library for components shared across your channels:</p>
+<ul>
+<li>
+<strong>AcmeEmail</strong> – RCL for the <em>Acme</em> email channel</li>
+<li>
+<strong>DancingGoatEmail</strong> – RCL for the <em>Dancing Goat</em> email channel</li>
+<li>
+<strong>Shared</strong> – optional RCL for <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components">Email Builder components</a> common to multiple channels</li>
+<li>
+<strong>Xperience</strong> – the main web application project containing startup code, system data, and configuration. For example:
+<ul>
+<li>Startup and general system configuration (could be based on the Xperience <em>Boilerplate</em> <a href="/documentation/developers-and-admins/installation">project template</a>)</li>
+<li>Binary data of <a href="/documentation/business-users/content-hub/content-item-assets">content item assets</a>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="widgets-and-sections">Widgets and sections</h3>
+<ul>
+<li>Store the code of general components in a shared location. Components specific to an email channel can be stored in a corresponding RCL.</li>
+<li>Restrict widgets and sections using the <code>AllowedWidgets</code> and <code>AllowedSections</code> properties of the <code>EditableArea</code> razor component used to <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#editable-areas">define editable areas</a> in email templates.</li>
+</ul>
+<h3 id="email-templates">Email templates</h3>
+<ul>
+<li>Store <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#templates">email templates</a> for each email channel in their corresponding RCL, e.g., <em>&lt;AcmeEmail project&gt;/EmailTemplates</em>.</li>
+<li>Scope email templates to certain content types using the <code>ContentTypeNames</code> parameter of the <a href="/documentation/developers-and-admins/development/builders/email-builder/develop-email-builder-components#register-templates">registration attribute</a>.</li>
+</ul>
+
+</body>
+</html>

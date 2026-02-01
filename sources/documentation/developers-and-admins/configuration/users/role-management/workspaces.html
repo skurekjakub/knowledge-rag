@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Workspaces</title>
+</head>
+<body>
+<p>Workspaces allow you to segregate content into distinct, manageable units, improving content management and access control. This separation ensures that users can efficiently locate and manage content. Additionally, you can <a href="/documentation/developers-and-admins/configuration/users/role-management#assign-permissions-to-roles">assign permissions to roles</a> for each application scoped under a given workspace.</p>
+<p>Workspaces prevent editors from accidentally affecting the work of others by enabling teams to create dedicated areas for different projects. This structure ensures that only authorized users can access sensitive content, reducing the risk of data breaches.</p>
+<h2 id="default-workspace">Default workspace</h2>
+<p>The system uses the <em>Default workspace</em> with the <em>KenticoDefault</em> code name. This workspace ensures the existence of at least one workspace during the creation of new projects and support for the migration of content and permissions for applications newly scoped under workspaces.</p>
+<p>In case you don’t need to split up your content into multiple workspaces (e.g., in small projects), you can keep using the <em>Default workspace</em>. Otherwise we recommend either renaming or replacing the workspace with new ones that better reflect your project’s needs.</p>
+<p>If future updates introduce workspace support for additional applications, all the application content is assigned to the workspace with the <em>KenticoDefault</em> identifier. If such a workspace doesn’t exist (was renamed or deleted), it’s created with the <em>Default workspace</em> display name as part of the update.</p>
+<p>Roles with permissions assigned to an application that is newly workspace-scoped have the same permissions assigned for the application in the <em>Default workspace</em> after the update (e.g., a role with the <em>View</em> permission for the <a href="/documentation/business-users/content-hub">Content hub</a> has the <em>View</em> permission for Content hub in the <em>Default workspace</em> after the update).</p>
+<p>Only a workspace with the <em>KenticoDefault</em> code name can work with obsolete API where a workspace parameter is not specified. Deleting the workspace or changing its code name will invalidate your code that creates objects scoped under workspaces without a specified workspace. Before modifying the workspace, update your code that creates workspace-scoped objects (e.g., the code for <a href="/api/content-management/content-items#create-content-items">creating content items</a>).</p>
+<h2 id="manage-workspaces">Manage workspaces</h2>
+<p>You can manage workspaces in the <strong>Workspaces</strong> application.</p>
+<h3 id="create-workspaces">Create workspaces</h3>
+<p>To create a workspace:</p>
+<ol type="1">
+<li>Open the <strong>Workspaces</strong> application.</li>
+<li>Select <strong>New workspace</strong>.<br>
+</li>
+<li>Enter a <strong>Workspace name</strong> which identifies the workspace in the Admin UI.</li>
+<li>(Optional) <strong>Identifiers</strong> – specify the code name if you wish to use a code name different than the pre-filled value.</li>
+<li>
+<strong>Save</strong> the new workspace.</li>
+</ol>
+<p>The workspace is now created. To allow users to work with workspaces, <a href="/documentation/developers-and-admins/configuration/users/role-management#assign-permissions-to-roles">grant permissions to roles</a> for applications scoped under workspaces. These permissions can be set for each workspace and application separately.</p>
+<p>To populate the workspace with content, <a href="/documentation/business-users/content-hub/content-items#create-content-items">create new content items</a> or <a href="/documentation/business-users/content-hub/content-items#move-content-items">move existing content items</a> from other workspaces.</p>
+<h3 id="delete-workspaces">Delete workspaces</h3>
+
+<div>
+
+</div>
+<div>
+<p>Deleting a workspace breaks any API calls that rely on its existence. Before proceeding, make sure your project’s developers no longer use the selected workspace as a parameter of the API calls in their code.</p>
+</div>
+
+<p>The last workspace in the system, or a workspace containing any content (e.g., content items or smart folders), cannot be deleted.</p>
+<p>Keep in mind that if you <a href="/documentation/business-users/content-hub/content-items#delete-content-items">delete</a> content items from a workspace that is later deleted, these content items cannot be <a href="/documentation/business-users/recycle_bin">restored</a> from the recycle bin.</p>
+<p>To delete a workspace:</p>
+<ol type="1">
+<li>Open the <strong>Workspaces</strong> application.</li>
+<li>Locate an empty workspace you want to delete.</li>
+<li>
+<strong>Delete</strong> () the selected workspace.<br>
+</li>
+</ol>
+<p>The workspace is now permanently deleted.</p>
+
+</body>
+</html>

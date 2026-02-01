@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Email queue</title>
+</head>
+<body>
+<p>Some Xperience features utilize email messages as part of their functionality, such as password reset emails for <a href="/documentation/developers-and-admins/configuration/users/user-management">users</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p><strong>Prerequisite</strong></p>
+<p>To allow the system to send out emails, developers need to set up and configure an email client (for example an SMTP server or SendGrid integration). For more information, see <a href="/documentation/developers-and-admins/configuration/email-configuration">Email configuration</a>.</p>
+</div>
+
+<p>Outgoing emails from Xperience are first placed into a queue before they are mailed out. The queue reduces the risk of losing emails due to errors.</p>
+<p>Users can work with the email queue in the <strong>Email queue</strong> application of the Xperience administration on the <strong>Email queue</strong> tab.</p>
+<p></p>
+<p>Select emails in the queue to view their details and content. If there are any emails whose sending failed, you can manually resend or delete them.</p>
+<h2 id="sent-emails-archive">Sent emails archive</h2>
+<p>If archival of emails is enabled, you can view the <strong>Sent emails</strong> tab in the <strong>Email queue</strong> application. Contact your site’s administrator or developer if you wish to enable email archiving or change the number of days for which sent emails remain in the archive.</p>
+<p>Emails are displayed on the <em>Sent emails</em> tab after they are successfully sent out from Xperience. This does not always guarantee that the email has been delivered to the recipient. In some cases, delivery may depend on additional services that perform the actual mailing, for example when using SendGrid integration.</p>
+
+</body>
+</html>

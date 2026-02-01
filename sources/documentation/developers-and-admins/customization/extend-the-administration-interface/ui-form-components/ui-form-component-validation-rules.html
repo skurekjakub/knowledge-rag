@@ -1,0 +1,952 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>UI form component validation rules</title>
+</head>
+<body>
+<p>Validation rules verify that the data users enter in a form meets the standards you specify. </p>
+<p>A validation rule contains an expression that evaluates the values of one or more form fields, and returns the validation result. A form cannot be submitted until user input passes all validation rules assigned to individual input fields.</p>
+<p>Each validation rule also carries an error message that is displayed to users when their input fails to pass the given rule’s validation logic.</p>
+<p>Default Xperience installations come with a set of validation rules ready to be used immediately. Additionally, the admin UI customization framework allows you to define custom rules suitable for your use cases and scenarios.</p>
+<h2 id="define-validation-rules">Define validation rules</h2>
+
+<div>
+
+</div>
+<div>
+<p><strong>Validation rule namespaces</strong></p>
+<p>Unless specified otherwise, all classes and members mentioned on this page can be found in the following namespaces:</p>
+<ul>
+<li><code>Kentico.Xperience.Admin.Base.Forms</code></li>
+<li><code>Kentico.Xperience.Admin.Base.FormAnnotations</code></li>
+</ul>
+<p>Do <strong>not</strong> use classes from the <code>Kentico.Forms.Web.Mvc</code> namespace when working with UI form component validation rules. This namespace contains obsolete classes with matching names (e.g., <code>ValidationRule</code>, <code>RegisterFormValidationRule</code>), as well as classes for <a href="/documentation/developers-and-admins/development/builders/form-builder/form-builder-validation-rules">Form Builder validation rules</a>, which serve a different purpose.</p>
+</div>
+
+<p>In Xperience, each validation rule consists of a main class that contains the rule’s validation logic – implemented in the rule’s <code>Validate</code> method – and two properties classes – one to enable client-side validation and the other to allow for the rule’s configuration (via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a> or <a href="#assign-validation-rules-using-attributes">custom attributes</a>).</p>
+<p>Validation rules are <strong>strongly typed</strong>. A rule defined for <em>decimal</em> value types can only be applied to fields that use <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components">form components</a> of the corresponding type. The type must match exactly, including <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/nullable-value-types" target="_blank">nullability</a> for value types.</p>
+<p>A validation rule consists of:</p>
+<ol type="1">
+<li>
+<a href="#validation-rule-back-end">Back end definition</a> – used to define server-side validation logic and rule configuration. Located in the ASP.NET Core project.</li>
+<li>
+<a href="#validation-rule-front-end">TypeScript component</a> – used for client-side validation. Located in JavaScript modules that plug into the React admin app.</li>
+</ol>
+<p>Validation rule architecture is summarized by the following diagram:</p>
+<p></p>
+<h3 id="validation-rule-back-end">Validation rule back end</h3>
+<p>Validation rules must inherit from the <code>ValidationRule&lt;TProperties, TClientProperties, TType&gt;</code> base class, where</p>
+<ul>
+<li>
+<p><code>TProperties</code> – holds properties required for the functionality of the rule. The class must inherit from the <code>ValidationRuleProperties</code> base class. When creating the class, you must also implement the <code>GetDescriptionText</code> method. The method must return a string containing the description of the validation rule. This information is displayed when assigning validation rules to fields via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.<br>
+</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ using Kentico.Xperience.Admin.Base.Forms;
+
+ public class MyValidationRuleProperties : ValidationRuleProperties
+ {
+     // Properties used to configure the rule
+
+     // Sets validation rule description
+     public override string GetDescriptionText(ILocalizationService localizationService)
+             =&gt; $"Validates...";
+ }
+
+ </code></pre>
+</div>
+</li>
+<li>
+<p><code>TClientProperties</code> – used to store and send validation rule metadata (validation status, error message) and properties to the client-side portion of the rule. Must inherit from the <code>ValidationRuleClientProperties</code> base class. Typically contains a subset of properties from <code>TProperties</code> suitable for use during client-side validation. If the validation rule doesn’t require any data on the client, this class can be omitted. Instead, make the validation rule main class inherit from <code>ValidationRule&lt;TProperties, TType&gt;</code>, which implicitly uses the <code>ValidationRuleClientProperties</code> base class.</p>
+<ul>
+<li>This class serves purely as a data transfer object and should not contain additional logic.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+  using Kentico.Xperience.Admin.Base.Forms;
+
+  public class MyValidationRuleClientProperties : ValidationRuleClientProperties
+  {
+      // Properties sent to the client
+  }
+
+  </code></pre>
+</div>
+</li>
+<li>
+<p><code>TType</code> – the data type for which the rule is available (e.g., <code>string</code>, <code>int</code>, or custom types). For an overview of default data types registered in the system, see <a href="/documentation/developers-and-admins/customization/field-editor/data-type-management">Data type management</a>. For rules applicable to all types, use object.</p>
+<ul>
+<li>Based on the specified type, the rule is offered when adding validation to fields of the corresponding data type via the <a href="/documentation/developers-and-admins/customization/field-editor">field editor</a>.</li>
+<li>If you don’t need the rule available within the field editor, you can use any suitable data type as long as it matches the type of the annotated UI form component (identical to how form component registration functions).</li>
+<li>The type must exactly match the data type of the annotated UI form component, including <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/nullable-value-types" target="_blank">nullability</a> for value types. To find the data types of the system’s default components, see <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/reference-admin-ui-form-components">Reference - Admin UI form components</a>.</li>
+</ul>
+</li>
+</ul>
+<p>When inheriting from the class, you need to implement the following abstract members:</p>
+<ul>
+<li>
+<code>ClientRuleName</code> – property set to the name of the client TypeScript component used to provide client-side validation for the rule. You must provide a full name in the <em>{orgName}/{projectName}/componentName</em> format, as specified when you set up your <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/prepare-your-environment-for-admin-development">custom admin JS module</a>. Make sure the component is exported (visible to other modules). For example: <em>@acme/web-admin-custom/ValidationRuleComponent</em>
+</li>
+<li>
+<code>Validate</code> – method that contains the rule’s validation logic. User input is stored in the method’s <code>value</code> parameter. Returns a <code>ValidationResult</code> object that contains the validation result and, optionally, a customized <a href="#validation-error-messages">error message</a>. The object’s constructor expects the following parameters:
+<ul>
+<li>
+<code>isValid</code> – a boolean value indicating the result of the validation.</li>
+<li>
+<code>errorMessage</code> – optional error message that can be returned from the server. See <a href="#validation-error-messages">Validation error messages</a> for more information.</li>
+</ul>
+</li>
+<li>
+<code>ConfigureClientProperties</code> – method that configures the properties object sent to the client component.
+<ul>
+<li>Properties from the <code>TProperties</code> class are accessible via the <code>Properties</code> member. When <code>ConfigureClientProperties</code> is called, <code>TProperties</code> is populated with configured values.</li>
+</ul>
+</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Validation rule back end</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyValidationRule : ValidationRule&lt;MyValidationRuleProperties, MyValidationRuleClientProperties, TType&gt;
+{
+    public override string ClientRuleName =&gt; "@kentico/xperience-admin-base/ValidationRuleComponent";
+
+    protected override Task ConfigureClientProperties(TClientProperties clientProperties)
+    {
+        // Place to map properties sent to the client
+
+        return base.ConfigureClientProperties(clientProperties);
+    }
+
+    public override Task&lt;ValidationResult&gt; Validate(TType value, IFormFieldValueProvider formFieldValueProvider)
+    {
+        // Validation logic
+        bool result = ...
+        // 'value' contains the input submitted by the user
+
+        if (result)
+        {
+            return ValidationResult.SuccessResult();
+        }
+
+        string errorMessage = "Error message...";
+        return ValidationResult.FailResult(errorMessage);
+    }
+}
+
+</code></pre>
+</div>
+
+
+<div>
+
+</div>
+<div>
+<p><strong>Dependency injection support</strong></p>
+<p>Validation rules support constructor <a href="/documentation/developers-and-admins/development/website-development-basics/dependency-injection">dependency injection</a> by default. You can use dependency injection to resolve instances of external services on which your rule depends.</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Using constructor DI to resolve an instance of ILocalizationService</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+private readonly ILocalizationService localizationService;
+...
+public MyValidationRule(ILocalizationService localizationService)
+{
+    this.localizationService = localizationService;
+}
+</code></pre>
+</div>
+</div>
+<hr>
+<p><strong>Access the current form context</strong></p>
+<p>You can access the <code>FormContext</code> property of the <code>ValidationRule</code> base class to evaluate validation rules based on the context where the UI form is displayed. For example, you can limit a validation rule to be used only in the UI forms of content items and use the content item context:</p>
+<div>
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Example - Evaluating the context of the current UI form</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+var contentItemFormContext = FormContext as IContentItemFormContextBase;
+if (contentItemFormContext == null)
+{
+    throw new InvalidOperationException("The validation rule can only be used in a content item form context.");
+}
+
+// Retrieves the ID of the currently edited content item
+int contentItemId = contentItemFormContext.ItemId;
+</code></pre>
+</div>
+</div>
+</div>
+
+<p>During server-side validation, each validation rule assigned to a field is evaluated independently. Errors are collected and sent to the client, where they can be accessed under <code>FormComponentProps.validationMessage</code>.</p>
+<h4 id="validation-error-messages">Validation error messages</h4>
+<p>Validation rules provide several ways to specify error messages. When more than one is set, the system uses a priority system to determine which one is displayed. The priority order is as follows:  </p>
+<ol type="1">
+<li><p>Error message specified when returning a <code>ValidationResult</code> from the <code>Validate</code> method. Prioritized above all others.</p></li>
+<li><p>Error message specified using the <code>ErrorMessage</code> property of the rule’s <code>TProperties</code> class (defined in the <code>ValidationRuleProperties</code> base class). Prioritized above the default error message.</p></li>
+<li>
+<p>A default error message specified using the <code>ValidationRule.DefaultErrorMessage</code> property. Used when no other error message is set. The property can be overridden from the derived validation rule class and used to set a suitable default error message.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Customizing the default error message</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+ protected override string DefaultErrorMessage =&gt; "My default error message";
+
+ </code></pre>
+</div>
+</li>
+</ol>
+<p>Additionally, <code>ValidationRuleProperties.ErrorMessage</code> and <code>ValidationRule.DefaultErrorMessage</code> can use the <code>ValidationRule.ErrorMessageFormatter</code> property to format their output. The property stores a delegate that is used to format either <code>ErrorMessage</code> or <code>DefaultErrorMessage</code> before the string is sent to the client.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class MyValidationRule : ValidationRule&lt;MyValidationRuleProperties, MyValidationRuleClientProperties, TType&gt;
+{ 
+    protected override Func&lt;string, string&gt; ErrorMessageFormatter =&gt; (errorMessage) =&gt; String.Format(errorMessage, Properties.RuleConfiguration);   
+}
+
+</code></pre>
+</div>
+
+<p>This approach can be useful if you need to reflect rule configuration (dynamically changing values) in preset strings.</p>
+<p>Error messages returned directly via the <code>ValidationResult</code> object are considered formatted and localized – the formatter is not used on them. </p>
+<h3 id="validation-rule-front-end">Validation rule front end</h3>
+<p>The client part of a validation rule is a TypeScript implementation that ensures client-side validation.</p>
+<p>Inherit from <code>ValidationRule&lt;TValidationRuleProps, TType&gt;</code>, where</p>
+<ul>
+<li>
+<code>TValidationRuleProps</code> – a class that extends <code>ValidationRuleProps</code>. This class is the client-side mirror of the rule’s back end <code>TClientProperties</code> class and therefore needs to declare the same set of properties. If you aren’t sending additional properties to the client, the base <code>ValidationRuleProps</code> class can be used instead.</li>
+<li>
+<code>TType</code> – the type of the input that is being validated (<code>string</code>, <code>int</code>, custom types).</li>
+</ul>
+<p>and return an object with the following properties:</p>
+<ul>
+<li>
+<code>isValid: boolean</code> – indicates the result of client-side validation.</li>
+<li>
+<code>errorMessage: string | null</code> – the message to display in case validation failed.</li>
+</ul>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { ValidationRule, ValidationRuleProps } from '@kentico/xperience-admin-base';
+
+export interface MyValidationRuleProps extends ValidationRuleProps {
+    readonly prop1: string
+    readonly prop2: number
+} 
+
+export const MyValidationRule: ValidationRule&lt;MyValidationRuleProps, string&gt; = (props, value) =&gt; {
+    const validate = (prop1, prop2) =&gt; {
+        let isValid = true;
+        // Validation logic
+
+        return isValid;
+    };
+
+    return { isValid: validate(props.prop1, props.prop2), errorMessage: props.errorMessage }
+};
+
+</code></pre>
+</div>
+
+<h2 id="register-validation-rules">Register validation rules</h2>
+<p>To register a validation rule, use the <code>RegisterFormValidationRule</code> assembly attribute. This attribute ensures the validation rule is recognized by the system and available for <a href="/documentation/developers-and-admins/customization/field-editor">use in the field editor</a>. When registering a rule, specify the following parameters:</p>
+<ul>
+<li>
+<strong>Identifier</strong> – a unique <code>string</code> identifier of the validation rule. We recommend using a unique prefix in your identifiers to prevent conflicts when deploying components to other projects. For example, use prefixes matching your company’s name.</li>
+<li>
+<strong>ValidationRuleType</strong> – the <em>System.Type</em> of the validation rule class.</li>
+<li>
+<strong>Name</strong> – used to set the name of the validation rule. Displayed when adding validation rules via the field editor.</li>
+<li>(Optional) <strong>Description</strong>– sets the validation rule description. Displayed when adding validation rules via the field editor.</li>
+</ul>
+<p>The following code snippet demonstrates validation rule registration:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Validation rule registration</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+[assembly: RegisterFormValidationRule("Acme.Administration.MyVisibilityCondition", typeof(MyVisibilityCondition), 
+           "Rule name", "Rule description")]
+
+</code></pre>
+</div>
+
+<p>The validation rule is now registered in the system. Users can include it when adding field validation via the field editor (e.g., when defining content types and other system objects).</p>
+<h2 id="validation-rules-dependent-on-other-inputs">Validation rules dependent on other inputs</h2>
+<p>Validation rules can also depend on other inputs in the form.</p>
+<p>To construct such rules, the <code>Validate</code> method provides an instance of <code>IFormFieldValueProvider</code>, which enables access to the values of all preceding form field inputs. For example, if a form comprises inputs <strong>A</strong>, <strong>B</strong>, <strong>C</strong>, and validation is currently running on <strong>C</strong>, <code>IFormFieldValueProvider</code> can be used to access the values of <strong>A</strong> and <strong>B</strong>. Therefore, when configuring and assigning such rules, it’s important to keep in mind that they can only depend on inputs that precede the input to which they are assigned. Note that for <a href="/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-form-components/editing-components">editing components</a>, the order of the inputs in the resulting forms can be adjusted via the <code>Order</code> property.</p>
+<p>Values can be accessed via the following methods:</p>
+<ul>
+<li>
+<code>Get(string fieldName)</code> – returns the value of the given field as <code>object</code>
+</li>
+<li>
+<code>Get&lt;TType&gt;(string fieldName)</code> – returns the value of the given field as <code>TType</code>
+</li>
+</ul>
+<p>where <code>fieldName</code> is the name of the dependent input, which must be provided when configuring the rule (via a configuration property).</p>
+<h2 id="assign-validation-rules-using-attributes">Assign validation rules using attributes</h2>
+<p>In addition to field input validation, the system supports using validation rules for dynamically created input dialogs of <a href="/documentation/developers-and-admins/development/builders/page-builder">Page Builder</a> and <a href="/documentation/developers-and-admins/development/builders/form-builder">Form Builder</a> components and other admin UI components:</p>
+<ul>
+<li>Page Builder
+<ul>
+<li>widget configuration and personalization</li>
+<li>section configuration</li>
+<li>page template configuration</li>
+</ul>
+</li>
+<li>Form Builder
+<ul>
+<li>form component configuration</li>
+<li>form section configuration</li>
+</ul>
+</li>
+<li>Admin UI
+<ul>
+<li>form component configuration</li>
+<li>validation rule configuration</li>
+<li>visibility condition configuration</li>
+</ul>
+</li>
+</ul>
+<p>Within this approach, validation rules are assigned via attribute notation to the properties of model classes defining individual component configuration dialogs. For example:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assigning the 'Required' validation rule in a widget properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using System.Collections.Generic;
+
+using CMS.Websites;
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+using Kentico.Xperience.Admin.Websites.FormAnnotations;
+using Kentico.PageBuilder.Web.Mvc;
+
+public class CafeCardProperties : IWidgetProperties
+{
+    [WebPageSelectorComponent(Label = "Cafe", Order = 1)]
+    // Binds the 'Required' validation rule to the property.
+    // The rule ensures that the widget configuration dialog generated based 
+    // on this class cannot be submitted until the field is populated.
+    [RequiredValidationRule]
+    public IEnumerable&lt;WebPageRelatedItem&gt; SelectedCafes { get; set; } = new List&lt;WebPageRelatedItem&gt;();
+}
+
+</code></pre>
+</div>
+
+<p>For this purpose, each validation rule can have a corresponding <a href="https://docs.microsoft.com/en-us/dotnet/csharp/tutorials/attributes" target="_blank">attribute</a> that, when used to annotate a property of one of the supported components, binds the validation rule to that property’s input. The input dialog generated based on that model class cannot be submitted until user input passes all assigned validation rules.</p>
+<p>A single property can have multiple validation attributes assigned. However, be mindful not to create contradictory rulesets that would make submission impossible.</p>
+<p>Validation rule attribute classes must inherit from <code>ValidationRuleAttribute</code>.</p>
+<p>Declare all mandatory and optional properties of the corresponding validation rule as properties of the attribute class. The properties <strong>must be named identically</strong> to their validation rule counterparts. The system uses the property names to pass and instantiate the values of the corresponding rule. Properties that are required for the rule to function can be forced via the attribute’s constructor.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Sample validation rule attribute</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ValueIsBetweenValidationRuleAttribute : ValidationRuleAttribute
+{   
+    // Property names must match the properties of the corresponding rule
+    public int Min
+    {
+        get; 
+    }
+
+    public int Max
+    {
+        get; 
+    }
+
+    public ValueIsBetweenValidationRuleAttribute(int min, int max)
+    {
+        Min = min;
+        Max = max;
+    }
+}
+
+</code></pre>
+</div>
+
+<p><code>ValidationRuleAttribute</code> also contains an <code>ErrorMessage</code> property that, when populated, overrides the error message provided by the corresponding validation rule.  </p>
+<p>To indicate the relation between the attribute class and the corresponding validation rule, decorate the validation rule class with the <code>ValidationRuleAttribute</code> attribute.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>Assigns ValueIsBetweenValidationRuleAttribute to ValueIsBetweenValidationRule</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+[ValidationRuleAttribute(typeof(ValueIsBetweenValidationRuleAttribute))]
+public class ValueIsBetweenValidationRule : ValidationRule&lt;...&gt;
+
+</code></pre>
+</div>
+
+<p>For the example above, every property decorated with <code>ValueIsBetweenValidationRuleAttribute</code> is assigned a <code>ValueIsBetweenValidationRule</code>. </p>
+<h2 id="default-validation-rules">Default validation rules</h2>
+<p>The following table gives an overview of validation rules provided with default Xperience installations. All validation rule attributes are located in the <code>Kentico.Xperience.Admin.Base.FormAnnotations</code> namespace.</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Name</p>
+</td>
+<td>
+<p>Applicable type</p>
+</td>
+<td>
+<p>Attribute</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p>Field comparison</p>
+</td>
+<td>
+<p>int<br>
+decimal<br>
+double<br>
+string</p>
+</td>
+<td>
+<p>IntegerFieldComparisonValidationRule<br>
+DecimalFieldComparisonValidationRule<br>
+DoubleFieldComparisonValidationRule<br>
+StringFieldComparisonValidationRule</p>
+</td>
+<td>
+<p>Compares the input’s value with another field of the <strong>same data type</strong>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Email format</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>EmailValidationRule</p>
+</td>
+<td>
+<p>Checks that the input is an email address. Can be configured to allow multi-email input separated by a semicolon.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Identifier</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>IdentifierValidationRule</p>
+</td>
+<td>
+<p>Checks that the input contains a valid object identifier. Identifiers must begin with a letter or an underscore and can contain only underscores and alphanumeric characters.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Maximum length</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>MaxLengthValidationRule</p>
+</td>
+<td>
+<p>Limits user input to the specified maximum length.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Minimum length</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>MinLengthValidationRule</p>
+</td>
+<td>
+<p>Sets the minimum number of characters a field must contain before it can be submitted.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Maximum value</p>
+</td>
+<td>
+<p>int<br>
+decimal<br>
+double</p>
+</td>
+<td>
+<p>MaximumIntegerValueValidationRule<br>
+MaximumDecimalValueValidationRule<br>
+MaximumDoubleValueValidationRule</p>
+</td>
+<td>
+<p>Prevents users from entering numbers larger than specified.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Minimum value</p>
+</td>
+<td>
+<p>int<br>
+decimal<br>
+double</p>
+</td>
+<td>
+<p>MinimumIntegerValueValidationRule<br>
+MinimumDecimalValueValidationRule<br>
+MinimumDoubleValueValidationRule</p>
+</td>
+<td>
+<p>Prevents users from entering numbers smaller than specified.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Url format</p>
+</td>
+<td>
+<p>string</p>
+</td>
+<td>
+<p>UrlValidationRule</p>
+</td>
+<td>
+<p>Checks if the input is a valid absolute URL. Additional properties of the attribute can be enabled to also allow the following types of URLs:</p>
+<ul>
+<li>relative URLs starting with ~/</li>
+<li>URL fragments starting with #</li>
+<li>query string values starting with ?</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p>Required value</p>
+</td>
+<td>
+<p>object (all data types)</p>
+</td>
+<td>
+<p>RequiredValidationRule</p>
+</td>
+<td>
+<p>Prevents from submitting empty fields.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="example">Example</h2>
+<p>The following example demonstrates a validation rule that checks if a number belongs to a specified interval. The example implements the rule for form components of the <em>int?</em> type:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+
+[assembly: RegisterFormValidationRule(ValueIsBetweenValidationRule.IDENTIFIER,
+                                  typeof(ValueIsBetweenValidationRule),
+                                  "Entered number is between X and Y",
+                                  "Checks that the entered number belongs to a specified closed interval.")]
+
+public class ValueIsBetweenValidationRule : ValidationRule&lt;ValueIsBetweenValidationRuleProperties, ValueIsBetweenValidationRuleClientProperties, int?&gt;
+{
+    internal const string IDENTIFIER = "Acme.Customizations.ValidationRules.ValueIsBetween";
+
+    // Replace 'acme/web-admin-custom' with the name of your organization and project
+    public override string ClientRuleName =&gt; "@acme/web-admin-custom/ValueIsBetweenValidationRule";
+
+    public override Task&lt;ValidationResult&gt; Validate(int? value, IFormFieldValueProvider formFieldValueProvider)
+    {
+        if (value &lt;= Properties.Max &amp;&amp; value &gt;= Properties.Min)
+        {
+            return ValidationResult.SuccessResult();
+        }
+
+        return ValidationResult.FailResult($"Enter a value between {Properties.Min} and {Properties.Max}.");
+    }
+
+    // Sends properties to the client for use in client-side validation
+    protected override Task ConfigureClientProperties(ValueIsBetweenValidationRuleClientProperties clientProperties)
+    {
+        clientProperties.Min = Properties.Min;
+        clientProperties.Max = Properties.Max;
+
+        return base.ConfigureClientProperties(clientProperties);     
+    }
+}
+
+</code></pre>
+</div>
+
+<p>The rule’s properties class needs to hold two values – the <em>lower</em> and <em>upper</em> boundary of the range from which to accept user input:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ValueIsBetweenValidationRuleProperties : ValidationRuleProperties
+{
+    [NumberInputComponent(Label = "Minimum")]
+    public int Min { get; set; }
+
+    [NumberInputComponent(Label = "Maximum")]
+    public int Max { get; set; }
+
+    // Overriding the 'ErrorMessage' property and not assigning an editing component hides it from the configuration dialog.
+    // This is desirable since the rule returns an error message via the 'Validate' method -- 
+    // anything entered under 'ErrorMessage' has lower priority and is ignored by the system.
+    public override string ErrorMessage { get =&gt; base.ErrorMessage; set =&gt; base.ErrorMessage = value; } 
+
+    public override string GetDescriptionText(ILocalizationService localizationService) =&gt; $"Entered value is between Minimum and Maximum.";
+}
+
+</code></pre>
+</div>
+
+<p>For the rule’s client properties class, the client needs to know the same information as the back end to correctly evaluate the input. For this reason, the properties in this class need to mirror those of the back end configuration.</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong>ValueIsBetween client properties class</strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+using Kentico.Xperience.Admin.Base.Forms;
+
+public class ValueIsBetweenValidationRuleClientProperties : ValidationRuleClientProperties {
+    public int Min { get; set; }
+
+    public int Max { get; set; }
+} 
+
+</code></pre>
+</div>
+
+<p>And the TypeScript code to enable client-side validation:</p>
+
+<div>
+<div>
+<div>
+<span>JS</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+import { ValidationRule, ValidationRuleProps } from '@kentico/xperience-admin-base';
+
+interface ValueIsBetweenValidationRuleProps extends ValidationRuleProps {
+    readonly max: number
+    readonly min: number
+} 
+
+export const ValueIsBetweenValidationRule: ValidationRule&lt;ValueIsBetweenValidationRuleProps, number&gt; = (props, value) =&gt; {
+    const validate = (max: number, min: number) =&gt; {     
+        return min &lt;= value &amp;&amp; value &lt;= max;
+    };
+
+    return { isValid: validate(props.max, props.min), errorMessage: props.errorMessage }
+};
+
+</code></pre>
+</div>
+
+<p>Finally, the corresponding attribute to enable usage in component model classes:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+public class ValueIsBetweenValidationRuleAttribute : ValidationRuleAttribute
+{
+    public int Max
+    {
+        get; 
+    }
+
+    public int Min
+    {
+        get; 
+    } 
+
+    public ValueIsBetweenValidationRuleAttribute(int max, int min)
+    {
+        Max = max;
+        Min = min;
+    }
+}
+
+</code></pre>
+</div>
+
+<p>With the attribute created, add <code>ValidationRuleAttribute</code> with the attribute type as the parameter to the validation rule’s main class to tie the attribute and validation rule together:</p>
+
+<div>
+<div>
+<div>
+<span>C#</span>
+</div>
+<strong></strong>
+</div>
+<div>
+<button>
+<span></span><span></span> <span>Copy</span>
+</button>
+</div>
+</div>
+<div>
+<pre><code>
+
+using Kentico.Xperience.Admin.Base.Forms;
+using Kentico.Xperience.Admin.Base.FormAnnotations;
+
+[ValidationRuleAttribute(typeof(ValueIsBetweenValidationRuleAttribute))]
+public class ValueIsBetweenValidationRule : ValidationRule&lt;ValueIsBetweenValidationRuleProperties, ValueIsBetweenValidationRuleClientProperties, int?&gt;
+
+</code></pre>
+</div>
+
+<p>The validation rule is now available when adding validation to fields and model class <a href="#assign-validation-rules-using-attributes">properties</a> with the <em>int?</em> data type.</p>
+
+</body>
+</html>

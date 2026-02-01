@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Promotions</title>
+</head>
+<body>
+<p>Promotions allow you to offer discounts and special offers to your customers. The system evaluates active promotions during checkout and automatically applies the best available discount.</p>
+<p>To learn how to create and manage promotions in the administration, see <a href="/documentation/business-users/manage-commerce-stores#manage-promotions">Manage promotions</a>.</p>
+<p>Xperience by Kentico provides a promotion framework that allows developers to implement custom discount rules. The framework integrates with the <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation">price calculation API</a> to automatically apply promotions during checkout.</p>
+<h2 id="promotion-types">Promotion types</h2>
+<p>The system supports different types of promotions based on when and how discounts are applied:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Promotion type</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+<td>
+<p>Use cases</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">Catalog discounts</a></p>
+</td>
+<td>
+<p>Discounts applied to individual products during price calculation. The system evaluates all applicable promotions and automatically selects the best discount for each product. Only one promotion can apply per product.</p>
+</td>
+<td>
+<ul>
+<li>Percentage discounts (10% off coffees)</li>
+<li>Fixed amount discounts ($5 off)</li>
+<li>Category-based promotions</li>
+<li>Member-only pricing</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/order-discounts">Order discounts</a></p>
+</td>
+<td>
+<p>Discounts applied to the entire order total. Order discounts are evaluated after catalog discounts and can be combined with product-level promotions. Only one order discount can apply per order.</p>
+</td>
+<td>
+<p>Order total discounts based on shopping cart contents, total price, etc.</p>
+</td>
+</tr>
+</table>
+
+<h2 id="discount-applicability-and-priority">Discount applicability and priority</h2>
+<p>Discounts in Xperience can be combined and stacked in various ways. Promotions are evaluated during the price calculation pipeline:</p>
+<ol type="1">
+<li>
+<strong>Catalog discounts</strong> are evaluated first, applying product-level discounts based on configured promotion rules. The system evaluates all applicable promotions and automatically selects the best discount for each product.</li>
+<li>
+<strong>Order discounts</strong> are evaluated after product prices are calculated, applying order-level discounts to the total. The system evaluates all applicable order-level promotions and selects the highest eligible discount, applying it to the order total.</li>
+</ol>
+
+<div>
+
+</div>
+<div>
+<p>The selected <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#calculate-prices">price calculation mode</a> also determines what types of promotion are evaluated. For example, <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/implementation#catalog-price-calculation">catalog price calculation</a> applies catalog discounts only. Additionally, the entire calculation pipeline can be <a href="/documentation/developers-and-admins/digital-commerce-setup/price-calculation/customization#create-a-custom-steps-provider">customized</a> to your preference.</p>
+</div>
+
+<p>The <a href="/documentation/developers-and-admins/digital-commerce-setup/checkout-process/order-creation">order creation service</a> persists promotion data with orders for reporting and order history. Viewing order details in the <strong>Orders</strong> application provides a breakdown of each applied discount and its impact on the overall unit and order prices.</p>
+<p></p>
+<h2 id="redemption-methods">Redemption methods</h2>
+<p>Promotions support two redemption methods that control how customers receive discounts:</p>
+
+<table>
+<thead>
+<tr>
+<td>
+<p>Redemption method</p>
+</td>
+<td>
+<p>Description</p>
+</td>
+</tr>
+</thead>
+<tr>
+<td>
+<p><strong>Automatic</strong></p>
+</td>
+<td>
+<p>The default behavior. Promotions are automatically evaluated and applied during price calculation when customers meet the configured conditions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Generic discount code</strong></p>
+</td>
+<td>
+<p>Requires customers to enter a specific code (e.g., <em>WINTER20</em>) to receive the discount. The promotion is only applied if the customer provides the matching code.</p>
+</td>
+</tr>
+</table>
+
+<p>Coupon codes can be configured for both catalog discounts and order discounts. For implementation details, see <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/coupon-codes">Coupon codes</a>.</p>
+
+<div>
+
+</div>
+<div>
+<p>Use coupon codes for targeted marketing campaigns, newsletter subscriber discounts, influencer partnerships, or limited-time promotional offers.</p>
+</div>
+
+<h2 id="implement-promotions">Implement promotions</h2>
+<ul>
+<li>
+<strong>Catalog discounts</strong> – See <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/catalog-discounts">Implement catalog discounts</a> for creating product-level promotion rules.</li>
+<li>
+<strong>Order discounts</strong> – See <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/order-discounts">Implement order discounts</a> for creating order-level promotion rules.</li>
+<li>
+<strong>Coupon codes</strong> – See <a href="/documentation/developers-and-admins/digital-commerce-setup/promotions/coupon-codes">Coupon codes</a> for requiring discount codes for redemption.</li>
+</ul>
+<h2 id="manage-promotions">Manage promotions</h2>
+<p>Marketers <a href="/documentation/business-users/manage-commerce-stores">create and manage promotions</a> in the administration interface. After you register a promotion rule in code, it becomes available for selection when creating new promotions.</p>
+<p>Promotions support:</p>
+<ul>
+<li>
+<strong>Activation scheduling</strong> – Set start and end dates for time-limited offers.</li>
+<li>
+<strong>Configurable properties</strong> – Define promotion parameters (discount percentage, target categories, eligibility rules) through the admin UI.</li>
+<li>
+<strong>Redemption methods</strong> – Choose between automatic application or require customers to enter a discount code.</li>
+<li>
+<strong>Multiple active promotions</strong> – Run several promotions simultaneously with automatic best-discount selection.</li>
+</ul>
+
+</body>
+</html>
